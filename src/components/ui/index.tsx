@@ -27,17 +27,20 @@ export function Button({ variant = 'primary', size = 'md', fullWidth, iconOnly, 
 }
 
 // ─── Badge ───────────────────────────────────────────────────────────
-type BadgeColor = 'success' | 'error' | 'warning' | 'info' | 'neutral' | 'primary' | 'purple' | 'amber';
+type BadgeColor = 'success' | 'error' | 'destructive' | 'warning' | 'info' | 'neutral' | 'primary' | 'purple' | 'amber';
 
 interface BadgeProps {
     color?: BadgeColor;
+    size?: 'sm' | 'md';
     children: ReactNode;
+    style?: React.CSSProperties;
 }
 
-export function Badge({ color = 'neutral', children }: BadgeProps) {
+export function Badge({ color = 'neutral', size = 'md', children, style }: BadgeProps) {
     const colorMap: Record<BadgeColor, string> = {
         success: styles.badgeSuccess,
         error: styles.badgeError,
+        destructive: styles.badgeError, // Alias for error
         warning: styles.badgeWarning,
         info: styles.badgeInfo,
         neutral: styles.badgeNeutral,
@@ -45,13 +48,14 @@ export function Badge({ color = 'neutral', children }: BadgeProps) {
         purple: styles.badgePurple,
         amber: styles.badgeAmber,
     };
-    return <span className={`${styles.badge} ${colorMap[color]}`}>{children}</span>;
+    const sizeClass = size === 'sm' ? styles.badgeSm : '';
+    return <span className={`${styles.badge} ${colorMap[color]} ${sizeClass}`} style={style}>{children}</span>;
 }
 
-// ─── Toggle ──────────────────────────────────────────────────────────
-interface ToggleProps { checked?: boolean; onChange?: (val: boolean) => void; label?: string; }
+// ─── Switch ──────────────────────────────────────────────────────────
+interface SwitchProps { checked?: boolean; onChange?: (val: boolean) => void; label?: string; }
 
-export function Toggle({ checked = false, onChange, label }: ToggleProps) {
+export function Switch({ checked = false, onChange, label }: SwitchProps) {
     const [on, setOn] = useState(checked);
     const handleClick = () => { const next = !on; setOn(next); onChange?.(next); };
     return (
