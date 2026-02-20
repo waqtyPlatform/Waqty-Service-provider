@@ -2,19 +2,19 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
     ChevronLeft,
     ChevronRight,
     Plus,
     Filter,
     CalendarDays,
-    List,
     Clock,
     Building2,
-    DoorOpen,
-    Printer,
 } from 'lucide-react';
+import { EmptyState } from '@/components/ui';
 import styles from './bookings.module.css';
+import BookingsTabs from './BookingsTabs';
 
 const employees = [
     { name: 'Sara A.', initials: 'SA', color: '#8B5CF6', status: 'Available' },
@@ -38,23 +38,24 @@ interface BookingBlock {
     client: string;
     service: string;
     status: string;
+    id?: string;
 }
 
 const bookingBlocks: BookingBlock[] = [
-    { empIndex: 0, startSlot: 0, span: 3, client: 'Fatima R.', service: 'Hair Coloring', status: 'confirmed' },
-    { empIndex: 0, startSlot: 6, span: 2, client: 'Aisha M.', service: 'Haircut', status: 'completed' },
-    { empIndex: 0, startSlot: 10, span: 2, client: 'Maryam I.', service: 'Olaplex', status: 'arrived' },
-    { empIndex: 1, startSlot: 1, span: 4, client: 'Huda S.', service: 'Keratin', status: 'arrived' },
-    { empIndex: 1, startSlot: 8, span: 2, client: 'Noura A.', service: 'Facial', status: 'confirmed' },
-    { empIndex: 1, startSlot: 14, span: 2, client: 'Rania K.', service: 'HydraFacial', status: 'unconfirmed' },
-    { empIndex: 2, startSlot: 0, span: 2, client: 'Dana F.', service: 'Manicure', status: 'completed' },
-    { empIndex: 2, startSlot: 4, span: 6, client: 'Lina T.', service: 'Keratin + Color', status: 'confirmed' },
-    { empIndex: 2, startSlot: 12, span: 2, client: 'Sara Q.', service: 'Facial', status: 'workDone' },
-    { empIndex: 3, startSlot: 2, span: 4, client: 'Yara B.', service: 'Massage', status: 'confirmed' },
-    { empIndex: 3, startSlot: 8, span: 2, client: 'Nada H.', service: 'Pedicure', status: 'confirmed' },
-    { empIndex: 4, startSlot: 0, span: 2, client: 'Rana Z.', service: 'Laser', status: 'completed' },
-    { empIndex: 4, startSlot: 4, span: 2, client: 'Joud W.', service: 'Gel Nails', status: 'cancelled' },
-    { empIndex: 4, startSlot: 10, span: 4, client: 'Sama L.', service: 'Full Package', status: 'confirmed' },
+    { empIndex: 0, startSlot: 0, span: 3, client: 'Fatima R.', service: 'Hair Coloring', status: 'confirmed', id: 'BK-1042' },
+    { empIndex: 0, startSlot: 6, span: 2, client: 'Aisha M.', service: 'Haircut', status: 'completed', id: 'BK-1041' },
+    { empIndex: 0, startSlot: 10, span: 2, client: 'Maryam I.', service: 'Olaplex', status: 'arrived', id: 'BK-1040' },
+    { empIndex: 1, startSlot: 1, span: 4, client: 'Huda S.', service: 'Keratin', status: 'arrived', id: 'BK-1039' },
+    { empIndex: 1, startSlot: 8, span: 2, client: 'Noura A.', service: 'Facial', status: 'confirmed', id: 'BK-1038' },
+    { empIndex: 1, startSlot: 14, span: 2, client: 'Rania K.', service: 'HydraFacial', status: 'unconfirmed', id: 'BK-1037' },
+    { empIndex: 2, startSlot: 0, span: 2, client: 'Dana F.', service: 'Manicure', status: 'completed', id: 'BK-1036' },
+    { empIndex: 2, startSlot: 4, span: 6, client: 'Lina T.', service: 'Keratin + Color', status: 'confirmed', id: 'BK-1035' },
+    { empIndex: 2, startSlot: 12, span: 2, client: 'Sara Q.', service: 'Facial', status: 'workDone', id: 'BK-1034' },
+    { empIndex: 3, startSlot: 2, span: 4, client: 'Yara B.', service: 'Massage', status: 'confirmed', id: 'BK-1033' },
+    { empIndex: 3, startSlot: 8, span: 2, client: 'Nada H.', service: 'Pedicure', status: 'confirmed', id: 'BK-1032' },
+    { empIndex: 4, startSlot: 0, span: 2, client: 'Rana Z.', service: 'Laser', status: 'completed', id: 'BK-1031' },
+    { empIndex: 4, startSlot: 4, span: 2, client: 'Joud W.', service: 'Gel Nails', status: 'cancelled', id: 'BK-1030' },
+    { empIndex: 4, startSlot: 10, span: 4, client: 'Sama L.', service: 'Full Package', status: 'confirmed', id: 'BK-1029' },
 ];
 
 const statusBlockClass: Record<string, string> = {
@@ -68,27 +69,12 @@ const statusBlockClass: Record<string, string> = {
 
 export default function BookingsCalendarPage() {
     const [calendarView, setCalendarView] = useState<'day' | 'week' | 'month'>('day');
+    const router = useRouter();
 
     return (
         <div className={styles.bookingsPage}>
             {/* Tabs */}
-            <div className={styles.tabs}>
-                <Link href="/bookings" className={`${styles.tab} ${styles.tabActive}`}>
-                    <CalendarDays size={16} /> Calendar
-                </Link>
-                <Link href="/bookings/list" className={styles.tab}>
-                    <List size={16} /> Booking List
-                </Link>
-                <Link href="/bookings/rooms" className={styles.tab}>
-                    <DoorOpen size={16} /> Room Calendar
-                </Link>
-                <Link href="/bookings/new" className={styles.tab}>
-                    <Plus size={16} /> New Booking
-                </Link>
-                <Link href="/bookings/print" className={styles.tab}>
-                    <Printer size={16} /> Employee Print
-                </Link>
-            </div>
+            <BookingsTabs />
 
             {/* Calendar Header */}
             <div className={styles.calendarHeader}>
@@ -123,57 +109,68 @@ export default function BookingsCalendarPage() {
 
             {/* Calendar Grid + Side Panel */}
             <div className={styles.calendarWrapper}>
-                <div className={styles.calendarGrid} style={{ '--emp-count': employees.length } as React.CSSProperties}>
-                    {/* Header row */}
-                    <div className={styles.calendarGridHeader}>
-                        <div className={styles.timeColHeader}>
-                            <Clock size={14} style={{ margin: '0 auto', color: 'var(--text-tertiary)' }} />
-                        </div>
-                        {employees.map((emp) => (
-                            <div key={emp.name} className={styles.empColHeader}>
-                                <div
-                                    className={styles.empAvatar}
-                                    style={{ background: emp.color }}
-                                >
-                                    {emp.initials}
+                {calendarView === 'day' ? (
+                    <div className={styles.calendarGrid} style={{ '--emp-count': employees.length } as React.CSSProperties}>
+                        {/* Header row */}
+                        <div className={styles.calendarGridHeader}>
+                            <div className={styles.timeColHeader}>
+                                <Clock size={14} style={{ margin: '0 auto', color: 'var(--text-tertiary)' }} />
+                            </div>
+                            {employees.map((emp) => (
+                                <div key={emp.name} className={styles.empColHeader}>
+                                    <div
+                                        className={styles.empAvatar}
+                                        style={{ background: emp.color }}
+                                    >
+                                        {emp.initials}
+                                    </div>
+                                    <div className={styles.empName}>{emp.name}</div>
+                                    <div className={styles.empStatus}>{emp.status}</div>
                                 </div>
-                                <div className={styles.empName}>{emp.name}</div>
-                                <div className={styles.empStatus}>{emp.status}</div>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
 
-                    {/* Time rows */}
-                    <div className={styles.calendarBody}>
-                        {timeSlots.map((time, slotIndex) => (
-                            <div key={time} className={styles.timeRow}>
-                                <div className={styles.timeLabel}>{time}</div>
-                                {employees.map((_, empIndex) => {
-                                    const block = bookingBlocks.find(
-                                        (b) => b.empIndex === empIndex && b.startSlot === slotIndex
-                                    );
+                        {/* Time rows */}
+                        <div className={styles.calendarBody}>
+                            {timeSlots.map((time, slotIndex) => (
+                                <div key={time} className={styles.timeRow}>
+                                    <div className={styles.timeLabel}>{time}</div>
+                                    {employees.map((_, empIndex) => {
+                                        const block = bookingBlocks.find(
+                                            (b) => b.empIndex === empIndex && b.startSlot === slotIndex
+                                        );
 
-                                    return (
-                                        <div key={empIndex} className={styles.timeCell}>
-                                            {block && (
-                                                <div
-                                                    className={`${styles.bookingBlock} ${statusBlockClass[block.status] || ''}`}
-                                                    style={{ height: `${block.span * 64 - 4}px` }}
-                                                >
-                                                    <div className={styles.bookingBlockName}>{block.client}</div>
-                                                    <div className={styles.bookingBlockService}>{block.service}</div>
-                                                    <div className={styles.bookingBlockTime}>
-                                                        {timeSlots[block.startSlot]} – {timeSlots[block.startSlot + block.span] || '21:00'}
+                                        return (
+                                            <div key={empIndex} className={styles.timeCell}>
+                                                {block && (
+                                                    <div
+                                                        className={`${styles.bookingBlock} ${statusBlockClass[block.status] || ''}`}
+                                                        style={{ height: `${block.span * 64 - 4}px` }}
+                                                        onClick={() => block.id && router.push(`/bookings/${block.id}`)}
+                                                    >
+                                                        <div className={styles.bookingBlockName}>{block.client}</div>
+                                                        <div className={styles.bookingBlockService}>{block.service}</div>
+                                                        <div className={styles.bookingBlockTime}>
+                                                            {timeSlots[block.startSlot]} – {timeSlots[block.startSlot + block.span] || '21:00'}
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        ))}
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                </div>
+                ) : (
+                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--border-color)' }}>
+                        <EmptyState
+                            icon={<CalendarDays size={48} />}
+                            title={`Advanced ${calendarView.charAt(0).toUpperCase() + calendarView.slice(1)} View`}
+                            description={`The standard day-view is active. ${calendarView.charAt(0).toUpperCase() + calendarView.slice(1)} views are part of the advanced scheduling package.`}
+                        />
+                    </div>
+                )}
 
                 {/* Side Panel */}
                 <div className={styles.sidePanel}>
@@ -182,7 +179,11 @@ export default function BookingsCalendarPage() {
                         <div className={styles.sidePanelTitle}>
                             <Clock size={16} /> Next Appointment
                         </div>
-                        <div className={styles.nextApptCard}>
+                        <div
+                            className={styles.nextApptCard}
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => router.push('/bookings/BK-1040')}
+                        >
                             <div className={styles.nextApptName}>Maryam Ibrahim</div>
                             <div className={styles.nextApptService}>Olaplex Treatment</div>
                             <div className={styles.nextApptTime}>

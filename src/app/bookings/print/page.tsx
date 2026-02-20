@@ -12,6 +12,7 @@ import {
     User,
 } from 'lucide-react';
 import styles from '../bookings.module.css';
+import BookingsTabs from '../BookingsTabs';
 
 const employees = [
     { id: 'E01', name: 'Sara Ahmed', role: 'Senior Stylist', color: '#F59E0B' },
@@ -80,13 +81,7 @@ const s: Record<string, React.CSSProperties> = {
 export default function EmployeePrintPage() {
     return (
         <div style={s.page}>
-            <div className={styles.tabs}>
-                <Link href="/bookings" className={styles.tab}><CalendarDays size={16} /> Calendar</Link>
-                <Link href="/bookings/list" className={styles.tab}><List size={16} /> Booking List</Link>
-                <Link href="/bookings/rooms" className={styles.tab}><DoorOpen size={16} /> Room Calendar</Link>
-                <Link href="/bookings/new" className={styles.tab}><Plus size={16} /> New Booking</Link>
-                <Link href="/bookings/print" className={`${styles.tab} ${styles.tabActive}`}><Printer size={16} /> Employee Print</Link>
-            </div>
+            <BookingsTabs />
 
             <div style={s.header}>
                 <div>

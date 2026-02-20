@@ -4,14 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Plus, Search, Copy, Tag } from 'lucide-react';
 
-const tabs = [
-    { label: 'Offers', href: '/marketing/offers' },
-    { label: 'Packages', href: '/marketing/packages' },
-    { label: 'Notifications', href: '/marketing/notifications' },
-    { label: 'Promo Codes', href: '/marketing/promo-codes' },
-    { label: 'Messages', href: '/marketing/messages' },
-    { label: 'Service Groups', href: '/marketing/service-groups' },
-];
+import MarketingTabs from '@/components/MarketingTabs';
 
 const codes = [
     { id: 1, code: 'WELCOME50', discount: 50, type: 'fixed', uses: 67, limit: 200, minOrder: 200, expires: '2026-12-31', status: 'active' },
@@ -54,9 +47,7 @@ export default function PromoCodesPage() {
 
     return (
         <div style={s.page}>
-            <div style={s.tabBar}>
-                {tabs.map(t => <Link key={t.href} href={t.href} style={{ ...s.tab, ...(t.href === '/marketing/promo-codes' ? s.tabActive : {}) }}>{t.label}</Link>)}
-            </div>
+            <MarketingTabs />
             <div style={s.toolbar}>
                 <div style={s.searchBox as React.CSSProperties}><Search size={16} style={s.searchIcon as React.CSSProperties} /><input style={s.searchInput} placeholder="Search codes..." value={search} onChange={e => setSearch(e.target.value)} /></div>
                 <button style={s.addBtn}><Plus size={16} /> Generate Code</button>

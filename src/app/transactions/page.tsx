@@ -19,6 +19,7 @@ import {
     Users,
     Package,
 } from 'lucide-react';
+import { EmptyState } from '@/components/ui';
 import styles from './transactions.module.css';
 
 const transactions = [
@@ -42,23 +43,13 @@ const typeConfig: Record<string, { class: string; label: string }> = {
     transfer: { class: styles.typeTransfer, label: 'Transfer' },
 };
 
-const tabItems = [
-    { label: 'Transaction Log', href: '/transactions', icon: <Receipt size={16} /> },
-    { label: 'Cash Sales', href: '/transactions/cash-sales', icon: <Wallet size={16} /> },
-    { label: 'Advance', href: '/transactions/advance-payments', icon: <CreditCard size={16} /> },
-    { label: 'Petty Cash', href: '/transactions/petty-cash', icon: <PiggyBank size={16} /> },
-    { label: 'Transfers', href: '/transactions/transfers', icon: <ArrowLeftRight size={16} /> },
-    { label: 'Safe Balances', href: '/transactions/safe-balances', icon: <ShieldCheck size={16} /> },
-    { label: 'Shifts', href: '/transactions/shifts', icon: <CalendarClock size={16} /> },
-    { label: 'Dailies', href: '/transactions/dailies', icon: <ClipboardList size={16} /> },
-    { label: 'Best Sales', href: '/transactions/best-sales', icon: <TrendingUp size={16} /> },
-    { label: 'Client Sales', href: '/transactions/client-sales', icon: <Users size={16} /> },
-    { label: 'Packages', href: '/transactions/package-sales', icon: <Package size={16} /> },
-];
-
 export default function TransactionsPage() {
     const [search, setSearch] = useState('');
     const [typeFilter, setTypeFilter] = useState('all');
+
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 8;
 
     const filtered = transactions.filter((t) => {
         const matchSearch =
@@ -73,6 +64,13 @@ export default function TransactionsPage() {
     const totalRefunds = Math.abs(transactions.filter((t) => t.type === 'refund').reduce((s, t) => s + t.amount, 0));
     const netRevenue = transactions.reduce((s, t) => s + t.amount, 0);
 
+    // Pagination logic
+    const totalPages = Math.ceil(filtered.length / itemsPerPage);
+    const paginatedTransactions = filtered.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
+
     return (
         <div className={styles.transactionsPage}>
             <div className={styles.header}>
@@ -83,19 +81,6 @@ export default function TransactionsPage() {
                 <button className={styles.btnOutline}>
                     <Download size={16} /> Export
                 </button>
-            </div>
-
-            {/* Tabs */}
-            <div className={styles.tabs}>
-                {tabItems.map((tab) => (
-                    <Link
-                        key={tab.href}
-                        href={tab.href}
-                        className={`${styles.tab} ${tab.href === '/transactions' ? styles.tabActive : ''}`}
-                    >
-                        {tab.icon} {tab.label}
-                    </Link>
-                ))}
             </div>
 
             {/* KPI Row */}
@@ -151,55 +136,85 @@ export default function TransactionsPage() {
 
             {/* Table */}
             <div className={styles.tableCard}>
-                <table className={styles.dataTable}>
-                    <thead>
-                        <tr>
-                            <th>Txn #</th>
-                            <th>Date & Time</th>
-                            <th>Type</th>
-                            <th>Client</th>
-                            <th>Description</th>
-                            <th>Employee</th>
-                            <th>Method</th>
-                            <th style={{ textAlign: 'right' }}>Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filtered.map((t) => (
-                            <tr key={t.id}>
-                                <td className={styles.txnId}>{t.id}</td>
-                                <td>
-                                    <div style={{ fontWeight: 'var(--font-medium)' }}>{t.date}</div>
-                                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{t.time}</div>
-                                </td>
-                                <td>
-                                    <span className={`${styles.typeBadge} ${typeConfig[t.type]?.class}`}>
-                                        {typeConfig[t.type]?.label}
-                                    </span>
-                                </td>
-                                <td style={{ fontWeight: t.client !== '—' ? 'var(--font-medium)' : undefined, color: t.client === '—' ? 'var(--text-tertiary)' : undefined }}>
-                                    {t.client}
-                                </td>
-                                <td>{t.service}</td>
-                                <td>{t.employee}</td>
-                                <td>{t.method}</td>
-                                <td style={{ textAlign: 'right' }}>
-                                    <span className={t.amount >= 0 ? styles.amountPositive : styles.amountNegative}>
-                                        {t.amount >= 0 ? '+' : ''}{t.amount.toLocaleString()} EGP
-                                    </span>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-                <div className={styles.pagination}>
-                    <span className={styles.pageInfo}>Showing {filtered.length} of {transactions.length}</span>
-                    <div className={styles.pageButtons}>
-                        <button className={styles.pageBtn}><ChevronLeft size={16} /></button>
-                        <button className={`${styles.pageBtn} ${styles.pageBtnActive}`}>1</button>
-                        <button className={styles.pageBtn}><ChevronRight size={16} /></button>
+                {filtered.length > 0 ? (
+                    <>
+                        <table className={styles.dataTable}>
+                            <thead>
+                                <tr>
+                                    <th>Txn #</th>
+                                    <th>Date & Time</th>
+                                    <th>Type</th>
+                                    <th>Client</th>
+                                    <th>Description</th>
+                                    <th>Employee</th>
+                                    <th>Method</th>
+                                    <th style={{ textAlign: 'right' }}>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {paginatedTransactions.map((t) => (
+                                    <tr key={t.id}>
+                                        <td className={styles.txnId}>{t.id}</td>
+                                        <td>
+                                            <div style={{ fontWeight: 'var(--font-medium)' }}>{t.date}</div>
+                                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{t.time}</div>
+                                        </td>
+                                        <td>
+                                            <span className={`${styles.typeBadge} ${typeConfig[t.type]?.class}`}>
+                                                {typeConfig[t.type]?.label}
+                                            </span>
+                                        </td>
+                                        <td style={{ fontWeight: t.client !== '—' ? 'var(--font-medium)' : undefined, color: t.client === '—' ? 'var(--text-tertiary)' : undefined }}>
+                                            {t.client}
+                                        </td>
+                                        <td>{t.service}</td>
+                                        <td>{t.employee}</td>
+                                        <td>{t.method}</td>
+                                        <td style={{ textAlign: 'right' }}>
+                                            <span className={t.amount >= 0 ? styles.amountPositive : styles.amountNegative}>
+                                                {t.amount >= 0 ? '+' : ''}{t.amount.toLocaleString()} EGP
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                        <div className={styles.pagination}>
+                            <span className={styles.pageInfo}>
+                                Showing {paginatedTransactions.length} of {filtered.length} transactions
+                            </span>
+                            {totalPages > 1 && (
+                                <div className={styles.pageButtons}>
+                                    <button
+                                        className={styles.pageBtn}
+                                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                        disabled={currentPage === 1}
+                                    >
+                                        <ChevronLeft size={16} />
+                                    </button>
+                                    <button className={`${styles.pageBtn} ${styles.pageBtnActive}`}>
+                                        {currentPage}
+                                    </button>
+                                    <button
+                                        className={styles.pageBtn}
+                                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                        disabled={currentPage === totalPages}
+                                    >
+                                        <ChevronRight size={16} />
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </>
+                ) : (
+                    <div style={{ padding: 'var(--space-12) 0' }}>
+                        <EmptyState
+                            icon={<Receipt size={32} color="var(--text-tertiary)" />}
+                            title="No transactions found"
+                            description="There are no transactions matching your search criteria or filter."
+                        />
                     </div>
-                </div>
+                )}
             </div>
         </div>
     );

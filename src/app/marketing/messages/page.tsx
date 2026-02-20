@@ -4,14 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Plus, Send, Search, MessageSquare, Users } from 'lucide-react';
 
-const tabs = [
-    { label: 'Offers', href: '/marketing/offers' },
-    { label: 'Packages', href: '/marketing/packages' },
-    { label: 'Notifications', href: '/marketing/notifications' },
-    { label: 'Promo Codes', href: '/marketing/promo-codes' },
-    { label: 'Messages', href: '/marketing/messages' },
-    { label: 'Service Groups', href: '/marketing/service-groups' },
-];
+import MarketingTabs from '@/components/MarketingTabs';
 
 const templates = [
     { id: 1, name: 'Appointment Reminder', channel: 'WhatsApp', body: 'Hi {name}, this is a reminder for your appointment on {date} at {time}. Reply YES to confirm.', lastUsed: '2026-02-17' },
@@ -54,9 +47,7 @@ const s: Record<string, React.CSSProperties> = {
 export default function MessagesPage() {
     return (
         <div style={s.page}>
-            <div style={s.tabBar}>
-                {tabs.map(t => <Link key={t.href} href={t.href} style={{ ...s.tab, ...(t.href === '/marketing/messages' ? s.tabActive : {}) }}>{t.label}</Link>)}
-            </div>
+            <MarketingTabs />
 
             <div style={s.section}>Message Templates</div>
             <div style={s.grid}>

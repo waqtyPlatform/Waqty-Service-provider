@@ -136,7 +136,7 @@ export default function NewServicePage() {
                             <Input label="Commission %" placeholder="e.g. 10" type="number" />
                             <Input label="Fixed Amount" placeholder="e.g. 50" type="number" />
                         </div>
-                        <Checkbox label="Deduct Product Cost Before Commission" checked={true} />
+                        <Checkbox label="Deduct Consumables Cost Before Commission" checked={true} />
                     </div>
                 );
             case 5:

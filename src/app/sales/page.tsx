@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
     Search,
     Plus,
@@ -15,7 +16,10 @@ import {
     Heart,
     Droplets,
     Star,
+    X,
+    ShoppingCart,
 } from 'lucide-react';
+import { EmptyState, SlideOver, Input, Select, Button, useToast } from '@/components/ui';
 import styles from './sales.module.css';
 
 interface Service {
@@ -43,7 +47,7 @@ const categories: Category[] = [
         color: '#8B5CF6',
         services: [
             { id: 'h1', name: 'Haircut & Styling', description: 'Professional haircut with wash, blow-dry and styling.', price: 150, duration: 45, active: true, icon: '✂️', categoryColor: '#EDE9FE' },
-            { id: 'h2', name: 'Hair Coloring', description: 'Full color treatment with premium products and aftercare.', price: 400, duration: 120, active: true, icon: '🎨', categoryColor: '#EDE9FE' },
+            { id: 'h2', name: 'Hair Coloring', description: 'Full color treatment with premium colors and aftercare.', price: 400, duration: 120, active: true, icon: '🎨', categoryColor: '#EDE9FE' },
             { id: 'h3', name: 'Keratin Treatment', description: 'Smoothing keratin treatment for frizz-free hair up to 3 months.', price: 500, duration: 180, active: true, icon: '✨', categoryColor: '#EDE9FE' },
             { id: 'h4', name: 'Hair Extensions', description: 'Premium clip-in or tape-in hair extensions installation.', price: 800, duration: 150, active: true, icon: '💇', categoryColor: '#EDE9FE' },
             { id: 'h5', name: 'Olaplex Treatment', description: 'Bond repair treatment for damaged or chemically treated hair.', price: 350, duration: 60, active: true, icon: '💎', categoryColor: '#EDE9FE' },
@@ -138,6 +142,13 @@ export default function SalesPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
+    const router = useRouter();
+    const { addToast } = useToast();
+
+    // Quick Sale state
+    const [isQuickSaleOpen, setIsQuickSaleOpen] = useState(false);
+    const [cartItem, setCartItem] = useState<{ name: string, price: number } | null>(null);
+
     const filteredCategories = categories
         .map((cat) => ({
             ...cat,
@@ -149,6 +160,12 @@ export default function SalesPage() {
         }))
         .filter((cat) => cat.services.length > 0);
 
+    const filteredPackages = packages.filter(
+        (pkg) =>
+            pkg.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            pkg.services.some((s) => s.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+
     return (
         <div className={styles.salesPage}>
             {/* Header */}
@@ -158,8 +175,8 @@ export default function SalesPage() {
                     <p>Browse services and packages to start a booking or quick sale.</p>
                 </div>
                 <div className={styles.headerActions}>
-                    <button className={styles.btnSecondary}>
-                        <Star size={16} /> Quick Sale
+                    <button className={styles.btnSecondary} onClick={() => { setCartItem(null); setIsQuickSaleOpen(true); }}>
+                        <ShoppingCart size={16} /> Quick Sale
                     </button>
                     <Link href="/bookings/new" className={styles.btnPrimary}>
                         <Plus size={16} /> New Booking
@@ -215,70 +232,81 @@ export default function SalesPage() {
             {/* Services Tab */}
             {activeTab === 'services' && (
                 <div className="stagger-children">
-                    {filteredCategories.map((category) => (
-                        <div key={category.name} className={styles.categorySection}>
-                            <div className={styles.categoryHeader}>
-                                <span className={styles.categoryTitle}>
-                                    {category.icon}
-                                    {category.name}
-                                    <span className={styles.categoryCount}>{category.services.length}</span>
-                                </span>
-                            </div>
-                            <div className={styles.serviceGrid}>
-                                {category.services.map((service) => (
-                                    <div key={service.id} className={styles.serviceCard}>
-                                        <div className={styles.serviceTop}>
-                                            <div
-                                                className={styles.serviceIcon}
-                                                style={{ background: service.categoryColor }}
-                                            >
-                                                {service.icon}
+                    {filteredCategories.length > 0 ? (
+                        filteredCategories.map((category) => (
+                            <div key={category.name} className={styles.categorySection}>
+                                <div className={styles.categoryHeader}>
+                                    <span className={styles.categoryTitle}>
+                                        {category.icon}
+                                        {category.name}
+                                        <span className={styles.categoryCount}>{category.services.length}</span>
+                                    </span>
+                                </div>
+                                <div className={styles.serviceGrid}>
+                                    {category.services.map((service) => (
+                                        <div key={service.id} className={styles.serviceCard}>
+                                            <div className={styles.serviceTop}>
+                                                <div
+                                                    className={styles.serviceIcon}
+                                                    style={{ background: service.categoryColor }}
+                                                >
+                                                    {service.icon}
+                                                </div>
+                                                <span
+                                                    className={`${styles.serviceBadge} ${service.active ? styles.badgeActive : styles.badgeInactive
+                                                        }`}
+                                                >
+                                                    {service.active ? 'Active' : 'Inactive'}
+                                                </span>
                                             </div>
-                                            <span
-                                                className={`${styles.serviceBadge} ${service.active ? styles.badgeActive : styles.badgeInactive
-                                                    }`}
-                                            >
-                                                {service.active ? 'Active' : 'Inactive'}
-                                            </span>
+                                            <div className={styles.serviceName}>{service.name}</div>
+                                            <div className={styles.serviceDesc}>{service.description}</div>
+                                            <div className={styles.serviceMeta}>
+                                                <span className={styles.servicePrice}>
+                                                    {service.price}
+                                                    <span className={styles.servicePriceCurrency}>EGP</span>
+                                                </span>
+                                                <span className={styles.serviceDuration}>
+                                                    <Clock size={14} />
+                                                    {service.duration} min
+                                                </span>
+                                            </div>
+                                            <div className={styles.serviceActions}>
+                                                <button
+                                                    className={`${styles.serviceActionBtn} ${styles.bookBtn}`}
+                                                    onClick={() => { setCartItem({ name: service.name, price: service.price }); setIsQuickSaleOpen(true); }}
+                                                >
+                                                    Quick Sale
+                                                </button>
+                                                <button
+                                                    className={`${styles.serviceActionBtn} ${styles.detailBtn}`}
+                                                    onClick={() => router.push('/bookings/new')}
+                                                >
+                                                    Book Now
+                                                </button>
+                                            </div>
                                         </div>
-                                        <div className={styles.serviceName}>{service.name}</div>
-                                        <div className={styles.serviceDesc}>{service.description}</div>
-                                        <div className={styles.serviceMeta}>
-                                            <span className={styles.servicePrice}>
-                                                {service.price}
-                                                <span className={styles.servicePriceCurrency}>EGP</span>
-                                            </span>
-                                            <span className={styles.serviceDuration}>
-                                                <Clock size={14} />
-                                                {service.duration} min
-                                            </span>
-                                        </div>
-                                        <div className={styles.serviceActions}>
-                                            <button className={`${styles.serviceActionBtn} ${styles.bookBtn}`}>
-                                                Book Now
-                                            </button>
-                                            <button className={`${styles.serviceActionBtn} ${styles.detailBtn}`}>
-                                                Details
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
                             </div>
+                        ))
+                    ) : (
+                        <div style={{ padding: 'var(--space-12) 0' }}>
+                            <EmptyState
+                                icon={<Search size={32} color="var(--text-tertiary)" />}
+                                title="No services found"
+                                description="We couldn't find any services matching your search."
+                            />
                         </div>
-                    ))}
+                    )}
                 </div>
             )}
 
             {/* Packages Tab */}
             {activeTab === 'packages' && (
                 <div className={styles.serviceGrid}>
-                    {packages
-                        .filter(
-                            (pkg) =>
-                                pkg.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                pkg.services.some((s) => s.toLowerCase().includes(searchQuery.toLowerCase()))
-                        )
-                        .map((pkg) => (
+                    {filteredPackages.length > 0 ? (
+                        filteredPackages.map((pkg) => (
                             <div key={pkg.id} className={styles.packageCard}>
                                 <div className={styles.packageHeader}>
                                     <div className={styles.packageName}>{pkg.name}</div>
@@ -304,9 +332,60 @@ export default function SalesPage() {
                                     </span>
                                 </div>
                             </div>
-                        ))}
+                        ))
+                    ) : (
+                        <div style={{ gridColumn: '1 / -1', padding: 'var(--space-12) 0' }}>
+                            <EmptyState
+                                icon={<Search size={32} color="var(--text-tertiary)" />}
+                                title="No packages found"
+                                description="We couldn't find any packages matching your search."
+                            />
+                        </div>
+                    )}
                 </div>
             )}
+
+            {/* Quick Sale SlideOver */}
+            <SlideOver
+                open={isQuickSaleOpen}
+                onClose={() => setIsQuickSaleOpen(false)}
+                title="Quick Sale (POS)"
+                footer={
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                        {cartItem && (
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'var(--font-bold)', fontSize: 'var(--text-lg)' }}>
+                                <span>Total:</span>
+                                <span>{cartItem.price.toLocaleString()} EGP</span>
+                            </div>
+                        )}
+                        <Button style={{ width: '100%' }} onClick={() => { setIsQuickSaleOpen(false); addToast('success', 'Sale processed successfully!'); }}>Checkout via Cash</Button>
+                        <Button variant="ghost" style={{ width: '100%', border: '1px solid var(--border-color)' }} onClick={() => { setIsQuickSaleOpen(false); addToast('success', 'Card payment processed successfully!'); }}>Checkout via Card</Button>
+                    </div>
+                }
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    <Select label="Select Client (Optional)" options={[{ label: 'Walk-in Client', value: 'walkin' }, { label: 'Fatima Al-Rashid', value: 'C001' }, { label: 'Aisha Mohammed', value: 'C002' }]} />
+                    <Select label="Select Employee" options={[{ label: 'Sara Ahmed', value: 'E001' }, { label: 'Nora Ali', value: 'E002' }]} />
+
+                    <div style={{ borderTop: '1px solid var(--border-color)', margin: 'var(--space-4) 0', paddingTop: 'var(--space-4)' }}>
+                        <div style={{ fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-3)' }}>Cart Items</div>
+                        {cartItem ? (
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--space-3)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)' }}>
+                                <div>
+                                    <div style={{ fontWeight: 'var(--font-medium)' }}>{cartItem.name}</div>
+                                    <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-primary-600)' }}>{cartItem.price} EGP</div>
+                                </div>
+                                <button style={{ background: 'none', border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer' }} onClick={() => setCartItem(null)}><X size={16} /></button>
+                            </div>
+                        ) : (
+                            <div style={{ padding: 'var(--space-6)', textAlign: 'center', color: 'var(--text-tertiary)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', border: '1px dashed var(--border-color)' }}>
+                                <ShoppingCart size={24} style={{ opacity: 0.5, margin: '0 auto var(--space-2)' }} />
+                                <div style={{ fontSize: 'var(--text-sm)' }}>Cart is empty.<br />Browse services to add.</div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </SlideOver>
         </div>
     );
 }

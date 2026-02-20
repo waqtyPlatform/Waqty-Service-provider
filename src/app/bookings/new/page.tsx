@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/components/ui';
 import {
     CalendarDays,
     List,
@@ -19,6 +21,7 @@ import {
     Check,
 } from 'lucide-react';
 import styles from '../bookings.module.css';
+import BookingsTabs from '../BookingsTabs';
 
 const services = [
     { id: 'S01', name: 'Haircut & Styling', duration: '45 min', price: 150, category: 'Hair' },
@@ -77,20 +80,27 @@ export default function NewBookingPage() {
     const [selectedDate, setSelectedDate] = useState('2026-02-18');
     const [selectedTime, setSelectedTime] = useState('10:00');
     const [clientName, setClientName] = useState('');
+    const [clientPhone, setClientPhone] = useState('');
     const [discount, setDiscount] = useState(0);
 
+    const router = useRouter();
+    const { addToast } = useToast();
+
     const total = selectedService.price - (selectedService.price * discount / 100);
+
+    const handleSubmit = () => {
+        if (!clientName.trim() || !clientPhone.trim()) {
+            addToast('error', 'Client Name and Phone are required fields');
+            return;
+        }
+        addToast('success', `Booking confirmed for ${clientName}`);
+        router.push('/bookings');
+    };
 
     return (
         <div style={cs.page}>
             {/* Tabs */}
-            <div className={styles.tabs}>
-                <Link href="/bookings" className={styles.tab}><CalendarDays size={16} /> Calendar</Link>
-                <Link href="/bookings/list" className={styles.tab}><List size={16} /> Booking List</Link>
-                <Link href="/bookings/rooms" className={styles.tab}><DoorOpen size={16} /> Room Calendar</Link>
-                <Link href="/bookings/new" className={`${styles.tab} ${styles.tabActive}`}><Plus size={16} /> New Booking</Link>
-                <Link href="/bookings/print" className={styles.tab}><Printer size={16} /> Employee Print</Link>
-            </div>
+            <BookingsTabs />
 
             <div style={cs.header}>
                 <h1 style={cs.h1}>New Booking</h1>
@@ -113,8 +123,13 @@ export default function NewBookingPage() {
                         </div>
                         <div style={cs.row}>
                             <div style={cs.field}>
-                                <label style={cs.label}>Phone</label>
-                                <input style={cs.input} placeholder="+20 1XX XXX XXXX" />
+                                <label style={cs.label}>Phone <span style={{ color: 'var(--color-error)' }}>*</span></label>
+                                <input
+                                    style={cs.input}
+                                    placeholder="+20 1XX XXX XXXX"
+                                    value={clientPhone}
+                                    onChange={(e) => setClientPhone(e.target.value)}
+                                />
                             </div>
                             <div style={cs.field}>
                                 <label style={cs.label}>Email</label>
@@ -224,7 +239,7 @@ export default function NewBookingPage() {
                             <span>Total</span>
                             <span style={{ color: 'var(--color-primary-600)' }}>{total.toFixed(0)} EGP</span>
                         </div>
-                        <button style={cs.btnPrimary}>
+                        <button style={cs.btnPrimary} onClick={handleSubmit}>
                             <Check size={16} /> Confirm Booking
                         </button>
                     </div>

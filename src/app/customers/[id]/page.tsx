@@ -52,7 +52,7 @@ const client = {
 
 const timelineEvents = [
     { time: 'Feb 15, 2026', title: 'Completed Appointment', description: 'Hair Coloring with Sarah Ahmed. Paid 1,200 EGP.' },
-    { time: 'Feb 10, 2026', title: 'Product Purchase', description: 'Bought "Argan Oil Serum". Paid 450 EGP.' },
+    { time: 'Feb 10, 2026', title: 'Service Add-on', description: 'Added Deep Conditioning. Paid 450 EGP.' },
     { time: 'Jan 28, 2026', title: 'Missed Appointment', description: 'No-show for Manicure. Marked by Reception.' },
     { time: 'Jan 15, 2026', title: 'Membership Upgrade', description: 'Upgraded to Gold Tier.' },
 ];
@@ -64,10 +64,11 @@ const bookings = [
 
 const sales = [
     { id: 'INV-001', date: 'Feb 15, 2026', items: 'Hair Coloring, Shampoo', total: 1450, status: 'paid' },
-    { id: 'INV-002', date: 'Feb 10, 2026', items: 'Argan Oil Serum', total: 450, status: 'paid' },
+    { id: 'INV-002', date: 'Feb 10, 2026', items: 'Deep Conditioning Add-on', total: 450, status: 'paid' },
 ];
 
-export default function CustomerProfilePage({ params }: { params: { id: string } }) {
+export default function CustomerProfilePage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = React.use(params);
     const [activeTab, setActiveTab] = useState('overview');
 
     const renderOverview = () => (

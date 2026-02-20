@@ -72,7 +72,8 @@ const recentActivity = [
     { time: 'Feb 15', title: 'Performance Review', description: 'Rated 4.9/5 by Manager.' },
 ];
 
-export default function EmployeeProfilePage({ params }: { params: { id: string } }) {
+export default function EmployeeProfilePage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = React.use(params);
     const [activeTab, setActiveTab] = useState('performance');
 
     const renderPerformance = () => (

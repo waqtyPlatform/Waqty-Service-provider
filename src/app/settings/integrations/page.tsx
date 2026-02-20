@@ -2,19 +2,8 @@
 
 import React from 'react';
 import Link from 'next/link';
+import SettingsTabs from '@/components/SettingsTabs';
 import { ExternalLink, CheckCircle, AlertCircle, Zap } from 'lucide-react';
-
-const tabs = [
-    { label: 'General', href: '/settings' },
-    { label: 'Branches', href: '/settings/branches' },
-    { label: 'Services', href: '/settings/services' },
-    { label: 'Invoice', href: '/settings/invoice' },
-    { label: 'Devices', href: '/settings/devices' },
-    { label: 'Integrations', href: '/settings/integrations' },
-    { label: 'Roles', href: '/settings/roles' },
-    { label: 'Audit Log', href: '/settings/audit-log' },
-    { label: 'Subscription', href: '/settings/subscription' },
-];
 
 const integrations = [
     { id: 1, name: 'WhatsApp Business', desc: 'Send automated messages and appointment reminders', status: 'connected', color: '#25D366' },
@@ -45,9 +34,7 @@ const s: Record<string, React.CSSProperties> = {
 export default function IntegrationsPage() {
     return (
         <div style={s.page}>
-            <div style={s.tabBar}>
-                {tabs.map(t => <Link key={t.href} href={t.href} style={{ ...s.tab, ...(t.href === '/settings/integrations' ? s.tabActive : {}) }}>{t.label}</Link>)}
-            </div>
+            <SettingsTabs />
             <div style={s.grid}>
                 {integrations.map(i => (
                     <div key={i.id} style={s.card}>

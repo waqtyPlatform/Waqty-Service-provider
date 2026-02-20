@@ -13,6 +13,7 @@ import {
     Filter,
 } from 'lucide-react';
 import styles from '../bookings.module.css';
+import BookingsTabs from '../BookingsTabs';
 
 const rooms = [
     { id: 'R1', name: 'Room 1 – VIP', color: '#8B5CF6' },
@@ -61,13 +62,7 @@ export default function RoomCalendarPage() {
     return (
         <div className={styles.bookingsPage}>
             {/* Tabs */}
-            <div className={styles.tabs}>
-                <Link href="/bookings" className={styles.tab}><CalendarDays size={16} /> Calendar</Link>
-                <Link href="/bookings/list" className={styles.tab}><List size={16} /> Booking List</Link>
-                <Link href="/bookings/rooms" className={`${styles.tab} ${styles.tabActive}`}><DoorOpen size={16} /> Room Calendar</Link>
-                <Link href="/bookings/new" className={styles.tab}><Plus size={16} /> New Booking</Link>
-                <Link href="/bookings/print" className={styles.tab}><Printer size={16} /> Employee Print</Link>
-            </div>
+            <BookingsTabs />
 
             {/* Calendar Header */}
             <div className={styles.calendarHeader}>

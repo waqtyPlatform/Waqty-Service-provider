@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import AppShell from "@/components/layout/AppShell";
+import { SettingsProvider } from "@/contexts/SettingsContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 export const metadata: Metadata = {
   title: "Hagzy — Service Provider Dashboard",
@@ -15,7 +17,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <AppShell>{children}</AppShell>
+        <AuthProvider>
+          <SettingsProvider>
+            <AppShell>{children}</AppShell>
+          </SettingsProvider>
+        </AuthProvider>
       </body>
     </html>
   );

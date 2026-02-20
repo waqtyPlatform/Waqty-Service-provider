@@ -1,81 +1,222 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
+import Link from 'next/link';
 import {
     BarChart3,
     Calendar,
     Download,
     Filter,
+    Search,
+    TrendingUp,
+    Users,
+    DollarSign,
+    CalendarDays,
+    Clock,
+    Star,
+    Package,
+    FileText,
+    PieChart,
+    Activity,
     ArrowUpRight,
-    ArrowDownRight,
-    Search
+    ArrowRight
 } from 'lucide-react';
 import {
     Button,
     Select,
     Input,
-    EmptyState,
     Badge
 } from '@/components/ui';
 import styles from './page.module.css';
+import {
+    ResponsiveContainer,
+    BarChart,
+    Bar,
+    LineChart as ReLineChart,
+    Line,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    AreaChart,
+    Area
+} from 'recharts';
 
-// Mock Data Generators
-const generateData = (category: string, report: string) => {
-    // Basic mock logic based on report type
-    if (category === 'sales') {
-        return {
-            title: 'Sales Performance',
-            chartType: 'bar',
-            columns: ['Date', 'Service Sales', 'Product Sales', 'Total Revenue', 'Growth'],
-            rows: [
-                { id: 1, col1: 'Feb 18', col2: '3,200', col3: '450', col4: '3,650', col5: '+12%' },
-                { id: 2, col1: 'Feb 17', col2: '2,800', col3: '200', col4: '3,000', col5: '-5%' },
-                { id: 3, col1: 'Feb 16', col2: '4,100', col3: '800', col4: '4,900', col5: '+22%' },
-                { id: 4, col1: 'Feb 15', col2: '3,500', col3: '300', col4: '3,800', col5: '+8%' },
-                { id: 5, col1: 'Feb 14', col2: '5,200', col3: '900', col4: '6,100', col5: '+30%' },
-            ]
-        };
-    }
-    if (category === 'employees') {
-        return {
-            title: 'Employee Performance',
-            chartType: 'line',
-            columns: ['Employee', 'Services', 'Revenue', 'Commission', 'Rating'],
-            rows: [
-                { id: 1, col1: 'Sarah Ahmed', col2: '24', col3: '12,400', col4: '1,860', col5: '4.9 ⭐' },
-                { id: 2, col1: 'Nora Ali', col2: '18', col3: '8,200', col4: '1,230', col5: '4.7 ⭐' },
-                { id: 3, col1: 'Mona Zein', col2: '31', col3: '15,600', col4: '2,340', col5: '5.0 ⭐' },
-            ]
-        };
-    }
-    // Default fallback
-    return {
-        title: `${category.charAt(0).toUpperCase() + category.slice(1)} Report`,
-        chartType: 'none',
-        columns: ['ID', 'Date', 'Description', 'Amount', 'Status'],
+const getSalesData = (report: string) => {
+    const common = {
+        chartType: 'bar',
         rows: [
-            { id: 1, col1: '#001', col2: 'Feb 18', col3: 'Sample Data', col4: '500', col5: 'Active' },
-            { id: 2, col1: '#002', col2: 'Feb 17', col3: 'Sample Data', col4: '750', col5: 'Pending' },
+            { id: 1, date: '2026-02-18', amount: 3200, count: 12, status: 'Completed', link: '/transactions/dailies?date=2026-02-18' },
+            { id: 2, date: '2026-02-17', amount: 2800, count: 10, status: 'Completed', link: '/transactions/dailies?date=2026-02-17' },
+            { id: 3, date: '2026-02-16', amount: 4100, count: 15, status: 'Completed', link: '/transactions/dailies?date=2026-02-16' },
+            { id: 4, date: '2026-02-15', amount: 3500, count: 14, status: 'Completed', link: '/transactions/dailies?date=2026-02-15' },
+            { id: 5, date: '2026-02-14', amount: 5200, count: 20, status: 'Completed', link: '/transactions/dailies?date=2026-02-14' },
+        ],
+        chartData: [
+            { name: 'Feb 14', value: 5200 },
+            { name: 'Feb 15', value: 3500 },
+            { name: 'Feb 16', value: 4100 },
+            { name: 'Feb 17', value: 2800 },
+            { name: 'Feb 18', value: 3200 },
         ]
+    };
+
+    if (report === 'daily-revenue') {
+        return {
+            title: 'Daily Revenue Report',
+            chartType: 'bar',
+            columns: ['Date', 'Transactions', 'Revenue', 'Avg Ticket', 'Status', 'Action'],
+            rows: common.rows.map(r => ({
+                ...r,
+                col1: r.date,
+                col2: r.count,
+                col3: `${r.amount} EGP`,
+                col4: `${Math.round(r.amount / r.count)} EGP`,
+                col5: r.status,
+                action: { label: 'View Day', href: r.link }
+            })),
+            chartData: common.chartData
+        };
+    }
+    if (report === 'payment-methods') {
+        return {
+            title: 'Payment Methods Analysis',
+            chartType: 'bar',
+            columns: ['Method', 'Transactions', 'Total Amount', '% of Total'],
+            rows: [
+                { id: 1, col1: 'Cash', col2: 145, col3: '45,200 EGP', col4: '45%' },
+                { id: 2, col1: 'Credit Card', col2: 110, col3: '38,500 EGP', col4: '38%' },
+                { id: 3, col1: 'Bank Transfer', col2: 25, col3: '12,000 EGP', col4: '12%' },
+                { id: 4, col1: 'Gift Card', col2: 15, col3: '5,300 EGP', col4: '5%' },
+            ],
+            chartData: [{ name: 'Cash', value: 45200 }, { name: 'Card', value: 38500 }, { name: 'Transfer', value: 12000 }, { name: 'Gift', value: 5300 }]
+        };
+    }
+    if (report === 'service-revenue') {
+        return {
+            title: 'Revenue by Service',
+            chartType: 'bar',
+            columns: ['Service Name', 'Category', 'Qty Sold', 'Revenue'],
+            rows: [
+                { id: 1, col1: 'Hair Cut & Style', col2: 'Hair', col3: 85, col4: '12,750 EGP' },
+                { id: 2, col1: 'Gel Manicure', col2: 'Nails', col3: 65, col4: '9,750 EGP' },
+                { id: 3, col1: 'Classic Facial', col2: 'Skin', col3: 40, col4: '14,000 EGP' },
+                { id: 4, col1: 'Full Body Massage', col2: 'Body', col3: 30, col4: '15,000 EGP' },
+            ],
+            chartData: [{ name: 'Hair Cut', value: 12750 }, { name: 'Manicure', value: 9750 }, { name: 'Facial', value: 14000 }, { name: 'Massage', value: 15000 }]
+        };
+    }
+    return { title: 'Sales Report', ...common, columns: ['Date', 'Count', 'Amount', 'Avg', 'Status', 'Action'], rows: common.rows.map(r => ({ ...r, col1: r.date, col2: r.count, col3: r.amount, col4: Math.round(r.amount / r.count), col5: r.status, action: { label: 'View', href: '#' } })), chartData: common.chartData };
+};
+
+const getBookingsData = (report: string) => {
+    if (report === 'cancellations') {
+        return {
+            title: 'Cancellation Report',
+            chartType: 'bar',
+            columns: ['Date', 'Cancelled By', 'Reason', 'Lost Revenue', 'Action'],
+            rows: [
+                { id: 1, col1: '2026-02-18', col2: 'Client', col3: 'Sick', col4: '450 EGP', action: { label: 'View Booking', href: '/bookings/BK-28492' } },
+                { id: 2, col1: '2026-02-17', col2: 'Client', col3: 'Schedule Conflict', col4: '300 EGP', action: { label: 'View Booking', href: '/bookings/BK-28491' } },
+                { id: 3, col1: '2026-02-15', col2: 'System', col3: 'No Show', col4: '600 EGP', action: { label: 'View Booking', href: '/bookings/BK-28490' } },
+            ],
+            chartData: [{ name: 'Feb 15', value: 1 }, { name: 'Feb 16', value: 0 }, { name: 'Feb 17', value: 1 }, { name: 'Feb 18', value: 1 }]
+        };
+    }
+    // Mock for Booking History
+    if (report === 'history') {
+        return {
+            title: 'Booking History',
+            chartType: 'none',
+            columns: ['ID', 'Date', 'Client', 'Service', 'Status', 'Action'],
+            rows: [
+                { id: 1, col1: '#BK-1001', col2: 'Feb 18', col3: 'Fatima Al-Rashid', col4: 'Hair Cut', col5: 'Completed', action: { label: 'View', href: '/bookings/BK-1001' } },
+                { id: 2, col1: '#BK-1002', col2: 'Feb 18', col3: 'Maha Mahmoud', col4: 'Manicure', col5: 'Confirmed', action: { label: 'View', href: '/bookings/BK-1002' } },
+                { id: 3, col1: '#BK-1003', col2: 'Feb 17', col3: 'Layla Ahmed', col4: 'Facial', col5: 'Cancelled', action: { label: 'View', href: '/bookings/BK-1003' } },
+            ],
+            chartData: []
+        };
+    }
+
+    return {
+        title: 'Booking Report',
+        chartType: 'bar',
+        columns: ['Date', 'Total Bookings', 'Completed', 'Cancelled', 'Utilization', 'Action'],
+        rows: [
+            { id: 1, col1: 'Feb 18', col2: 45, col3: 40, col4: 2, col5: '88%', action: { label: 'Details', href: '/reports/bookings/daily?date=2026-02-18' } },
+            { id: 2, col1: 'Feb 17', col2: 42, col3: 38, col4: 1, col5: '85%', action: { label: 'Details', href: '/reports/bookings/daily?date=2026-02-17' } },
+        ],
+        chartData: [{ name: 'Feb 17', value: 42 }, { name: 'Feb 18', value: 45 }]
     };
 };
 
-export default function DynamicReportPage({ params }: { params: { category: string; report: string } }) {
-    const { category, report } = params;
+const getEmployeesData = (report: string) => {
+    if (report === 'commissions') {
+        return {
+            title: 'Commission Report',
+            chartType: 'bar',
+            columns: ['Employee', 'Service Revenue', 'Total Commission', 'Payout Status', 'Action'],
+            rows: [
+                { id: 1, col1: 'Sara Ahmed', col2: '24,000 EGP', col3: '2,600 EGP', col4: 'Pending', action: { label: 'View Profile', href: '/employees/EMP-001' } },
+                { id: 2, col1: 'Nora Ali', col2: '18,000 EGP', col3: '1,880 EGP', col4: 'Paid', action: { label: 'View Profile', href: '/employees/EMP-002' } },
+                { id: 3, col1: 'Mona Zein', col2: '15,000 EGP', col3: '1,650 EGP', col4: 'Pending', action: { label: 'View Profile', href: '/employees/EMP-003' } },
+            ],
+            chartData: [{ name: 'Sara', value: 2600 }, { name: 'Nora', value: 1880 }, { name: 'Mona', value: 1650 }]
+        };
+    }
+    return {
+        title: 'Employee Report',
+        chartType: 'bar',
+        columns: ['Employee', 'Metric A', 'Metric B', 'Action'],
+        rows: [],
+        chartData: []
+    };
+};
+
+const generateData = (category: string, report: string) => {
+    if (category === 'sales' || category === 'revenue') return getSalesData(report);
+    if (category === 'bookings') return getBookingsData(report);
+    if (category === 'employees') return getEmployeesData(report);
+
+    // Fallback
+    return {
+        title: `${report.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`,
+        chartType: 'none',
+        columns: ['ID', 'Date', 'Description', 'Value', 'Status', 'Action'],
+        rows: [
+            { id: 1, col1: '#001', col2: '2026-02-18', col3: 'Sample Item 1', col4: '100', col5: 'Active', action: { label: 'View', href: '#' } },
+            { id: 2, col1: '#002', col2: '2026-02-17', col3: 'Sample Item 2', col4: '200', col5: 'Active', action: { label: 'View', href: '#' } },
+        ],
+        chartData: []
+    };
+};
+
+export default function DynamicReportPage({ params }: { params: Promise<{ category: string; report: string }> }) {
+    const { category, report } = React.use(params);
     const data = generateData(category, report);
+
+    const tabItems = [
+        { label: 'Overview', href: '/reports', icon: <BarChart3 size={16} /> },
+        { label: 'Revenue', href: '/reports/revenue', icon: <DollarSign size={16} /> },
+        { label: 'Bookings', href: '/reports/bookings', icon: <CalendarDays size={16} /> },
+        { label: 'Clients', href: '/reports/clients', icon: <Users size={16} /> },
+        { label: 'Employees', href: '/reports/employees', icon: <Star size={16} /> },
+        { label: 'Services', href: '/reports/services', icon: <Package size={16} /> },
+        { label: 'Inventory', href: '/reports/inventory', icon: <FileText size={16} /> },
+        { label: 'Custom', href: '/reports/custom', icon: <Activity size={16} /> },
+    ];
+
+    const currentTabHref = `/reports/${category}`;
 
     return (
         <div className={styles.page}>
             {/* Header */}
             <div className={styles.header}>
                 <div className={styles.titleGroup}>
+                    <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' }}>Reports</h1>
                     <div className={styles.subtitle}>
                         Reports &gt; {category} &gt; {report.replace(/-/g, ' ')}
                     </div>
-                    <h1>
-                        {data.title}
-                        <Badge color="primary">Generated Just Now</Badge>
-                    </h1>
                 </div>
                 <div className={styles.actions}>
                     <Button variant="outline"><Filter size={16} /> Filters</Button>
@@ -83,19 +224,43 @@ export default function DynamicReportPage({ params }: { params: { category: stri
                 </div>
             </div>
 
+            {/* Tabs */}
+            <div style={{ display: 'flex', gap: 'var(--space-1)', borderBottom: '2px solid var(--border-color)', overflowX: 'auto', marginBottom: 'var(--space-6)' }}>
+                {tabItems.map((t) => {
+                    const isActive = t.href === currentTabHref;
+                    return (
+                        <Link key={t.href} href={t.href} style={{
+                            display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
+                            padding: 'var(--space-3) var(--space-4)',
+                            fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)',
+                            color: isActive ? 'var(--color-primary-500)' : 'var(--text-tertiary)',
+                            borderBottom: isActive ? '2px solid var(--color-primary-500)' : '2px solid transparent',
+                            marginBottom: '-2px', textDecoration: 'none', whiteSpace: 'nowrap'
+                        }}>
+                            {t.icon} {t.label}
+                        </Link>
+                    )
+                })}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
+                <h2 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--font-semibold)' }}>{data.title}</h2>
+                <Badge color="primary">Generated Just Now</Badge>
+            </div>
+
             {/* Filters */}
             <div className={styles.filtersBar}>
                 <div className={styles.filterItem}>
                     <Calendar size={16} color="var(--text-tertiary)" />
                     <Select
-                        options={[{ value: '7d', label: 'Last 7 Days' }, { value: '30d', label: 'Last 30 Days' }]}
+                        options={[{ value: '7d', label: 'Last 7 Days' }, { value: '30d', label: 'Last 30 Days' }, { value: 'tm', label: 'This Month' }]}
                         style={{ width: 140 }}
                     />
                 </div>
                 <div className={styles.filterItem}>
                     <Filter size={16} color="var(--text-tertiary)" />
                     <Select
-                        options={[{ value: 'all', label: 'All Branches' }, { value: 'downtown', label: 'Downtown' }]}
+                        options={[{ value: 'all', label: 'All Branches' }, { value: 'main', label: 'Main Branch' }]}
                         style={{ width: 140 }}
                     />
                 </div>
@@ -108,16 +273,28 @@ export default function DynamicReportPage({ params }: { params: { category: stri
             </div>
 
             {/* Chart */}
-            {data.chartType !== 'none' && (
+            {data.chartType !== 'none' && data.chartData && data.chartData.length > 0 && (
                 <div className={styles.chartContainer}>
                     <div className={styles.chartPlaceholder}>
-                        <BarChart3 size={48} color="var(--color-primary-300)" />
-                        <div style={{ fontWeight: 'var(--font-medium)', color: 'var(--color-primary-600)' }}>
-                            {data.chartType === 'bar' ? 'Bar Chart Visualization' : 'Line Chart Visualization'}
-                        </div>
-                        <div style={{ fontSize: 'var(--text-xs)', opacity: 0.7 }}>
-                            Interactive charts will be implemented with Recharts library.
-                        </div>
+                        <ResponsiveContainer width="100%" height="100%">
+                            {data.chartType === 'line' ? (
+                                <ReLineChart data={data.chartData}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
+                                    <XAxis dataKey="name" stroke="var(--text-tertiary)" fontSize={12} tickLine={false} axisLine={false} dy={10} />
+                                    <YAxis stroke="var(--text-tertiary)" fontSize={12} tickLine={false} axisLine={false} />
+                                    <Tooltip contentStyle={{ borderRadius: 8, border: 'none', boxShadow: 'var(--shadow-lg)' }} />
+                                    <Line type="monotone" dataKey="value" stroke="var(--color-primary-500)" strokeWidth={3} dot={{ r: 4, fill: 'var(--color-primary-500)' }} />
+                                </ReLineChart>
+                            ) : (
+                                <BarChart data={data.chartData}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
+                                    <XAxis dataKey="name" stroke="var(--text-tertiary)" fontSize={12} tickLine={false} axisLine={false} dy={10} />
+                                    <YAxis stroke="var(--text-tertiary)" fontSize={12} tickLine={false} axisLine={false} />
+                                    <Tooltip cursor={{ fill: 'var(--bg-secondary)' }} contentStyle={{ borderRadius: 8, border: 'none', boxShadow: 'var(--shadow-lg)' }} />
+                                    <Bar dataKey="value" fill="var(--color-primary-500)" radius={[4, 4, 0, 0]} barSize={40} />
+                                </BarChart>
+                            )}
+                        </ResponsiveContainer>
                     </div>
                 </div>
             )}
@@ -139,11 +316,23 @@ export default function DynamicReportPage({ params }: { params: { category: stri
                         <tbody>
                             {data.rows.map((row: any, i) => (
                                 <tr key={i}>
-                                    {Object.values(row).map((val: any, j) => (
-                                        <td key={j} style={{ fontWeight: j === 0 || j === 3 ? 'var(--font-bold)' : 'normal' }}>
-                                            {val}
+                                    {['col1', 'col2', 'col3', 'col4', 'col5'].map((key) => row[key] && (
+                                        <td key={key} style={{ fontWeight: key === 'col1' || key === 'col3' ? 'var(--font-bold)' : 'normal' }}>
+                                            {row[key]}
                                         </td>
                                     ))}
+                                    {/* Link Action Column */}
+                                    {row.action && (
+                                        <td>
+                                            <Link href={row.action.href} style={{
+                                                display: 'inline-flex', alignItems: 'center', gap: 4,
+                                                fontSize: 'var(--text-sm)', color: 'var(--color-primary-600)', fontWeight: 'var(--font-medium)',
+                                                textDecoration: 'none'
+                                            }}>
+                                                {row.action.label} <ArrowRight size={14} />
+                                            </Link>
+                                        </td>
+                                    )}
                                 </tr>
                             ))}
                         </tbody>

@@ -4,14 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Plus, Bell, Send, Smartphone, Mail, MessageSquare } from 'lucide-react';
 
-const tabs = [
-    { label: 'Offers', href: '/marketing/offers' },
-    { label: 'Packages', href: '/marketing/packages' },
-    { label: 'Notifications', href: '/marketing/notifications' },
-    { label: 'Promo Codes', href: '/marketing/promo-codes' },
-    { label: 'Messages', href: '/marketing/messages' },
-    { label: 'Service Groups', href: '/marketing/service-groups' },
-];
+import MarketingTabs from '@/components/MarketingTabs';
 
 const notifications = [
     { id: 1, title: 'Eid Special Offer!', channel: 'SMS', audience: 'All Clients', sent: 142, opened: 98, date: '2026-02-10', status: 'sent' },
@@ -55,9 +48,7 @@ export default function NotificationsPage() {
 
     return (
         <div style={s.page}>
-            <div style={s.tabBar}>
-                {tabs.map(t => <Link key={t.href} href={t.href} style={{ ...s.tab, ...(t.href === '/marketing/notifications' ? s.tabActive : {}) }}>{t.label}</Link>)}
-            </div>
+            <MarketingTabs />
 
             <div style={s.kpis}>
                 <div style={s.kpi}><div style={s.kpiVal}>{totalSent}</div><div style={s.kpiLbl}>Total Sent</div></div>

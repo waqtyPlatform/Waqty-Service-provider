@@ -1,0 +1,223 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+}
+
+.stickyHeader {
+    position: sticky;
+    top: var(--topbar-height);
+    z-index: 40;
+    /* Pull back up if needed */
+    padding-bottom: var(--space-4);
+    /* Add a subtle backdrop blur for a premium feel */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    /* Make background slightly transparent if we want the blur to show through */
+    background-color: rgba(249, 250, 251, 0.95);
+    /* bg-secondary with opacity */
+}
+
+/* Dark mode adjustment for sticky header background */
+:global([data-theme="dark"]) .stickyHeader {
+    background-color: rgba(31, 41, 55, 0.95);
+    /* bg-secondary dark with opacity */
+}
+
+.headerContent {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-4);
+}
+
+.title {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-bold);
+}
+
+.subtitle {
+    font-size: var(--text-sm);
+    color: var(--text-tertiary);
+    margin-top: 4px;
+}
+
+.actions {
+    display: flex;
+    gap: var(--space-3);
+}
+
+.tabsScrollContainer {
+    display: flex;
+    gap: var(--space-1);
+    border-bottom: 2px solid var(--border-color);
+    flex-wrap: wrap;
+    padding-bottom: var(--space-2);
+}
+
+.tab {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--text-tertiary);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    text-decoration: none;
+    transition: all var(--transition-fast);
+}
+
+.tab:hover {
+    color: var(--text-secondary);
+}
+
+.tabActive {
+    color: var(--color-primary-500);
+    border-bottom-color: var(--color-primary-500);
+}
+
+/* --- Category Page Styles --- */
+.categoryPage {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+}
+
+.categoryHeader {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-3);
+    margin-bottom: var(--space-2);
+}
+
+.categoryTitle {
+    font-size: var(--text-xl);
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+}
+
+.kpiGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--space-4);
+}
+
+.kpiCard {
+    background: var(--bg-primary);
+    padding: var(--space-5);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.kpiCard:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.kpiIconWrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.kpiLabel {
+    font-size: var(--text-sm);
+    color: var(--text-tertiary);
+}
+
+.kpiValue {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-bold);
+    color: var(--text-primary);
+    margin-top: 2px;
+}
+
+.kpiTrendWrapper {
+    font-size: var(--text-xs);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.kpiTrendUp {
+    color: var(--color-success);
+}
+
+.kpiTrendDown {
+    color: var(--color-error);
+}
+
+.kpiTrendNeutral {
+    color: var(--text-tertiary);
+}
+
+.chartCard {
+    background: var(--bg-primary);
+    padding: var(--space-6);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--border-color);
+}
+
+.chartTitle {
+    font-size: var(--text-lg);
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+    margin-bottom: var(--space-6);
+}
+
+.chartContainer {
+    height: 300px;
+    width: 100%;
+}
+
+.reportsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--space-4);
+}
+
+.reportCard {
+    background: var(--bg-primary);
+    padding: var(--space-5);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    transition: all var(--transition-fast);
+    cursor: pointer;
+    height: 100%;
+    text-decoration: none;
+    display: block;
+}
+
+.reportCard:hover {
+    border-color: var(--color-primary-300);
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-2px);
+}
+
+.reportCardHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-2);
+}
+
+.reportCardTitle {
+    font-weight: var(--font-medium);
+    color: var(--text-primary);
+}
+
+.reportCardDesc {
+    font-size: var(--text-sm);
+    color: var(--text-tertiary);
+}

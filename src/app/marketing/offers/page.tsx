@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Search, Plus, Calendar, Tag, Percent, Edit, Trash2 } from 'lucide-react';
+import { useToast } from '@/components/ui';
 
 const tabs = [
     { label: 'Offers', href: '/marketing/offers' },
@@ -50,6 +51,7 @@ const s: Record<string, React.CSSProperties> = {
 };
 
 export default function OffersPage() {
+    const { addToast } = useToast();
     return (
         <div style={s.page}>
             <div style={s.tabBar}>
@@ -82,7 +84,10 @@ export default function OffersPage() {
                         <div style={s.footer}>
                             <div style={s.stat}><Calendar size={12} /> {offer.startDate} → {offer.endDate}</div>
                             <div style={s.stat}>{offer.uses}/{offer.limit} used</div>
-                            <div style={s.actions}><button style={s.btnIcon}><Edit size={12} /></button><button style={{ ...s.btnIcon, color: 'var(--color-error)' }}><Trash2 size={12} /></button></div>
+                            <div style={s.actions}>
+                                <button style={s.btnIcon} onClick={() => addToast('info', `Editing ${offer.name}`)}><Edit size={12} /></button>
+                                <button style={{ ...s.btnIcon, color: 'var(--color-error)' }} onClick={() => addToast('error', `${offer.name} deleted`)}><Trash2 size={12} /></button>
+                            </div>
                         </div>
                     </div>
                 ))}

@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   DollarSign,
   CalendarDays,
@@ -107,19 +110,19 @@ const bookingStatusData = [
 ];
 
 const topClients = [
-  { rank: 1, name: 'Fatima Al-Rashid', visits: 24, spend: '8,400' },
-  { rank: 2, name: 'Aisha Mohammed', visits: 19, spend: '6,250' },
-  { rank: 3, name: 'Maryam Ibrahim', visits: 17, spend: '5,800' },
-  { rank: 4, name: 'Huda Saleh', visits: 15, spend: '4,900' },
-  { rank: 5, name: 'Noura Ahmed', visits: 12, spend: '3,600' },
+  { rank: 1, name: 'Fatima Al-Rashid', visits: 24, spend: '8,400', id: 'C001' },
+  { rank: 2, name: 'Aisha Mohammed', visits: 19, spend: '6,250', id: 'C002' },
+  { rank: 3, name: 'Maryam Ibrahim', visits: 17, spend: '5,800', id: 'C003' },
+  { rank: 4, name: 'Huda Saleh', visits: 15, spend: '4,900', id: 'C004' },
+  { rank: 5, name: 'Noura Ahmed', visits: 12, spend: '3,600', id: 'C005' },
 ];
 
 const topEmployees = [
-  { rank: 1, name: 'Layla Hassan', bookings: 42, revenue: '14,200' },
-  { rank: 2, name: 'Sara Ahmed', bookings: 38, revenue: '12,800' },
-  { rank: 3, name: 'Nora Ali', bookings: 35, revenue: '11,500' },
-  { rank: 4, name: 'Reem Mohamed', bookings: 30, revenue: '9,800' },
-  { rank: 5, name: 'Hana Youssef', bookings: 25, revenue: '8,100' },
+  { rank: 1, name: 'Layla Hassan', bookings: 42, revenue: '14,200', id: 'E003' },
+  { rank: 2, name: 'Sara Ahmed', bookings: 38, revenue: '12,800', id: 'E001' },
+  { rank: 3, name: 'Nora Ali', bookings: 35, revenue: '11,500', id: 'E002' },
+  { rank: 4, name: 'Reem Mohamed', bookings: 30, revenue: '9,800', id: 'E004' },
+  { rank: 5, name: 'Hana Youssef', bookings: 25, revenue: '8,100', id: 'E005' },
 ];
 
 const topServices = [
@@ -146,6 +149,20 @@ function getRankClass(rank: number) {
 
 export default function DashboardPage() {
   const [activeDate, setActiveDate] = useState('Today');
+  const router = useRouter();
+  const { user } = useAuth();
+
+  const businessType = user?.businessType || 'salon';
+  const isClinic = businessType === 'clinic';
+  const isBarber = businessType === 'barber';
+
+  const clientTerm = isClinic ? 'Patient' : 'Client';
+  const clientsTerm = isClinic ? 'Patients' : 'Clients';
+  const bookingTerm = isClinic || isBarber ? 'Appointment' : 'Booking';
+  const bookingsTerm = isClinic || isBarber ? 'Appointments' : 'Bookings';
+  const employeeTerm = isClinic ? 'Doctor/Staff' : isBarber ? 'Barber' : 'Stylist';
+  const employeesTerm = isClinic ? 'Doctors & Staff' : isBarber ? 'Barbers' : 'Stylists';
+
   const totalBookings = bookingStatusData.reduce((s, d) => s + d.value, 0);
 
   return (
@@ -199,7 +216,10 @@ export default function DashboardPage() {
                   </span>
                 )}
               </span>
-              <div className={styles.kpiLabel}>{kpi.label}</div>
+              <div className={styles.kpiLabel}>
+                {kpi.label === 'Bookings' ? bookingsTerm :
+                  kpi.label === 'New Clients' ? `New ${clientsTerm}` : kpi.label}
+              </div>
             </div>
             <div className={styles.kpiSparkline}>
               <ResponsiveContainer width="100%" height="100%">
@@ -223,13 +243,13 @@ export default function DashboardPage() {
         {/* Occupancy Table */}
         <div className={styles.card}>
           <div className={styles.cardHeader}>
-            <span className={styles.cardTitle}>Employee Occupancy</span>
-            <span className={styles.cardAction}>View All</span>
+            <span className={styles.cardTitle}>{employeesTerm} Occupancy</span>
+            <Link href="/employees" className={styles.cardAction}>View All</Link>
           </div>
           <table className={styles.occupancyTable}>
             <thead>
               <tr>
-                <th>Employee</th>
+                <th>{employeeTerm}</th>
                 <th>Booked</th>
                 <th style={{ width: '40%' }}>Occupancy</th>
                 <th style={{ textAlign: 'right' }}>Rate</th>
@@ -271,7 +291,7 @@ export default function DashboardPage() {
         <div className={styles.card}>
           <div className={styles.cardHeader}>
             <span className={styles.cardTitle}>Booking Status</span>
-            <span className={styles.cardAction}>Details</span>
+            <Link href="/bookings" className={styles.cardAction}>Details</Link>
           </div>
           <div style={{ height: 200, position: 'relative' }}>
             <ResponsiveContainer width="100%" height="100%">
@@ -325,21 +345,21 @@ export default function DashboardPage() {
         {/* Top Clients */}
         <div className={styles.card}>
           <div className={styles.cardHeader}>
-            <span className={styles.cardTitle}>Top Clients</span>
-            <span className={styles.cardAction}>View All</span>
+            <span className={styles.cardTitle}>Top {clientsTerm}</span>
+            <Link href="/customers" className={styles.cardAction}>View All</Link>
           </div>
           <table className={styles.rankTable}>
             <thead>
               <tr>
                 <th>#</th>
-                <th>Client</th>
+                <th>{clientTerm}</th>
                 <th>Visits</th>
                 <th style={{ textAlign: 'right' }}>Spend</th>
               </tr>
             </thead>
             <tbody>
               {topClients.map((c) => (
-                <tr key={c.rank}>
+                <tr key={c.rank} onClick={() => router.push(`/customers/${c.id}`)} style={{ cursor: 'pointer' }}>
                   <td>
                     <span className={`${styles.rankNumber} ${getRankClass(c.rank)}`}>
                       {c.rank}
@@ -357,21 +377,21 @@ export default function DashboardPage() {
         {/* Top Employees */}
         <div className={styles.card}>
           <div className={styles.cardHeader}>
-            <span className={styles.cardTitle}>Top Employees</span>
-            <span className={styles.cardAction}>View All</span>
+            <span className={styles.cardTitle}>Top {employeesTerm}</span>
+            <Link href="/employees" className={styles.cardAction}>View All</Link>
           </div>
           <table className={styles.rankTable}>
             <thead>
               <tr>
                 <th>#</th>
-                <th>Employee</th>
-                <th>Bookings</th>
+                <th>{employeeTerm}</th>
+                <th>{bookingsTerm}</th>
                 <th style={{ textAlign: 'right' }}>Revenue</th>
               </tr>
             </thead>
             <tbody>
               {topEmployees.map((e) => (
-                <tr key={e.rank}>
+                <tr key={e.rank} onClick={() => router.push(`/employees/${e.id}`)} style={{ cursor: 'pointer' }}>
                   <td>
                     <span className={`${styles.rankNumber} ${getRankClass(e.rank)}`}>
                       {e.rank}
@@ -390,7 +410,7 @@ export default function DashboardPage() {
         <div className={styles.card}>
           <div className={styles.cardHeader}>
             <span className={styles.cardTitle}>Top Services</span>
-            <span className={styles.cardAction}>View All</span>
+            <Link href="/sales" className={styles.cardAction}>View All</Link>
           </div>
           <table className={styles.rankTable}>
             <thead>
@@ -430,7 +450,7 @@ export default function DashboardPage() {
           </div>
           <div className={styles.summaryContent}>
             <h3>47</h3>
-            <p>Appointments Today</p>
+            <p>{bookingsTerm} Today</p>
           </div>
         </div>
         <div className={styles.summaryCard}>
@@ -454,7 +474,7 @@ export default function DashboardPage() {
           </div>
           <div className={styles.summaryContent}>
             <h3>389</h3>
-            <p>Total Clients</p>
+            <p>Total {clientsTerm}</p>
           </div>
         </div>
         <div className={`${styles.summaryCard} ${styles.clientOfMonth}`}>
@@ -466,7 +486,7 @@ export default function DashboardPage() {
           </div>
           <div className={styles.summaryContent}>
             <h3>Fatima A.</h3>
-            <p>🌟 Client of the Month</p>
+            <p>🌟 {clientTerm} of the Month</p>
           </div>
         </div>
       </div>

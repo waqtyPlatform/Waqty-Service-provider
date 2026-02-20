@@ -1,12 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
+import { DropdownMenu, EmptyState, useToast, SlideOver, Input, Select, Modal, Button } from '@/components/ui';
+import { useRouter } from 'next/navigation';
 import {
     Search,
-    Plus,
-    Download,
-    Upload,
     ChevronLeft,
     ChevronRight,
     MoreVertical,
@@ -17,7 +15,6 @@ import {
     Users,
     UserPlus,
     CreditCard,
-    Clock,
 } from 'lucide-react';
 import styles from './customers.module.css';
 
@@ -32,16 +29,18 @@ const clients = [
     { id: 'C008', name: 'Lina Tariq', phone: '+20 122 555 666', email: 'lina@email.com', visits: 3, spend: 750, lastVisit: 'Jan 10, 2026', vip: false, hasAllergy: false, group: 'New', status: 'inactive' },
 ];
 
-const tabItems = [
-    { label: 'Clients', href: '/customers', icon: <Users size={16} /> },
-    { label: 'Client Groups', href: '/customers/groups', icon: <Star size={16} /> },
-    { label: 'Account Statements', href: '/customers/statements', icon: <CreditCard size={16} /> },
-    { label: 'Last Visits', href: '/customers/last-visits', icon: <Clock size={16} /> },
-];
-
 export default function CustomersPage() {
     const [search, setSearch] = useState('');
     const [groupFilter, setGroupFilter] = useState('all');
+
+    // CRUD State
+    const [isAddOpen, setIsAddOpen] = useState(false);
+    const [isEditOpen, setIsEditOpen] = useState(false);
+    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+    const [selectedClient, setSelectedClient] = useState<any>(null);
+
+    const router = useRouter();
+    const { addToast } = useToast();
 
     const filtered = clients.filter((c) => {
         const matchSearch =
@@ -53,37 +52,7 @@ export default function CustomersPage() {
     });
 
     return (
-        <div className={styles.customersPage}>
-            <div className={styles.header}>
-                <div>
-                    <h1>Customers</h1>
-                    <p>Manage your client database and relationships.</p>
-                </div>
-                <div className={styles.headerActions}>
-                    <button className={styles.btnOutline}>
-                        <Upload size={16} /> Import
-                    </button>
-                    <button className={styles.btnOutline}>
-                        <Download size={16} /> Export
-                    </button>
-                    <button className={styles.btnPrimary}>
-                        <Plus size={16} /> Add Client
-                    </button>
-                </div>
-            </div>
-
-            <div className={styles.tabs}>
-                {tabItems.map((tab) => (
-                    <Link
-                        key={tab.href}
-                        href={tab.href}
-                        className={`${styles.tab} ${tab.href === '/customers' ? styles.tabActive : ''}`}
-                    >
-                        {tab.icon} {tab.label}
-                    </Link>
-                ))}
-            </div>
-
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
             {/* KPI Row */}
             <div className={styles.kpiRow}>
                 <div className={styles.kpiCard}>
@@ -134,100 +103,205 @@ export default function CustomersPage() {
                         onChange={(e) => setSearch(e.target.value)}
                     />
                 </div>
-                <select
-                    className={styles.selectFilter}
-                    value={groupFilter}
-                    onChange={(e) => setGroupFilter(e.target.value)}
-                >
-                    <option value="all">All Groups</option>
-                    <option value="vip">VIP</option>
-                    <option value="regular">Regular</option>
-                    <option value="new">New</option>
-                </select>
+                <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+                    <select
+                        className={styles.selectFilter}
+                        value={groupFilter}
+                        onChange={(e) => setGroupFilter(e.target.value)}
+                    >
+                        <option value="all">All Groups</option>
+                        <option value="vip">VIP</option>
+                        <option value="regular">Regular</option>
+                        <option value="new">New</option>
+                    </select>
+                    <button className={styles.btnPrimary} onClick={() => setIsAddOpen(true)}>
+                        <UserPlus size={16} /> Add Client
+                    </button>
+                </div>
             </div>
 
             <div className={styles.tableCard}>
-                <table className={styles.dataTable}>
-                    <thead>
-                        <tr>
-                            <th>Client</th>
-                            <th>Contact</th>
-                            <th>Group</th>
-                            <th>Visits</th>
-                            <th>Total Spend</th>
-                            <th>Last Visit</th>
-                            <th>Flags</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filtered.map((c) => (
-                            <tr key={c.id}>
-                                <td>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                                        <div className={styles.avatar}>
-                                            {c.name.split(' ').map((n) => n[0]).join('').slice(0, 2)}
-                                        </div>
-                                        <div>
-                                            <div style={{ fontWeight: 'var(--font-semibold)', display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
-                                                {c.name}
-                                                {c.vip && <Star size={14} fill="#F59E0B" stroke="#F59E0B" />}
+                {filtered.length > 0 ? (
+                    <>
+                        <table className={styles.dataTable}>
+                            <thead>
+                                <tr>
+                                    <th>Client</th>
+                                    <th>Contact</th>
+                                    <th>Group</th>
+                                    <th>Visits</th>
+                                    <th>Total Spend</th>
+                                    <th>Last Visit</th>
+                                    <th>Flags</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filtered.map((c) => (
+                                    <tr key={c.id} onClick={() => router.push(`/customers/${c.id}`)} style={{ cursor: 'pointer' }}>
+                                        <td>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                                                <div className={styles.avatar}>
+                                                    {c.name.split(' ').map((n) => n[0]).join('').slice(0, 2)}
+                                                </div>
+                                                <div>
+                                                    <div style={{ fontWeight: 'var(--font-semibold)', display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
+                                                        {c.name}
+                                                        {c.vip && <Star size={14} fill="#F59E0B" stroke="#F59E0B" />}
+                                                    </div>
+                                                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{c.id}</div>
+                                                </div>
                                             </div>
-                                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{c.id}</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                        <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', fontSize: 'var(--text-sm)' }}>
-                                            <Phone size={12} style={{ color: 'var(--text-tertiary)' }} /> {c.phone}
-                                        </span>
-                                        <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
-                                            <Mail size={12} /> {c.email}
-                                        </span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span className={`${styles.groupBadge} ${styles[`group${c.group}`]}`}>
-                                        {c.group}
-                                    </span>
-                                </td>
-                                <td style={{ fontWeight: 'var(--font-medium)' }}>{c.visits}</td>
-                                <td style={{ fontWeight: 'var(--font-semibold)', color: 'var(--color-primary-600)' }}>
-                                    {c.spend.toLocaleString()} EGP
-                                </td>
-                                <td>
-                                    <span style={{ color: c.status === 'inactive' ? 'var(--color-error)' : 'var(--text-secondary)' }}>
-                                        {c.lastVisit}
-                                    </span>
-                                </td>
-                                <td>
-                                    <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
-                                        {c.hasAllergy && (
-                                            <span className={styles.flagBadge} title="Has Allergies">
-                                                <AlertTriangle size={12} /> Allergy
+                                        </td>
+                                        <td>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                                <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', fontSize: 'var(--text-sm)' }}>
+                                                    <Phone size={12} style={{ color: 'var(--text-tertiary)' }} /> {c.phone}
+                                                </span>
+                                                <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
+                                                    <Mail size={12} /> {c.email}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span className={`${styles.groupBadge} ${styles[`group${c.group}`]}`}>
+                                                {c.group}
                                             </span>
-                                        )}
-                                    </div>
-                                </td>
-                                <td>
-                                    <button className={styles.actionBtn}>
-                                        <MoreVertical size={16} />
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-                <div className={styles.pagination}>
-                    <span className={styles.pageInfo}>Showing {filtered.length} of {clients.length} clients</span>
-                    <div className={styles.pageButtons}>
-                        <button className={styles.pageBtn}><ChevronLeft size={16} /></button>
-                        <button className={`${styles.pageBtn} ${styles.pageBtnActive}`}>1</button>
-                        <button className={styles.pageBtn}><ChevronRight size={16} /></button>
+                                        </td>
+                                        <td style={{ fontWeight: 'var(--font-medium)' }}>{c.visits}</td>
+                                        <td style={{ fontWeight: 'var(--font-semibold)', color: 'var(--color-primary-600)' }}>
+                                            {c.spend.toLocaleString()} EGP
+                                        </td>
+                                        <td>
+                                            <span style={{ color: c.status === 'inactive' ? 'var(--color-error)' : 'var(--text-secondary)' }}>
+                                                {c.lastVisit}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
+                                                {c.hasAllergy && (
+                                                    <span className={styles.flagBadge} title="Has Allergies">
+                                                        <AlertTriangle size={12} /> Allergy
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <DropdownMenu
+                                                trigger={
+                                                    <button
+                                                        className={styles.actionBtn}
+                                                    >
+                                                        <MoreVertical size={16} />
+                                                    </button>
+                                                }
+                                                items={[
+                                                    { label: 'View Profile', icon: <Users size={14} />, onClick: () => router.push(`/customers/${c.id}`) },
+                                                    { label: 'Edit', icon: <CreditCard size={14} />, onClick: () => { setSelectedClient(c); setIsEditOpen(true); } },
+                                                    { label: 'Delete', destructive: true, icon: <AlertTriangle size={14} />, onClick: () => { setSelectedClient(c); setIsDeleteOpen(true); } },
+                                                ]}
+                                            />
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                        <div className={styles.pagination}>
+                            <span className={styles.pageInfo}>Showing {filtered.length} of {clients.length} clients</span>
+                            <div className={styles.pageButtons}>
+                                <button className={styles.pageBtn}><ChevronLeft size={16} /></button>
+                                <button className={`${styles.pageBtn} ${styles.pageBtnActive}`}>1</button>
+                                <button className={styles.pageBtn}><ChevronRight size={16} /></button>
+                            </div>
+                        </div>
+                    </>
+                ) : (
+                    <div style={{ padding: 'var(--space-12) 0' }}>
+                        <EmptyState
+                            icon={<Users size={32} color="var(--text-tertiary)" />}
+                            title="No clients found"
+                            description="We couldn't find any clients matching your search or filter criteria."
+                        />
+                    </div>
+                )}
+            </div>
+
+            {/* Add Client SlideOver */}
+            <SlideOver
+                open={isAddOpen}
+                onClose={() => setIsAddOpen(false)}
+                title="Add New Client"
+                footer={
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button>
+                        <Button onClick={() => { setIsAddOpen(false); addToast('success', 'Client created successfully'); }}>Save Client</Button>
+                    </div>
+                }
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    <Input label="Full Name" placeholder="e.g. Fatima Al-Rashid" />
+                    <Input label="Phone Number" placeholder="+20 1XX XXX XXXX" />
+                    <Input label="Email Address" placeholder="client@example.com" />
+                    <Select label="Group" options={[
+                        { label: 'Regular', value: 'Regular' },
+                        { label: 'VIP', value: 'VIP' },
+                        { label: 'New', value: 'New' }
+                    ]} />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', marginTop: 'var(--space-2)' }}>
+                        <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)' }}>Notes / Allergies</label>
+                        <textarea
+                            className={styles.searchInput}
+                            style={{ height: '80px', padding: 'var(--space-3)' }}
+                            placeholder="Add any specific client notes here..."
+                        />
                     </div>
                 </div>
-            </div>
+            </SlideOver>
+
+            {/* Edit Client SlideOver */}
+            <SlideOver
+                open={isEditOpen}
+                onClose={() => { setIsEditOpen(false); setSelectedClient(null); }}
+                title="Edit Client Profile"
+                footer={
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>Cancel</Button>
+                        <Button onClick={() => { setIsEditOpen(false); addToast('success', 'Profile updated successfully'); }}>Save Changes</Button>
+                    </div>
+                }
+            >
+                {selectedClient && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                        <Input label="Full Name" defaultValue={selectedClient.name} />
+                        <Input label="Phone Number" defaultValue={selectedClient.phone} />
+                        <Input label="Email Address" defaultValue={selectedClient.email} />
+                        <Select label="Group" defaultValue={selectedClient.group} options={[
+                            { label: 'Regular', value: 'Regular' },
+                            { label: 'VIP', value: 'VIP' },
+                            { label: 'New', value: 'New' }
+                        ]} />
+                    </div>
+                )}
+            </SlideOver>
+
+            {/* Delete Confirmation Modal */}
+            <Modal
+                open={isDeleteOpen}
+                onClose={() => { setIsDeleteOpen(false); setSelectedClient(null); }}
+                title="Delete Client"
+                footer={
+                    <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
+                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
+                        <Button variant="destructive" onClick={() => { setIsDeleteOpen(false); addToast('error', 'Client permanently deleted'); }}>Delete Client</Button>
+                    </div>
+                }
+            >
+                <div>
+                    <p style={{ color: 'var(--text-secondary)' }}>
+                        Are you sure you want to delete <strong>{selectedClient?.name}</strong>? This action cannot be undone and will remove all their historical data from the system.
+                    </p>
+                </div>
+            </Modal>
         </div>
     );
 }

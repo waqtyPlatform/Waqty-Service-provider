@@ -4,14 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Plus, Search, Edit, Trash2, Layers } from 'lucide-react';
 
-const tabs = [
-    { label: 'Offers', href: '/marketing/offers' },
-    { label: 'Packages', href: '/marketing/packages' },
-    { label: 'Notifications', href: '/marketing/notifications' },
-    { label: 'Promo Codes', href: '/marketing/promo-codes' },
-    { label: 'Messages', href: '/marketing/messages' },
-    { label: 'Service Groups', href: '/marketing/service-groups' },
-];
+import MarketingTabs from '@/components/MarketingTabs';
 
 const groups = [
     { id: 1, name: 'Hair Services', services: ['Hair Cut', 'Hair Coloring', 'Keratin Treatment', 'Blow Dry', 'Hair Mask', 'Highlights'], color: '#F59E0B', active: true },
@@ -44,9 +37,7 @@ const s: Record<string, React.CSSProperties> = {
 export default function ServiceGroupsPage() {
     return (
         <div style={s.page}>
-            <div style={s.tabBar}>
-                {tabs.map(t => <Link key={t.href} href={t.href} style={{ ...s.tab, ...(t.href === '/marketing/service-groups' ? s.tabActive : {}) }}>{t.label}</Link>)}
-            </div>
+            <MarketingTabs />
             <div style={s.toolbar}><button style={s.addBtn}><Plus size={16} /> New Group</button></div>
             <div style={s.grid}>
                 {groups.map(g => (

@@ -12,7 +12,7 @@ const tabs = [
 ];
 
 const transactions = [
-    { id: 'TXN-2041', date: '2026-02-17', client: 'Fatima Ali', items: ['Haircut - 120 EGP', 'Blow Dry - 80 EGP', 'Product: Shampoo - 120 EGP'], total: 320, method: 'Cash' },
+    { id: 'TXN-2041', date: '2026-02-17', client: 'Fatima Ali', items: ['Haircut - 120 EGP', 'Blow Dry - 80 EGP'], total: 200, method: 'Cash' },
     { id: 'TXN-2042', date: '2026-02-17', client: 'Rania Khalil', items: ['Hair Coloring - 450 EGP'], total: 450, method: 'Cash' },
     { id: 'TXN-2039', date: '2026-02-16', client: 'Sama Latif', items: ['HydraFacial - 520 EGP'], total: 520, method: 'Cash' },
     { id: 'TXN-2038', date: '2026-02-16', client: 'Noura Ahmed', items: ['Keratin Treatment - 800 EGP'], total: 800, method: 'Cash' },
@@ -120,7 +120,7 @@ export default function CashRefundPage() {
                     <div style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-4)' }}>Confirm Refund Details</div>
                     <div style={{ marginBottom: 'var(--space-4)' }}>
                         <label style={s.label}>Reason for Refund</label>
-                        <select style={s.select}><option>Client Request</option><option>Service Issue</option><option>Product Defect</option><option>Double Charge</option><option>Other</option></select>
+                        <select style={s.select}><option>Client Request</option><option>Service Issue</option><option>Double Charge</option><option>Other</option></select>
                     </div>
                     <div style={{ marginBottom: 'var(--space-4)' }}>
                         <label style={s.label}>Notes</label>

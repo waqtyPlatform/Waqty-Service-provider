@@ -174,11 +174,12 @@
     border: 1px solid var(--border-color);
     border-radius: var(--radius-xl);
     overflow: hidden;
+    overflow-x: auto;
 }
 
 .calendarGridHeader {
     display: grid;
-    grid-template-columns: 60px repeat(var(--emp-count, 5), 1fr);
+    grid-template-columns: 60px repeat(var(--emp-count, 5), minmax(120px, 1fr));
     border-bottom: 1px solid var(--border-color);
 }
 
@@ -230,7 +231,7 @@
 
 .timeRow {
     display: grid;
-    grid-template-columns: 60px repeat(var(--emp-count, 5), 1fr);
+    grid-template-columns: 60px repeat(var(--emp-count, 5), minmax(120px, 1fr));
     min-height: 64px;
     border-bottom: 1px solid var(--border-color);
 }
@@ -676,7 +677,9 @@
     }
 
     .sidePanel {
-        display: none;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: var(--space-4);
     }
 }
 

@@ -20,7 +20,8 @@ import {
     Button,
     Badge,
     Stepper,
-    EmptyState
+    EmptyState,
+    useToast
 } from '@/components/ui';
 import styles from './page.module.css';
 
@@ -43,7 +44,6 @@ const booking = {
     items: [
         { id: 1, name: 'Hair Coloring - Full', employee: 'Sarah Ahmed', price: 1200, duration: '90m' },
         { id: 2, name: 'Hair Cut & Style', employee: 'Sarah Ahmed', price: 450, duration: '45m' },
-        { id: 3, name: 'Argan Oil Serum', type: 'product', price: 350, quantity: 1 },
     ],
     financials: {
         subtotal: 2000,
@@ -59,7 +59,9 @@ const booking = {
 const steps = ['Draft', 'Confirmed', 'Arrived', 'In Service', 'Completed'];
 const currentStep = 1; // Confirmed
 
-export default function BookingDetailPage({ params }: { params: { id: string } }) {
+export default function BookingDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = React.use(params);
+    const { addToast } = useToast();
     return (
         <div className={styles.page}>
             {/* Header */}
@@ -74,10 +76,18 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
                     </h1>
                 </div>
                 <div className={styles.actions}>
-                    <Button variant="outline"><Printer size={16} /> Print</Button>
-                    <Button variant="outline"><Edit size={16} /> Edit</Button>
-                    <Button variant="destructive"><XCircle size={16} /> Cancel</Button>
-                    <Button><CheckCircle size={16} /> Check In</Button>
+                    <Button variant="outline" onClick={() => addToast('info', 'Printing booking receipt...')}>
+                        <Printer size={16} /> Print
+                    </Button>
+                    <Button variant="outline" onClick={() => addToast('info', 'Edit mode enabled')}>
+                        <Edit size={16} /> Edit
+                    </Button>
+                    <Button variant="destructive" onClick={() => addToast('error', 'Booking cancelled successfully')}>
+                        <XCircle size={16} /> Cancel
+                    </Button>
+                    <Button onClick={() => addToast('success', 'Client checked in successfully')}>
+                        <CheckCircle size={16} /> Check In
+                    </Button>
                 </div>
             </div>
 
@@ -96,7 +106,7 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
                     <div className={styles.card}>
                         <div className={styles.cardHeader}>
                             <span className={styles.cardTitle}><Scissors size={18} /> Services & Items</span>
-                            <Button variant="ghost" size="sm">Add Item</Button>
+                            <Button variant="ghost" size="sm" onClick={() => addToast('info', 'Add item dialog opened')}>Add Item</Button>
                         </div>
                         <div className="table-wrapper">
                             <table className="data-table">
@@ -114,7 +124,7 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
                                                 <div style={{ fontWeight: 'var(--font-medium)' }}>{item.name}</div>
                                                 {item.duration && <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{item.duration}</div>}
                                             </td>
-                                            <td>{item.employee || 'Retail Product'}</td>
+                                            <td>{item.employee || 'Staff'}</td>
                                             <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)' }}>{item.price}</td>
                                         </tr>
                                     ))}
@@ -158,7 +168,9 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
                             </div>
 
                             <div style={{ marginTop: 'var(--space-5)', display: 'flex', gap: 'var(--space-3)' }}>
-                                <Button fullWidth>Process Payment ({booking.financials.due})</Button>
+                                <Button fullWidth onClick={() => addToast('success', `Payment of ${booking.financials.due} EGP processed`)}>
+                                    Process Payment ({booking.financials.due})
+                                </Button>
                             </div>
                         </div>
                     </div>
@@ -170,7 +182,9 @@ export default function BookingDetailPage({ params }: { params: { id: string } }
                     <div className={styles.card}>
                         <div className={styles.cardHeader}>
                             <span className={styles.cardTitle}><User size={18} /> Client Details</span>
-                            <Button variant="ghost" size="sm" iconOnly><Edit size={14} /></Button>
+                            <Button variant="ghost" size="sm" iconOnly onClick={() => addToast('info', 'Edit client profile clicked')}>
+                                <Edit size={14} />
+                            </Button>
                         </div>
                         <div className={styles.cardBody}>
                             <div className={styles.clientHeader}>

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSidebar } from './SidebarContext';
+import { useAuth } from '@/contexts/AuthContext';
 import {
     LayoutDashboard,
     ShoppingBag,
@@ -34,122 +35,144 @@ interface NavItem {
     children?: NavSubItem[];
 }
 
-const navigation: NavItem[] = [
-    {
-        label: 'Dashboard',
-        icon: <LayoutDashboard size={20} />,
-        href: '/',
-    },
-    {
-        label: 'Sales',
-        icon: <ShoppingBag size={20} />,
-        children: [
-            { label: 'Services', href: '/sales' },
-            { label: 'Packages', href: '/sales/packages' },
-        ],
-    },
-    {
-        label: 'Bookings',
-        icon: <CalendarDays size={20} />,
-        children: [
-            { label: 'Calendar', href: '/bookings' },
-            { label: 'Booking List', href: '/bookings/list' },
-            { label: 'Room Calendar', href: '/bookings/rooms' },
-            { label: 'New Booking', href: '/bookings/new' },
-            { label: 'Employee Print', href: '/bookings/print' },
-        ],
-    },
-    {
-        label: 'Transactions',
-        icon: <Receipt size={20} />,
-        children: [
-            { label: 'Transaction Log', href: '/transactions' },
-            { label: 'Cash Sales', href: '/transactions/cash-sales' },
-            { label: 'Advance Payments', href: '/transactions/advance-payments' },
-            { label: 'Petty Cash', href: '/transactions/petty-cash' },
-            { label: 'Cashier Transfers', href: '/transactions/transfers' },
-            { label: 'Safe Balances', href: '/transactions/safe-balances' },
-            { label: 'Shifts', href: '/transactions/shifts' },
-            { label: 'Dailies', href: '/transactions/dailies' },
-            { label: 'Best Sales Report', href: '/transactions/best-sales' },
-            { label: 'Client Sales Report', href: '/transactions/client-sales' },
-            { label: 'Package Sales', href: '/transactions/package-sales' },
-        ],
-    },
-    {
-        label: 'Returns',
-        icon: <RotateCcw size={20} />,
-        children: [
-            { label: 'Returns List', href: '/returns' },
-            { label: 'Cash Refund', href: '/returns/cash-refund' },
-            { label: 'Petty Cash Refund', href: '/returns/petty-cash-refund' },
-            { label: 'Cancel Down Payment', href: '/returns/cancel-down-payment' },
-        ],
-    },
-    {
-        label: 'Customers',
-        icon: <Users size={20} />,
-        children: [
-            { label: 'Clients', href: '/customers' },
-            { label: 'Client Groups', href: '/customers/groups' },
-            { label: 'Account Statements', href: '/customers/statements' },
-            { label: 'Last Visits', href: '/customers/last-visits' },
-        ],
-    },
-    {
-        label: 'Employees',
-        icon: <UserCog size={20} />,
-        children: [
-            { label: 'Employee List', href: '/employees' },
-            { label: 'Departments', href: '/employees/departments' },
-            { label: 'Positions', href: '/employees/positions' },
-            { label: 'Branch Employees', href: '/employees/branch-management' },
-            { label: 'Transfer Log', href: '/employees/transfers' },
-            { label: 'Fingerprints', href: '/employees/fingerprints' },
-            { label: 'Attend Methods', href: '/employees/attend-methods' },
-            { label: 'Attendance Log', href: '/employees/attendance' },
-            { label: 'Attendance Settings', href: '/employees/attendance-settings' },
-            { label: 'Commissions', href: '/employees/commissions' },
-            { label: 'Commission Settings', href: '/employees/commission-settings' },
-        ],
-    },
-    {
-        label: 'Marketing',
-        icon: <Megaphone size={20} />,
-        children: [
-            { label: 'Offers', href: '/marketing/offers' },
-            { label: 'Packages', href: '/marketing/packages' },
-            { label: 'Notifications', href: '/marketing/notifications' },
-            { label: 'Promo Codes', href: '/marketing/promo-codes' },
-            { label: 'Message Settings', href: '/marketing/messages' },
-            { label: 'Service Groups', href: '/marketing/service-groups' },
-        ],
-    },
-    {
-        label: 'Reports',
-        icon: <BarChart3 size={20} />,
-        href: '/reports',
-    },
-    {
-        label: 'Settings',
-        icon: <Settings size={20} />,
-        children: [
-            { label: 'General', href: '/settings' },
-            { label: 'Branches', href: '/settings/branches' },
-            { label: 'Services', href: '/settings/services' },
-            { label: 'Invoice', href: '/settings/invoice' },
-            { label: 'Devices', href: '/settings/devices' },
-            { label: 'Integrations', href: '/settings/integrations' },
-            { label: 'Roles & Permissions', href: '/settings/roles' },
-            { label: 'Audit Log', href: '/settings/audit-log' },
-            { label: 'Subscription', href: '/settings/subscription' },
-        ],
-    },
-];
+const getNavigation = (businessType: 'clinic' | 'salon' | 'barber' = 'salon', role: 'admin' | 'manager' | 'staff' = 'admin'): NavItem[] => {
+    const isClinic = businessType === 'clinic';
+    const isBarber = businessType === 'barber';
+
+    const bookingsLabel = isClinic || isBarber ? 'Appointments' : 'Bookings';
+    const customersLabel = isClinic ? 'Patients' : 'Clients';
+    const employeesLabel = isClinic ? 'Doctors & Staff' : isBarber ? 'Barbers' : 'Stylists';
+
+    const fullNav: NavItem[] = [
+        {
+            label: 'Dashboard',
+            icon: <LayoutDashboard size={20} />,
+            href: '/',
+        },
+        {
+            label: 'Sales',
+            icon: <ShoppingBag size={20} />,
+            children: [
+                { label: 'Services', href: '/sales' },
+                { label: 'Packages', href: '/sales/packages' },
+            ],
+        },
+        {
+            label: bookingsLabel,
+            icon: <CalendarDays size={20} />,
+            children: [
+                { label: 'Calendar', href: '/bookings' },
+                { label: 'Booking List', href: '/bookings/list' },
+                { label: 'Room Calendar', href: '/bookings/rooms' },
+                { label: 'New Booking', href: '/bookings/new' },
+                { label: 'Print Schedule', href: '/bookings/print' },
+            ],
+        },
+        {
+            label: 'Transactions',
+            icon: <Receipt size={20} />,
+            children: [
+                { label: 'Log', href: '/transactions' },
+                { label: 'Cash Sales', href: '/transactions/cash-sales' },
+                { label: 'Advance Payments', href: '/transactions/advance-payments' },
+                { label: 'Petty Cash', href: '/transactions/petty-cash' },
+                { label: 'Cashier Transfers', href: '/transactions/transfers' },
+                { label: 'Safe Balances', href: '/transactions/safe-balances' },
+                { label: 'Shifts', href: '/transactions/shifts' },
+                { label: 'Dailies', href: '/transactions/dailies' },
+                { label: 'Best Sales', href: '/transactions/best-sales' },
+                { label: 'Client Sales', href: '/transactions/client-sales' },
+                { label: 'Package Sales', href: '/transactions/package-sales' },
+            ],
+        },
+        {
+            label: 'Returns',
+            icon: <RotateCcw size={20} />,
+            children: [
+                { label: 'Returns List', href: '/returns' },
+                { label: 'Cash Refund', href: '/returns/cash-refund' },
+                { label: 'Petty Cash Refund', href: '/returns/petty-cash-refund' },
+                { label: 'Cancel Down Payment', href: '/returns/cancel-down-payment' },
+            ],
+        },
+        {
+            label: customersLabel,
+            icon: <Users size={20} />,
+            children: [
+                { label: customersLabel, href: '/customers' },
+                { label: 'Groups', href: '/customers/groups' },
+                { label: 'Statements', href: '/customers/statements' },
+                { label: 'Last Visits', href: '/customers/last-visits' },
+            ],
+        },
+        {
+            label: employeesLabel,
+            icon: <UserCog size={20} />,
+            children: [
+                { label: `${employeesLabel} List`, href: '/employees' },
+                { label: 'Departments', href: '/employees/departments' },
+                { label: 'Positions', href: '/employees/positions' },
+                { label: 'Branch Management', href: '/employees/branch-management' },
+                { label: 'Transfer Log', href: '/employees/transfers' },
+                { label: 'Fingerprints', href: '/employees/fingerprints' },
+                { label: 'Attend Methods', href: '/employees/attend-methods' },
+                { label: 'Attendance Log', href: '/employees/attendance' },
+                { label: 'Attendance Settings', href: '/employees/attendance-settings' },
+                { label: 'Commissions', href: '/employees/commissions' },
+                { label: 'Commission Settings', href: '/employees/commission-settings' },
+            ],
+        },
+        {
+            label: 'Marketing',
+            icon: <Megaphone size={20} />,
+            children: [
+                { label: 'Offers', href: '/marketing/offers' },
+                { label: 'Packages', href: '/marketing/packages' },
+                { label: 'Notifications', href: '/marketing/notifications' },
+                { label: 'Promo Codes', href: '/marketing/promo-codes' },
+                { label: 'Message Settings', href: '/marketing/messages' },
+                { label: 'Service Groups', href: '/marketing/service-groups' },
+            ],
+        },
+        {
+            label: 'Reports',
+            icon: <BarChart3 size={20} />,
+            href: '/reports',
+        },
+        {
+            label: 'Settings',
+            icon: <Settings size={20} />,
+            children: [
+                { label: 'General', href: '/settings' },
+                { label: 'Branches', href: '/settings/branches' },
+                { label: 'Services', href: '/settings/services' },
+                { label: 'Invoice', href: '/settings/invoice' },
+                { label: 'Devices', href: '/settings/devices' },
+                { label: 'Integrations', href: '/settings/integrations' },
+                { label: 'Roles & Permissions', href: '/settings/roles' },
+                { label: 'Audit Log', href: '/settings/audit-log' },
+                { label: 'Subscription', href: '/settings/subscription' },
+            ],
+        },
+    ];
+
+    if (role === 'manager') {
+        return fullNav.filter(n => n.label !== 'Reports' && n.label !== 'Settings');
+    }
+    if (role === 'staff') {
+        return fullNav.filter(n => !['Returns', employeesLabel, 'Reports', 'Settings'].includes(n.label));
+    }
+
+    return fullNav;
+};
 
 export default function Sidebar() {
     const { collapsed, toggleSidebar, mobileOpen, setMobileOpen } = useSidebar();
+    const { user } = useAuth();
     const pathname = usePathname();
+
+    const navigation = getNavigation(user?.businessType, user?.role);
+
     const [expandedItems, setExpandedItems] = useState<string[]>(() => {
         // Auto-expand the section that matches current path
         const matched = navigation.find(

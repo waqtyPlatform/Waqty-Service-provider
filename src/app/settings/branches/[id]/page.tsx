@@ -52,7 +52,8 @@ const branch = {
     ]
 };
 
-export default function BranchSettingsPage({ params }: { params: { id: string } }) {
+export default function BranchSettingsPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = React.use(params);
     const [activeTab, setActiveTab] = useState('general');
 
     const renderGeneral = () => (

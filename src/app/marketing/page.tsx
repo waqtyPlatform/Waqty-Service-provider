@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { DropdownMenu, useToast, SlideOver, Modal, Input, Select, Button } from '@/components/ui';
 import {
     Search,
     Plus,
@@ -18,6 +19,7 @@ import {
     Zap,
     TrendingUp,
     Send,
+    Trash2,
 } from 'lucide-react';
 import styles from './marketing.module.css';
 
@@ -93,8 +95,25 @@ const channelClass: Record<string, string> = {
 type TabKey = 'offers' | 'promos' | 'messages' | 'campaigns';
 
 export default function MarketingPage() {
+    const { addToast } = useToast();
     const [activeTab, setActiveTab] = useState<TabKey>('offers');
     const [search, setSearch] = useState('');
+
+    // CRUD State
+    const [isOfferAddOpen, setIsOfferAddOpen] = useState(false);
+    const [isOfferEditOpen, setIsOfferEditOpen] = useState(false);
+    const [isOfferDeleteOpen, setIsOfferDeleteOpen] = useState(false);
+    const [selectedOffer, setSelectedOffer] = useState<any>(null);
+
+    const [isPromoAddOpen, setIsPromoAddOpen] = useState(false);
+    const [isPromoEditOpen, setIsPromoEditOpen] = useState(false);
+    const [isPromoDeleteOpen, setIsPromoDeleteOpen] = useState(false);
+    const [selectedPromo, setSelectedPromo] = useState<any>(null);
+
+    const [isMsgAddOpen, setIsMsgAddOpen] = useState(false);
+    const [isMsgEditOpen, setIsMsgEditOpen] = useState(false);
+    const [isMsgDeleteOpen, setIsMsgDeleteOpen] = useState(false);
+    const [selectedMsg, setSelectedMsg] = useState<any>(null);
 
     return (
         <div className={styles.marketingPage}>
@@ -105,7 +124,14 @@ export default function MarketingPage() {
                     <p>Offers, promo codes, campaigns, and messaging.</p>
                 </div>
                 <div className={styles.headerActions}>
-                    <button className={styles.btnPrimary}>
+                    <button
+                        className={styles.btnPrimary}
+                        onClick={() => {
+                            if (activeTab === 'offers') setIsOfferAddOpen(true);
+                            if (activeTab === 'promos') setIsPromoAddOpen(true);
+                            if (activeTab === 'messages') setIsMsgAddOpen(true);
+                        }}
+                    >
                         <Plus size={16} />
                         {activeTab === 'offers' ? 'New Offer' : activeTab === 'promos' ? 'New Promo Code' : activeTab === 'messages' ? 'New Template' : 'New Campaign'}
                     </button>
@@ -211,9 +237,24 @@ export default function MarketingPage() {
                                             {offer.status === 'active' && <Zap size={10} />}
                                             {offer.status.charAt(0).toUpperCase() + offer.status.slice(1)}
                                         </span>
-                                        <span className={styles.statChip}>
-                                            <strong>{offer.uses}</strong> / ∞ uses
-                                        </span>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                            <span className={styles.statChip}>
+                                                <strong>{offer.uses}</strong> / ∞ uses
+                                            </span>
+                                            <DropdownMenu
+                                                trigger={
+                                                    <button
+                                                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', padding: 0 }}
+                                                    >
+                                                        <MoreVertical size={16} />
+                                                    </button>
+                                                }
+                                                items={[
+                                                    { label: 'Edit Offer', icon: <Gift size={14} />, onClick: () => { setSelectedOffer(offer); setIsOfferEditOpen(true); } },
+                                                    { label: 'Delete Offer', destructive: true, icon: <Trash2 size={14} />, onClick: () => { setSelectedOffer(offer); setIsOfferDeleteOpen(true); } }
+                                                ]}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -264,7 +305,21 @@ export default function MarketingPage() {
                                                 </span>
                                             </td>
                                             <td style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)' }}>{p.expires}</td>
-                                            <td><button className={styles.actionBtn}><MoreVertical size={16} /></button></td>
+                                            <td>
+                                                <DropdownMenu
+                                                    trigger={
+                                                        <button
+                                                            className={styles.actionBtn}
+                                                        >
+                                                            <MoreVertical size={16} />
+                                                        </button>
+                                                    }
+                                                    items={[
+                                                        { label: 'Edit Code', icon: <Tag size={14} />, onClick: () => { setSelectedPromo(p); setIsPromoEditOpen(true); } },
+                                                        { label: 'Delete', destructive: true, icon: <Trash2 size={14} />, onClick: () => { setSelectedPromo(p); setIsPromoDeleteOpen(true); } },
+                                                    ]}
+                                                />
+                                            </td>
                                         </tr>
                                     );
                                 })}
@@ -279,7 +334,12 @@ export default function MarketingPage() {
                     {messageTemplates
                         .filter(m => m.name.toLowerCase().includes(search.toLowerCase()))
                         .map((msg) => (
-                            <MessageCard key={msg.id} msg={msg} />
+                            <MessageCard
+                                key={msg.id}
+                                msg={msg}
+                                onEdit={() => { setSelectedMsg(msg); setIsMsgEditOpen(true); }}
+                                onDelete={() => { setSelectedMsg(msg); setIsMsgDeleteOpen(true); }}
+                            />
                         ))}
                 </div>
             )}
@@ -299,16 +359,170 @@ export default function MarketingPage() {
                     </button>
                 </div>
             )}
+            {/* ─── OFFER MODALS ─── */}
+            <SlideOver
+                open={isOfferAddOpen || isOfferEditOpen}
+                onClose={() => { setIsOfferAddOpen(false); setIsOfferEditOpen(false); setSelectedOffer(null); }}
+                title={isOfferEditOpen ? 'Edit Offer' : 'New Offer'}
+                footer={
+                    <div style={{ display: 'flex', gap: 'var(--space-3)', width: '100%' }}>
+                        <Button variant="outline" style={{ flex: 1 }} onClick={() => { setIsOfferAddOpen(false); setIsOfferEditOpen(false); }}>Cancel</Button>
+                        <Button style={{ flex: 1 }} onClick={() => { setIsOfferAddOpen(false); setIsOfferEditOpen(false); addToast('success', isOfferEditOpen ? 'Offer updated successfully' : 'Offer created'); }}>
+                            {isOfferEditOpen ? 'Update' : 'Create'}
+                        </Button>
+                    </div>
+                }
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    <Input label="Offer Name" defaultValue={selectedOffer?.name} placeholder="e.g. Summer Special" />
+                    <Input label="Description" defaultValue={selectedOffer?.desc} />
+                    <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+                        <Input label="Discount" defaultValue={selectedOffer?.discount} style={{ flex: 1 }} />
+                        <Input type="date" label="Valid Until" defaultValue={selectedOffer?.validUntil ? new Date(selectedOffer.validUntil).toISOString().split('T')[0] : ''} style={{ flex: 1 }} />
+                    </div>
+                    <Select label="Status" value={selectedOffer?.status || 'active'} options={[{ label: 'Active', value: 'active' }, { label: 'Draft', value: 'draft' }, { label: 'Scheduled', value: 'scheduled' }, { label: 'Expired', value: 'expired' }]} />
+                </div>
+            </SlideOver>
+
+            <Modal
+                open={isOfferDeleteOpen}
+                onClose={() => setIsOfferDeleteOpen(false)}
+                title="Delete Offer"
+                footer={
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+                        <Button variant="ghost" onClick={() => setIsOfferDeleteOpen(false)}>Cancel</Button>
+                        <Button variant="destructive" onClick={() => { setIsOfferDeleteOpen(false); addToast('error', 'Offer deleted permanently'); }}>Delete</Button>
+                    </div>
+                }
+            >
+                <p style={{ color: 'var(--text-secondary)' }}>Are you sure you want to delete <strong>{selectedOffer?.name}</strong>? This action cannot be undone.</p>
+            </Modal>
+
+            {/* ─── PROMO CODE MODALS ─── */}
+            <SlideOver
+                open={isPromoAddOpen || isPromoEditOpen}
+                onClose={() => { setIsPromoAddOpen(false); setIsPromoEditOpen(false); setSelectedPromo(null); }}
+                title={isPromoEditOpen ? 'Edit Promo Code' : 'New Promo Code'}
+                footer={
+                    <div style={{ display: 'flex', gap: 'var(--space-3)', width: '100%' }}>
+                        <Button variant="outline" style={{ flex: 1 }} onClick={() => { setIsPromoAddOpen(false); setIsPromoEditOpen(false); }}>Cancel</Button>
+                        <Button style={{ flex: 1 }} onClick={() => { setIsPromoAddOpen(false); setIsPromoEditOpen(false); addToast('success', isPromoEditOpen ? 'Promo code updated' : 'Promo code created'); }}>
+                            {isPromoEditOpen ? 'Update' : 'Create'}
+                        </Button>
+                    </div>
+                }
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    <Input label="Promo Code" defaultValue={selectedPromo?.code} placeholder="e.g. SUMMER20" style={{ textTransform: 'uppercase' }} />
+                    <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+                        <Select label="Type" value={selectedPromo?.type || 'Percentage'} style={{ flex: 1 }} options={[{ label: 'Percentage', value: 'Percentage' }, { label: 'Fixed Amount', value: 'Fixed' }]} />
+                        <Input label="Value" defaultValue={selectedPromo?.value} style={{ flex: 1 }} />
+                    </div>
+                    <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+                        <Input label="Min Spend (EGP)" type="number" defaultValue={selectedPromo?.minSpend} style={{ flex: 1 }} />
+                        <Input label="Max Uses" type="number" defaultValue={selectedPromo?.maxUses} style={{ flex: 1 }} />
+                    </div>
+                    <Input type="date" label="Expiry Date" defaultValue={selectedPromo?.expires ? new Date(selectedPromo.expires).toISOString().split('T')[0] : ''} />
+                    <Select label="Status" value={selectedPromo?.status || 'active'} options={[{ label: 'Active', value: 'active' }, { label: 'Scheduled', value: 'scheduled' }, { label: 'Expired', value: 'expired' }]} />
+                </div>
+            </SlideOver>
+
+            <Modal
+                open={isPromoDeleteOpen}
+                onClose={() => setIsPromoDeleteOpen(false)}
+                title="Delete Promo Code"
+                footer={
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+                        <Button variant="ghost" onClick={() => setIsPromoDeleteOpen(false)}>Cancel</Button>
+                        <Button variant="destructive" onClick={() => { setIsPromoDeleteOpen(false); addToast('error', 'Promo code deleted'); }}>Delete</Button>
+                    </div>
+                }
+            >
+                <p style={{ color: 'var(--text-secondary)' }}>Are you sure you want to delete the code <strong>{selectedPromo?.code}</strong>?</p>
+            </Modal>
+
+            {/* ─── MESSAGE TEMPLATE MODALS ─── */}
+            <SlideOver
+                open={isMsgAddOpen || isMsgEditOpen}
+                onClose={() => { setIsMsgAddOpen(false); setIsMsgEditOpen(false); setSelectedMsg(null); }}
+                title={isMsgEditOpen ? 'Edit Message Template' : 'New Template'}
+                footer={
+                    <div style={{ display: 'flex', gap: 'var(--space-3)', width: '100%' }}>
+                        <Button variant="outline" style={{ flex: 1 }} onClick={() => { setIsMsgAddOpen(false); setIsMsgEditOpen(false); }}>Cancel</Button>
+                        <Button style={{ flex: 1 }} onClick={() => { setIsMsgAddOpen(false); setIsMsgEditOpen(false); addToast('success', isMsgEditOpen ? 'Template updated' : 'Template created'); }}>
+                            {isMsgEditOpen ? 'Update' : 'Create'}
+                        </Button>
+                    </div>
+                }
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    <Input label="Template Name" defaultValue={selectedMsg?.name} placeholder="e.g. Birthday Greeting" />
+                    <div>
+                        <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', marginBottom: 'var(--space-1)', display: 'block' }}>Message Body</label>
+                        <textarea
+                            defaultValue={selectedMsg?.body}
+                            style={{ width: '100%', minHeight: 120, padding: 'var(--space-3)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', fontSize: 'var(--text-sm)', resize: 'vertical' }}
+                            placeholder="Use {name}, {service}, {date} for dynamic variables..."
+                        />
+                    </div>
+                    <div>
+                        <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', marginBottom: 'var(--space-2)', display: 'block' }}>Channels</label>
+                        <div style={{ display: 'flex', gap: 'var(--space-4)' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: 'var(--text-sm)' }}>
+                                <input type="checkbox" defaultChecked={selectedMsg?.channels.includes('sms')} /> SMS
+                            </label>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: 'var(--text-sm)' }}>
+                                <input type="checkbox" defaultChecked={selectedMsg?.channels.includes('whatsapp')} /> WhatsApp
+                            </label>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: 'var(--text-sm)' }}>
+                                <input type="checkbox" defaultChecked={selectedMsg?.channels.includes('email')} /> Email
+                            </label>
+                        </div>
+                    </div>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', marginTop: 'var(--space-2)' }}>
+                        <input type="checkbox" defaultChecked={selectedMsg?.enabled ?? true} /> Template Enabled
+                    </label>
+                </div>
+            </SlideOver>
+
+            <Modal
+                open={isMsgDeleteOpen}
+                onClose={() => setIsMsgDeleteOpen(false)}
+                title="Delete Template"
+                footer={
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+                        <Button variant="ghost" onClick={() => setIsMsgDeleteOpen(false)}>Cancel</Button>
+                        <Button variant="destructive" onClick={() => { setIsMsgDeleteOpen(false); addToast('error', 'Template deleted'); }}>Delete</Button>
+                    </div>
+                }
+            >
+                <p style={{ color: 'var(--text-secondary)' }}>Are you sure you want to delete the template <strong>{selectedMsg?.name}</strong>?</p>
+            </Modal>
         </div>
     );
 }
 
-function MessageCard({ msg }: { msg: typeof messageTemplates[0] }) {
+function MessageCard({ msg, onEdit, onDelete }: { msg: typeof messageTemplates[0], onEdit: () => void, onDelete: () => void }) {
     const [enabled, setEnabled] = useState(msg.enabled);
     return (
         <div className={styles.messageCard}>
             <div className={styles.messageHeader}>
-                <div className={styles.messageTitle}>{msg.name}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                    <DropdownMenu
+                        trigger={
+                            <button
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', padding: 0 }}
+                            >
+                                <MoreVertical size={16} />
+                            </button>
+                        }
+                        items={[
+                            { label: 'Edit Template', icon: <MessageSquare size={14} />, onClick: onEdit },
+                            { label: 'Delete Template', destructive: true, icon: <Trash2 size={14} />, onClick: onDelete }
+                        ]}
+                    />
+                    <div className={styles.messageTitle}>{msg.name}</div>
+                </div>
                 <div
                     className={styles.toggleSwitch}
                     style={{ background: enabled ? 'var(--color-primary-500)' : 'var(--color-gray-300)' }}

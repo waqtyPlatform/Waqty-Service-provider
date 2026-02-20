@@ -389,3 +389,37 @@ export function KPICard({ icon, iconBg, iconColor, value, label, trend }: KPICar
         </div>
     );
 }
+// ─── DropdownMenu ────────────────────────────────────────────────────
+interface DropdownItemProps { label: string; icon?: ReactNode; onClick: () => void; destructive?: boolean; }
+interface DropdownMenuProps { trigger: ReactNode; items: DropdownItemProps[]; align?: 'left' | 'right'; }
+
+export function DropdownMenu({ trigger, items, align = 'right' }: DropdownMenuProps) {
+    const [open, setOpen] = useState(false);
+    // Use a type cast or a more specific type if ref issues arise, but HTMLDivElement is correct for div
+    const ref = React.useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (ref.current && !ref.current.contains(event.target as Node)) {
+                setOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    return (
+        <div className={styles.dropdown} ref={ref}>
+            <div onClick={(e) => { e.stopPropagation(); e.preventDefault(); setOpen(!open); }}>{trigger}</div>
+            {open && (
+                <div className={`${styles.dropdownMenu} ${align === 'right' ? styles.dropdownRight : styles.dropdownLeft}`}>
+                    {items.map((item, i) => (
+                        <button key={i} className={`${styles.dropdownItem} ${item.destructive ? styles.dropdownItemDestructive : ''}`} onClick={(e) => { e.stopPropagation(); item.onClick(); setOpen(false); }}>
+                            {item.icon} {item.label}
+                        </button>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}

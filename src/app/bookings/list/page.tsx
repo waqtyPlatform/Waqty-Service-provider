@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
+import { DropdownMenu, useToast } from '@/components/ui';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
     CalendarDays,
     List,
@@ -17,6 +19,7 @@ import {
     X,
 } from 'lucide-react';
 import styles from '../bookings.module.css';
+import BookingsTabs from '../BookingsTabs';
 
 const statusConfig: Record<string, { class: string; label: string }> = {
     confirmed: { class: styles.statusConfirmed, label: 'Confirmed' },
@@ -52,6 +55,9 @@ export default function BookingListPage() {
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [paymentFilter, setPaymentFilter] = useState('all');
+    const [currentPage, setCurrentPage] = useState(1);
+    const router = useRouter();
+    const { addToast } = useToast();
 
     const filtered = bookings.filter((b) => {
         const matchSearch =
@@ -63,26 +69,19 @@ export default function BookingListPage() {
         return matchSearch && matchStatus && matchPayment;
     });
 
+    const itemsPerPage = 5;
+    const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
+    const currentItems = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+    // Reset pagination if search/filters change
+    React.useEffect(() => {
+        setCurrentPage(1);
+    }, [search, statusFilter, paymentFilter]);
+
     return (
         <div className={styles.bookingsPage}>
             {/* Tabs */}
-            <div className={styles.tabs}>
-                <Link href="/bookings" className={styles.tab}>
-                    <CalendarDays size={16} /> Calendar
-                </Link>
-                <Link href="/bookings/list" className={`${styles.tab} ${styles.tabActive}`}>
-                    <List size={16} /> Booking List
-                </Link>
-                <Link href="/bookings/rooms" className={styles.tab}>
-                    <DoorOpen size={16} /> Room Calendar
-                </Link>
-                <Link href="/bookings/new" className={styles.tab}>
-                    <Plus size={16} /> New Booking
-                </Link>
-                <Link href="/bookings/print" className={styles.tab}>
-                    <Printer size={16} /> Employee Print
-                </Link>
-            </div>
+            <BookingsTabs />
 
             {/* Controls */}
             <div className={styles.listControls}>
@@ -144,7 +143,7 @@ export default function BookingListPage() {
                         </tr>
                     </thead>
                     <tbody>
-                        {filtered.map((b) => (
+                        {currentItems.map((b) => (
                             <tr key={b.id}>
                                 <td className={styles.bookingId}>{b.id}</td>
                                 <td>{b.branch}</td>
@@ -170,9 +169,14 @@ export default function BookingListPage() {
                                     </span>
                                 </td>
                                 <td>
-                                    <button className={styles.actionBtn}>
-                                        <MoreVertical size={16} />
-                                    </button>
+                                    <DropdownMenu
+                                        trigger={<button className={styles.actionBtn}><MoreVertical size={16} /></button>}
+                                        items={[
+                                            { label: 'View Details', icon: <Search size={14} />, onClick: () => router.push(`/bookings/${b.id}`) },
+                                            { label: 'Edit Booking', icon: <List size={14} />, onClick: () => addToast('info', `Edit mode for ${b.id}`) },
+                                            { label: 'Cancel Booking', icon: <X size={14} />, onClick: () => addToast('error', `Booking ${b.id} cancelled`), destructive: true },
+                                        ]}
+                                    />
                                 </td>
                             </tr>
                         ))}
@@ -180,14 +184,34 @@ export default function BookingListPage() {
                 </table>
                 <div className={styles.pagination}>
                     <span className={styles.pageInfo}>
-                        Showing {filtered.length} of {bookings.length} bookings
+                        Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filtered.length)} of {filtered.length} bookings
                     </span>
                     <div className={styles.pageButtons}>
-                        <button className={styles.pageBtn}><ChevronLeft size={16} /></button>
-                        <button className={`${styles.pageBtn} ${styles.pageBtnActive}`}>1</button>
-                        <button className={styles.pageBtn}>2</button>
-                        <button className={styles.pageBtn}>3</button>
-                        <button className={styles.pageBtn}><ChevronRight size={16} /></button>
+                        <button
+                            className={styles.pageBtn}
+                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                            disabled={currentPage === 1}
+                        >
+                            <ChevronLeft size={16} />
+                        </button>
+
+                        {Array.from({ length: totalPages }).map((_, i) => (
+                            <button
+                                key={i}
+                                className={`${styles.pageBtn} ${currentPage === i + 1 ? styles.pageBtnActive : ''}`}
+                                onClick={() => setCurrentPage(i + 1)}
+                            >
+                                {i + 1}
+                            </button>
+                        ))}
+
+                        <button
+                            className={styles.pageBtn}
+                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                            disabled={currentPage === totalPages}
+                        >
+                            <ChevronRight size={16} />
+                        </button>
                     </div>
                 </div>
             </div>

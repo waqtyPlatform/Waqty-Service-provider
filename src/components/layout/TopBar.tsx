@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useSidebar } from './SidebarContext';
+import { useAuth } from '@/contexts/AuthContext';
 import {
     Search,
     Bell,
@@ -18,6 +19,7 @@ import styles from './TopBar.module.css';
 
 export default function TopBar() {
     const { setMobileOpen } = useSidebar();
+    const { user, logout } = useAuth();
     const [theme, setTheme] = useState<'light' | 'dark'>('light');
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const [branchMenuOpen, setBranchMenuOpen] = useState(false);
@@ -131,10 +133,10 @@ export default function TopBar() {
                         className={styles.userBtn}
                         onClick={() => setUserMenuOpen(!userMenuOpen)}
                     >
-                        <div className={styles.userAvatar}>A</div>
+                        <div className={styles.userAvatar}>{user?.name?.charAt(0) || '?'}</div>
                         <div className={styles.userInfo}>
-                            <span className={styles.userName}>Admin</span>
-                            <span className={styles.userRole}>Owner</span>
+                            <span className={styles.userName}>{user?.name || 'Loading...'}</span>
+                            <span className={styles.userRole} style={{ textTransform: 'capitalize' }}>{user?.role || 'Guest'}</span>
                         </div>
                         <ChevronDown size={14} />
                     </button>
@@ -149,7 +151,7 @@ export default function TopBar() {
                                 <span>Settings</span>
                             </button>
                             <div className={styles.dropdownDivider} />
-                            <button className={`${styles.dropdownItem} ${styles.dropdownDanger}`}>
+                            <button className={`${styles.dropdownItem} ${styles.dropdownDanger}`} onClick={logout}>
                                 <LogOut size={16} />
                                 <span>Log Out</span>
                             </button>

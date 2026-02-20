@@ -7,8 +7,15 @@ import { SidebarProvider, useSidebar } from './SidebarContext';
 import { ToastProvider } from '@/components/ui';
 import styles from './AppShell.module.css';
 
+import { usePathname } from 'next/navigation';
+
 function AppContent({ children }: { children: React.ReactNode }) {
     const { collapsed } = useSidebar();
+    const pathname = usePathname();
+
+    if (pathname === '/login') {
+        return <div style={{ minHeight: '100vh', background: 'var(--bg-secondary)' }}>{children}</div>;
+    }
 
     return (
         <div className={`${styles.layout} ${collapsed ? styles.sidebarCollapsed : ''}`}>
