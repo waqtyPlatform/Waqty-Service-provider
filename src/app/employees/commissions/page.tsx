@@ -48,10 +48,17 @@ export default function CommissionsPage() {
     const [startDate, setStartDate] = useState(new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0]);
     const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
 
+    const [serviceFilter, setServiceFilter] = useState('All');
+    const [segmentFilter, setSegmentFilter] = useState('All');
+    const [statusFilter, setStatusFilter] = useState('All');
+
     const [displayedData, setDisplayedData] = useState(allCommissionsData);
     const [isCalculating, setIsCalculating] = useState(false);
 
     const employees = ['All', ...Array.from(new Set(allCommissionsData.map(d => d.employee)))];
+    const services = ['All', ...Array.from(new Set(allCommissionsData.map(d => d.service)))];
+    const segments = ['All', ...Array.from(new Set(allCommissionsData.map(d => d.segment)))];
+    const statuses = ['All', 'Target Hit', 'Over Target (120%+)', 'Over Target (150%+)', 'Short'];
 
     const handleCalculate = () => {
         setIsCalculating(true);
@@ -72,10 +79,16 @@ export default function CommissionsPage() {
         addToast('info', 'Exporting commission report as CSV...');
     };
 
-    const totalComm = displayedData.reduce((acc, row) => acc + row.commission, 0);
-    const totalRev = displayedData.reduce((acc, row) => acc + row.revenue, 0);
-    const avgRate = totalRev > 0 ? ((totalComm / totalRev) * 100).toFixed(1) : '0.0';
+    // TAB 0: By Services
+    const tab0Data = useMemo(() => {
+        return displayedData.filter(item => serviceFilter === 'All' || item.service === serviceFilter);
+    }, [displayedData, serviceFilter]);
 
+    const totalRev0 = tab0Data.reduce((acc, row) => acc + row.revenue, 0);
+    const totalComm0 = tab0Data.reduce((acc, row) => acc + row.commission, 0);
+    const avgRate0 = totalRev0 > 0 ? ((totalComm0 / totalRev0) * 100).toFixed(1) : '0.0';
+
+    // TAB 1: By Segments
     const aggregatedSegments = useMemo(() => {
         const segMap: Record<string, any> = {};
         displayedData.forEach(curr => {
@@ -94,6 +107,15 @@ export default function CommissionsPage() {
         }));
     }, [displayedData]);
 
+    const tab1Data = useMemo(() => {
+        return aggregatedSegments.filter((item: any) => segmentFilter === 'All' || item.segment === segmentFilter);
+    }, [aggregatedSegments, segmentFilter]);
+
+    const totalRev1 = tab1Data.reduce((acc: any, row: any) => acc + row.revenue, 0);
+    const totalComm1 = tab1Data.reduce((acc: any, row: any) => acc + row.commission, 0);
+    const avgRate1 = totalRev1 > 0 ? ((totalComm1 / totalRev1) * 100).toFixed(1) : '0.0';
+
+    // TAB 2: By Target
     const aggregatedTargets = useMemo(() => {
         const empMap: Record<string, number> = {};
         displayedData.forEach(curr => {
@@ -131,12 +153,17 @@ export default function CommissionsPage() {
         });
     }, [displayedData]);
 
-    const totalTargetBonus = aggregatedTargets.reduce((acc, row) => acc + row.bonusAmount, 0);
+    const tab2Data = useMemo(() => {
+        return aggregatedTargets.filter((item: any) => statusFilter === 'All' || item.status === statusFilter);
+    }, [aggregatedTargets, statusFilter]);
 
-    // Extraction Flow Logic (Deducting Material Cost before applying commission)
+    const totalRev2 = tab2Data.reduce((acc: any, row: any) => acc + row.actualRevenue, 0);
+    const totalTargetBonus2 = tab2Data.reduce((acc: any, row: any) => acc + row.bonusAmount, 0);
+
+    // TAB 3: Extraction
     const aggregatedExtraction = useMemo(() => {
         return displayedData.map(curr => {
-            const extractionCost = curr.revenue * 0.15; // Simulate a 15% flat extraction for products/materials
+            const extractionCost = curr.revenue * 0.15; 
             const netRevenue = curr.revenue - extractionCost;
             const newCommission = netRevenue * (curr.rate / 100);
 
@@ -149,11 +176,14 @@ export default function CommissionsPage() {
         });
     }, [displayedData]);
 
-    const totalExtGross = aggregatedExtraction.reduce((acc, row) => acc + row.revenue, 0);
-    const totalExtCost = aggregatedExtraction.reduce((acc, row) => acc + row.extractionCost, 0);
-    const totalExtNet = aggregatedExtraction.reduce((acc, row) => acc + row.netRevenue, 0);
-    const totalExtCommission = aggregatedExtraction.reduce((acc, row) => acc + row.newCommission, 0);
+    const tab3Data = useMemo(() => {
+        return aggregatedExtraction.filter((item: any) => serviceFilter === 'All' || item.service === serviceFilter);
+    }, [aggregatedExtraction, serviceFilter]);
 
+    const totalExtGross3 = tab3Data.reduce((acc: any, row: any) => acc + row.revenue, 0);
+    const totalExtCost3 = tab3Data.reduce((acc: any, row: any) => acc + row.extractionCost, 0);
+    const totalExtNet3 = tab3Data.reduce((acc: any, row: any) => acc + row.netRevenue, 0);
+    const totalExtCommission3 = tab3Data.reduce((acc: any, row: any) => acc + row.newCommission, 0);
 
     return (
         <div style={s.page}>
@@ -177,37 +207,37 @@ export default function CommissionsPage() {
                 {activeTab === 3 ? (
                     <>
                          <div style={s.kpi}>
-                            <div style={s.kpiVal}>{totalExtNet.toLocaleString()} EGP</div>
+                            <div style={s.kpiVal}>{totalExtNet3.toLocaleString()} EGP</div>
                             <div style={s.kpiLbl}>Total Net Revenue</div>
                         </div>
                         <div style={s.kpi}>
-                            <div style={{ ...s.kpiVal, color: 'var(--color-primary-600)' }}>{totalExtCommission.toLocaleString()} EGP</div>
+                            <div style={{ ...s.kpiVal, color: 'var(--color-primary-600)' }}>{totalExtCommission3.toLocaleString()} EGP</div>
                             <div style={s.kpiLbl}>Extracted Commissions</div>
                         </div>
                         <div style={s.kpi}>
-                            <div style={{ ...s.kpiVal, color: '#ef4444' }}>{totalExtCost.toLocaleString()} EGP</div>
+                            <div style={{ ...s.kpiVal, color: '#ef4444' }}>{totalExtCost3.toLocaleString()} EGP</div>
                             <div style={s.kpiLbl}>Total Material Cost (15%)</div>
                         </div>
                     </>
                 ) : (
                     <>
                         <div style={s.kpi}>
-                            <div style={s.kpiVal}>{totalRev.toLocaleString()} EGP</div>
+                            <div style={s.kpiVal}>{(activeTab === 0 ? totalRev0 : activeTab === 1 ? totalRev1 : totalRev2).toLocaleString()} EGP</div>
                             <div style={s.kpiLbl}>Total Revenue Generated</div>
                         </div>
                         {activeTab === 2 ? (
                             <div style={s.kpi}>
-                                <div style={{ ...s.kpiVal, color: 'var(--color-primary-600)' }}>{totalTargetBonus.toLocaleString()} EGP</div>
+                                <div style={{ ...s.kpiVal, color: 'var(--color-primary-600)' }}>{totalTargetBonus2.toLocaleString()} EGP</div>
                                 <div style={s.kpiLbl}>Total Target Bonuses</div>
                             </div>
                         ) : (
                             <div style={s.kpi}>
-                                <div style={{ ...s.kpiVal, color: 'var(--color-primary-600)' }}>{totalComm.toLocaleString()} EGP</div>
+                                <div style={{ ...s.kpiVal, color: 'var(--color-primary-600)' }}>{(activeTab === 0 ? totalComm0 : totalComm1).toLocaleString()} EGP</div>
                                 <div style={s.kpiLbl}>Total Commissions Payout</div>
                             </div>
                         )}
                         <div style={s.kpi}>
-                            <div style={s.kpiVal}>{avgRate}%</div>
+                            <div style={s.kpiVal}>{activeTab === 0 ? avgRate0 : activeTab === 1 ? avgRate1 : '0.0'}%</div>
                             <div style={s.kpiLbl}>Average Commission Rate</div>
                         </div>
                     </>
@@ -224,6 +254,41 @@ export default function CommissionsPage() {
                         style={{ margin: 0, height: 40 }}
                     />
                 </div>
+                
+                {(activeTab === 0 || activeTab === 3) && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', minWidth: 180 }}>
+                        <span style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--font-medium)', color: 'var(--text-secondary)' }}>Service Filter</span>
+                        <Select 
+                            value={serviceFilter} 
+                            onChange={(e) => setServiceFilter(e.target.value)}
+                            options={services.map(s => ({ label: s === 'All' ? 'All Services' : s, value: s }))}
+                            style={{ margin: 0, height: 40 }}
+                        />
+                    </div>
+                )}
+                {activeTab === 1 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', minWidth: 180 }}>
+                        <span style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--font-medium)', color: 'var(--text-secondary)' }}>Segment Filter</span>
+                        <Select 
+                            value={segmentFilter} 
+                            onChange={(e) => setSegmentFilter(e.target.value)}
+                            options={segments.map(s => ({ label: s === 'All' ? 'All Segments' : s, value: s }))}
+                            style={{ margin: 0, height: 40 }}
+                        />
+                    </div>
+                )}
+                {activeTab === 2 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', minWidth: 180 }}>
+                        <span style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--font-medium)', color: 'var(--text-secondary)' }}>Status Filter</span>
+                        <Select 
+                            value={statusFilter} 
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                            options={statuses.map(s => ({ label: s === 'All' ? 'All Statuses' : s, value: s }))}
+                            style={{ margin: 0, height: 40 }}
+                        />
+                    </div>
+                )}
+
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
                     <span style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--font-medium)', color: 'var(--text-secondary)' }}>Start Date</span>
                     <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} style={{ margin: 0, height: 40 }} />
@@ -247,7 +312,7 @@ export default function CommissionsPage() {
 
             <div style={s.tableWrapper}>
                 {activeTab === 0 ? (
-                    displayedData.length > 0 ? (
+                    tab0Data.length > 0 ? (
                         <table style={s.table as React.CSSProperties}>
                             <thead>
                                 <tr>
@@ -257,7 +322,7 @@ export default function CommissionsPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {displayedData.map((row) => (
+                                {tab0Data.map((row) => (
                                     <tr key={row.id} className="hoverRow">
                                         <td style={s.td}>{row.date}</td>
                                         <td style={{ ...s.td, fontWeight: 'var(--font-medium)' } as React.CSSProperties}>{row.employee}</td>
@@ -273,10 +338,10 @@ export default function CommissionsPage() {
                             </tbody>
                             <tfoot>
                                 <tr style={{ background: 'var(--bg-secondary)' }}>
-                                    <td style={{ ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties} colSpan={4}>Total Aggregate</td>
-                                    <td style={{ ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties}>{totalRev.toLocaleString()} EGP</td>
+                                    <td style={{ ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties} colSpan={4}>Filtered Aggregate</td>
+                                    <td style={{ ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties}>{totalRev0.toLocaleString()} EGP</td>
                                     <td style={s.td}></td>
-                                    <td style={{ ...s.td, fontWeight: 'var(--font-bold)', color: 'var(--color-primary-600)' } as React.CSSProperties}>{totalComm.toLocaleString()} EGP</td>
+                                    <td style={{ ...s.td, fontWeight: 'var(--font-bold)', color: 'var(--color-primary-600)' } as React.CSSProperties}>{totalComm0.toLocaleString()} EGP</td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -284,11 +349,11 @@ export default function CommissionsPage() {
                         <EmptyState 
                             icon={<Clock size={32} color="var(--text-tertiary)" />} 
                             title="No commissions found" 
-                            description="Adjust your employee or date filters to see results." 
+                            description="Adjust your employee, service, or date filters to see results." 
                         />
                     )
                 ) : activeTab === 1 ? (
-                    aggregatedSegments.length > 0 ? (
+                    tab1Data.length > 0 ? (
                         <table style={s.table as React.CSSProperties}>
                             <thead>
                                 <tr>
@@ -298,7 +363,7 @@ export default function CommissionsPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {aggregatedSegments.map((row: any) => (
+                                {tab1Data.map((row: any) => (
                                     <tr key={row.id} className="hoverRow">
                                         <td style={{ ...s.td, fontWeight: 'var(--font-medium)' } as React.CSSProperties}>{row.employee}</td>
                                         <td style={{ ...s.td, color: 'var(--color-primary-600)', fontWeight: 'var(--font-medium)' } as React.CSSProperties}>{row.segment}</td>
@@ -313,10 +378,10 @@ export default function CommissionsPage() {
                             </tbody>
                             <tfoot>
                                 <tr style={{ background: 'var(--bg-secondary)' }}>
-                                    <td style={{ ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties} colSpan={3}>Total Sub-Segments</td>
-                                    <td style={{ ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties}>{totalRev.toLocaleString()} EGP</td>
+                                    <td style={{ ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties} colSpan={3}>Filtered Sub-Segments</td>
+                                    <td style={{ ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties}>{totalRev1.toLocaleString()} EGP</td>
                                     <td style={s.td}></td>
-                                    <td style={{ ...s.td, fontWeight: 'var(--font-bold)', color: 'var(--color-primary-600)' } as React.CSSProperties}>{totalComm.toLocaleString()} EGP</td>
+                                    <td style={{ ...s.td, fontWeight: 'var(--font-bold)', color: 'var(--color-primary-600)' } as React.CSSProperties}>{totalComm1.toLocaleString()} EGP</td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -324,11 +389,11 @@ export default function CommissionsPage() {
                         <EmptyState 
                             icon={<PieChart size={32} color="var(--text-tertiary)" />} 
                             title="No segments found" 
-                            description="Adjust your employee or date filters to see segment results." 
+                            description="Adjust your employee, segment, or date filters to see segment results." 
                         />
                     )
                 ) : activeTab === 2 ? (
-                     aggregatedTargets.length > 0 ? (
+                     tab2Data.length > 0 ? (
                         <table style={s.table as React.CSSProperties}>
                             <thead>
                                 <tr>
@@ -338,7 +403,7 @@ export default function CommissionsPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {aggregatedTargets.map((row: any) => (
+                                {tab2Data.map((row: any) => (
                                     <tr key={row.id} className="hoverRow">
                                         <td style={{ ...s.td, fontWeight: 'var(--font-medium)' } as React.CSSProperties}>{row.employee}</td>
                                         <td style={s.td}>{row.targetRev.toLocaleString()} EGP</td>
@@ -357,10 +422,10 @@ export default function CommissionsPage() {
                             </tbody>
                             <tfoot>
                                 <tr style={{ background: 'var(--bg-secondary)' }}>
-                                    <td style={{ ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties} colSpan={2}>Aggregate Portfolio</td>
-                                    <td style={{ ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties}>{totalRev.toLocaleString()} EGP</td>
+                                    <td style={{ ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties} colSpan={2}>Filtered Portfolio</td>
+                                    <td style={{ ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties}>{totalRev2.toLocaleString()} EGP</td>
                                     <td style={s.td} colSpan={2}></td>
-                                    <td style={{ ...s.td, fontWeight: 'var(--font-bold)', color: 'var(--color-primary-600)' } as React.CSSProperties}>{totalTargetBonus.toLocaleString()} EGP</td>
+                                    <td style={{ ...s.td, fontWeight: 'var(--font-bold)', color: 'var(--color-primary-600)' } as React.CSSProperties}>{totalTargetBonus2.toLocaleString()} EGP</td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -368,11 +433,11 @@ export default function CommissionsPage() {
                         <EmptyState 
                             icon={<Target size={32} color="var(--text-tertiary)" />} 
                             title="No target data found" 
-                            description="Adjust your employee or date filters to visualize target progression." 
+                            description="Adjust your employee, status, or date filters to visualize target progression." 
                         />
                     )
                 ) : activeTab === 3 ? (
-                    aggregatedExtraction.length > 0 ? (
+                    tab3Data.length > 0 ? (
                         <table style={s.table as React.CSSProperties}>
                             <thead>
                                 <tr>
@@ -382,7 +447,7 @@ export default function CommissionsPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {aggregatedExtraction.map((row: any) => (
+                                {tab3Data.map((row: any) => (
                                     <tr key={row.id} className="hoverRow">
                                         <td style={s.td}>{row.date}</td>
                                         <td style={{ ...s.td, fontWeight: 'var(--font-medium)' } as React.CSSProperties}>{row.employee}</td>
@@ -399,12 +464,12 @@ export default function CommissionsPage() {
                             </tbody>
                             <tfoot>
                                 <tr style={{ background: 'var(--bg-secondary)' }}>
-                                    <td style={{ ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties} colSpan={3}>Aggregate Net Portfolio</td>
-                                    <td style={{ ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties}>{totalExtGross.toLocaleString()} EGP</td>
-                                    <td style={{ ...s.td, fontWeight: 'var(--font-bold)', color: '#ef4444' } as React.CSSProperties}>- {totalExtCost.toLocaleString()} EGP</td>
-                                    <td style={{ ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties}>{totalExtNet.toLocaleString()} EGP</td>
+                                    <td style={{ ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties} colSpan={3}>Filtered Net Portfolio</td>
+                                    <td style={{ ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties}>{totalExtGross3.toLocaleString()} EGP</td>
+                                    <td style={{ ...s.td, fontWeight: 'var(--font-bold)', color: '#ef4444' } as React.CSSProperties}>- {totalExtCost3.toLocaleString()} EGP</td>
+                                    <td style={{ ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties}>{totalExtNet3.toLocaleString()} EGP</td>
                                     <td style={s.td}></td>
-                                    <td style={{ ...s.td, fontWeight: 'var(--font-bold)', color: 'var(--color-primary-600)' } as React.CSSProperties}>{totalExtCommission.toLocaleString()} EGP</td>
+                                    <td style={{ ...s.td, fontWeight: 'var(--font-bold)', color: 'var(--color-primary-600)' } as React.CSSProperties}>{totalExtCommission3.toLocaleString()} EGP</td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -412,16 +477,10 @@ export default function CommissionsPage() {
                         <EmptyState 
                             icon={<Calculator size={32} color="var(--text-tertiary)" />} 
                             title="No extraction data found" 
-                            description="Adjust your employee or date filters to visualize extraction." 
+                            description="Adjust your employee, service, or date filters to visualize extraction." 
                         />
                     )
-                ) : (
-                    <EmptyState 
-                        icon={<Calculator size={32} color="var(--text-tertiary)" />} 
-                        title={`${subTabs[activeTab]} calculations coming soon`} 
-                        description="This analytic report is currently under development." 
-                    />
-                )}
+                ) : null}
             </div>
 
             <style>{`
