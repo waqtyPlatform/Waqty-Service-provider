@@ -8,8 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Feature branching setup for `development` branch separation from `main` production environment.
-- Git initialization across the workspace to preserve historical architecture integrity.
+- Context-aware UI filters inside the `Commissions` module toolbar that dynamically adapt based on active tabs (Service Filter, Segment Filter, Status Filter).
+- Live KPI reloading mechanism dependent on secondary user-selected filters allowing immediate analytical pivoting independent of the main 'Calculate' pipeline structure.
 
 ## [v0.1.0] - 2026-02-21
 
