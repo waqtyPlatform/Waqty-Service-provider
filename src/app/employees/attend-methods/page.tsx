@@ -1,9 +1,10 @@
 'use client';
 
-import React from 'react';
-import { Fingerprint, Smartphone, Monitor, ToggleLeft, ToggleRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { Fingerprint, Smartphone, Monitor } from 'lucide-react';
+import { Switch, useToast } from '@/components/ui';
 
-const methods = [
+const initialMethods = [
     { id: 1, name: 'Fingerprint Scanner', type: 'Biometric', device: 'BioStation A2', schedule: 'All Shifts', active: true, icon: 'fingerprint' },
     { id: 2, name: 'Face Recognition', type: 'Biometric', device: 'FaceStation F2', schedule: 'All Shifts', active: true, icon: 'monitor' },
     { id: 3, name: 'Mobile App Check-in', type: 'GPS', device: 'Employee App', schedule: 'Morning Shift', active: true, icon: 'smartphone' },
@@ -24,15 +25,26 @@ const s: Record<string, React.CSSProperties> = {
 };
 
 export default function AttendMethodsPage() {
+    const [methodsList, setMethodsList] = useState(initialMethods);
+    const { addToast } = useToast();
+
+    const handleToggle = (id: number, currentStatus: boolean, name: string) => {
+        setMethodsList(methodsList.map(m => m.id === id ? { ...m, active: !currentStatus } : m));
+        addToast(
+            !currentStatus ? 'success' : 'warning',
+            `${name} has been ${!currentStatus ? 'enabled' : 'disabled'}.`
+        );
+    };
+
     return (
         <div style={s.page}>
             <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' }}>Attendance Methods</div>
             <div style={s.grid}>
-                {methods.map(m => (
-                    <div key={m.id} style={{ ...s.card, opacity: m.active ? 1 : 0.6 }}>
+                {methodsList.map(m => (
+                    <div key={m.id} style={{ ...s.card, opacity: m.active ? 1 : 0.6, transition: 'opacity 0.2s' }}>
                         <div style={s.cardHead}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                                <div style={s.icon}>
+                                <div style={{ ...s.icon, filter: m.active ? 'none' : 'grayscale(100%)' }}>
                                     {m.icon === 'fingerprint' ? <Fingerprint size={20} /> : m.icon === 'smartphone' ? <Smartphone size={20} /> : <Monitor size={20} />}
                                 </div>
                                 <div>
@@ -40,7 +52,10 @@ export default function AttendMethodsPage() {
                                     <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{m.type}</div>
                                 </div>
                             </div>
-                            {m.active ? <ToggleRight size={28} style={{ ...s.toggle, color: 'var(--color-success)' }} /> : <ToggleLeft size={28} style={{ ...s.toggle, color: 'var(--text-tertiary)' }} />}
+                            <Switch
+                                checked={m.active}
+                                onChange={() => handleToggle(m.id, m.active, m.name)}
+                            />
                         </div>
                         <div style={s.row}><span style={s.label}>Device</span><span style={s.val}>{m.device}</span></div>
                         <div style={s.row}><span style={s.label}>Schedule</span><span style={s.val}>{m.schedule}</span></div>
