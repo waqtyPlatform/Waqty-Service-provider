@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ShoppingBag, Package, Search, Plus, Star, Clock, Check, Users } from 'lucide-react';
+import { ShoppingBag, Package, Search, Plus, Star, Clock, Check, Users, MoreVertical, Edit, Trash2 } from 'lucide-react';
+import { useToast, DropdownMenu, SlideOver, Modal, Button, Input, Select } from '@/components/ui';
 
 const packages = [
     { id: 1, name: 'Bridal Glow Package', price: 2500, oldPrice: 3200, sessions: 8, sold: 34, services: ['Hair Styling', 'Facial', 'Manicure', 'Pedicure', 'Makeup', 'Waxing', 'Lash Extensions', 'Body Scrub'], status: 'active', validity: '60 days', color: '#F59E0B' },
@@ -39,7 +40,13 @@ const s: Record<string, React.CSSProperties> = {
 };
 
 export default function PackagesPage() {
+    const { addToast } = useToast();
     const [search, setSearch] = useState('');
+    const [isAddOpen, setIsAddOpen] = useState(false);
+    const [isEditOpen, setIsEditOpen] = useState(false);
+    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+    const [selectedPackage, setSelectedPackage] = useState<any>(null);
+
     const filtered = packages.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
 
     return (
@@ -54,7 +61,7 @@ export default function PackagesPage() {
                     <Search size={16} style={s.searchIcon as React.CSSProperties} />
                     <input style={s.searchInput} placeholder="Search packages..." value={search} onChange={e => setSearch(e.target.value)} />
                 </div>
-                <button style={s.addBtn}><Plus size={16} /> New Package</button>
+                <button style={s.addBtn} onClick={() => setIsAddOpen(true)}><Plus size={16} /> New Package</button>
             </div>
 
             <div style={s.grid}>
@@ -77,6 +84,15 @@ export default function PackagesPage() {
                                     </span>
                                 </div>
                             </div>
+                            <div style={{ marginLeft: 'auto' }}>
+                                <DropdownMenu
+                                    trigger={<button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)' }}><MoreVertical size={16} /></button>}
+                                    items={[
+                                        { label: 'Edit Package', icon: <Edit size={14} />, onClick: () => { setSelectedPackage(pkg); setIsEditOpen(true); } },
+                                        { label: 'Delete Package', destructive: true, icon: <Trash2 size={14} />, onClick: () => { setSelectedPackage(pkg); setIsDeleteOpen(true); } }
+                                    ]}
+                                />
+                            </div>
                         </div>
 
                         <div style={s.services as React.CSSProperties}>
@@ -93,6 +109,71 @@ export default function PackagesPage() {
                     </div>
                 ))}
             </div>
+
+            {/* Add Package SlideOver */}
+            <SlideOver
+                open={isAddOpen}
+                onClose={() => setIsAddOpen(false)}
+                title="Create New Package"
+                footer={
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button>
+                        <Button onClick={() => { setIsAddOpen(false); addToast('success', 'Package created successfully'); }}>Save Package</Button>
+                    </div>
+                }
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    <Input label="Package Name" placeholder="e.g. Summer Glow" />
+                    <Input label="Price (EGP)" type="number" placeholder="0.00" />
+                    <Input label="Regular Price (EGP)" type="number" placeholder="0.00" />
+                    <Input label="Sessions Include" type="number" placeholder="0" />
+                    <Select label="Validity" options={[{ label: '30 Days', value: '30' }, { label: '60 Days', value: '60' }, { label: '90 Days', value: '90' }]} />
+                    <Select label="Status" options={[{ label: 'Active', value: 'active' }, { label: 'Draft', value: 'draft' }]} />
+                </div>
+            </SlideOver>
+
+            {/* Edit Package SlideOver */}
+            <SlideOver
+                open={isEditOpen}
+                onClose={() => { setIsEditOpen(false); setSelectedPackage(null); }}
+                title="Edit Package"
+                footer={
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>Cancel</Button>
+                        <Button onClick={() => { setIsEditOpen(false); addToast('success', 'Package updated successfully'); }}>Save Changes</Button>
+                    </div>
+                }
+            >
+                {selectedPackage && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                        <Input label="Package Name" defaultValue={selectedPackage.name} />
+                        <Input label="Price (EGP)" type="number" defaultValue={selectedPackage.price} />
+                        <Input label="Regular Price (EGP)" type="number" defaultValue={selectedPackage.oldPrice} />
+                        <Input label="Sessions Included" type="number" defaultValue={selectedPackage.sessions} />
+                        <Select label="Validity" defaultValue={selectedPackage.validity} options={[{ label: '30 Days', value: '30 days' }, { label: '60 Days', value: '60 days' }, { label: '90 Days', value: '90 days' }]} />
+                        <Select label="Status" defaultValue={selectedPackage.status} options={[{ label: 'Active', value: 'active' }, { label: 'Draft', value: 'draft' }]} />
+                    </div>
+                )}
+            </SlideOver>
+
+            {/* Delete Confirmation Modal */}
+            <Modal
+                open={isDeleteOpen}
+                onClose={() => { setIsDeleteOpen(false); setSelectedPackage(null); }}
+                title="Delete Package"
+                footer={
+                    <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
+                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
+                        <Button variant="destructive" onClick={() => { setIsDeleteOpen(false); addToast('error', 'Package deleted permanently'); }}>Confirm Delete</Button>
+                    </div>
+                }
+            >
+                <div>
+                    <p style={{ color: 'var(--text-secondary)' }}>
+                        Are you sure you want to delete the <strong>{selectedPackage?.name}</strong> package?
+                    </p>
+                </div>
+            </Modal>
         </div>
     );
 }

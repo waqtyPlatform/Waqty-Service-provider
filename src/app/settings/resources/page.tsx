@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
     Plus,
     Edit,
@@ -13,7 +13,11 @@ import {
 import {
     Button,
     Badge,
-    EmptyState
+    EmptyState,
+    useToast,
+    Modal,
+    Input,
+    Select
 } from '@/components/ui';
 import styles from './page.module.css';
 
@@ -26,6 +30,12 @@ const resources = [
 ];
 
 export default function ResourcesPage() {
+    const { addToast } = useToast();
+    const [isAddOpen, setIsAddOpen] = useState(false);
+    const [isEditOpen, setIsEditOpen] = useState(false);
+    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+    const [selectedResource, setSelectedResource] = useState<any>(null);
+
     return (
         <div className={styles.page}>
             <div className={styles.header}>
@@ -34,7 +44,7 @@ export default function ResourcesPage() {
                     <div className={styles.subtitle}>Define physical spaces and equipment for booking.</div>
                 </div>
                 <div className={styles.actions}>
-                    <Button><Plus size={16} /> Add Resource</Button>
+                    <Button onClick={() => setIsAddOpen(true)}><Plus size={16} /> Add Resource</Button>
                 </div>
             </div>
 
@@ -66,8 +76,8 @@ export default function ResourcesPage() {
                                     </td>
                                     <td>
                                         <div style={{ display: 'flex', gap: 8 }}>
-                                            <Button variant="ghost" size="sm" iconOnly><Edit size={14} /></Button>
-                                            <Button variant="destructive" size="sm" iconOnly><Trash2 size={14} /></Button>
+                                            <Button variant="ghost" size="sm" iconOnly onClick={() => { setSelectedResource(res); setIsEditOpen(true); }}><Edit size={14} /></Button>
+                                            <Button variant="destructive" size="sm" iconOnly onClick={() => { setSelectedResource(res); setIsDeleteOpen(true); }}><Trash2 size={14} /></Button>
                                         </div>
                                     </td>
                                 </tr>
@@ -76,6 +86,67 @@ export default function ResourcesPage() {
                     </table>
                 </div>
             </div>
-        </div>
+
+            {/* Add Resource Modal */}
+            <Modal
+                open={isAddOpen}
+                onClose={() => setIsAddOpen(false)}
+                title="Create New Resource"
+                footer={
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button>
+                        <Button onClick={() => { setIsAddOpen(false); addToast('success', 'Resource created successfully'); }}>Save Resource</Button>
+                    </div>
+                }
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    <Input label="Resource Name" placeholder="e.g. Styling Station 3" />
+                    <Select label="Type" options={[{ label: 'Chair', value: 'chair' }, { label: 'Room', value: 'room' }, { label: 'Equipment', value: 'equipment' }]} />
+                    <Input label="Capacity (Persons)" type="number" placeholder="1" />
+                    <Select label="Status" options={[{ label: 'Active', value: 'active' }, { label: 'Maintenance', value: 'maintenance' }]} />
+                </div>
+            </Modal>
+
+            {/* Edit Resource Modal */}
+            <Modal
+                open={isEditOpen}
+                onClose={() => { setIsEditOpen(false); setSelectedResource(null); }}
+                title="Edit Resource"
+                footer={
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>Cancel</Button>
+                        <Button onClick={() => { setIsEditOpen(false); addToast('success', 'Resource updated successfully'); }}>Save Changes</Button>
+                    </div>
+                }
+            >
+                {selectedResource && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                        <Input label="Resource Name" defaultValue={selectedResource.name} />
+                        <Select label="Type" defaultValue={selectedResource.type.toLowerCase()} options={[{ label: 'Chair', value: 'chair' }, { label: 'Room', value: 'room' }, { label: 'Equipment', value: 'equipment' }]} />
+                        <Input label="Capacity (Persons)" type="number" defaultValue={selectedResource.capacity} />
+                        <Select label="Status" defaultValue={selectedResource.status.toLowerCase()} options={[{ label: 'Active', value: 'active' }, { label: 'Maintenance', value: 'maintenance' }]} />
+                    </div>
+                )}
+            </Modal>
+
+            {/* Delete Confirmation Modal */}
+            <Modal
+                open={isDeleteOpen}
+                onClose={() => { setIsDeleteOpen(false); setSelectedResource(null); }}
+                title="Delete Resource"
+                footer={
+                    <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
+                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
+                        <Button variant="destructive" onClick={() => { setIsDeleteOpen(false); addToast('error', 'Resource deleted permanently'); }}>Confirm Delete</Button>
+                    </div>
+                }
+            >
+                <div>
+                    <p style={{ color: 'var(--text-secondary)' }}>
+                        Are you sure you want to delete <strong>{selectedResource?.name}</strong>?
+                    </p>
+                </div>
+            </Modal>
+        </div >
     );
 }

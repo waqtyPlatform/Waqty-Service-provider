@@ -16,7 +16,8 @@ export interface User {
 
 interface AuthContextType {
     user: User | null;
-    login: (user: User) => void;
+    requestOTP: (identifier: string) => Promise<{ success: boolean, type: 'email' | 'phone' }>;
+    verifyOTP: (identifier: string, code: string) => Promise<{ success: boolean, user?: User, error?: string }>;
     logout: () => void;
     loading: boolean;
 }
@@ -57,10 +58,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     }, [user, loading, pathname, router]);
 
-    const login = (userData: User) => {
-        setUser(userData);
-        localStorage.setItem('hagzy_user', JSON.stringify(userData));
+    const requestOTP = async (identifier: string) => {
+        // Simulate network delay
+        await new Promise(resolve => setTimeout(resolve, 800));
+
+        // Basic detection for demo: if it has an '@', it's an email; otherwise assume phone.
+        const type = identifier.includes('@') ? 'email' : 'phone';
+
+        // In a real app we'd dispatch the OTP here.
+        console.log(`Mock OTP requested for ${type}: ${identifier}`);
+        return { success: true, type } as const;
+    };
+
+    const verifyOTP = async (identifier: string, code: string) => {
+        // Simulate network delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        // For the demo, "123456" is the magical successful code.
+        if (code !== '123456') {
+            return { success: false, error: 'Invalid verification code' };
+        }
+
+        // Logic to get the right mock user based on the email. If they enter a random email, default to admin to appease the demo.
+        const mockUser = MOCK_USERS[identifier] || MOCK_USERS['clinic@hagzy.com'];
+
+        setUser(mockUser);
+        localStorage.setItem('hagzy_user', JSON.stringify(mockUser));
         router.push('/');
+        return { success: true, user: mockUser };
     };
 
     const logout = () => {
@@ -70,7 +95,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, loading }}>
+        <AuthContext.Provider value={{ user, requestOTP, verifyOTP, logout, loading }}>
             {!loading && children}
         </AuthContext.Provider>
     );

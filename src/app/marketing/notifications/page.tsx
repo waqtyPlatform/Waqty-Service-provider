@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Plus, Bell, Send, Smartphone, Mail, MessageSquare } from 'lucide-react';
+import { Plus, Bell, Send, Smartphone, Mail, MessageSquare, Edit, Trash2, MoreVertical } from 'lucide-react';
+import { useToast, DropdownMenu, SlideOver, Modal, Input, Button, Select } from '@/components/ui';
 
 import MarketingTabs from '@/components/MarketingTabs';
 
@@ -43,6 +44,12 @@ const s: Record<string, React.CSSProperties> = {
 };
 
 export default function NotificationsPage() {
+    const { addToast } = useToast();
+    const [isAddOpen, setIsAddOpen] = useState(false);
+    const [isEditOpen, setIsEditOpen] = useState(false);
+    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+    const [selectedNotification, setSelectedNotification] = useState<any>(null);
+
     const totalSent = notifications.reduce((a, n) => a + n.sent, 0);
     const totalOpened = notifications.reduce((a, n) => a + n.opened, 0);
 
@@ -56,10 +63,10 @@ export default function NotificationsPage() {
                 <div style={s.kpi}><div style={s.kpiVal}>{totalSent > 0 ? Math.round(totalOpened / totalSent * 100) : 0}%</div><div style={s.kpiLbl}>Open Rate</div></div>
             </div>
 
-            <div style={s.toolbar}><button style={s.addBtn}><Plus size={16} /> Compose</button></div>
+            <div style={s.toolbar}><button style={s.addBtn} onClick={() => setIsAddOpen(true)}><Plus size={16} /> Compose</button></div>
 
             <table style={s.table}>
-                <thead><tr>{['Title', 'Channel', 'Audience', 'Sent', 'Opened', 'Date', 'Status'].map(h => <th key={h} style={s.th as React.CSSProperties}>{h}</th>)}</tr></thead>
+                <thead><tr>{['Title', 'Channel', 'Audience', 'Sent', 'Opened', 'Date', 'Status', ''].map((h, i) => <th key={i} style={s.th as React.CSSProperties}>{h}</th>)}</tr></thead>
                 <tbody>
                     {notifications.map(n => (
                         <tr key={n.id}>
@@ -70,10 +77,95 @@ export default function NotificationsPage() {
                             <td style={{ ...s.td, color: 'var(--color-primary-600)', fontWeight: 'var(--font-medium)' }}>{n.opened}</td>
                             <td style={s.td}>{n.date}</td>
                             <td style={s.td}><span style={{ ...s.badge, ...statusColors[n.status] }}>{n.status}</span></td>
+                            <td style={{ ...s.td, textAlign: 'right' }}>
+                                <DropdownMenu
+                                    trigger={<button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)' }}><MoreVertical size={16} /></button>}
+                                    items={[
+                                        { label: 'Edit', icon: <Edit size={14} />, onClick: () => { setSelectedNotification(n); setIsEditOpen(true); } },
+                                        { label: 'Delete', destructive: true, icon: <Trash2 size={14} />, onClick: () => { setSelectedNotification(n); setIsDeleteOpen(true); } }
+                                    ]}
+                                />
+                            </td>
                         </tr>
                     ))}
                 </tbody>
             </table>
-        </div>
+
+            {/* Add Notification SlideOver */}
+            <SlideOver
+                open={isAddOpen}
+                onClose={() => setIsAddOpen(false)}
+                title="Compose Notification"
+                footer={
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button>
+                        <Button onClick={() => { setIsAddOpen(false); addToast('success', 'Notification scheduled'); }}>Schedule Notification</Button>
+                    </div>
+                }
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    <Input label="Campaign Title" placeholder="e.g. End of Summer Sale" />
+                    <Select label="Channel" options={[{ label: 'SMS', value: 'SMS' }, { label: 'Email', value: 'Email' }, { label: 'Push', value: 'Push' }, { label: 'WhatsApp', value: 'WhatsApp' }]} />
+                    <Select label="Target Audience" options={[{ label: 'All Clients', value: 'All Clients' }, { label: 'VIP Group', value: 'VIP Group' }, { label: 'Inactive > 30 days', value: 'Inactive > 30 days' }]} />
+                    <Input label="Send Date" type="date" />
+                    <div>
+                        <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', display: 'block', marginBottom: 'var(--space-2)' }}>Message Content</label>
+                        <textarea
+                            style={{ width: '100%', minHeight: 120, padding: 'var(--space-3)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', fontSize: 'var(--text-sm)' }}
+                            placeholder="Type your message here..."
+                        />
+                    </div>
+                </div>
+            </SlideOver>
+
+            {/* Edit Notification SlideOver */}
+            <SlideOver
+                open={isEditOpen}
+                onClose={() => { setIsEditOpen(false); setSelectedNotification(null); }}
+                title="Edit Notification"
+                footer={
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>Cancel</Button>
+                        <Button onClick={() => { setIsEditOpen(false); addToast('success', 'Notification updated'); }}>Save Changes</Button>
+                    </div>
+                }
+            >
+                {selectedNotification && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                        <Input label="Campaign Title" defaultValue={selectedNotification.title} />
+                        <Select label="Channel" defaultValue={selectedNotification.channel} options={[{ label: 'SMS', value: 'SMS' }, { label: 'Email', value: 'Email' }, { label: 'Push', value: 'Push' }, { label: 'WhatsApp', value: 'WhatsApp' }]} />
+                        <Select label="Target Audience" defaultValue={selectedNotification.audience} options={[{ label: 'All Clients', value: 'All Clients' }, { label: 'VIP Group', value: 'VIP Group' }, { label: 'Inactive > 30 days', value: 'Inactive > 30 days' }, { label: 'Booked Clients', value: 'Booked Clients' }]} />
+                        <Input label="Send Date" type="date" defaultValue={selectedNotification.date} />
+                        <Select label="Status" defaultValue={selectedNotification.status} options={[{ label: 'Draft', value: 'draft' }, { label: 'Scheduled', value: 'scheduled' }, { label: 'Sent', value: 'sent' }]} />
+                        <div>
+                            <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', display: 'block', marginBottom: 'var(--space-2)' }}>Message Content</label>
+                            <textarea
+                                style={{ width: '100%', minHeight: 120, padding: 'var(--space-3)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', fontSize: 'var(--text-sm)' }}
+                                defaultValue="Mock generated message content here..."
+                            />
+                        </div>
+                    </div>
+                )}
+            </SlideOver>
+
+            {/* Delete Confirmation Modal */}
+            <Modal
+                open={isDeleteOpen}
+                onClose={() => { setIsDeleteOpen(false); setSelectedNotification(null); }}
+                title="Delete Notification"
+                footer={
+                    <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
+                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
+                        <Button variant="destructive" onClick={() => { setIsDeleteOpen(false); addToast('error', 'Notification deleted permanently'); }}>Confirm Delete</Button>
+                    </div>
+                }
+            >
+                <div>
+                    <p style={{ color: 'var(--text-secondary)' }}>
+                        Are you sure you want to delete the <strong>{selectedNotification?.title}</strong> campaign?
+                    </p>
+                </div>
+            </Modal>
+        </div >
     );
 }

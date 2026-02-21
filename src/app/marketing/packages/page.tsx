@@ -1,8 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { Plus, Package, Check, Users, Clock, Star } from 'lucide-react';
+import { Plus, Package, Check, Users, Clock, Star, MoreVertical, Edit, Trash2 } from 'lucide-react';
+import { useToast, SlideOver, Modal, Input, Button, DropdownMenu, Select } from '@/components/ui';
 
 import MarketingTabs from '@/components/MarketingTabs';
 
@@ -33,10 +34,16 @@ const s: Record<string, React.CSSProperties> = {
 };
 
 export default function MarketingPackagesPage() {
+    const { addToast } = useToast();
+    const [isAddOpen, setIsAddOpen] = useState(false);
+    const [isEditOpen, setIsEditOpen] = useState(false);
+    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+    const [selectedPackage, setSelectedPackage] = useState<any>(null);
+
     return (
         <div style={s.page}>
             <MarketingTabs />
-            <div style={s.toolbar}><button style={s.addBtn}><Plus size={16} /> New Package</button></div>
+            <div style={s.toolbar}><button style={s.addBtn} onClick={() => setIsAddOpen(true)}><Plus size={16} /> New Package</button></div>
             <div style={s.grid}>
                 {packages.map(pkg => (
                     <div key={pkg.id} style={{ ...s.card, opacity: pkg.active ? 1 : 0.6 }}>
@@ -46,6 +53,15 @@ export default function MarketingPackagesPage() {
                                 <div style={s.name}>{pkg.name}</div>
                                 <div style={s.price}>{pkg.price} EGP</div>
                                 <div style={s.target}>Target: {pkg.target}</div>
+                            </div>
+                            <div style={{ marginLeft: 'auto' }}>
+                                <DropdownMenu
+                                    trigger={<button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)' }}><MoreVertical size={16} /></button>}
+                                    items={[
+                                        { label: 'Edit Package', icon: <Edit size={14} />, onClick: () => { setSelectedPackage(pkg); setIsEditOpen(true); } },
+                                        { label: 'Delete Package', destructive: true, icon: <Trash2 size={14} />, onClick: () => { setSelectedPackage(pkg); setIsDeleteOpen(true); } }
+                                    ]}
+                                />
                             </div>
                         </div>
                         <div style={s.services as React.CSSProperties}>
@@ -58,6 +74,66 @@ export default function MarketingPackagesPage() {
                     </div>
                 ))}
             </div>
+            {/* Add Package SlideOver */}
+            <SlideOver
+                open={isAddOpen}
+                onClose={() => setIsAddOpen(false)}
+                title="Create New Package"
+                footer={
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button>
+                        <Button onClick={() => { setIsAddOpen(false); addToast('success', 'Package created successfully'); }}>Save Package</Button>
+                    </div>
+                }
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    <Input label="Package Name" placeholder="e.g. Summer Glow" />
+                    <Input label="Price (EGP)" type="number" placeholder="0.00" />
+                    <Input label="Target Audience" placeholder="e.g. New Clients" />
+                    <Select label="Status" options={[{ label: 'Active', value: 'active' }, { label: 'Draft', value: 'draft' }]} />
+                </div>
+            </SlideOver>
+
+            {/* Edit Package SlideOver */}
+            <SlideOver
+                open={isEditOpen}
+                onClose={() => { setIsEditOpen(false); setSelectedPackage(null); }}
+                title="Edit Package"
+                footer={
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>Cancel</Button>
+                        <Button onClick={() => { setIsEditOpen(false); addToast('success', 'Package updated successfully'); }}>Save Changes</Button>
+                    </div>
+                }
+            >
+                {selectedPackage && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                        <Input label="Package Name" defaultValue={selectedPackage.name} />
+                        <Input label="Price (EGP)" type="number" defaultValue={selectedPackage.price} />
+                        <Input label="Target Audience" defaultValue={selectedPackage.target} />
+                        <Select label="Status" defaultValue={selectedPackage.active ? 'active' : 'draft'} options={[{ label: 'Active', value: 'active' }, { label: 'Draft', value: 'draft' }]} />
+                    </div>
+                )}
+            </SlideOver>
+
+            {/* Delete Confirmation Modal */}
+            <Modal
+                open={isDeleteOpen}
+                onClose={() => { setIsDeleteOpen(false); setSelectedPackage(null); }}
+                title="Delete Package"
+                footer={
+                    <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
+                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
+                        <Button variant="destructive" onClick={() => { setIsDeleteOpen(false); addToast('error', 'Package deleted permanently'); }}>Confirm Delete</Button>
+                    </div>
+                }
+            >
+                <div>
+                    <p style={{ color: 'var(--text-secondary)' }}>
+                        Are you sure you want to delete the <strong>{selectedPackage?.name}</strong> package?
+                    </p>
+                </div>
+            </Modal>
         </div>
     );
 }

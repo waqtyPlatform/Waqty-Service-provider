@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Plus, Send, Search, MessageSquare, Users } from 'lucide-react';
+import { Plus, Send, Search, MessageSquare, Users, Edit, Trash2 } from 'lucide-react';
+import { useToast, Modal, Input, Button, Select } from '@/components/ui';
 
 import MarketingTabs from '@/components/MarketingTabs';
 
@@ -45,11 +46,20 @@ const s: Record<string, React.CSSProperties> = {
 };
 
 export default function MessagesPage() {
+    const { addToast } = useToast();
+    const [isAddOpen, setIsAddOpen] = useState(false);
+    const [isEditOpen, setIsEditOpen] = useState(false);
+    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+    const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+
     return (
         <div style={s.page}>
             <MarketingTabs />
 
-            <div style={s.section}>Message Templates</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
+                <div style={s.section}>Message Templates</div>
+                <Button onClick={() => setIsAddOpen(true)}><Plus size={16} /> New Template</Button>
+            </div>
             <div style={s.grid}>
                 {templates.map(t => (
                     <div key={t.id} style={s.card}>
@@ -57,7 +67,11 @@ export default function MessagesPage() {
                         <div style={s.cardBody}>{t.body}</div>
                         <div style={s.cardFooter}>
                             <span>{t.channel} · Last used: {t.lastUsed}</span>
-                            <button style={s.sendBtn}><Send size={12} /> Use</button>
+                            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                                <button style={{ ...s.sendBtn, background: 'transparent', color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }} onClick={() => { setSelectedTemplate(t); setIsEditOpen(true); }}><Edit size={12} /></button>
+                                <button style={{ ...s.sendBtn, background: 'transparent', color: 'var(--color-error)', border: '1px solid var(--color-error-light)' }} onClick={() => { setSelectedTemplate(t); setIsDeleteOpen(true); }}><Trash2 size={12} /></button>
+                                <button style={s.sendBtn} onClick={() => addToast('success', 'Message sent successfully')}><Send size={12} /> Use</button>
+                            </div>
                         </div>
                     </div>
                 ))}
@@ -78,6 +92,77 @@ export default function MessagesPage() {
                     ))}
                 </tbody>
             </table>
-        </div>
+
+            {/* Add Template Modal */}
+            <Modal
+                open={isAddOpen}
+                onClose={() => setIsAddOpen(false)}
+                title="Create New Template"
+                footer={
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button>
+                        <Button onClick={() => { setIsAddOpen(false); addToast('success', 'Template created successfully'); }}>Save Template</Button>
+                    </div>
+                }
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    <Input label="Template Name" placeholder="e.g. Birthday Greeting" />
+                    <Select label="Channel" options={[{ label: 'SMS', value: 'SMS' }, { label: 'WhatsApp', value: 'WhatsApp' }, { label: 'Email', value: 'Email' }]} />
+                    <div>
+                        <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', display: 'block', marginBottom: 'var(--space-2)' }}>Message Body</label>
+                        <textarea
+                            style={{ width: '100%', minHeight: 100, padding: 'var(--space-3)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', fontSize: 'var(--text-sm)' }}
+                            placeholder="Type your message here. Use {name} for client name, {date} for date, etc."
+                        />
+                    </div>
+                </div>
+            </Modal>
+
+            {/* Edit Template Modal */}
+            <Modal
+                open={isEditOpen}
+                onClose={() => { setIsEditOpen(false); setSelectedTemplate(null); }}
+                title="Edit Template"
+                footer={
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>Cancel</Button>
+                        <Button onClick={() => { setIsEditOpen(false); addToast('success', 'Template updated successfully'); }}>Save Changes</Button>
+                    </div>
+                }
+            >
+                {selectedTemplate && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                        <Input label="Template Name" defaultValue={selectedTemplate.name} />
+                        <Select label="Channel" defaultValue={selectedTemplate.channel} options={[{ label: 'SMS', value: 'SMS' }, { label: 'WhatsApp', value: 'WhatsApp' }, { label: 'Email', value: 'Email' }]} />
+                        <div>
+                            <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', display: 'block', marginBottom: 'var(--space-2)' }}>Message Body</label>
+                            <textarea
+                                style={{ width: '100%', minHeight: 100, padding: 'var(--space-3)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', fontSize: 'var(--text-sm)' }}
+                                defaultValue={selectedTemplate.body}
+                            />
+                        </div>
+                    </div>
+                )}
+            </Modal>
+
+            {/* Delete Confirmation Modal */}
+            <Modal
+                open={isDeleteOpen}
+                onClose={() => { setIsDeleteOpen(false); setSelectedTemplate(null); }}
+                title="Delete Template"
+                footer={
+                    <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
+                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
+                        <Button variant="destructive" onClick={() => { setIsDeleteOpen(false); addToast('error', 'Template deleted permanently'); }}>Confirm Delete</Button>
+                    </div>
+                }
+            >
+                <div>
+                    <p style={{ color: 'var(--text-secondary)' }}>
+                        Are you sure you want to delete the <strong>{selectedTemplate?.name}</strong> template?
+                    </p>
+                </div>
+            </Modal>
+        </div >
     );
 }

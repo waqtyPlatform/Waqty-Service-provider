@@ -376,10 +376,12 @@ interface KPICardProps {
 export function KPICard({ icon, iconBg, iconColor, value, label, trend }: KPICardProps) {
     return (
         <div className={styles.kpiCard}>
-            <div className={styles.kpiCardIcon} style={{ background: iconBg, color: iconColor }}>{icon}</div>
-            <div>
-                <div className={styles.kpiCardValue}>{value}</div>
+            <div className={styles.kpiCardHeader}>
                 <div className={styles.kpiCardLabel}>{label}</div>
+                <div className={styles.kpiCardIcon} style={{ background: iconBg, color: iconColor }}>{icon}</div>
+            </div>
+            <div className={styles.kpiCardBody}>
+                <div className={styles.kpiCardValue}>{value}</div>
                 {trend && (
                     <div className={`${styles.kpiTrend} ${trend.up ? styles.kpiTrendUp : styles.kpiTrendDown}`}>
                         {trend.up ? '↑' : '↓'} {trend.value}

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Plus, Search, Edit, Trash2, Layers } from 'lucide-react';
+import { useToast, Modal, Input, Button } from '@/components/ui';
 
 import MarketingTabs from '@/components/MarketingTabs';
 
@@ -35,10 +36,16 @@ const s: Record<string, React.CSSProperties> = {
 };
 
 export default function ServiceGroupsPage() {
+    const { addToast } = useToast();
+    const [isAddOpen, setIsAddOpen] = useState(false);
+    const [isEditOpen, setIsEditOpen] = useState(false);
+    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+    const [selectedGroup, setSelectedGroup] = useState<any>(null);
+
     return (
         <div style={s.page}>
             <MarketingTabs />
-            <div style={s.toolbar}><button style={s.addBtn}><Plus size={16} /> New Group</button></div>
+            <div style={s.toolbar}><button style={s.addBtn} onClick={() => setIsAddOpen(true)}><Plus size={16} /> New Group</button></div>
             <div style={s.grid}>
                 {groups.map(g => (
                     <div key={g.id} style={{ ...s.card, opacity: g.active ? 1 : 0.6 }}>
@@ -51,8 +58,8 @@ export default function ServiceGroupsPage() {
                                 </div>
                             </div>
                             <div style={s.actions}>
-                                <button style={s.btnIcon}><Edit size={12} /></button>
-                                <button style={{ ...s.btnIcon, color: 'var(--color-error)' }}><Trash2 size={12} /></button>
+                                <button style={s.btnIcon} onClick={() => { setSelectedGroup(g); setIsEditOpen(true); }}><Edit size={12} /></button>
+                                <button style={{ ...s.btnIcon, color: 'var(--color-error)' }} onClick={() => { setSelectedGroup(g); setIsDeleteOpen(true); }}><Trash2 size={12} /></button>
                             </div>
                         </div>
                         <div style={s.serviceList as React.CSSProperties}>
@@ -61,6 +68,75 @@ export default function ServiceGroupsPage() {
                     </div>
                 ))}
             </div>
+
+            {/* Add Group Modal */}
+            <Modal
+                open={isAddOpen}
+                onClose={() => setIsAddOpen(false)}
+                title="Create New Group"
+                footer={
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button>
+                        <Button onClick={() => { setIsAddOpen(false); addToast('success', 'Group created successfully'); }}>Save Group</Button>
+                    </div>
+                }
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    <Input label="Group Name" placeholder="e.g. Hair Care" />
+                    <div>
+                        <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', display: 'block', marginBottom: 'var(--space-2)' }}>Assign Services</label>
+                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', padding: 'var(--space-3)', border: '1px dashed var(--border-color)', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
+                            Search and select services to add to this group.
+                        </div>
+                    </div>
+                </div>
+            </Modal>
+
+            {/* Edit Group Modal */}
+            <Modal
+                open={isEditOpen}
+                onClose={() => { setIsEditOpen(false); setSelectedGroup(null); }}
+                title="Edit Group"
+                footer={
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>Cancel</Button>
+                        <Button onClick={() => { setIsEditOpen(false); addToast('success', 'Group updated successfully'); }}>Save Changes</Button>
+                    </div>
+                }
+            >
+                {selectedGroup && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                        <Input label="Group Name" defaultValue={selectedGroup.name} />
+                        <div>
+                            <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', display: 'block', marginBottom: 'var(--space-2)' }}>Assigned Services</label>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, padding: 'var(--space-3)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)' }}>
+                                {selectedGroup.services.map((svc: string) => (
+                                    <span key={svc} style={{ padding: '4px 8px', background: 'var(--bg-secondary)', borderRadius: '4px', fontSize: '11px', color: 'var(--text-secondary)' }}>{svc}</span>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </Modal>
+
+            {/* Delete Confirmation Modal */}
+            <Modal
+                open={isDeleteOpen}
+                onClose={() => { setIsDeleteOpen(false); setSelectedGroup(null); }}
+                title="Delete Group"
+                footer={
+                    <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
+                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
+                        <Button variant="destructive" onClick={() => { setIsDeleteOpen(false); addToast('error', 'Group deleted permanently'); }}>Confirm Delete</Button>
+                    </div>
+                }
+            >
+                <div>
+                    <p style={{ color: 'var(--text-secondary)' }}>
+                        Are you sure you want to delete the <strong>{selectedGroup?.name}</strong> group?
+                    </p>
+                </div>
+            </Modal>
         </div>
     );
 }

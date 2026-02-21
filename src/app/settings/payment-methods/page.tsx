@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
     Plus,
     Edit,
@@ -54,8 +54,8 @@ export default function PaymentMethodsPage() {
                 <div className={styles.cardHeader}>
                     <span className={styles.cardTitle}><CreditCard size={18} /> Methods List</span>
                 </div>
-                <div className="table-wrapper">
-                    <table className="data-table">
+                <div className={styles.tableWrapper}>
+                    <table className={styles.dataTable}>
                         <thead>
                             <tr>
                                 <th style={{ width: 50 }}></th>

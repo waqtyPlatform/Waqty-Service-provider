@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Download, Calculator } from 'lucide-react';
-import EmployeesTabs from '@/components/EmployeesTabs';
+
 
 const subTabs = ['By Services', 'By Segments', 'By Target', 'Extraction'];
 
@@ -43,7 +43,7 @@ export default function CommissionsPage() {
         <div style={s.page}>
             <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' }}>Commission Calculator</div>
 
-            <EmployeesTabs />
+
 
             <div style={s.tabBar}>
                 {subTabs.map((t, i) => <div key={t} style={{ ...s.tab, ...(i === activeTab ? s.tabActive : {}) }} onClick={() => setActiveTab(i)}>{t}</div>)}

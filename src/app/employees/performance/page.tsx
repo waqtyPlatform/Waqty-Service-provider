@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import EmployeesTabs from '@/components/EmployeesTabs';
+
 import { KPICard, Button } from '@/components/ui';
 import { TrendingUp, Users, Star, DollarSign, CalendarCheck } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
@@ -30,7 +30,7 @@ export default function EmployeePerformancePage() {
                 <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginTop: 'var(--space-1)' }}>Track employee metrics and KPIs.</p>
             </div>
 
-            <EmployeesTabs />
+
 
             <div style={s.kpis}>
                 <KPICard

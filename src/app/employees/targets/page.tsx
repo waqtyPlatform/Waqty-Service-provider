@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import EmployeesTabs from '@/components/EmployeesTabs';
+
 import { Target, TrendingUp } from 'lucide-react';
 
 const targets = [
@@ -33,7 +33,7 @@ export default function EmployeeTargetsPage() {
                 <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginTop: 'var(--space-1)' }}>Set and track employee goals.</p>
             </div>
 
-            <EmployeesTabs />
+
 
             <div style={s.grid}>
                 {targets.map(t => {

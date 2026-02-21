@@ -94,9 +94,10 @@
 /* --- Page Content Styles --- */
 
 .searchContainer {
-    max-width: 320px;
-    position: relative;
-    /* margin-bottom is handled by gap in parent .page */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
 }
 
 .searchIcon {

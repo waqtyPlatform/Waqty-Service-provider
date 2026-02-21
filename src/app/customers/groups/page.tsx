@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Users, Plus, Search, Edit, Trash2, Percent } from 'lucide-react';
+import { useToast, Modal, Input, Button, Select } from '@/components/ui';
 
 const groups = [
     { id: 1, name: 'VIP Clients', members: 24, discount: 15, color: '#F59E0B', description: 'High-value repeat clients with priority booking', status: 'active' },
@@ -38,7 +39,13 @@ const s: Record<string, React.CSSProperties> = {
 };
 
 export default function CustomerGroupsPage() {
+    const { addToast } = useToast();
     const [search, setSearch] = useState('');
+    const [isAddOpen, setIsAddOpen] = useState(false);
+    const [isEditOpen, setIsEditOpen] = useState(false);
+    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+    const [selectedGroup, setSelectedGroup] = useState<any>(null);
+
     const filtered = groups.filter(g => g.name.toLowerCase().includes(search.toLowerCase()));
 
     return (
@@ -55,7 +62,7 @@ export default function CustomerGroupsPage() {
                     <Search size={16} style={s.searchIcon as React.CSSProperties} />
                     <input style={s.searchInput} placeholder="Search groups..." value={search} onChange={e => setSearch(e.target.value)} />
                 </div>
-                <button style={s.addBtn}><Plus size={16} /> New Group</button>
+                <button style={s.addBtn} onClick={() => setIsAddOpen(true)}><Plus size={16} /> New Group</button>
             </div>
 
             <div style={s.grid}>
@@ -79,12 +86,73 @@ export default function CustomerGroupsPage() {
                             </div>
                         </div>
                         <div style={s.cardFooter}>
-                            <button style={s.btnIcon}><Edit size={14} /></button>
-                            <button style={{ ...s.btnIcon, color: 'var(--color-error)' }}><Trash2 size={14} /></button>
+                            <button style={s.btnIcon} onClick={() => { setSelectedGroup(g); setIsEditOpen(true); }}><Edit size={14} /></button>
+                            <button style={{ ...s.btnIcon, color: 'var(--color-error)' }} onClick={() => { setSelectedGroup(g); setIsDeleteOpen(true); }}><Trash2 size={14} /></button>
                         </div>
                     </div>
                 ))}
             </div>
+
+            {/* Add Group Modal */}
+            <Modal
+                open={isAddOpen}
+                onClose={() => setIsAddOpen(false)}
+                title="Create New Group"
+                footer={
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button>
+                        <Button onClick={() => { setIsAddOpen(false); addToast('success', 'Group created successfully'); }}>Save Group</Button>
+                    </div>
+                }
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    <Input label="Group Name" placeholder="e.g. VIP Clients" />
+                    <Input label="Description" placeholder="Short description of this group..." />
+                    <Input label="Discount Percentage (%)" type="number" defaultValue={0} />
+                    <Select label="Status" options={[{ label: 'Active', value: 'active' }, { label: 'Draft', value: 'draft' }]} />
+                </div>
+            </Modal>
+
+            {/* Edit Group Modal */}
+            <Modal
+                open={isEditOpen}
+                onClose={() => { setIsEditOpen(false); setSelectedGroup(null); }}
+                title="Edit Group"
+                footer={
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>Cancel</Button>
+                        <Button onClick={() => { setIsEditOpen(false); addToast('success', 'Group updated successfully'); }}>Save Changes</Button>
+                    </div>
+                }
+            >
+                {selectedGroup && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                        <Input label="Group Name" defaultValue={selectedGroup.name} />
+                        <Input label="Description" defaultValue={selectedGroup.description} />
+                        <Input label="Discount Percentage (%)" type="number" defaultValue={selectedGroup.discount} />
+                        <Select label="Status" defaultValue={selectedGroup.status} options={[{ label: 'Active', value: 'active' }, { label: 'Draft', value: 'draft' }]} />
+                    </div>
+                )}
+            </Modal>
+
+            {/* Delete Confirmation Modal */}
+            <Modal
+                open={isDeleteOpen}
+                onClose={() => { setIsDeleteOpen(false); setSelectedGroup(null); }}
+                title="Delete Group"
+                footer={
+                    <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
+                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
+                        <Button variant="destructive" onClick={() => { setIsDeleteOpen(false); addToast('error', 'Group deleted permanently'); }}>Confirm Delete</Button>
+                    </div>
+                }
+            >
+                <div>
+                    <p style={{ color: 'var(--text-secondary)' }}>
+                        Are you sure you want to delete the <strong>{selectedGroup?.name}</strong> group?
+                    </p>
+                </div>
+            </Modal>
         </div>
     );
 }

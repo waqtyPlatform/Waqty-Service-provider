@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import EmployeesTabs from '@/components/EmployeesTabs';
+
 import { Briefcase } from 'lucide-react';
 
 export default function EmployeeRolesPage() {
@@ -13,7 +13,7 @@ export default function EmployeeRolesPage() {
                 <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginTop: 'var(--space-1)' }}>Define job titles and responsibilities.</p>
             </div>
 
-            <EmployeesTabs />
+
 
             <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-xl)', padding: 'var(--space-12)', textAlign: 'center' }}>
                 <Briefcase size={64} style={{ color: 'var(--text-tertiary)', marginBottom: 'var(--space-4)', opacity: 0.5 }} />

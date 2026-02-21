@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Plus, Search, Copy, Tag } from 'lucide-react';
+import { Plus, Search, Copy, Tag, Edit, Trash2, MoreVertical } from 'lucide-react';
+import { useToast, DropdownMenu, Modal, Input, Button, Select } from '@/components/ui';
 
 import MarketingTabs from '@/components/MarketingTabs';
 
@@ -42,7 +43,13 @@ const s: Record<string, React.CSSProperties> = {
 };
 
 export default function PromoCodesPage() {
+    const { addToast } = useToast();
     const [search, setSearch] = useState('');
+    const [isAddOpen, setIsAddOpen] = useState(false);
+    const [isEditOpen, setIsEditOpen] = useState(false);
+    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+    const [selectedPromo, setSelectedPromo] = useState<any>(null);
+
     const filtered = codes.filter(c => c.code.toLowerCase().includes(search.toLowerCase()));
 
     return (
@@ -50,10 +57,10 @@ export default function PromoCodesPage() {
             <MarketingTabs />
             <div style={s.toolbar}>
                 <div style={s.searchBox as React.CSSProperties}><Search size={16} style={s.searchIcon as React.CSSProperties} /><input style={s.searchInput} placeholder="Search codes..." value={search} onChange={e => setSearch(e.target.value)} /></div>
-                <button style={s.addBtn}><Plus size={16} /> Generate Code</button>
+                <button style={s.addBtn} onClick={() => setIsAddOpen(true)}><Plus size={16} /> Generate Code</button>
             </div>
             <table style={s.table}>
-                <thead><tr>{['Code', 'Discount', 'Usage', '', 'Min. Order', 'Expires', 'Status'].map((h, i) => <th key={i} style={s.th as React.CSSProperties}>{h}</th>)}</tr></thead>
+                <thead><tr>{['Code', 'Discount', 'Usage', '', 'Min. Order', 'Expires', 'Status', ''].map((h, i) => <th key={i} style={s.th as React.CSSProperties}>{h}</th>)}</tr></thead>
                 <tbody>
                     {filtered.map(c => (
                         <tr key={c.id}>
@@ -64,10 +71,98 @@ export default function PromoCodesPage() {
                             <td style={s.td}>{c.minOrder > 0 ? `${c.minOrder} EGP` : '—'}</td>
                             <td style={s.td}>{c.expires}</td>
                             <td style={s.td}><span style={{ ...s.badge, ...statusColors[c.status] }}>{c.status}</span></td>
+                            <td style={{ ...s.td, textAlign: 'right' }}>
+                                <DropdownMenu
+                                    trigger={<button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)' }}><MoreVertical size={16} /></button>}
+                                    items={[
+                                        { label: 'Edit', icon: <Edit size={14} />, onClick: () => { setSelectedPromo(c); setIsEditOpen(true); } },
+                                        { label: 'Delete', destructive: true, icon: <Trash2 size={14} />, onClick: () => { setSelectedPromo(c); setIsDeleteOpen(true); } }
+                                    ]}
+                                />
+                            </td>
                         </tr>
                     ))}
                 </tbody>
             </table>
-        </div>
+
+            {/* Add Promo Modal */}
+            <Modal
+                open={isAddOpen}
+                onClose={() => setIsAddOpen(false)}
+                title="Generate Promo Code"
+                footer={
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button>
+                        <Button onClick={() => { setIsAddOpen(false); addToast('success', 'Code generated successfully'); }}>Save Code</Button>
+                    </div>
+                }
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+                        <div style={{ flex: 1 }}><Input label="Promo Code" placeholder="e.g. WELCOME10" /></div>
+                        <div style={{ flex: 1 }}><Select label="Discount Type" options={[{ label: 'Percentage', value: 'percentage' }, { label: 'Fixed Amount', value: 'fixed' }]} /></div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+                        <div style={{ flex: 1 }}><Input label="Discount Value" type="number" placeholder="0" /></div>
+                        <div style={{ flex: 1 }}><Input label="Usage Limit" type="number" placeholder="No Limit" /></div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+                        <div style={{ flex: 1 }}><Input label="Min. Order Value (EGP)" type="number" placeholder="0" /></div>
+                        <div style={{ flex: 1 }}><Input label="Expiration Date" type="date" /></div>
+                    </div>
+                    <Select label="Status" options={[{ label: 'Active', value: 'active' }, { label: 'Scheduled', value: 'scheduled' }]} />
+                </div>
+            </Modal>
+
+            {/* Edit Promo Modal */}
+            <Modal
+                open={isEditOpen}
+                onClose={() => { setIsEditOpen(false); setSelectedPromo(null); }}
+                title="Edit Promo Code"
+                footer={
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>Cancel</Button>
+                        <Button onClick={() => { setIsEditOpen(false); addToast('success', 'Code updated successfully'); }}>Save Changes</Button>
+                    </div>
+                }
+            >
+                {selectedPromo && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                        <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+                            <div style={{ flex: 1 }}><Input label="Promo Code" defaultValue={selectedPromo.code} /></div>
+                            <div style={{ flex: 1 }}><Select label="Discount Type" defaultValue={selectedPromo.type} options={[{ label: 'Percentage', value: 'percentage' }, { label: 'Fixed Amount', value: 'fixed' }]} /></div>
+                        </div>
+                        <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+                            <div style={{ flex: 1 }}><Input label="Discount Value" type="number" defaultValue={selectedPromo.discount} /></div>
+                            <div style={{ flex: 1 }}><Input label="Usage Limit" type="number" defaultValue={selectedPromo.limit} /></div>
+                        </div>
+                        <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+                            <div style={{ flex: 1 }}><Input label="Min. Order Value (EGP)" type="number" defaultValue={selectedPromo.minOrder} /></div>
+                            <div style={{ flex: 1 }}><Input label="Expiration Date" type="date" defaultValue={selectedPromo.expires} /></div>
+                        </div>
+                        <Select label="Status" defaultValue={selectedPromo.status} options={[{ label: 'Active', value: 'active' }, { label: 'Scheduled', value: 'scheduled' }, { label: 'Exhausted', value: 'exhausted' }]} />
+                    </div>
+                )}
+            </Modal>
+
+            {/* Delete Confirmation Modal */}
+            <Modal
+                open={isDeleteOpen}
+                onClose={() => { setIsDeleteOpen(false); setSelectedPromo(null); }}
+                title="Delete Promo Code"
+                footer={
+                    <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
+                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
+                        <Button variant="destructive" onClick={() => { setIsDeleteOpen(false); addToast('error', 'Code deleted permanently'); }}>Confirm Delete</Button>
+                    </div>
+                }
+            >
+                <div>
+                    <p style={{ color: 'var(--text-secondary)' }}>
+                        Are you sure you want to delete the <strong>{selectedPromo?.code}</strong> promo code?
+                    </p>
+                </div>
+            </Modal>
+        </div >
     );
 }

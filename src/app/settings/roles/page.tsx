@@ -17,14 +17,27 @@ const tabs = [
     { label: 'Subscription', href: '/settings/subscription' },
 ];
 
+const defaultPerms = { view: false, create: false, edit: false, delete: false };
+const fullPerms = { view: true, create: true, edit: true, delete: true };
+const viewOnly = { view: true, create: false, edit: false, delete: false };
+
 const roles = [
-    { name: 'Owner', members: 1, color: '#EF4444', permissions: { dashboard: true, sales: true, transactions: true, returns: true, customers: true, employees: true, marketing: true, reports: true, settings: true } },
-    { name: 'Branch Manager', members: 3, color: '#F59E0B', permissions: { dashboard: true, sales: true, transactions: true, returns: true, customers: true, employees: true, marketing: false, reports: true, settings: false } },
-    { name: 'Cashier', members: 2, color: '#3B82F6', permissions: { dashboard: true, sales: true, transactions: true, returns: true, customers: false, employees: false, marketing: false, reports: false, settings: false } },
-    { name: 'Employee', members: 8, color: '#10B981', permissions: { dashboard: true, sales: false, transactions: false, returns: false, customers: false, employees: false, marketing: false, reports: false, settings: false } },
+    { name: 'Owner', members: 1, color: '#EF4444', permissions: { dashboard: fullPerms, sales: fullPerms, transactions: fullPerms, returns: fullPerms, customers: fullPerms, employees: fullPerms, marketing: fullPerms, reports: fullPerms, settings: fullPerms } },
+    { name: 'Branch Manager', members: 3, color: '#F59E0B', permissions: { dashboard: fullPerms, sales: fullPerms, transactions: fullPerms, returns: fullPerms, customers: fullPerms, employees: fullPerms, marketing: defaultPerms, reports: fullPerms, settings: viewOnly } },
+    { name: 'Cashier', members: 2, color: '#3B82F6', permissions: { dashboard: viewOnly, sales: fullPerms, transactions: viewOnly, returns: fullPerms, customers: viewOnly, employees: defaultPerms, marketing: defaultPerms, reports: defaultPerms, settings: defaultPerms } },
+    { name: 'Employee', members: 8, color: '#10B981', permissions: { dashboard: viewOnly, sales: defaultPerms, transactions: defaultPerms, returns: defaultPerms, customers: defaultPerms, employees: defaultPerms, marketing: defaultPerms, reports: defaultPerms, settings: defaultPerms } },
 ];
 
 const modules = ['dashboard', 'sales', 'transactions', 'returns', 'customers', 'employees', 'marketing', 'reports', 'settings'];
+
+const getAccessLevel = (perms: any) => {
+    if (!perms) return { label: 'None', color: 'var(--color-gray-300)' };
+    const { view, create, edit, delete: del } = perms;
+    if (view && create && edit && del) return { label: 'Full', color: 'var(--color-success)' };
+    if (view && !create && !edit && !del) return { label: 'View', color: 'var(--color-info)' };
+    if (!view && !create && !edit && !del) return { label: 'None', color: 'var(--color-gray-300)' };
+    return { label: 'Custom', color: 'var(--color-warning)' };
+};
 
 const s: Record<string, React.CSSProperties> = {
     page: { display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' },
@@ -67,13 +80,23 @@ export default function RolesPage() {
                         <tr key={role.name}>
                             <td style={{ ...s.td, textAlign: 'left' }}><div style={s.roleCell as React.CSSProperties}><div style={{ ...s.dot, background: role.color }} />{role.name}</div></td>
                             <td style={s.td}>{role.members}</td>
-                            {modules.map(m => (
-                                <td key={m} style={s.td}>
-                                    {(role.permissions as Record<string, boolean>)[m]
-                                        ? <Check size={16} style={{ color: 'var(--color-success)' }} />
-                                        : <X size={16} style={{ color: 'var(--color-gray-300)' }} />}
-                                </td>
-                            ))}
+                            {modules.map(m => {
+                                const level = getAccessLevel((role.permissions as any)[m]);
+                                return (
+                                    <td key={m} style={s.td}>
+                                        <span style={{
+                                            fontSize: 11,
+                                            fontWeight: 'var(--font-medium)',
+                                            padding: '2px 6px',
+                                            borderRadius: 'var(--radius-sm)',
+                                            color: level.color,
+                                            background: `${level.color}15`
+                                        }}>
+                                            {level.label}
+                                        </span>
+                                    </td>
+                                );
+                            })}
                             <td style={s.td}>
                                 <DropdownMenu
                                     trigger={<button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)' }}><MoreVertical size={16} /></button>}
@@ -103,14 +126,30 @@ export default function RolesPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                     <Input label="Role Name" placeholder="e.g. Assistant Manager" />
                     <div>
-                        <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', display: 'block', marginBottom: 'var(--space-2)' }}>Toggle Module Access</label>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)' }}>
-                            {modules.map(m => (
-                                <div key={m} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                                    <input type="checkbox" id={`add-${m}`} defaultChecked={false} />
-                                    <label htmlFor={`add-${m}`} style={{ fontSize: 'var(--text-sm)' }}>{m.charAt(0).toUpperCase() + m.slice(1)}</label>
-                                </div>
-                            ))}
+                        <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', display: 'block', marginBottom: 'var(--space-2)' }}>Granular Permissions</label>
+                        <div style={{ border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                <thead style={{ background: 'var(--bg-secondary)' }}>
+                                    <tr>
+                                        <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'left', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>Module</th>
+                                        <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>View</th>
+                                        <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>Create</th>
+                                        <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>Edit</th>
+                                        <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>Delete</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {modules.map(m => (
+                                        <tr key={m}>
+                                            <td style={{ padding: 'var(--space-2) var(--space-3)', fontSize: 13, borderBottom: '1px solid var(--border-color)' }}>{m.charAt(0).toUpperCase() + m.slice(1)}</td>
+                                            <td style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', borderBottom: '1px solid var(--border-color)' }}><input type="checkbox" defaultChecked={false} /></td>
+                                            <td style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', borderBottom: '1px solid var(--border-color)' }}><input type="checkbox" defaultChecked={false} /></td>
+                                            <td style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', borderBottom: '1px solid var(--border-color)' }}><input type="checkbox" defaultChecked={false} /></td>
+                                            <td style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', borderBottom: '1px solid var(--border-color)' }}><input type="checkbox" defaultChecked={false} /></td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -132,14 +171,33 @@ export default function RolesPage() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                         <Input label="Role Name" defaultValue={selectedRole.name} />
                         <div>
-                            <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', display: 'block', marginBottom: 'var(--space-2)' }}>Toggle Module Access</label>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)' }}>
-                                {modules.map(m => (
-                                    <div key={m} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                                        <input type="checkbox" id={`edit-${m}`} defaultChecked={(selectedRole.permissions as Record<string, boolean>)[m]} />
-                                        <label htmlFor={`edit-${m}`} style={{ fontSize: 'var(--text-sm)' }}>{m.charAt(0).toUpperCase() + m.slice(1)}</label>
-                                    </div>
-                                ))}
+                            <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', display: 'block', marginBottom: 'var(--space-2)' }}>Granular Permissions</label>
+                            <div style={{ border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
+                                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                    <thead style={{ background: 'var(--bg-secondary)' }}>
+                                        <tr>
+                                            <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'left', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>Module</th>
+                                            <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>View</th>
+                                            <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>Create</th>
+                                            <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>Edit</th>
+                                            <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>Delete</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {modules.map(m => {
+                                            const p = (selectedRole.permissions as any)[m] || defaultPerms;
+                                            return (
+                                                <tr key={m}>
+                                                    <td style={{ padding: 'var(--space-2) var(--space-3)', fontSize: 13, borderBottom: '1px solid var(--border-color)' }}>{m.charAt(0).toUpperCase() + m.slice(1)}</td>
+                                                    <td style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', borderBottom: '1px solid var(--border-color)' }}><input type="checkbox" defaultChecked={p.view} /></td>
+                                                    <td style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', borderBottom: '1px solid var(--border-color)' }}><input type="checkbox" defaultChecked={p.create} /></td>
+                                                    <td style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', borderBottom: '1px solid var(--border-color)' }}><input type="checkbox" defaultChecked={p.edit} /></td>
+                                                    <td style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', borderBottom: '1px solid var(--border-color)' }}><input type="checkbox" defaultChecked={p.delete} /></td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>

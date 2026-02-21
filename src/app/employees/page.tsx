@@ -6,13 +6,13 @@ import { EmptyState, DropdownMenu, useToast, SlideOver, Modal, Input, Select, Bu
 import { useRouter } from 'next/navigation';
 import styles from './employees.module.css';
 
-const employees = [
-    { id: 'E001', name: 'Sara Ahmed', role: 'Senior Stylist', phone: '+20 123 456 789', branch: 'Main', status: 'available', bookingsToday: 7, rating: 4.9, revenue: 14200, avatar: 'SA', color: '#8B5CF6' },
-    { id: 'E002', name: 'Nora Ali', role: 'Skin Specialist', phone: '+20 111 222 333', branch: 'Main', status: 'in-session', bookingsToday: 6, rating: 4.8, revenue: 12800, avatar: 'NA', color: '#EC4899' },
-    { id: 'E003', name: 'Layla Hassan', role: 'Senior Therapist', phone: '+20 100 200 300', branch: 'Main', status: 'available', bookingsToday: 8, rating: 4.9, revenue: 11500, avatar: 'LH', color: '#3B82F6' },
-    { id: 'E004', name: 'Reem Mohamed', role: 'Massage Therapist', phone: '+20 155 666 777', branch: 'Main', status: 'break', bookingsToday: 5, rating: 4.7, revenue: 9800, avatar: 'RM', color: '#10B981' },
-    { id: 'E005', name: 'Hana Youssef', role: 'Nail Technician', phone: '+20 199 888 999', branch: 'Main', status: 'available', bookingsToday: 4, rating: 4.6, revenue: 8100, avatar: 'HY', color: '#F59E0B' },
-    { id: 'E006', name: 'Dina Kamal', role: 'Junior Stylist', phone: '+20 144 555 666', branch: 'Downtown', status: 'off', bookingsToday: 0, rating: 4.5, revenue: 5400, avatar: 'DK', color: '#6366F1' },
+const initialEmployees = [
+    { id: 'E001', name: 'Sara Ahmed', role: 'Senior Stylist', phone: '+20 123 456 789', email: 'sara.a@hagzy.com', branch: 'Main', status: 'available', bookingsToday: 7, rating: 4.9, revenue: 14200, avatar: 'SA', color: '#8B5CF6' },
+    { id: 'E002', name: 'Nora Ali', role: 'Skin Specialist', phone: '+20 111 222 333', email: 'nora.a@hagzy.com', branch: 'Main', status: 'in-session', bookingsToday: 6, rating: 4.8, revenue: 12800, avatar: 'NA', color: '#EC4899' },
+    { id: 'E003', name: 'Layla Hassan', role: 'Senior Therapist', phone: '+20 100 200 300', email: 'layla.h@hagzy.com', branch: 'Main', status: 'available', bookingsToday: 8, rating: 4.9, revenue: 11500, avatar: 'LH', color: '#3B82F6' },
+    { id: 'E004', name: 'Reem Mohamed', role: 'Massage Therapist', phone: '+20 155 666 777', email: 'reem.m@hagzy.com', branch: 'Main', status: 'break', bookingsToday: 5, rating: 4.7, revenue: 9800, avatar: 'RM', color: '#10B981' },
+    { id: 'E005', name: 'Hana Youssef', role: 'Nail Technician', phone: '+20 199 888 999', email: 'hana.y@hagzy.com', branch: 'Main', status: 'available', bookingsToday: 4, rating: 4.6, revenue: 8100, avatar: 'HY', color: '#F59E0B' },
+    { id: 'E006', name: 'Dina Kamal', role: 'Junior Stylist', phone: '+20 144 555 666', email: 'dina.k@hagzy.com', branch: 'Downtown', status: 'off', bookingsToday: 0, rating: 4.5, revenue: 5400, avatar: 'DK', color: '#6366F1' },
 ];
 
 const statusMap: Record<string, { label: string; bg: string; color: string }> = {
@@ -23,25 +23,71 @@ const statusMap: Record<string, { label: string; bg: string; color: string }> = 
 };
 
 export default function EmployeesPage() {
+    const [empList, setEmpList] = useState(initialEmployees);
     const [search, setSearch] = useState('');
     const router = useRouter();
     const { addToast } = useToast();
 
     // CRUD state
     const [isAddOpen, setIsAddOpen] = useState(false);
+    const [selectedEmp, setSelectedEmp] = useState<any>(null);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-    const [selectedEmp, setSelectedEmp] = useState<any>(null);
 
-    const filtered = employees.filter((e) =>
+    // Form state for add
+    const [newEmp, setNewEmp] = useState({ fname: '', lname: '', phone: '', email: '', role: 'employee', jobTitle: 'Junior Stylist', branch: 'Main' });
+
+    const filtered = empList.filter((e) =>
         e.name.toLowerCase().includes(search.toLowerCase()) ||
         e.role.toLowerCase().includes(search.toLowerCase())
     );
 
+    React.useEffect(() => {
+        const handleOpenAdd = () => setIsAddOpen(true);
+        window.addEventListener('openAddEmployee', handleOpenAdd);
+        return () => window.removeEventListener('openAddEmployee', handleOpenAdd);
+    }, []);
+
+    const handleSaveAdd = () => {
+        if (!newEmp.fname || !newEmp.lname) return addToast('error', 'First and Last name are required');
+
+        const generatedAvatar = `${newEmp.fname.charAt(0)}${newEmp.lname.charAt(0)}`.toUpperCase();
+        const colors = ['#8B5CF6', '#EC4899', '#3B82F6', '#10B981', '#F59E0B'];
+        const randomColor = colors[Math.floor(Math.random() * colors.length)];
+
+        const added: any = {
+            id: `E00${empList.length + 1}`,
+            name: `${newEmp.fname} ${newEmp.lname}`,
+            role: newEmp.jobTitle,
+            phone: newEmp.phone,
+            email: newEmp.email,
+            branch: newEmp.branch,
+            status: 'off',
+            bookingsToday: 0,
+            rating: 5.0,
+            revenue: 0,
+            avatar: generatedAvatar,
+            color: randomColor
+        };
+
+        setEmpList([...empList, added]);
+        setIsAddOpen(false);
+        setNewEmp({ fname: '', lname: '', phone: '', email: '', role: 'employee', jobTitle: 'Junior Stylist', branch: 'Main' });
+        addToast('success', 'User credentials generated and employee added');
+    };
+
+    const handleDelete = () => {
+        setEmpList(empList.filter(e => e.id !== selectedEmp?.id));
+        setIsDeleteOpen(false);
+        addToast('success', 'Employee removed securely');
+    };
+
+
+
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
             <div className={styles.searchContainer}>
-                <div style={{ position: 'relative', flex: 1 }}>
+                <div style={{ position: 'relative', maxWidth: '320px', width: '100%' }}>
                     <Search size={16} className={styles.searchIcon} />
                     <input
                         className={styles.searchInput}
@@ -50,9 +96,6 @@ export default function EmployeesPage() {
                         onChange={(e) => setSearch(e.target.value)}
                     />
                 </div>
-                <Button onClick={() => setIsAddOpen(true)}>
-                    <UserPlus size={16} style={{ marginRight: '8px' }} /> Add Employee
-                </Button>
             </div>
 
             {filtered.length > 0 ? (
@@ -133,32 +176,46 @@ export default function EmployeesPage() {
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
                         <Button variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button>
-                        <Button onClick={() => { setIsAddOpen(false); addToast('success', 'Employee added successfully'); }}>Save Employee</Button>
+                        <Button onClick={handleSaveAdd}>Save Employee</Button>
                     </div>
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
-                        <Input label="First Name" placeholder="e.g. Sara" />
-                        <Input label="Last Name" placeholder="e.g. Ahmed" />
+                        <Input label="First Name" placeholder="e.g. Sara" value={newEmp.fname} onChange={e => setNewEmp({ ...newEmp, fname: e.target.value })} />
+                        <Input label="Last Name" placeholder="e.g. Ahmed" value={newEmp.lname} onChange={e => setNewEmp({ ...newEmp, lname: e.target.value })} />
                     </div>
-                    <Input label="Phone Number" placeholder="+20 1XX XXX XXXX" />
-                    <Select label="Role" options={[
-                        { label: 'Senior Stylist', value: 'Senior Stylist' },
-                        { label: 'Junior Stylist', value: 'Junior Stylist' },
-                        { label: 'Skin Specialist', value: 'Skin Specialist' },
-                        { label: 'Massage Therapist', value: 'Massage Therapist' },
-                        { label: 'Nail Technician', value: 'Nail Technician' }
-                    ]} />
-                    <Select label="Branch" options={[
-                        { label: 'Main', value: 'Main' },
-                        { label: 'Downtown', value: 'Downtown' },
-                        { label: 'Zayed', value: 'Zayed' }
-                    ]} />
-                    <Input label="Commission Rate (%)" type="number" defaultValue={10} />
+                    <Input label="Phone Number" placeholder="+20 1XX XXX XXXX" value={newEmp.phone} onChange={e => setNewEmp({ ...newEmp, phone: e.target.value })} />
+                    <Input label="Email Address" type="email" placeholder="employee@hagzy.com" value={newEmp.email} onChange={e => setNewEmp({ ...newEmp, email: e.target.value })} />
+
+                    <div style={{ borderTop: '1px solid var(--border-color)', margin: 'var(--space-2) 0' }} />
+                    <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)', color: 'var(--text-primary)', marginBottom: '-4px' }}>Job Details</h3>
+
+                    <Select
+                        label="Job Title"
+                        value={newEmp.jobTitle}
+                        onChange={e => setNewEmp({ ...newEmp, jobTitle: e.target.value })}
+                        options={[
+                            { label: 'Senior Stylist', value: 'Senior Stylist' },
+                            { label: 'Junior Stylist', value: 'Junior Stylist' },
+                            { label: 'Skin Specialist', value: 'Skin Specialist' },
+                            { label: 'Massage Therapist', value: 'Massage Therapist' },
+                            { label: 'Nail Technician', value: 'Nail Technician' }
+                        ]}
+                    />
+                    <Select
+                        label="Branch"
+                        value={newEmp.branch}
+                        onChange={e => setNewEmp({ ...newEmp, branch: e.target.value })}
+                        options={[
+                            { label: 'Main', value: 'Main' },
+                            { label: 'Downtown', value: 'Downtown' },
+                            { label: 'Zayed', value: 'Zayed' }
+                        ]}
+                    />
+                    <Input label="Base Salary (EGP)" type="number" placeholder="0" />
                 </div>
             </SlideOver>
-
             {/* Edit Employee SlideOver */}
             <SlideOver
                 open={isEditOpen}
@@ -174,14 +231,23 @@ export default function EmployeesPage() {
                 {selectedEmp && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                         <Input label="Full Name" defaultValue={selectedEmp.name} />
+                        <Input label="Email Address" type="email" defaultValue={`${selectedEmp.name.split(' ')[0].toLowerCase()}@example.com`} />
                         <Input label="Phone Number" defaultValue={selectedEmp.phone} />
-                        <Select label="Role" defaultValue={selectedEmp.role} options={[
-                            { label: 'Senior Stylist', value: 'Senior Stylist' },
-                            { label: 'Junior Stylist', value: 'Junior Stylist' },
-                            { label: 'Skin Specialist', value: 'Skin Specialist' },
-                            { label: 'Massage Therapist', value: 'Massage Therapist' },
-                            { label: 'Nail Technician', value: 'Nail Technician' }
-                        ]} />
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+                            <Select label="System Role" defaultValue="employee" options={[
+                                { label: 'Admin', value: 'admin' },
+                                { label: 'Branch Manager', value: 'manager' },
+                                { label: 'Cashier', value: 'cashier' },
+                                { label: 'Base Employee', value: 'employee' }
+                            ]} />
+                            <Select label="Job Title" defaultValue={selectedEmp.role} options={[
+                                { label: 'Senior Stylist', value: 'Senior Stylist' },
+                                { label: 'Junior Stylist', value: 'Junior Stylist' },
+                                { label: 'Skin Specialist', value: 'Skin Specialist' },
+                                { label: 'Massage Therapist', value: 'Massage Therapist' },
+                                { label: 'Nail Technician', value: 'Nail Technician' }
+                            ]} />
+                        </div>
                         <Select label="Branch" defaultValue={selectedEmp.branch} options={[
                             { label: 'Main', value: 'Main' },
                             { label: 'Downtown', value: 'Downtown' },
@@ -199,13 +265,13 @@ export default function EmployeesPage() {
                 footer={
                     <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
                         <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
-                        <Button variant="destructive" onClick={() => { setIsDeleteOpen(false); addToast('error', 'Employee removed from system'); }}>Confirm Removal</Button>
+                        <Button variant="destructive" onClick={handleDelete}>Confirm Removal</Button>
                     </div>
                 }
             >
                 <div>
                     <p style={{ color: 'var(--text-secondary)' }}>
-                        Are you sure you want to remove <strong>{selectedEmp?.name}</strong>? This will detach them from any active bookings but preserve their historical performance data.
+                        Are you sure you want to remove <strong>{selectedEmp?.name}</strong>? This will revoke their platform access immediately and detach them from future active bookings.
                     </p>
                 </div>
             </Modal>

@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import EmployeesTabs from '@/components/EmployeesTabs';
 import { ChevronLeft, ChevronRight, Plus, Clock, User } from 'lucide-react';
 import { Button, Badge } from '@/components/ui';
 
@@ -47,8 +46,6 @@ export default function EmployeeSchedulePage() {
                     <Button><Plus size={16} /> Add Shift</Button>
                 </div>
             </div>
-
-            <EmployeesTabs />
 
             <div style={s.grid}>
                 {shifts.map(shift => (

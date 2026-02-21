@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Search, Plus, Calendar, Tag, Percent, Edit, Trash2 } from 'lucide-react';
-import { useToast } from '@/components/ui';
+import { useToast, SlideOver, Modal, Input, Button, Select } from '@/components/ui';
 
 const tabs = [
     { label: 'Offers', href: '/marketing/offers' },
@@ -52,6 +52,11 @@ const s: Record<string, React.CSSProperties> = {
 
 export default function OffersPage() {
     const { addToast } = useToast();
+    const [isAddOpen, setIsAddOpen] = useState(false);
+    const [isEditOpen, setIsEditOpen] = useState(false);
+    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+    const [selectedOffer, setSelectedOffer] = useState<any>(null);
+
     return (
         <div style={s.page}>
             <div style={s.tabBar}>
@@ -60,7 +65,7 @@ export default function OffersPage() {
 
             <div style={s.toolbar}>
                 <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)' }}>{offers.filter(o => o.status === 'active').length} active offers</div>
-                <button style={s.addBtn}><Plus size={16} /> New Offer</button>
+                <button style={s.addBtn} onClick={() => setIsAddOpen(true)}><Plus size={16} /> New Offer</button>
             </div>
 
             <div style={s.grid}>
@@ -85,13 +90,78 @@ export default function OffersPage() {
                             <div style={s.stat}><Calendar size={12} /> {offer.startDate} → {offer.endDate}</div>
                             <div style={s.stat}>{offer.uses}/{offer.limit} used</div>
                             <div style={s.actions}>
-                                <button style={s.btnIcon} onClick={() => addToast('info', `Editing ${offer.name}`)}><Edit size={12} /></button>
-                                <button style={{ ...s.btnIcon, color: 'var(--color-error)' }} onClick={() => addToast('error', `${offer.name} deleted`)}><Trash2 size={12} /></button>
+                                <button style={s.btnIcon} onClick={() => { setSelectedOffer(offer); setIsEditOpen(true); }}><Edit size={12} /></button>
+                                <button style={{ ...s.btnIcon, color: 'var(--color-error)' }} onClick={() => { setSelectedOffer(offer); setIsDeleteOpen(true); }}><Trash2 size={12} /></button>
                             </div>
                         </div>
                     </div>
                 ))}
             </div>
-        </div>
+
+            {/* Add Offer SlideOver */}
+            <SlideOver
+                open={isAddOpen}
+                onClose={() => setIsAddOpen(false)}
+                title="Create New Offer"
+                footer={
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button>
+                        <Button onClick={() => { setIsAddOpen(false); addToast('success', 'Offer created successfully'); }}>Save Offer</Button>
+                    </div>
+                }
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    <Input label="Offer Name" placeholder="e.g. Summer Special" />
+                    <Select label="Discount Type" options={[{ label: 'Percentage', value: 'percentage' }, { label: 'Fixed Amount', value: 'fixed' }]} />
+                    <Input label="Discount Value" type="number" placeholder="0" />
+                    <Input label="Start Date" type="date" />
+                    <Input label="End Date" type="date" />
+                    <Select label="Status" options={[{ label: 'Active', value: 'active' }, { label: 'Scheduled', value: 'scheduled' }]} />
+                </div>
+            </SlideOver>
+
+            {/* Edit Offer SlideOver */}
+            <SlideOver
+                open={isEditOpen}
+                onClose={() => { setIsEditOpen(false); setSelectedOffer(null); }}
+                title="Edit Offer"
+                footer={
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>Cancel</Button>
+                        <Button onClick={() => { setIsEditOpen(false); addToast('success', 'Offer updated successfully'); }}>Save Changes</Button>
+                    </div>
+                }
+            >
+                {selectedOffer && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                        <Input label="Offer Name" defaultValue={selectedOffer.name} />
+                        <Select label="Discount Type" defaultValue={selectedOffer.type} options={[{ label: 'Percentage', value: 'percentage' }, { label: 'Fixed Amount', value: 'fixed' }]} />
+                        <Input label="Discount Value" type="number" defaultValue={selectedOffer.discount} />
+                        <Input label="Start Date" type="date" defaultValue={selectedOffer.startDate} />
+                        <Input label="End Date" type="date" defaultValue={selectedOffer.endDate} />
+                        <Select label="Status" defaultValue={selectedOffer.status} options={[{ label: 'Active', value: 'active' }, { label: 'Scheduled', value: 'scheduled' }, { label: 'Expired', value: 'expired' }]} />
+                    </div>
+                )}
+            </SlideOver>
+
+            {/* Delete Confirmation Modal */}
+            <Modal
+                open={isDeleteOpen}
+                onClose={() => { setIsDeleteOpen(false); setSelectedOffer(null); }}
+                title="Delete Offer"
+                footer={
+                    <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
+                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
+                        <Button variant="destructive" onClick={() => { setIsDeleteOpen(false); addToast('error', 'Offer deleted permanently'); }}>Confirm Delete</Button>
+                    </div>
+                }
+            >
+                <div>
+                    <p style={{ color: 'var(--text-secondary)' }}>
+                        Are you sure you want to delete the <strong>{selectedOffer?.name}</strong> offer?
+                    </p>
+                </div>
+            </Modal>
+        </div >
     );
 }

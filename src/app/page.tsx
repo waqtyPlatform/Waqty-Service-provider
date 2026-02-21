@@ -24,7 +24,9 @@ import {
   ResponsiveContainer,
   AreaChart,
   Area,
+  Tooltip as RechartsTooltip,
 } from 'recharts';
+import { motion } from 'framer-motion';
 import styles from './page.module.css';
 
 const dateRanges = ['Today', 'This Week', 'This Month', 'This Quarter', 'Custom'];
@@ -163,7 +165,71 @@ export default function DashboardPage() {
   const employeeTerm = isClinic ? 'Doctor/Staff' : isBarber ? 'Barber' : 'Stylist';
   const employeesTerm = isClinic ? 'Doctors & Staff' : isBarber ? 'Barbers' : 'Stylists';
 
-  const totalBookings = bookingStatusData.reduce((s, d) => s + d.value, 0);
+  const formatNum = (num: number) => num.toLocaleString('en-US');
+
+  const getMultiplier = (range: string) => {
+    switch (range) {
+      case 'Today': return 1;
+      case 'This Week': return 5.5;
+      case 'This Month': return 22.4;
+      case 'This Quarter': return 65.2;
+      case 'Custom': return 15.6;
+      default: return 1;
+    }
+  };
+
+  const currentKpiData = React.useMemo(() => {
+    const m = getMultiplier(activeDate);
+    return kpiData.map(kpi => ({
+      ...kpi,
+      value: formatNum(Math.round(parseInt(kpi.value.replace(/,/g, '')) * m)),
+      sparkData: kpi.sparkData.map(d => ({ v: Math.round(d.v * (1 + (Math.random() * 0.2 - 0.1))) }))
+    }));
+  }, [activeDate]);
+
+  const currentOccupancyData = React.useMemo(() => {
+    const days = Math.max(1, Math.round(getMultiplier(activeDate)));
+    return occupancyData.map(d => {
+      const total = 9 * days;
+      const pct = Math.min(100, Math.max(0, d.pct + (Math.random() * 10 - 5)));
+      const booked = Math.round((pct / 100) * total);
+      return { ...d, total, booked: Math.min(booked, total), pct: Math.round(pct) };
+    });
+  }, [activeDate]);
+
+  const currentBookingStatusData = React.useMemo(() => {
+    const m = getMultiplier(activeDate);
+    return bookingStatusData.map(d => ({ ...d, value: Math.round(d.value * m) }));
+  }, [activeDate]);
+
+  const currentTopClients = React.useMemo(() => {
+    const m = getMultiplier(activeDate);
+    return topClients.map(c => ({
+      ...c,
+      visits: Math.max(1, Math.round(c.visits * m)),
+      spend: formatNum(Math.round(parseInt(c.spend.replace(/,/g, '')) * m))
+    }));
+  }, [activeDate]);
+
+  const currentTopEmployees = React.useMemo(() => {
+    const m = getMultiplier(activeDate);
+    return topEmployees.map(e => ({
+      ...e,
+      bookings: Math.round(e.bookings * m),
+      revenue: formatNum(Math.round(parseInt(e.revenue.replace(/,/g, '')) * m))
+    }));
+  }, [activeDate]);
+
+  const currentTopServices = React.useMemo(() => {
+    const m = getMultiplier(activeDate);
+    return topServices.map(s => ({
+      ...s,
+      count: Math.round(s.count * m),
+      revenue: formatNum(Math.round(parseInt(s.revenue.replace(/,/g, '')) * m))
+    }));
+  }, [activeDate]);
+
+  const totalBookings = currentBookingStatusData.reduce((s, d) => s + d.value, 0);
 
   return (
     <div className={`${styles.dashboard} stagger-children`}>
@@ -173,24 +239,47 @@ export default function DashboardPage() {
           <h1>Dashboard</h1>
           <p>Welcome back! Here&apos;s what&apos;s happening today.</p>
         </div>
-        <div className={styles.dateControls}>
-          {dateRanges.map((range) => (
-            <button
-              key={range}
-              className={`${styles.dateBtn} ${activeDate === range ? styles.dateBtnActive : ''
-                }`}
-              onClick={() => setActiveDate(range)}
-            >
-              {range}
-            </button>
-          ))}
+        <div className={styles.headerRight}>
+          <div className={styles.dateControls}>
+            {dateRanges.map((range) => (
+              <button
+                key={range}
+                className={`${styles.dateBtn} ${activeDate === range ? styles.dateBtnActive : ''
+                  }`}
+                onClick={() => setActiveDate(range)}
+              >
+                {range}
+              </button>
+            ))}
+          </div>
+          <button className={styles.quickActionBtn} onClick={() => router.push('/bookings/new')}>
+            <CalendarCheck size={16} /> New Booking
+          </button>
+          <button className={styles.quickActionBtnOutline} onClick={() => router.push('/sales?quick=true')}>
+            <DollarSign size={16} /> Quick Sale
+          </button>
         </div>
       </div>
 
       {/* KPI Cards */}
-      <div className={styles.kpiGrid}>
-        {kpiData.map((kpi) => (
-          <div key={kpi.label} className={styles.kpiCard}>
+      <motion.div
+        className={styles.kpiGrid}
+        initial="hidden"
+        animate="visible"
+        variants={{
+          hidden: { opacity: 0 },
+          visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+        }}
+      >
+        {currentKpiData.map((kpi) => (
+          <motion.div
+            key={kpi.label}
+            className={styles.kpiCard}
+            variants={{
+              hidden: { y: 20, opacity: 0 },
+              visible: { y: 0, opacity: 1 }
+            }}
+          >
             <div className={styles.kpiHeader}>
               <div className={`${styles.kpiIcon} ${styles[kpi.colorClass]}`}>
                 {kpi.icon}
@@ -231,22 +320,42 @@ export default function DashboardPage() {
                     fill="var(--color-primary-500)"
                     strokeWidth={2}
                   />
+                  <RechartsTooltip
+                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: 'var(--shadow-sm)', fontSize: '12px', padding: '4px 8px' }}
+                    formatter={(val: any) => [`${val}`, 'Value']}
+                    labelFormatter={() => ''}
+                  />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       {/* Charts Row */}
-      <div className={styles.chartsRow}>
+      <motion.div
+        className={styles.chartsRow}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-50px" }}
+        variants={{
+          hidden: { opacity: 0 },
+          visible: { opacity: 1, transition: { staggerChildren: 0.15 } }
+        }}
+      >
         {/* Occupancy Table */}
-        <div className={styles.card}>
+        <motion.div
+          className={styles.card}
+          variants={{
+            hidden: { y: 20, opacity: 0 },
+            visible: { y: 0, opacity: 1 }
+          }}
+        >
           <div className={styles.cardHeader}>
             <span className={styles.cardTitle}>{employeesTerm} Occupancy</span>
             <Link href="/employees" className={styles.cardAction}>View All</Link>
           </div>
-          <table className={styles.occupancyTable}>
+          <table className={styles.dataTable}>
             <thead>
               <tr>
                 <th>{employeeTerm}</th>
@@ -256,7 +365,7 @@ export default function DashboardPage() {
               </tr>
             </thead>
             <tbody>
-              {occupancyData.map((row) => (
+              {currentOccupancyData.map((row) => (
                 <tr key={row.employee}>
                   <td>
                     <span className={styles.rankName}>{row.employee}</span>
@@ -285,10 +394,16 @@ export default function DashboardPage() {
               ))}
             </tbody>
           </table>
-        </div>
+        </motion.div>
 
         {/* Booking Status Donut */}
-        <div className={styles.card}>
+        <motion.div
+          className={styles.card}
+          variants={{
+            hidden: { y: 20, opacity: 0 },
+            visible: { y: 0, opacity: 1 }
+          }}
+        >
           <div className={styles.cardHeader}>
             <span className={styles.cardTitle}>Booking Status</span>
             <Link href="/bookings" className={styles.cardAction}>Details</Link>
@@ -297,7 +412,7 @@ export default function DashboardPage() {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={bookingStatusData}
+                  data={currentBookingStatusData}
                   cx="50%"
                   cy="50%"
                   innerRadius={60}
@@ -306,10 +421,14 @@ export default function DashboardPage() {
                   dataKey="value"
                   stroke="none"
                 >
-                  {bookingStatusData.map((entry, i) => (
+                  {currentBookingStatusData.map((entry, i) => (
                     <Cell key={i} fill={entry.color} />
                   ))}
                 </Pie>
+                <RechartsTooltip
+                  contentStyle={{ borderRadius: '8px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}
+                  formatter={(val: any, name: any) => [val, name]}
+                />
               </PieChart>
             </ResponsiveContainer>
             <div
@@ -326,7 +445,7 @@ export default function DashboardPage() {
             </div>
           </div>
           <div className={styles.donutLegend}>
-            {bookingStatusData.map((item) => (
+            {currentBookingStatusData.map((item) => (
               <div key={item.name} className={styles.legendItem}>
                 <span
                   className={styles.legendDot}
@@ -337,18 +456,33 @@ export default function DashboardPage() {
               </div>
             ))}
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
       {/* Bottom Tables */}
-      <div className={styles.tablesRow}>
+      <motion.div
+        className={styles.tablesRow}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-50px" }}
+        variants={{
+          hidden: { opacity: 0 },
+          visible: { opacity: 1, transition: { staggerChildren: 0.15 } }
+        }}
+      >
         {/* Top Clients */}
-        <div className={styles.card}>
+        <motion.div
+          className={styles.card}
+          variants={{
+            hidden: { y: 20, opacity: 0 },
+            visible: { y: 0, opacity: 1 }
+          }}
+        >
           <div className={styles.cardHeader}>
             <span className={styles.cardTitle}>Top {clientsTerm}</span>
             <Link href="/customers" className={styles.cardAction}>View All</Link>
           </div>
-          <table className={styles.rankTable}>
+          <table className={styles.dataTable}>
             <thead>
               <tr>
                 <th>#</th>
@@ -358,7 +492,7 @@ export default function DashboardPage() {
               </tr>
             </thead>
             <tbody>
-              {topClients.map((c) => (
+              {currentTopClients.map((c) => (
                 <tr key={c.rank} onClick={() => router.push(`/customers/${c.id}`)} style={{ cursor: 'pointer' }}>
                   <td>
                     <span className={`${styles.rankNumber} ${getRankClass(c.rank)}`}>
@@ -372,15 +506,21 @@ export default function DashboardPage() {
               ))}
             </tbody>
           </table>
-        </div>
+        </motion.div>
 
         {/* Top Employees */}
-        <div className={styles.card}>
+        <motion.div
+          className={styles.card}
+          variants={{
+            hidden: { y: 20, opacity: 0 },
+            visible: { y: 0, opacity: 1 }
+          }}
+        >
           <div className={styles.cardHeader}>
             <span className={styles.cardTitle}>Top {employeesTerm}</span>
             <Link href="/employees" className={styles.cardAction}>View All</Link>
           </div>
-          <table className={styles.rankTable}>
+          <table className={styles.dataTable}>
             <thead>
               <tr>
                 <th>#</th>
@@ -390,7 +530,7 @@ export default function DashboardPage() {
               </tr>
             </thead>
             <tbody>
-              {topEmployees.map((e) => (
+              {currentTopEmployees.map((e) => (
                 <tr key={e.rank} onClick={() => router.push(`/employees/${e.id}`)} style={{ cursor: 'pointer' }}>
                   <td>
                     <span className={`${styles.rankNumber} ${getRankClass(e.rank)}`}>
@@ -404,15 +544,21 @@ export default function DashboardPage() {
               ))}
             </tbody>
           </table>
-        </div>
+        </motion.div>
 
         {/* Top Services */}
-        <div className={styles.card}>
+        <motion.div
+          className={styles.card}
+          variants={{
+            hidden: { y: 20, opacity: 0 },
+            visible: { y: 0, opacity: 1 }
+          }}
+        >
           <div className={styles.cardHeader}>
             <span className={styles.cardTitle}>Top Services</span>
             <Link href="/sales" className={styles.cardAction}>View All</Link>
           </div>
-          <table className={styles.rankTable}>
+          <table className={styles.dataTable}>
             <thead>
               <tr>
                 <th>#</th>
@@ -422,7 +568,7 @@ export default function DashboardPage() {
               </tr>
             </thead>
             <tbody>
-              {topServices.map((s) => (
+              {currentTopServices.map((s) => (
                 <tr key={s.rank}>
                   <td>
                     <span className={`${styles.rankNumber} ${getRankClass(s.rank)}`}>
@@ -436,8 +582,8 @@ export default function DashboardPage() {
               ))}
             </tbody>
           </table>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
       {/* Summary Strip */}
       <div className={styles.summaryStrip}>
@@ -449,8 +595,8 @@ export default function DashboardPage() {
             <CalendarCheck size={24} />
           </div>
           <div className={styles.summaryContent}>
-            <h3>47</h3>
-            <p>{bookingsTerm} Today</p>
+            <h3>{totalBookings}</h3>
+            <p>{bookingsTerm} {activeDate}</p>
           </div>
         </div>
         <div className={styles.summaryCard}>
@@ -458,23 +604,23 @@ export default function DashboardPage() {
             className={styles.summaryIcon}
             style={{ background: 'var(--color-info-light)', color: 'var(--color-info)' }}
           >
-            <Wallet size={24} />
+            <Users size={24} />
           </div>
           <div className={styles.summaryContent}>
-            <h3>12,450 EGP</h3>
-            <p>Sales Today</p>
+            <h3>{Math.round(18 * getMultiplier(activeDate))}</h3>
+            <p>New {clientsTerm}</p>
           </div>
         </div>
         <div className={styles.summaryCard}>
           <div
             className={styles.summaryIcon}
-            style={{ background: '#EDE9FE', color: '#7C3AED' }}
+            style={{ background: 'var(--color-warning-light)', color: 'var(--color-warning)' }}
           >
-            <Users size={24} />
+            <Wallet size={24} />
           </div>
           <div className={styles.summaryContent}>
-            <h3>389</h3>
-            <p>Total {clientsTerm}</p>
+            <h3>{formatNum(Math.round(42500 * getMultiplier(activeDate)))}</h3>
+            <p>Cash Drawer</p>
           </div>
         </div>
         <div className={`${styles.summaryCard} ${styles.clientOfMonth}`}>
@@ -489,7 +635,7 @@ export default function DashboardPage() {
             <p>🌟 {clientTerm} of the Month</p>
           </div>
         </div>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }

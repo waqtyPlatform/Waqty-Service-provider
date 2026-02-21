@@ -191,7 +191,37 @@ export default function Sidebar() {
 
     const isActive = (href: string) => {
         if (href === '/') return pathname === '/';
-        return pathname.startsWith(href);
+        // Check if the current pathname is EXACTLY the href
+        if (pathname === href) return true;
+        // Check if the current pathname is a deeper nested route of this href
+        // But ONLY if the href isn't a top-level matching trap like '/employees' when we are on '/employees/departments'
+        // A simple way to handle this in our specific route structure:
+        const pathSegments = pathname.split('/').filter(Boolean);
+        const hrefSegments = href.split('/').filter(Boolean);
+
+        // If href has more segments than current path, it can't be active
+        if (hrefSegments.length > pathSegments.length) return false;
+
+        // If they have the exact same number of segments, they must match exactly to be true (handled above by pathname === href)
+        if (hrefSegments.length === pathSegments.length) return false;
+
+        // For cases where we are deeper (e.g. /employees/E001) we want the parent to be active ONLY if that deeper route ISN'T mapped as its own distinct sub-item.
+        // E.g., /employees/departments has its own sub-item. /employees/E001 does not.
+
+        // Find if any OTHER navigation item explicitly matches the CURRENT pathname exactly.
+        const isMatchedByAnotherSpecificLink = navigation.some(item => {
+            if (item.href === pathname) return true;
+            if (item.children?.some(child => child.href === pathname)) return true;
+            return false;
+        });
+
+        // If another sublink explicitly matches (like /employees/departments), don't light up the generic parent (/employees).
+        if (isMatchedByAnotherSpecificLink) {
+            return false;
+        }
+
+        // Lastly, if no specific link matched, safely fall back to checking if this href is the prefix (e.g., highlighting /employees for /employees/E001)
+        return pathname.startsWith(href + '/');
     };
 
     return (

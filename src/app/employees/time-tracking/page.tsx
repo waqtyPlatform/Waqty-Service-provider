@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import EmployeesTabs from '@/components/EmployeesTabs';
+
 import { Clock, LogIn, LogOut, Coffee } from 'lucide-react';
 import { Badge } from '@/components/ui';
 
@@ -30,7 +30,7 @@ export default function EmployeeTimeTrackingPage() {
                 <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginTop: 'var(--space-1)' }}>Monitor employee attendance and working hours.</p>
             </div>
 
-            <EmployeesTabs />
+
 
             <div style={s.card}>
                 <table style={s.table}>
