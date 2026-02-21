@@ -100,7 +100,7 @@ export default function CommissionsPage() {
             segMap[key].revenue += curr.revenue;
             segMap[key].commission += curr.commission;
         });
-        
+
         return Object.values(segMap).map(seg => ({
             ...seg,
             rate: seg.revenue > 0 ? ((seg.commission / seg.revenue) * 100).toFixed(1) : 0
@@ -121,11 +121,11 @@ export default function CommissionsPage() {
         displayedData.forEach(curr => {
             empMap[curr.employee] = (empMap[curr.employee] || 0) + curr.revenue;
         });
-        
+
         return Object.entries(empMap).map(([employee, actualRevenue]) => {
-            const def = targetDefinitions[employee] || { targetRev: 5000, targetBonus: 500 }; 
+            const def = targetDefinitions[employee] || { targetRev: 5000, targetBonus: 500 };
             const achievedPct = (actualRevenue / def.targetRev) * 100;
-            
+
             let multiplier = 0;
             let status = 'Short';
 
@@ -163,7 +163,7 @@ export default function CommissionsPage() {
     // TAB 3: Extraction
     const aggregatedExtraction = useMemo(() => {
         return displayedData.map(curr => {
-            const extractionCost = curr.revenue * 0.15; 
+            const extractionCost = curr.revenue * 0.15;
             const netRevenue = curr.revenue - extractionCost;
             const newCommission = netRevenue * (curr.rate / 100);
 
@@ -193,9 +193,9 @@ export default function CommissionsPage() {
 
             <div style={s.tabBar}>
                 {subTabs.map((t, i) => (
-                    <div 
-                        key={t} 
-                        style={{ ...s.tab, ...(i === activeTab ? s.tabActive : {}) }} 
+                    <div
+                        key={t}
+                        style={{ ...s.tab, ...(i === activeTab ? s.tabActive : {}) }}
                         onClick={() => setActiveTab(i)}
                     >
                         {t}
@@ -206,7 +206,7 @@ export default function CommissionsPage() {
             <div style={s.kpis}>
                 {activeTab === 3 ? (
                     <>
-                         <div style={s.kpi}>
+                        <div style={s.kpi}>
                             <div style={s.kpiVal}>{totalExtNet3.toLocaleString()} EGP</div>
                             <div style={s.kpiLbl}>Total Net Revenue</div>
                         </div>
@@ -247,19 +247,19 @@ export default function CommissionsPage() {
             <div style={s.toolbar}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', minWidth: 180 }}>
                     <span style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--font-medium)', color: 'var(--text-secondary)' }}>Employee Filter</span>
-                    <Select 
-                        value={employeeFilter} 
+                    <Select
+                        value={employeeFilter}
                         onChange={(e) => setEmployeeFilter(e.target.value)}
                         options={employees.map(e => ({ label: e === 'All' ? 'All Employees' : e, value: e }))}
                         style={{ margin: 0, height: 40 }}
                     />
                 </div>
-                
+
                 {(activeTab === 0 || activeTab === 3) && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', minWidth: 180 }}>
                         <span style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--font-medium)', color: 'var(--text-secondary)' }}>Service Filter</span>
-                        <Select 
-                            value={serviceFilter} 
+                        <Select
+                            value={serviceFilter}
                             onChange={(e) => setServiceFilter(e.target.value)}
                             options={services.map(s => ({ label: s === 'All' ? 'All Services' : s, value: s }))}
                             style={{ margin: 0, height: 40 }}
@@ -269,8 +269,8 @@ export default function CommissionsPage() {
                 {activeTab === 1 && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', minWidth: 180 }}>
                         <span style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--font-medium)', color: 'var(--text-secondary)' }}>Segment Filter</span>
-                        <Select 
-                            value={segmentFilter} 
+                        <Select
+                            value={segmentFilter}
                             onChange={(e) => setSegmentFilter(e.target.value)}
                             options={segments.map(s => ({ label: s === 'All' ? 'All Segments' : s, value: s }))}
                             style={{ margin: 0, height: 40 }}
@@ -280,8 +280,8 @@ export default function CommissionsPage() {
                 {activeTab === 2 && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', minWidth: 180 }}>
                         <span style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--font-medium)', color: 'var(--text-secondary)' }}>Status Filter</span>
-                        <Select 
-                            value={statusFilter} 
+                        <Select
+                            value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
                             options={statuses.map(s => ({ label: s === 'All' ? 'All Statuses' : s, value: s }))}
                             style={{ margin: 0, height: 40 }}
@@ -297,14 +297,14 @@ export default function CommissionsPage() {
                     <span style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--font-medium)', color: 'var(--text-secondary)' }}>End Date</span>
                     <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} style={{ margin: 0, height: 40 }} />
                 </div>
-                
+
                 <Button onClick={handleCalculate} disabled={isCalculating} style={{ height: 40 }}>
                     <Calculator size={16} style={{ marginRight: 8 }} />
                     {isCalculating ? 'Calculating...' : 'Calculate'}
                 </Button>
-                
+
                 <div style={{ flex: 1 }} />
-                
+
                 <Button variant="outline" onClick={handleExport} style={{ height: 40 }}>
                     <Download size={16} style={{ marginRight: 8 }} /> Export Report
                 </Button>
@@ -346,10 +346,10 @@ export default function CommissionsPage() {
                             </tfoot>
                         </table>
                     ) : (
-                        <EmptyState 
-                            icon={<Clock size={32} color="var(--text-tertiary)" />} 
-                            title="No commissions found" 
-                            description="Adjust your employee, service, or date filters to see results." 
+                        <EmptyState
+                            icon={<Clock size={32} color="var(--text-tertiary)" />}
+                            title="No commissions found"
+                            description="Adjust your employee, service, or date filters to see results."
                         />
                     )
                 ) : activeTab === 1 ? (
@@ -386,14 +386,14 @@ export default function CommissionsPage() {
                             </tfoot>
                         </table>
                     ) : (
-                        <EmptyState 
-                            icon={<PieChart size={32} color="var(--text-tertiary)" />} 
-                            title="No segments found" 
-                            description="Adjust your employee, segment, or date filters to see segment results." 
+                        <EmptyState
+                            icon={<PieChart size={32} color="var(--text-tertiary)" />}
+                            title="No segments found"
+                            description="Adjust your employee, segment, or date filters to see segment results."
                         />
                     )
                 ) : activeTab === 2 ? (
-                     tab2Data.length > 0 ? (
+                    tab2Data.length > 0 ? (
                         <table style={s.table as React.CSSProperties}>
                             <thead>
                                 <tr>
@@ -410,7 +410,7 @@ export default function CommissionsPage() {
                                         <td style={s.td}>{row.actualRevenue.toLocaleString()} EGP</td>
                                         <td style={{ ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties}>{row.achievedPct}%</td>
                                         <td style={s.td}>
-                                            <Badge variant={row.isEligible ? 'success' : 'default'}>
+                                            <Badge color={row.isEligible ? 'success' : 'neutral'}>
                                                 {row.status}
                                             </Badge>
                                         </td>
@@ -430,10 +430,10 @@ export default function CommissionsPage() {
                             </tfoot>
                         </table>
                     ) : (
-                        <EmptyState 
-                            icon={<Target size={32} color="var(--text-tertiary)" />} 
-                            title="No target data found" 
-                            description="Adjust your employee, status, or date filters to visualize target progression." 
+                        <EmptyState
+                            icon={<Target size={32} color="var(--text-tertiary)" />}
+                            title="No target data found"
+                            description="Adjust your employee, status, or date filters to visualize target progression."
                         />
                     )
                 ) : activeTab === 3 ? (
@@ -474,10 +474,10 @@ export default function CommissionsPage() {
                             </tfoot>
                         </table>
                     ) : (
-                        <EmptyState 
-                            icon={<Calculator size={32} color="var(--text-tertiary)" />} 
-                            title="No extraction data found" 
-                            description="Adjust your employee, service, or date filters to visualize extraction." 
+                        <EmptyState
+                            icon={<Calculator size={32} color="var(--text-tertiary)" />}
+                            title="No extraction data found"
+                            description="Adjust your employee, service, or date filters to visualize extraction."
                         />
                     )
                 ) : null}
