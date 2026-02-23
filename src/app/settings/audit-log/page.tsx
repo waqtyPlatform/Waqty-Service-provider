@@ -1,20 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
 import { Search, Download, Filter } from 'lucide-react';
-
-const tabs = [
-    { label: 'General', href: '/settings' },
-    { label: 'Branches', href: '/settings/branches' },
-    { label: 'Services', href: '/settings/services' },
-    { label: 'Invoice', href: '/settings/invoice' },
-    { label: 'Devices', href: '/settings/devices' },
-    { label: 'Integrations', href: '/settings/integrations' },
-    { label: 'Roles', href: '/settings/roles' },
-    { label: 'Audit Log', href: '/settings/audit-log' },
-    { label: 'Subscription', href: '/settings/subscription' },
-];
+import SettingsTabs from '@/components/SettingsTabs';
 
 const logs = [
     { id: 1, time: '2026-02-17 10:05', user: 'Sara Ahmed', action: 'Created', entity: 'Booking #BK-1044', details: 'New booking for Fatima Ali – Hair Coloring', ip: '192.168.1.15' },
@@ -39,9 +27,6 @@ const actionColors: Record<string, { bg: string; color: string }> = {
 
 const s: Record<string, React.CSSProperties> = {
     page: { display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' },
-    tabBar: { display: 'flex', gap: 'var(--space-1)', borderBottom: '2px solid var(--border-color)', overflowX: 'auto' },
-    tab: { padding: 'var(--space-3) var(--space-4)', fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', color: 'var(--text-tertiary)', borderBottom: '2px solid transparent', marginBottom: '-2px', whiteSpace: 'nowrap', textDecoration: 'none' },
-    tabActive: { color: 'var(--color-primary-500)', borderBottomColor: 'var(--color-primary-500)' },
     toolbar: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-3)' },
     searchBox: { position: 'relative', flex: 1, maxWidth: 320 },
     searchIcon: { position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' },
@@ -59,9 +44,7 @@ export default function AuditLogPage() {
 
     return (
         <div style={s.page}>
-            <div style={s.tabBar}>
-                {tabs.map(t => <Link key={t.href} href={t.href} style={{ ...s.tab, ...(t.href === '/settings/audit-log' ? s.tabActive : {}) }}>{t.label}</Link>)}
-            </div>
+            <SettingsTabs />
             <div style={s.toolbar}>
                 <div style={s.searchBox as React.CSSProperties}><Search size={16} style={s.searchIcon as React.CSSProperties} /><input style={s.searchInput} placeholder="Search logs..." value={search} onChange={e => setSearch(e.target.value)} /></div>
                 <button style={s.exportBtn}><Download size={16} /> Export</button>

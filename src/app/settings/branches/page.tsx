@@ -1,44 +1,92 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
-import { Building2, Save, Plus, MoreVertical, Edit, Trash2 } from 'lucide-react';
-import { useToast, SlideOver, Modal, Input, Button, DropdownMenu } from '@/components/ui';
+import { Building2, Plus, MoreVertical, Edit, Trash2, MapPin, ExternalLink } from 'lucide-react';
+import { useToast, SlideOver, Modal, Input, Select, Button, DropdownMenu } from '@/components/ui';
+import SettingsTabs from '@/components/SettingsTabs';
 
-const tabs = [
-    { label: 'General', href: '/settings' },
-    { label: 'Branches', href: '/settings/branches' },
-    { label: 'Services', href: '/settings/services' },
-    { label: 'Invoice', href: '/settings/invoice' },
-    { label: 'Devices', href: '/settings/devices' },
-    { label: 'Integrations', href: '/settings/integrations' },
-    { label: 'Roles', href: '/settings/roles' },
-    { label: 'Audit Log', href: '/settings/audit-log' },
-    { label: 'Subscription', href: '/settings/subscription' },
+const GOVERNORATES = [
+    'Cairo', 'Giza', 'Alexandria', 'Qalyubia', 'Dakahlia', 'Sharqia', 'Gharbia',
+    'Monufia', 'Beheira', 'Kafr El Sheikh', 'Damietta', 'Port Said', 'Ismailia',
+    'Suez', 'North Sinai', 'South Sinai', 'Red Sea', 'Matrouh', 'Fayoum',
+    'Beni Suef', 'Minya', 'Assiut', 'Sohag', 'Qena', 'Luxor', 'Aswan', 'New Valley',
 ];
 
+const CITIES: Record<string, string[]> = {
+    Cairo: ['Nasr City', 'Heliopolis', 'Maadi', 'Downtown', 'Zamalek', 'New Cairo', '6th of October', 'Shubra', 'Ain Shams'],
+    Giza: ['Dokki', 'Mohandessin', 'Haram', 'Faisal', '6th of October', 'Sheikh Zayed', 'Smart Village'],
+    Alexandria: ['Montaza', 'Smouha', 'Sidi Gaber', 'Stanley', 'Mandara', 'Agami', 'Miami'],
+};
+
 const branches = [
-    { id: 1, name: 'Downtown Branch', address: '15 Tahrir Street, Cairo', phone: '+20 2 2345 6789', manager: 'Sara Ahmed', employees: 6, status: 'active' },
-    { id: 2, name: 'Mall of Arabia', address: 'Mall of Arabia, 6th of October', phone: '+20 2 3456 7890', manager: 'Fatma Hosny', employees: 3, status: 'active' },
-    { id: 3, name: 'New Cairo Branch', address: '5th Settlement, New Cairo', phone: '+20 2 4567 8901', manager: 'Amira Sayed', employees: 4, status: 'active' },
+    {
+        id: 1, name: 'Downtown Branch', governorate: 'Cairo', city: 'Downtown',
+        address: '15 Tahrir Street', mapLink: 'https://maps.app.goo.gl/abc123',
+        phone: '+20 2 2345 6789', manager: 'Sara Ahmed', employees: 6, status: 'active',
+    },
+    {
+        id: 2, name: 'Mall of Arabia', governorate: 'Giza', city: '6th of October',
+        address: 'Mall of Arabia, Gate 4', mapLink: 'https://maps.app.goo.gl/def456',
+        phone: '+20 2 3456 7890', manager: 'Fatma Hosny', employees: 3, status: 'active',
+    },
+    {
+        id: 3, name: 'New Cairo Branch', governorate: 'Cairo', city: 'New Cairo',
+        address: '5th Settlement, Street 90', mapLink: 'https://maps.app.goo.gl/ghi789',
+        phone: '+20 2 4567 8901', manager: 'Amira Sayed', employees: 4, status: 'active',
+    },
 ];
 
 const s: Record<string, React.CSSProperties> = {
     page: { display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' },
-    tabBar: { display: 'flex', gap: 'var(--space-1)', borderBottom: '2px solid var(--border-color)', overflowX: 'auto' },
-    tab: { padding: 'var(--space-3) var(--space-4)', fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', color: 'var(--text-tertiary)', borderBottom: '2px solid transparent', marginBottom: '-2px', whiteSpace: 'nowrap', textDecoration: 'none' },
-    tabActive: { color: 'var(--color-primary-500)', borderBottomColor: 'var(--color-primary-500)' },
     toolbar: { display: 'flex', justifyContent: 'flex-end', marginBottom: 'var(--space-2)' },
-    grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 'var(--space-5)' },
-    card: { background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-xl)', padding: 'var(--space-5)' },
+    grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: 'var(--space-5)' },
+    card: { background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-xl)', padding: 'var(--space-5)', transition: 'box-shadow 0.2s, border-color 0.2s' },
     cardHead: { display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-4)' },
     icon: { width: 44, height: 44, borderRadius: 'var(--radius-lg)', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-primary-50)', color: 'var(--color-primary-600)' },
     name: { fontSize: 'var(--text-lg)', fontWeight: 'var(--font-semibold)' },
     badge: { display: 'inline-flex', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontSize: 11, fontWeight: 'var(--font-semibold)', background: 'var(--color-success-light)', color: 'var(--color-success)' },
-    row: { display: 'flex', justifyContent: 'space-between', padding: 'var(--space-2) 0', fontSize: 'var(--text-sm)' },
+    row: { display: 'flex', justifyContent: 'space-between', padding: 'var(--space-2) 0', fontSize: 'var(--text-sm)', borderBottom: '1px solid var(--border-color)' },
+    rowLast: { borderBottom: 'none' },
     label: { color: 'var(--text-tertiary)' },
-    val: { fontWeight: 'var(--font-medium)' },
+    val: { fontWeight: 'var(--font-medium)', textAlign: 'right' as const, maxWidth: '60%' },
+    mapLink: { display: 'inline-flex', alignItems: 'center', gap: 4, color: 'var(--color-primary-600)', fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', textDecoration: 'none' },
+    sectionLabel: { fontSize: 'var(--text-xs)', fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', textTransform: 'uppercase' as const, letterSpacing: '0.05em', marginBottom: 'var(--space-2)', marginTop: 'var(--space-3)' },
 };
+
+function BranchForm({ defaultValues }: { defaultValues?: any }) {
+    const [governorate, setGovernorate] = useState(defaultValues?.governorate || '');
+    const cities = CITIES[governorate] || [];
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+            <Input label="Branch Name" placeholder="e.g. Downtown Branch" defaultValue={defaultValues?.name} />
+            <Input label="Contact Phone" placeholder="+20 1XX XXX XXXX" defaultValue={defaultValues?.phone} />
+            <Input label="Manager Name" placeholder="e.g. Sara Ahmed" defaultValue={defaultValues?.manager} />
+
+            <div style={s.sectionLabel}>📍 Location Details</div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
+                <Select
+                    label="Governorate"
+                    defaultValue={defaultValues?.governorate || ''}
+                    options={[{ label: '— Select governorate —', value: '' }, ...GOVERNORATES.map(g => ({ label: g, value: g }))]}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setGovernorate(e.target.value)}
+                />
+                <Select
+                    label="City"
+                    defaultValue={defaultValues?.city || ''}
+                    options={cities.length > 0
+                        ? [{ label: '— Select city —', value: '' }, ...cities.map(c => ({ label: c, value: c }))]
+                        : [{ label: 'Select governorate first', value: '' }]
+                    }
+                />
+            </div>
+
+            <Input label="Full Address" placeholder="e.g. 15 Tahrir Street, Building 3, Floor 1" defaultValue={defaultValues?.address} />
+            <Input label="Google Maps Link" placeholder="https://maps.app.goo.gl/..." defaultValue={defaultValues?.mapLink} />
+        </div>
+    );
+}
 
 export default function BranchesPage() {
     const { addToast } = useToast();
@@ -49,9 +97,7 @@ export default function BranchesPage() {
 
     return (
         <div style={s.page}>
-            <div style={s.tabBar}>
-                {tabs.map(t => <Link key={t.href} href={t.href} style={{ ...s.tab, ...(t.href === '/settings/branches' ? s.tabActive : {}) }}>{t.label}</Link>)}
-            </div>
+            <SettingsTabs />
             <div style={s.toolbar}>
                 <Button onClick={() => setIsAddOpen(true)}><Plus size={16} style={{ marginRight: 8 }} /> Add Branch</Button>
             </div>
@@ -71,10 +117,18 @@ export default function BranchesPage() {
                                 ]}
                             />
                         </div>
+                        <div style={s.row}><span style={s.label}>Governorate</span><span style={s.val}>{b.governorate}</span></div>
+                        <div style={s.row}><span style={s.label}>City</span><span style={s.val}>{b.city}</span></div>
                         <div style={s.row}><span style={s.label}>Address</span><span style={s.val}>{b.address}</span></div>
                         <div style={s.row}><span style={s.label}>Phone</span><span style={s.val}>{b.phone}</span></div>
                         <div style={s.row}><span style={s.label}>Manager</span><span style={s.val}>{b.manager}</span></div>
                         <div style={s.row}><span style={s.label}>Employees</span><span style={s.val}>{b.employees}</span></div>
+                        <div style={{ ...s.row, ...s.rowLast }}>
+                            <span style={s.label}>Location</span>
+                            <a href={b.mapLink} target="_blank" rel="noopener noreferrer" style={s.mapLink}>
+                                <MapPin size={14} /> View on Map <ExternalLink size={12} />
+                            </a>
+                        </div>
                     </div>
                 ))}
             </div>
@@ -91,12 +145,7 @@ export default function BranchesPage() {
                     </div>
                 }
             >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label="Branch Name" placeholder="e.g. Downtown Branch" />
-                    <Input label="Address" placeholder="e.g. 15 Tahrir Street, Cairo" />
-                    <Input label="Contact Phone" placeholder="+20 1XX XXX XXXX" />
-                    <Input label="Manager Name" placeholder="e.g. Sara Ahmed" />
-                </div>
+                <BranchForm />
             </SlideOver>
 
             {/* Edit Branch SlideOver */}
@@ -111,14 +160,7 @@ export default function BranchesPage() {
                     </div>
                 }
             >
-                {selectedBranch && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                        <Input label="Branch Name" defaultValue={selectedBranch.name} />
-                        <Input label="Address" defaultValue={selectedBranch.address} />
-                        <Input label="Contact Phone" defaultValue={selectedBranch.phone} />
-                        <Input label="Manager Name" defaultValue={selectedBranch.manager} />
-                    </div>
-                )}
+                {selectedBranch && <BranchForm defaultValues={selectedBranch} />}
             </SlideOver>
 
             {/* Delete Confirmation Modal */}

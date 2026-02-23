@@ -1,21 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
 import { Shield, Edit, Plus, Check, X, MoreVertical, Trash2 } from 'lucide-react';
 import { useToast, Modal, Input, Button, DropdownMenu } from '@/components/ui';
-
-const tabs = [
-    { label: 'General', href: '/settings' },
-    { label: 'Branches', href: '/settings/branches' },
-    { label: 'Services', href: '/settings/services' },
-    { label: 'Invoice', href: '/settings/invoice' },
-    { label: 'Devices', href: '/settings/devices' },
-    { label: 'Integrations', href: '/settings/integrations' },
-    { label: 'Roles', href: '/settings/roles' },
-    { label: 'Audit Log', href: '/settings/audit-log' },
-    { label: 'Subscription', href: '/settings/subscription' },
-];
+import SettingsTabs from '@/components/SettingsTabs';
 
 const defaultPerms = { view: false, create: false, edit: false, delete: false };
 const fullPerms = { view: true, create: true, edit: true, delete: true };
@@ -41,9 +29,6 @@ const getAccessLevel = (perms: any) => {
 
 const s: Record<string, React.CSSProperties> = {
     page: { display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' },
-    tabBar: { display: 'flex', gap: 'var(--space-1)', borderBottom: '2px solid var(--border-color)', overflowX: 'auto' },
-    tab: { padding: 'var(--space-3) var(--space-4)', fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', color: 'var(--text-tertiary)', borderBottom: '2px solid transparent', marginBottom: '-2px', whiteSpace: 'nowrap', textDecoration: 'none' },
-    tabActive: { color: 'var(--color-primary-500)', borderBottomColor: 'var(--color-primary-500)' },
     toolbar: { display: 'flex', justifyContent: 'flex-end' },
     addBtn: { display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-2) var(--space-5)', background: 'var(--color-primary-500)', color: 'white', borderRadius: 'var(--radius-lg)', fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)' },
     table: { width: '100%', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-xl)', overflow: 'hidden' },
@@ -62,9 +47,7 @@ export default function RolesPage() {
 
     return (
         <div style={s.page}>
-            <div style={s.tabBar}>
-                {tabs.map(t => <Link key={t.href} href={t.href} style={{ ...s.tab, ...(t.href === '/settings/roles' ? s.tabActive : {}) }}>{t.label}</Link>)}
-            </div>
+            <SettingsTabs />
             <div style={s.toolbar}><Button onClick={() => setIsAddOpen(true)}><Plus size={16} style={{ marginRight: 8 }} /> New Role</Button></div>
             <table style={s.table}>
                 <thead>

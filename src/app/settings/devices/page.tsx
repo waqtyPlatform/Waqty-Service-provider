@@ -1,20 +1,8 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
 import { Monitor, Smartphone, Printer, Wifi, WifiOff } from 'lucide-react';
-
-const tabs = [
-    { label: 'General', href: '/settings' },
-    { label: 'Branches', href: '/settings/branches' },
-    { label: 'Services', href: '/settings/services' },
-    { label: 'Invoice', href: '/settings/invoice' },
-    { label: 'Devices', href: '/settings/devices' },
-    { label: 'Integrations', href: '/settings/integrations' },
-    { label: 'Roles', href: '/settings/roles' },
-    { label: 'Audit Log', href: '/settings/audit-log' },
-    { label: 'Subscription', href: '/settings/subscription' },
-];
+import SettingsTabs from '@/components/SettingsTabs';
 
 const devices = [
     { id: 1, name: 'Reception POS', type: 'POS Terminal', model: 'Sunmi V2 Pro', branch: 'Downtown', lastSeen: '2026-02-17 10:05', online: true },
@@ -34,9 +22,6 @@ const typeIcons: Record<string, React.ReactNode> = {
 
 const s: Record<string, React.CSSProperties> = {
     page: { display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' },
-    tabBar: { display: 'flex', gap: 'var(--space-1)', borderBottom: '2px solid var(--border-color)', overflowX: 'auto' },
-    tab: { padding: 'var(--space-3) var(--space-4)', fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', color: 'var(--text-tertiary)', borderBottom: '2px solid transparent', marginBottom: '-2px', whiteSpace: 'nowrap', textDecoration: 'none' },
-    tabActive: { color: 'var(--color-primary-500)', borderBottomColor: 'var(--color-primary-500)' },
     table: { width: '100%', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-xl)', overflow: 'hidden' },
     th: { padding: 'var(--space-3) var(--space-4)', textAlign: 'left', fontSize: 'var(--text-xs)', fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', background: 'var(--bg-secondary)' },
     td: { padding: 'var(--space-3) var(--space-4)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)', borderTop: '1px solid var(--border-color)' },
@@ -46,9 +31,7 @@ const s: Record<string, React.CSSProperties> = {
 export default function DevicesPage() {
     return (
         <div style={s.page}>
-            <div style={s.tabBar}>
-                {tabs.map(t => <Link key={t.href} href={t.href} style={{ ...s.tab, ...(t.href === '/settings/devices' ? s.tabActive : {}) }}>{t.label}</Link>)}
-            </div>
+            <SettingsTabs />
             <table style={s.table}>
                 <thead><tr>{['Device', 'Type', 'Model', 'Branch', 'Last Seen', 'Status'].map(h => <th key={h} style={s.th as React.CSSProperties}>{h}</th>)}</tr></thead>
                 <tbody>

@@ -68,7 +68,7 @@ export default function DataSettingsPage() {
                         <div style={cs.iconBox}><Upload size={20} /></div>
                         <div>
                             <div style={{ fontWeight: 'var(--font-medium)' }}>Import Data</div>
-                            <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)' }}>Import customers or inventory from CSV.</div>
+                            <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)' }}>Import customers or services from CSV.</div>
                         </div>
                     </div>
                     <Button variant="outline" onClick={() => setIsImportOpen(true)}>Import Wizard</Button>
@@ -106,7 +106,7 @@ export default function DataSettingsPage() {
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <p style={{ color: 'var(--text-secondary)' }}>Upload your CSV file to batch import Customers, Inventory, or Historical Transactions.</p>
+                    <p style={{ color: 'var(--text-secondary)' }}>Upload your CSV file to batch import Customers, Services, or Historical Transactions.</p>
                     <div style={{ padding: 'var(--space-6)', border: '2px dashed var(--border-color)', borderRadius: 'var(--radius-lg)', textAlign: 'center' }}>
                         <div style={{ color: 'var(--text-tertiary)', marginBottom: 'var(--space-2)' }}>Drag & Drop your CSV file here</div>
                         <Button variant="outline" size="sm">Browse Files</Button>

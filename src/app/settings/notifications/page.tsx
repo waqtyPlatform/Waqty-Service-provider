@@ -24,7 +24,6 @@ export default function NotificationsSettingsPage() {
                     <Switch checked={true} label="Booking cancellation alerts" />
                     <Switch checked={true} label="Payment received" />
                     <Switch checked={false} label="Daily summary email" />
-                    <Switch checked={true} label="Low stock warnings" />
                     <Switch checked={false} label="Employee clock-in alerts" />
                     <Switch checked={true} label="Client birthday reminders" />
                 </div>

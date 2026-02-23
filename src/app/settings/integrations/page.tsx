@@ -1,35 +1,82 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
 import SettingsTabs from '@/components/SettingsTabs';
-import { useToast, Modal, Button } from '@/components/ui';
-import { ExternalLink, CheckCircle, AlertCircle, Zap, XCircle } from 'lucide-react';
+import { useToast, Modal, Button, SlideOver, Input, Select, Switch } from '@/components/ui';
+import {
+    CheckCircle, XCircle, Zap, ExternalLink, Settings,
+    MessageCircle, CreditCard, CalendarDays, Mail, Workflow,
+    Instagram, MapPin, Phone,
+} from 'lucide-react';
+
+const CATEGORIES = [
+    { key: 'communication', label: 'Communication' },
+    { key: 'payment', label: 'Payments' },
+    { key: 'scheduling', label: 'Scheduling & Calendar' },
+    { key: 'marketing', label: 'Marketing' },
+    { key: 'automation', label: 'Automation' },
+    { key: 'location', label: 'Location & Reviews' },
+];
 
 const initialIntegrations = [
-    { id: 1, name: 'WhatsApp Business', desc: 'Send automated messages and appointment reminders', status: 'connected', color: '#25D366' },
-    { id: 2, name: 'Paymob', desc: 'Accept card payments and digital wallets', status: 'connected', color: '#0070E0' },
-    { id: 3, name: 'Google Calendar', desc: 'Sync bookings with Google calendars', status: 'connected', color: '#4285F4' },
-    { id: 4, name: 'Mailchimp', desc: 'Email marketing campaigns and newsletters', status: 'disconnected', color: '#FFE01B' },
-    { id: 5, name: 'Zapier', desc: 'Connect with 5,000+ apps and automate workflows', status: 'disconnected', color: '#FF4A00' },
-    { id: 6, name: 'Instagram Business', desc: 'Book appointments directly from Instagram', status: 'connected', color: '#E1306C' },
-    { id: 7, name: 'Google Maps', desc: 'Show your location and collect reviews', status: 'connected', color: '#34A853' },
-    { id: 8, name: 'Twilio SMS', desc: 'Send SMS notifications and OTP codes', status: 'disconnected', color: '#F22F46' },
+    { id: 1, name: 'WhatsApp Business', desc: 'Send automated messages and appointment reminders via WhatsApp.', status: 'connected', color: '#25D366', icon: <MessageCircle size={20} />, category: 'communication' },
+    { id: 2, name: 'Paymob', desc: 'Accept Visa, MasterCard, and digital wallet payments in-store and online.', status: 'connected', color: '#0070E0', icon: <CreditCard size={20} />, category: 'payment' },
+    { id: 3, name: 'Google Calendar', desc: 'Auto-sync all bookings with team Google calendars for live availability.', status: 'connected', color: '#4285F4', icon: <CalendarDays size={20} />, category: 'scheduling' },
+    { id: 4, name: 'Mailchimp', desc: 'Create and manage email marketing campaigns and automated newsletters.', status: 'disconnected', color: '#FFE01B', icon: <Mail size={20} />, category: 'marketing' },
+    { id: 5, name: 'Zapier', desc: 'Connect with 5,000+ apps to automate repetitive tasks and workflows.', status: 'disconnected', color: '#FF4A00', icon: <Workflow size={20} />, category: 'automation' },
+    { id: 6, name: 'Instagram Business', desc: 'Let clients book appointments directly from your Instagram profile.', status: 'connected', color: '#E1306C', icon: <Instagram size={20} />, category: 'marketing' },
+    { id: 7, name: 'Google Maps', desc: 'Display your business location on Google Maps and collect client reviews.', status: 'connected', color: '#34A853', icon: <MapPin size={20} />, category: 'location' },
+    { id: 8, name: 'Twilio SMS', desc: 'Send SMS notifications, appointment reminders, and OTP codes.', status: 'disconnected', color: '#F22F46', icon: <Phone size={20} />, category: 'communication' },
 ];
 
 const s: Record<string, React.CSSProperties> = {
     page: { display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' },
-    tabBar: { display: 'flex', gap: 'var(--space-1)', borderBottom: '2px solid var(--border-color)', overflowX: 'auto' },
-    tab: { padding: 'var(--space-3) var(--space-4)', fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', color: 'var(--text-tertiary)', borderBottom: '2px solid transparent', marginBottom: '-2px', whiteSpace: 'nowrap', textDecoration: 'none' },
-    tabActive: { color: 'var(--color-primary-500)', borderBottomColor: 'var(--color-primary-500)' },
-    grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 'var(--space-4)' },
-    card: { background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-xl)', padding: 'var(--space-5)', display: 'flex', alignItems: 'flex-start', gap: 'var(--space-4)' },
-    icon: { width: 44, height: 44, borderRadius: 'var(--radius-lg)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', flexShrink: 0, fontSize: 18, fontWeight: 'var(--font-bold)' },
+    statsRow: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--space-4)' },
+    statCard: {
+        background: 'var(--bg-primary)', border: '1px solid var(--border-color)',
+        borderRadius: 'var(--radius-xl)', padding: 'var(--space-4)',
+        display: 'flex', alignItems: 'center', gap: 'var(--space-3)',
+    },
+    statIcon: {
+        width: 40, height: 40, borderRadius: 'var(--radius-lg)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+    },
+    categoryLabel: {
+        fontSize: 'var(--text-xs)', fontWeight: 'var(--font-bold)',
+        color: 'var(--text-tertiary)', textTransform: 'uppercase' as const,
+        letterSpacing: '0.08em', marginBottom: 'var(--space-3)',
+        marginTop: 'var(--space-2)',
+    },
+    grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 'var(--space-4)' },
+    card: {
+        background: 'var(--bg-primary)', border: '1px solid var(--border-color)',
+        borderRadius: 'var(--radius-xl)', padding: 'var(--space-5)',
+        display: 'flex', alignItems: 'flex-start', gap: 'var(--space-4)',
+        transition: 'box-shadow 0.2s, border-color 0.2s',
+    },
+    icon: {
+        width: 48, height: 48, borderRadius: 'var(--radius-lg)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        color: 'white', flexShrink: 0,
+    },
     name: { fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)' },
-    desc: { fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginTop: 2 },
-    statusRow: { display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginTop: 'var(--space-3)' },
-    badge: { display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 'var(--radius-full)', fontSize: 11, fontWeight: 'var(--font-semibold)' },
-    connectBtn: { display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', cursor: 'pointer', fontSize: 12, color: 'var(--color-primary-600)', fontWeight: 'var(--font-medium)' },
+    desc: { fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginTop: 4, lineHeight: 1.5 },
+    statusRow: {
+        display: 'flex', alignItems: 'center', gap: 'var(--space-3)',
+        marginTop: 'var(--space-3)', flexWrap: 'wrap' as const,
+    },
+    badge: {
+        display: 'inline-flex', alignItems: 'center', gap: 4,
+        padding: '3px 10px', borderRadius: 'var(--radius-full)',
+        fontSize: 11, fontWeight: 'var(--font-semibold)',
+    },
+    actionBtn: {
+        display: 'inline-flex', alignItems: 'center', gap: 4,
+        padding: '5px 14px', borderRadius: 'var(--radius-md)',
+        border: '1px solid var(--border-color)', background: 'var(--bg-primary)',
+        cursor: 'pointer', fontSize: 12, fontWeight: 'var(--font-medium)',
+        transition: 'all 0.15s',
+    },
 };
 
 export default function IntegrationsPage() {
@@ -37,50 +84,124 @@ export default function IntegrationsPage() {
     const [integrations, setIntegrations] = React.useState(initialIntegrations);
     const [selectedIntegration, setSelectedIntegration] = React.useState<any>(null);
     const [isModalOpen, setIsModalOpen] = React.useState(false);
+    const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
 
-    const handleAction = (integration: any) => {
+    const connectedCount = integrations.filter(i => i.status === 'connected').length;
+    const totalCount = integrations.length;
+
+    const handleDisconnect = (integration: any) => {
         setSelectedIntegration(integration);
         setIsModalOpen(true);
     };
 
+    const handleConnect = (integration: any) => {
+        setSelectedIntegration(integration);
+        setIsModalOpen(true);
+    };
+
+    const handleSettings = (integration: any) => {
+        setSelectedIntegration(integration);
+        setIsSettingsOpen(true);
+    };
+
     const confirmAction = () => {
         const isConnecting = selectedIntegration.status === 'disconnected';
-
         setIntegrations(prev => prev.map(i =>
             i.id === selectedIntegration.id
                 ? { ...i, status: isConnecting ? 'connected' : 'disconnected' }
                 : i
         ));
-
         addToast(isConnecting ? 'success' : 'info', `${selectedIntegration.name} ${isConnecting ? 'connected' : 'disconnected'} successfully.`);
         setIsModalOpen(false);
         setSelectedIntegration(null);
     };
+
     return (
         <div style={s.page}>
             <SettingsTabs />
-            <div style={s.grid}>
-                {integrations.map(i => (
-                    <div key={i.id} style={s.card}>
-                        <div style={{ ...s.icon, background: i.color }}>{i.name.charAt(0)}</div>
-                        <div style={{ flex: 1 }}>
-                            <div style={s.name}>{i.name}</div>
-                            <div style={s.desc}>{i.desc}</div>
-                            <div style={s.statusRow}>
-                                {i.status === 'connected' ? (
-                                    <>
-                                        <span style={{ ...s.badge, background: 'var(--color-success-light)', color: 'var(--color-success)' }}><CheckCircle size={12} /> Connected</span>
-                                        <button onClick={() => handleAction(i)} style={{ ...s.connectBtn, color: 'var(--color-error)', borderColor: 'var(--color-error)' }}><XCircle size={12} /> Disconnect</button>
-                                    </>
-                                ) : (
-                                    <button onClick={() => handleAction(i)} style={s.connectBtn}><Zap size={12} /> Connect</button>
-                                )}
-                            </div>
-                        </div>
+
+            {/* Stats */}
+            <div style={s.statsRow}>
+                <div style={s.statCard}>
+                    <div style={{ ...s.statIcon, background: 'var(--color-success-light)', color: 'var(--color-success)' }}>
+                        <CheckCircle size={20} />
                     </div>
-                ))}
+                    <div>
+                        <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' }}>{connectedCount}</div>
+                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>Connected</div>
+                    </div>
+                </div>
+                <div style={s.statCard}>
+                    <div style={{ ...s.statIcon, background: 'var(--color-gray-100)', color: 'var(--text-tertiary)' }}>
+                        <XCircle size={20} />
+                    </div>
+                    <div>
+                        <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' }}>{totalCount - connectedCount}</div>
+                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>Available</div>
+                    </div>
+                </div>
+                <div style={s.statCard}>
+                    <div style={{ ...s.statIcon, background: 'var(--color-primary-50)', color: 'var(--color-primary-600)' }}>
+                        <Zap size={20} />
+                    </div>
+                    <div>
+                        <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' }}>{totalCount}</div>
+                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>Total Integrations</div>
+                    </div>
+                </div>
             </div>
 
+            {/* Grouped by Category */}
+            {CATEGORIES.map(cat => {
+                const items = integrations.filter(i => i.category === cat.key);
+                if (items.length === 0) return null;
+                return (
+                    <div key={cat.key}>
+                        <div style={s.categoryLabel}>{cat.label}</div>
+                        <div style={s.grid}>
+                            {items.map(i => (
+                                <div key={i.id} style={{
+                                    ...s.card,
+                                    ...(i.status === 'connected' ? { borderColor: `${i.color}40` } : {}),
+                                }}>
+                                    <div style={{ ...s.icon, background: i.color }}>{i.icon}</div>
+                                    <div style={{ flex: 1 }}>
+                                        <div style={s.name}>{i.name}</div>
+                                        <div style={s.desc}>{i.desc}</div>
+                                        <div style={s.statusRow}>
+                                            {i.status === 'connected' ? (
+                                                <>
+                                                    <span style={{ ...s.badge, background: 'var(--color-success-light)', color: 'var(--color-success)' }}>
+                                                        <CheckCircle size={12} /> Connected
+                                                    </span>
+                                                    <button
+                                                        onClick={() => handleSettings(i)}
+                                                        style={{ ...s.actionBtn, color: 'var(--text-tertiary)' }}
+                                                    >
+                                                        <Settings size={12} /> Settings
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDisconnect(i)}
+                                                        style={{ ...s.actionBtn, color: 'var(--color-error)', borderColor: 'var(--color-error)' }}
+                                                    >
+                                                        <XCircle size={12} /> Disconnect
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <button onClick={() => handleConnect(i)} style={{ ...s.actionBtn, color: 'var(--color-primary-600)', borderColor: 'var(--color-primary-400)' }}>
+                                                    <Zap size={12} /> Connect
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+            })}
+
+            {/* Connect/Disconnect Modal */}
             <Modal
                 open={isModalOpen}
                 onClose={() => { setIsModalOpen(false); setSelectedIntegration(null); }}
@@ -102,6 +223,100 @@ export default function IntegrationsPage() {
                     {selectedIntegration?.status === 'disconnected' && ' This will redirect you to the authorization page for this service.'}
                 </p>
             </Modal>
+
+            {/* Integration Settings SlideOver */}
+            <SlideOver
+                open={isSettingsOpen}
+                onClose={() => { setIsSettingsOpen(false); setSelectedIntegration(null); }}
+                title={`${selectedIntegration?.name} Settings`}
+                footer={
+                    <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
+                        <Button variant="ghost" onClick={() => setIsSettingsOpen(false)}>Cancel</Button>
+                        <Button onClick={() => { setIsSettingsOpen(false); addToast('success', `${selectedIntegration?.name} settings saved.`); }}>Save Settings</Button>
+                    </div>
+                }
+            >
+                {selectedIntegration && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
+                        {/* Status */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', padding: 'var(--space-4)', background: 'var(--color-success-light)', borderRadius: 'var(--radius-lg)' }}>
+                            <CheckCircle size={18} style={{ color: 'var(--color-success)' }} />
+                            <div>
+                                <div style={{ fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-sm)' }}>Connected & Active</div>
+                                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>Last synced: Just now</div>
+                            </div>
+                        </div>
+
+                        {/* API Key */}
+                        <div>
+                            <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', display: 'block', marginBottom: 'var(--space-2)' }}>API Key</label>
+                            <div style={{
+                                padding: 'var(--space-3)', background: 'var(--bg-secondary)',
+                                borderRadius: 'var(--radius-md)', fontFamily: 'monospace',
+                                fontSize: 'var(--text-sm)', color: 'var(--text-secondary)',
+                                border: '1px solid var(--border-color)',
+                            }}>
+                                sk-••••••••••••••••{selectedIntegration.name.slice(0, 4).toUpperCase()}
+                            </div>
+                        </div>
+
+                        {/* Webhook URL */}
+                        <div>
+                            <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', display: 'block', marginBottom: 'var(--space-2)' }}>Webhook URL</label>
+                            <Input
+                                defaultValue={`https://api.hagzy.com/webhooks/${selectedIntegration.name.toLowerCase().replace(/\s/g, '-')}`}
+                            />
+                        </div>
+
+                        {/* Sync Settings */}
+                        <div>
+                            <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', display: 'block', marginBottom: 'var(--space-2)' }}>Sync Frequency</label>
+                            <Select
+                                options={[
+                                    { label: 'Real-time', value: 'realtime' },
+                                    { label: 'Every 5 minutes', value: '5min' },
+                                    { label: 'Every 15 minutes', value: '15min' },
+                                    { label: 'Every hour', value: '1hr' },
+                                    { label: 'Manual only', value: 'manual' },
+                                ]}
+                                defaultValue="realtime"
+                            />
+                        </div>
+
+                        {/* Notifications */}
+                        <div>
+                            <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', display: 'block', marginBottom: 'var(--space-2)' }}>Notifications</label>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                                <Switch checked={true} label="Notify on sync errors" />
+                                <Switch checked={true} label="Notify on disconnection" />
+                                <Switch checked={false} label="Send daily sync summary" />
+                            </div>
+                        </div>
+
+                        {/* Danger Zone */}
+                        <div style={{
+                            padding: 'var(--space-4)', borderRadius: 'var(--radius-lg)',
+                            border: '1px solid var(--color-error)', background: 'var(--color-error-light)',
+                        }}>
+                            <div style={{ fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-sm)', color: 'var(--color-error)', marginBottom: 'var(--space-2)' }}>Danger Zone</div>
+                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', marginBottom: 'var(--space-3)' }}>
+                                Disconnecting will stop all syncing and remove stored API credentials.
+                            </div>
+                            <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => {
+                                    setIsSettingsOpen(false);
+                                    handleDisconnect(selectedIntegration);
+                                }}
+                            >
+                                <XCircle size={14} /> Disconnect {selectedIntegration.name}
+                            </Button>
+                        </div>
+                    </div>
+                )}
+            </SlideOver>
         </div>
     );
 }
+
