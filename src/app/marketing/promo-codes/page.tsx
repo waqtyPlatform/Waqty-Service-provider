@@ -1,32 +1,24 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
-import { Plus, Search, Copy, Tag, Edit, Trash2, MoreVertical } from 'lucide-react';
-import { useToast, DropdownMenu, Modal, Input, Button, Select } from '@/components/ui';
+import { Plus, Search, Copy, Tag, Edit, Trash2, MoreVertical, Eye } from 'lucide-react';
+import { useToast, DropdownMenu, SlideOver, Modal, Input, Button, Select, Badge } from '@/components/ui';
 
 import MarketingTabs from '@/components/MarketingTabs';
 
-const codes = [
-    { id: 1, code: 'WELCOME50', discount: 50, type: 'fixed', uses: 67, limit: 200, minOrder: 200, expires: '2026-12-31', status: 'active' },
-    { id: 2, code: 'EID25', discount: 25, type: 'percentage', uses: 34, limit: 50, minOrder: 300, expires: '2026-02-20', status: 'active' },
-    { id: 3, code: 'VIP10', discount: 10, type: 'percentage', uses: 120, limit: 500, minOrder: 0, expires: '2026-06-30', status: 'active' },
-    { id: 4, code: 'FRIDAY40', discount: 40, type: 'percentage', uses: 30, limit: 30, minOrder: 250, expires: '2026-02-07', status: 'exhausted' },
-    { id: 5, code: 'REFER20', discount: 20, type: 'percentage', uses: 15, limit: 100, minOrder: 150, expires: '2026-04-30', status: 'active' },
-    { id: 6, code: 'SUMMER100', discount: 100, type: 'fixed', uses: 0, limit: 50, minOrder: 500, expires: '2026-06-01', status: 'scheduled' },
+const initialCodes = [
+    { id: 1, code: 'WELCOME50', discount: 50, type: 'fixed', uses: 67, limit: 200, minOrder: 200, expires: '2026-12-31', status: 'active', createdAt: '2026-01-01', description: 'Welcome offer for new clients on their first booking.' },
+    { id: 2, code: 'EID25', discount: 25, type: 'percentage', uses: 34, limit: 50, minOrder: 300, expires: '2026-02-20', status: 'active', createdAt: '2026-02-01', description: 'Special Eid discount for all services above minimum order.' },
+    { id: 3, code: 'VIP10', discount: 10, type: 'percentage', uses: 120, limit: 500, minOrder: 0, expires: '2026-06-30', status: 'active', createdAt: '2026-01-15', description: 'Exclusive VIP discount. No minimum order required.' },
+    { id: 4, code: 'FRIDAY40', discount: 40, type: 'percentage', uses: 30, limit: 30, minOrder: 250, expires: '2026-02-07', status: 'exhausted', createdAt: '2026-02-06', description: 'Flash Friday deal — 40% off all services. Limited to 30 uses.' },
+    { id: 5, code: 'REFER20', discount: 20, type: 'percentage', uses: 15, limit: 100, minOrder: 150, expires: '2026-04-30', status: 'active', createdAt: '2026-01-20', description: 'Referral program discount. Share with friends!' },
+    { id: 6, code: 'SUMMER100', discount: 100, type: 'fixed', uses: 0, limit: 50, minOrder: 500, expires: '2026-06-01', status: 'scheduled', createdAt: '2026-02-15', description: 'Summer launch promo. 100 EGP off orders above 500 EGP.' },
 ];
 
-const statusColors: Record<string, { bg: string; color: string }> = {
-    active: { bg: 'var(--color-success-light)', color: 'var(--color-success)' },
-    scheduled: { bg: 'var(--color-info-light)', color: 'var(--color-info)' },
-    exhausted: { bg: 'var(--color-error-light)', color: 'var(--color-error)' },
-};
+const statusBadge: Record<string, 'success' | 'info' | 'error' | 'neutral'> = { active: 'success', scheduled: 'info', exhausted: 'error' };
 
 const s: Record<string, React.CSSProperties> = {
     page: { display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' },
-    tabBar: { display: 'flex', gap: 'var(--space-1)', borderBottom: '2px solid var(--border-color)', overflowX: 'auto' },
-    tab: { padding: 'var(--space-3) var(--space-4)', fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', color: 'var(--text-tertiary)', borderBottom: '2px solid transparent', marginBottom: '-2px', whiteSpace: 'nowrap', textDecoration: 'none' },
-    tabActive: { color: 'var(--color-primary-500)', borderBottomColor: 'var(--color-primary-500)' },
     toolbar: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-3)' },
     searchBox: { position: 'relative', flex: 1, maxWidth: 320 },
     searchIcon: { position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' },
@@ -35,20 +27,47 @@ const s: Record<string, React.CSSProperties> = {
     table: { width: '100%', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-xl)', overflow: 'hidden' },
     th: { padding: 'var(--space-3) var(--space-4)', textAlign: 'left', fontSize: 'var(--text-xs)', fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', background: 'var(--bg-secondary)' },
     td: { padding: 'var(--space-3) var(--space-4)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)', borderTop: '1px solid var(--border-color)' },
-    badge: { display: 'inline-flex', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontSize: 11, fontWeight: 'var(--font-semibold)' },
     code: { fontFamily: 'monospace', padding: '4px 10px', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', letterSpacing: '0.05em', display: 'inline-flex', alignItems: 'center', gap: 6 },
     copyBtn: { cursor: 'pointer', color: 'var(--text-tertiary)' },
     progress: { height: 6, borderRadius: 3, background: 'var(--bg-tertiary)', width: 60 },
     progressFill: { height: '100%', borderRadius: 3 },
+    // Detail
+    detailSection: { display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' },
+    infoGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' },
+    infoCard: { background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-4)' },
+    infoLabel: { fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-1)' },
+    infoValue: { fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)', color: 'var(--text-primary)' },
+    sectionTitle: { fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' },
+    progressLg: { height: 10, borderRadius: 5, background: 'var(--bg-tertiary)', overflow: 'hidden' },
+    progressFillLg: { height: '100%', borderRadius: 5, transition: 'width 0.5s ease' },
 };
 
 export default function PromoCodesPage() {
     const { addToast } = useToast();
+    const [codes, setCodes] = useState(initialCodes);
     const [search, setSearch] = useState('');
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-    const [selectedPromo, setSelectedPromo] = useState<any>(null);
+    const [isDetailOpen, setIsDetailOpen] = useState(false);
+    const [selected, setSelected] = useState<any>(null);
+
+    const openDetail = (c: any) => { setSelected(c); setIsDetailOpen(true); };
+    const openEdit = (c: any) => { setSelected(c); setIsDetailOpen(false); setIsEditOpen(true); };
+    const openDelete = (c: any) => { setSelected(c); setIsDetailOpen(false); setIsDeleteOpen(true); };
+
+    const handleDelete = () => {
+        setCodes(prev => prev.filter(c => c.id !== selected?.id));
+        setIsDeleteOpen(false);
+        setSelected(null);
+        addToast('success', 'Promo code deleted');
+    };
+
+    const handleCopy = (code: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        navigator.clipboard.writeText(code);
+        addToast('success', `Copied ${code} to clipboard`);
+    };
 
     const filtered = codes.filter(c => c.code.toLowerCase().includes(search.toLowerCase()));
 
@@ -63,20 +82,21 @@ export default function PromoCodesPage() {
                 <thead><tr>{['Code', 'Discount', 'Usage', '', 'Min. Order', 'Expires', 'Status', ''].map((h, i) => <th key={i} style={s.th as React.CSSProperties}>{h}</th>)}</tr></thead>
                 <tbody>
                     {filtered.map(c => (
-                        <tr key={c.id}>
-                            <td style={s.td}><span style={s.code}><Tag size={12} /> {c.code} <Copy size={12} style={s.copyBtn} /></span></td>
+                        <tr key={c.id} style={{ cursor: 'pointer' }} className="hoverRow" onClick={() => openDetail(c)}>
+                            <td style={s.td}><span style={s.code}><Tag size={12} /> {c.code} <Copy size={12} style={s.copyBtn} onClick={e => handleCopy(c.code, e)} /></span></td>
                             <td style={{ ...s.td, fontWeight: 'var(--font-bold)', color: 'var(--color-primary-600)' }}>{c.type === 'percentage' ? `${c.discount}%` : `${c.discount} EGP`}</td>
                             <td style={s.td}>{c.uses}/{c.limit}</td>
                             <td style={s.td}><div style={s.progress}><div style={{ ...s.progressFill, width: `${c.uses / c.limit * 100}%`, background: c.uses >= c.limit ? 'var(--color-error)' : 'var(--color-primary-500)' }} /></div></td>
                             <td style={s.td}>{c.minOrder > 0 ? `${c.minOrder} EGP` : '—'}</td>
                             <td style={s.td}>{c.expires}</td>
-                            <td style={s.td}><span style={{ ...s.badge, ...statusColors[c.status] }}>{c.status}</span></td>
-                            <td style={{ ...s.td, textAlign: 'right' }}>
+                            <td style={s.td}><Badge color={statusBadge[c.status]} size="sm">{c.status}</Badge></td>
+                            <td style={{ ...s.td, textAlign: 'right' }} onClick={e => e.stopPropagation()}>
                                 <DropdownMenu
                                     trigger={<button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)' }}><MoreVertical size={16} /></button>}
                                     items={[
-                                        { label: 'Edit', icon: <Edit size={14} />, onClick: () => { setSelectedPromo(c); setIsEditOpen(true); } },
-                                        { label: 'Delete', destructive: true, icon: <Trash2 size={14} />, onClick: () => { setSelectedPromo(c); setIsDeleteOpen(true); } }
+                                        { label: 'View Details', icon: <Eye size={14} />, onClick: () => openDetail(c) },
+                                        { label: 'Edit', icon: <Edit size={14} />, onClick: () => openEdit(c) },
+                                        { label: 'Delete', destructive: true, icon: <Trash2 size={14} />, onClick: () => openDelete(c) }
                                     ]}
                                 />
                             </td>
@@ -85,84 +105,102 @@ export default function PromoCodesPage() {
                 </tbody>
             </table>
 
-            {/* Add Promo Modal */}
-            <Modal
-                open={isAddOpen}
-                onClose={() => setIsAddOpen(false)}
-                title="Generate Promo Code"
+            {/* Detail SlideOver */}
+            <SlideOver open={isDetailOpen} onClose={() => { setIsDetailOpen(false); setSelected(null); }} title="Promo Code Details"
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button>
-                        <Button onClick={() => { setIsAddOpen(false); addToast('success', 'Code generated successfully'); }}>Save Code</Button>
+                        <Button variant="ghost" onClick={() => openDelete(selected)}><Trash2 size={14} /> Delete</Button>
+                        <Button onClick={() => openEdit(selected)}><Edit size={14} /> Edit Code</Button>
                     </div>
                 }
             >
+                {selected && (
+                    <div style={s.detailSection as React.CSSProperties}>
+                        {/* Big Code Display */}
+                        <div style={{ textAlign: 'center', padding: 'var(--space-5)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-xl)' }}>
+                            <div style={{ fontFamily: 'monospace', fontSize: 'var(--text-3xl)', fontWeight: 'var(--font-bold)', letterSpacing: '0.1em', color: 'var(--color-primary-600)', marginBottom: 'var(--space-2)' }}>{selected.code}</div>
+                            <Button size="sm" variant="ghost" onClick={() => { navigator.clipboard.writeText(selected.code); addToast('success', 'Copied!'); }}><Copy size={14} /> Copy Code</Button>
+                            <div style={{ marginTop: 'var(--space-2)' }}><Badge color={statusBadge[selected.status]}>{selected.status}</Badge></div>
+                        </div>
+
+                        <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', lineHeight: 1.6 }}>{selected.description}</div>
+
+                        <div style={s.infoGrid as React.CSSProperties}>
+                            <div style={s.infoCard}>
+                                <div style={s.infoLabel as React.CSSProperties}>Discount</div>
+                                <div style={{ ...s.infoValue, fontSize: 'var(--text-xl)', color: 'var(--color-primary-600)' }}>{selected.type === 'percentage' ? `${selected.discount}%` : `${selected.discount} EGP`}</div>
+                            </div>
+                            <div style={s.infoCard}>
+                                <div style={s.infoLabel as React.CSSProperties}>Type</div>
+                                <div style={s.infoValue}>{selected.type === 'percentage' ? 'Percentage' : 'Fixed Amount'}</div>
+                            </div>
+                            <div style={s.infoCard}>
+                                <div style={s.infoLabel as React.CSSProperties}>Min. Order</div>
+                                <div style={s.infoValue}>{selected.minOrder > 0 ? `${selected.minOrder} EGP` : 'None'}</div>
+                            </div>
+                            <div style={s.infoCard}>
+                                <div style={s.infoLabel as React.CSSProperties}>Expires</div>
+                                <div style={s.infoValue}>{selected.expires}</div>
+                            </div>
+                        </div>
+
+                        {/* Usage Progress */}
+                        <div>
+                            <div style={{ ...s.sectionTitle as React.CSSProperties, marginBottom: 'var(--space-3)' }}>Usage</div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 'var(--space-2)' }}>
+                                <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)' }}>{selected.uses} / {selected.limit} used</span>
+                                <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)' }}>{Math.round(selected.uses / selected.limit * 100)}%</span>
+                            </div>
+                            <div style={s.progressLg}>
+                                <div style={{ ...s.progressFillLg, width: `${Math.min(selected.uses / selected.limit * 100, 100)}%`, background: selected.uses >= selected.limit ? 'var(--color-error)' : 'var(--color-primary-500)' }} />
+                            </div>
+                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: 'var(--space-2)' }}>{selected.limit - selected.uses} remaining</div>
+                        </div>
+
+                        <div style={s.infoCard}>
+                            <div style={s.infoLabel as React.CSSProperties}>Created</div>
+                            <div style={s.infoValue}>{selected.createdAt}</div>
+                        </div>
+                    </div>
+                )}
+            </SlideOver>
+
+            {/* Add Promo Modal */}
+            <Modal open={isAddOpen} onClose={() => setIsAddOpen(false)} title="Generate Promo Code"
+                footer={<div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}><Button variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button><Button onClick={() => { setIsAddOpen(false); addToast('success', 'Code generated successfully'); }}>Save Code</Button></div>}
+            >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-                        <div style={{ flex: 1 }}><Input label="Promo Code" placeholder="e.g. WELCOME10" /></div>
-                        <div style={{ flex: 1 }}><Select label="Discount Type" options={[{ label: 'Percentage', value: 'percentage' }, { label: 'Fixed Amount', value: 'fixed' }]} /></div>
-                    </div>
-                    <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-                        <div style={{ flex: 1 }}><Input label="Discount Value" type="number" placeholder="0" /></div>
-                        <div style={{ flex: 1 }}><Input label="Usage Limit" type="number" placeholder="No Limit" /></div>
-                    </div>
-                    <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-                        <div style={{ flex: 1 }}><Input label="Min. Order Value (EGP)" type="number" placeholder="0" /></div>
-                        <div style={{ flex: 1 }}><Input label="Expiration Date" type="date" /></div>
-                    </div>
+                    <div style={{ display: 'flex', gap: 'var(--space-3)' }}><div style={{ flex: 1 }}><Input label="Promo Code" placeholder="e.g. WELCOME10" /></div><div style={{ flex: 1 }}><Select label="Discount Type" options={[{ label: 'Percentage', value: 'percentage' }, { label: 'Fixed Amount', value: 'fixed' }]} /></div></div>
+                    <div style={{ display: 'flex', gap: 'var(--space-3)' }}><div style={{ flex: 1 }}><Input label="Discount Value" type="number" placeholder="0" /></div><div style={{ flex: 1 }}><Input label="Usage Limit" type="number" placeholder="No Limit" /></div></div>
+                    <div style={{ display: 'flex', gap: 'var(--space-3)' }}><div style={{ flex: 1 }}><Input label="Min. Order Value (EGP)" type="number" placeholder="0" /></div><div style={{ flex: 1 }}><Input label="Expiration Date" type="date" /></div></div>
+                    <Input label="Description" placeholder="Brief description of this promo code" />
                     <Select label="Status" options={[{ label: 'Active', value: 'active' }, { label: 'Scheduled', value: 'scheduled' }]} />
                 </div>
             </Modal>
 
             {/* Edit Promo Modal */}
-            <Modal
-                open={isEditOpen}
-                onClose={() => { setIsEditOpen(false); setSelectedPromo(null); }}
-                title="Edit Promo Code"
-                footer={
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>Cancel</Button>
-                        <Button onClick={() => { setIsEditOpen(false); addToast('success', 'Code updated successfully'); }}>Save Changes</Button>
-                    </div>
-                }
+            <Modal open={isEditOpen} onClose={() => { setIsEditOpen(false); setSelected(null); }} title="Edit Promo Code"
+                footer={<div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}><Button variant="ghost" onClick={() => setIsEditOpen(false)}>Cancel</Button><Button onClick={() => { setIsEditOpen(false); addToast('success', 'Code updated successfully'); }}>Save Changes</Button></div>}
             >
-                {selectedPromo && (
+                {selected && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                        <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-                            <div style={{ flex: 1 }}><Input label="Promo Code" defaultValue={selectedPromo.code} /></div>
-                            <div style={{ flex: 1 }}><Select label="Discount Type" defaultValue={selectedPromo.type} options={[{ label: 'Percentage', value: 'percentage' }, { label: 'Fixed Amount', value: 'fixed' }]} /></div>
-                        </div>
-                        <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-                            <div style={{ flex: 1 }}><Input label="Discount Value" type="number" defaultValue={selectedPromo.discount} /></div>
-                            <div style={{ flex: 1 }}><Input label="Usage Limit" type="number" defaultValue={selectedPromo.limit} /></div>
-                        </div>
-                        <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-                            <div style={{ flex: 1 }}><Input label="Min. Order Value (EGP)" type="number" defaultValue={selectedPromo.minOrder} /></div>
-                            <div style={{ flex: 1 }}><Input label="Expiration Date" type="date" defaultValue={selectedPromo.expires} /></div>
-                        </div>
-                        <Select label="Status" defaultValue={selectedPromo.status} options={[{ label: 'Active', value: 'active' }, { label: 'Scheduled', value: 'scheduled' }, { label: 'Exhausted', value: 'exhausted' }]} />
+                        <div style={{ display: 'flex', gap: 'var(--space-3)' }}><div style={{ flex: 1 }}><Input label="Promo Code" defaultValue={selected.code} /></div><div style={{ flex: 1 }}><Select label="Discount Type" defaultValue={selected.type} options={[{ label: 'Percentage', value: 'percentage' }, { label: 'Fixed Amount', value: 'fixed' }]} /></div></div>
+                        <div style={{ display: 'flex', gap: 'var(--space-3)' }}><div style={{ flex: 1 }}><Input label="Discount Value" type="number" defaultValue={selected.discount} /></div><div style={{ flex: 1 }}><Input label="Usage Limit" type="number" defaultValue={selected.limit} /></div></div>
+                        <div style={{ display: 'flex', gap: 'var(--space-3)' }}><div style={{ flex: 1 }}><Input label="Min. Order Value (EGP)" type="number" defaultValue={selected.minOrder} /></div><div style={{ flex: 1 }}><Input label="Expiration Date" type="date" defaultValue={selected.expires} /></div></div>
+                        <Input label="Description" defaultValue={selected.description} />
+                        <Select label="Status" defaultValue={selected.status} options={[{ label: 'Active', value: 'active' }, { label: 'Scheduled', value: 'scheduled' }, { label: 'Exhausted', value: 'exhausted' }]} />
                     </div>
                 )}
             </Modal>
 
             {/* Delete Confirmation Modal */}
-            <Modal
-                open={isDeleteOpen}
-                onClose={() => { setIsDeleteOpen(false); setSelectedPromo(null); }}
-                title="Delete Promo Code"
-                footer={
-                    <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
-                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
-                        <Button variant="destructive" onClick={() => { setIsDeleteOpen(false); addToast('error', 'Code deleted permanently'); }}>Confirm Delete</Button>
-                    </div>
-                }
+            <Modal open={isDeleteOpen} onClose={() => { setIsDeleteOpen(false); setSelected(null); }} title="Delete Promo Code"
+                footer={<div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}><Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>Cancel</Button><Button variant="destructive" onClick={handleDelete}>Confirm Delete</Button></div>}
             >
-                <div>
-                    <p style={{ color: 'var(--text-secondary)' }}>
-                        Are you sure you want to delete the <strong>{selectedPromo?.code}</strong> promo code?
-                    </p>
-                </div>
+                <p style={{ color: 'var(--text-secondary)' }}>Are you sure you want to delete the <strong>{selected?.code}</strong> promo code?</p>
             </Modal>
+
+            <style>{`.hoverRow:hover { background-color: var(--bg-secondary); }`}</style>
         </div >
     );
 }
