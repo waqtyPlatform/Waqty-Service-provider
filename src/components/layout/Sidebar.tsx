@@ -120,6 +120,7 @@ const getNavigation = (businessType: 'clinic' | 'salon' | 'barber' = 'salon', ro
                 { label: 'Attendance Settings', href: '/employees/attendance-settings' },
                 { label: 'Commissions', href: '/employees/commissions' },
                 { label: 'Commission Settings', href: '/employees/commission-settings' },
+                { label: 'Payroll', href: '/employees/payroll' },
             ],
         },
         {

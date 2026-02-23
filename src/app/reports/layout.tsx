@@ -25,7 +25,6 @@ const tabItems = [
     { label: 'Clients', href: '/reports/clients', icon: <Users size={16} /> },
     { label: 'Employees', href: '/reports/employees', icon: <Star size={16} /> },
     { label: 'Services', href: '/reports/services', icon: <Package size={16} /> },
-    { label: 'Inventory', href: '/reports/inventory', icon: <FileText size={16} /> },
     { label: 'Custom', href: '/reports/custom', icon: <Activity size={16} /> },
 ];
 

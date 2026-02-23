@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Users, Calendar, BarChart3, Clock, Award, Target, Briefcase, UserCog } from 'lucide-react';
+import { Users, Calendar, BarChart3, Clock, Award, Target, Briefcase, UserCog, Wallet } from 'lucide-react';
 
 const tabs = [
     { label: 'Staff List', href: '/employees', icon: <Users size={16} /> },
@@ -11,6 +11,7 @@ const tabs = [
     { label: 'Performance', href: '/employees/performance', icon: <BarChart3 size={16} /> },
     { label: 'Time Tracking', href: '/employees/time-tracking', icon: <Clock size={16} /> },
     { label: 'Commissions', href: '/employees/commissions', icon: <Award size={16} /> },
+    { label: 'Payroll', href: '/employees/payroll', icon: <Wallet size={16} /> },
     { label: 'Targets', href: '/employees/targets', icon: <Target size={16} /> },
     { label: 'Roles', href: '/employees/roles', icon: <Briefcase size={16} /> },
     { label: 'Permissions', href: '/employees/permissions', icon: <UserCog size={16} /> },

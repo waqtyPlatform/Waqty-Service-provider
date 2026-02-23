@@ -1,9 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import {
-    BarChart3,
     Calendar,
     Download,
     Filter,
@@ -16,15 +15,14 @@ import {
     Star,
     Package,
     FileText,
-    PieChart,
     Activity,
-    ArrowUpRight,
-    ArrowRight
+    ArrowRight,
+    ArrowUpDown,
+    ChevronLeft,
 } from 'lucide-react';
 import {
     Button,
     Select,
-    Input,
     Badge
 } from '@/components/ui';
 import styles from './page.module.css';
@@ -42,9 +40,11 @@ import {
     Area
 } from 'recharts';
 
+// --- Data Generators ---
+
 const getSalesData = (report: string) => {
     const common = {
-        chartType: 'bar',
+        chartType: 'bar' as const,
         rows: [
             { id: 1, date: '2026-02-18', amount: 3200, count: 12, status: 'Completed', link: '/transactions/dailies?date=2026-02-18' },
             { id: 2, date: '2026-02-17', amount: 2800, count: 10, status: 'Completed', link: '/transactions/dailies?date=2026-02-17' },
@@ -64,12 +64,12 @@ const getSalesData = (report: string) => {
     if (report === 'daily-revenue') {
         return {
             title: 'Daily Revenue Report',
-            chartType: 'bar',
-            columns: ['Date', 'Transactions', 'Revenue', 'Avg Ticket', 'Status', 'Action'],
+            chartType: 'bar' as const,
+            columns: ['Date', 'Transactions', 'Revenue', 'Avg Ticket', 'Status'],
             rows: common.rows.map(r => ({
                 ...r,
                 col1: r.date,
-                col2: r.count,
+                col2: String(r.count),
                 col3: `${r.amount} EGP`,
                 col4: `${Math.round(r.amount / r.count)} EGP`,
                 col5: r.status,
@@ -81,13 +81,13 @@ const getSalesData = (report: string) => {
     if (report === 'payment-methods') {
         return {
             title: 'Payment Methods Analysis',
-            chartType: 'bar',
+            chartType: 'bar' as const,
             columns: ['Method', 'Transactions', 'Total Amount', '% of Total'],
             rows: [
-                { id: 1, col1: 'Cash', col2: 145, col3: '45,200 EGP', col4: '45%' },
-                { id: 2, col1: 'Credit Card', col2: 110, col3: '38,500 EGP', col4: '38%' },
-                { id: 3, col1: 'Bank Transfer', col2: 25, col3: '12,000 EGP', col4: '12%' },
-                { id: 4, col1: 'Gift Card', col2: 15, col3: '5,300 EGP', col4: '5%' },
+                { id: 1, col1: 'Cash', col2: '145', col3: '45,200 EGP', col4: '45%' },
+                { id: 2, col1: 'Credit Card', col2: '110', col3: '38,500 EGP', col4: '38%' },
+                { id: 3, col1: 'Bank Transfer', col2: '25', col3: '12,000 EGP', col4: '12%' },
+                { id: 4, col1: 'Gift Card', col2: '15', col3: '5,300 EGP', col4: '5%' },
             ],
             chartData: [{ name: 'Cash', value: 45200 }, { name: 'Card', value: 38500 }, { name: 'Transfer', value: 12000 }, { name: 'Gift', value: 5300 }]
         };
@@ -95,18 +95,32 @@ const getSalesData = (report: string) => {
     if (report === 'service-revenue') {
         return {
             title: 'Revenue by Service',
-            chartType: 'bar',
+            chartType: 'bar' as const,
             columns: ['Service Name', 'Category', 'Qty Sold', 'Revenue'],
             rows: [
-                { id: 1, col1: 'Hair Cut & Style', col2: 'Hair', col3: 85, col4: '12,750 EGP' },
-                { id: 2, col1: 'Gel Manicure', col2: 'Nails', col3: 65, col4: '9,750 EGP' },
-                { id: 3, col1: 'Classic Facial', col2: 'Skin', col3: 40, col4: '14,000 EGP' },
-                { id: 4, col1: 'Full Body Massage', col2: 'Body', col3: 30, col4: '15,000 EGP' },
+                { id: 1, col1: 'Hair Cut & Style', col2: 'Hair', col3: '85', col4: '12,750 EGP' },
+                { id: 2, col1: 'Gel Manicure', col2: 'Nails', col3: '65', col4: '9,750 EGP' },
+                { id: 3, col1: 'Classic Facial', col2: 'Skin', col3: '40', col4: '14,000 EGP' },
+                { id: 4, col1: 'Full Body Massage', col2: 'Body', col3: '30', col4: '15,000 EGP' },
+                { id: 5, col1: 'Laser Hair Removal', col2: 'Laser', col3: '25', col4: '18,750 EGP' },
             ],
-            chartData: [{ name: 'Hair Cut', value: 12750 }, { name: 'Manicure', value: 9750 }, { name: 'Facial', value: 14000 }, { name: 'Massage', value: 15000 }]
+            chartData: [{ name: 'Hair Cut', value: 12750 }, { name: 'Manicure', value: 9750 }, { name: 'Facial', value: 14000 }, { name: 'Massage', value: 15000 }, { name: 'Laser', value: 18750 }]
         };
     }
-    return { title: 'Sales Report', ...common, columns: ['Date', 'Count', 'Amount', 'Avg', 'Status', 'Action'], rows: common.rows.map(r => ({ ...r, col1: r.date, col2: r.count, col3: r.amount, col4: Math.round(r.amount / r.count), col5: r.status, action: { label: 'View', href: '#' } })), chartData: common.chartData };
+    if (report === 'tax-report') {
+        return {
+            title: 'Tax Report',
+            chartType: 'bar' as const,
+            columns: ['Period', 'Gross Revenue', 'Tax (14%)', 'Net Revenue'],
+            rows: [
+                { id: 1, col1: 'February 2026', col2: '58,000 EGP', col3: '8,120 EGP', col4: '49,880 EGP' },
+                { id: 2, col1: 'January 2026', col2: '55,000 EGP', col3: '7,700 EGP', col4: '47,300 EGP' },
+                { id: 3, col1: 'December 2025', col2: '61,000 EGP', col3: '8,540 EGP', col4: '52,460 EGP' },
+            ],
+            chartData: [{ name: 'Dec', value: 8540 }, { name: 'Jan', value: 7700 }, { name: 'Feb', value: 8120 }]
+        };
+    }
+    return { title: 'Sales Report', chartType: 'bar' as const, columns: ['Date', 'Count', 'Amount', 'Avg', 'Status'], rows: common.rows.map(r => ({ ...r, col1: r.date, col2: String(r.count), col3: String(r.amount), col4: String(Math.round(r.amount / r.count)), col5: r.status, action: { label: 'View', href: '#' } })), chartData: common.chartData };
 };
 
 const getBookingsData = (report: string) => {
@@ -114,39 +128,76 @@ const getBookingsData = (report: string) => {
         return {
             title: 'Cancellation Report',
             chartType: 'bar',
-            columns: ['Date', 'Cancelled By', 'Reason', 'Lost Revenue', 'Action'],
+            columns: ['Date', 'Cancelled By', 'Reason', 'Lost Revenue'],
             rows: [
                 { id: 1, col1: '2026-02-18', col2: 'Client', col3: 'Sick', col4: '450 EGP', action: { label: 'View Booking', href: '/bookings/BK-28492' } },
                 { id: 2, col1: '2026-02-17', col2: 'Client', col3: 'Schedule Conflict', col4: '300 EGP', action: { label: 'View Booking', href: '/bookings/BK-28491' } },
                 { id: 3, col1: '2026-02-15', col2: 'System', col3: 'No Show', col4: '600 EGP', action: { label: 'View Booking', href: '/bookings/BK-28490' } },
+                { id: 4, col1: '2026-02-14', col2: 'Client', col3: 'Changed Mind', col4: '250 EGP', action: { label: 'View Booking', href: '/bookings/BK-28489' } },
+                { id: 5, col1: '2026-02-13', col2: 'Staff', col3: 'Employee Absent', col4: '500 EGP', action: { label: 'View Booking', href: '/bookings/BK-28488' } },
             ],
-            chartData: [{ name: 'Feb 15', value: 1 }, { name: 'Feb 16', value: 0 }, { name: 'Feb 17', value: 1 }, { name: 'Feb 18', value: 1 }]
+            chartData: [{ name: 'Feb 13', value: 1 }, { name: 'Feb 14', value: 1 }, { name: 'Feb 15', value: 1 }, { name: 'Feb 16', value: 0 }, { name: 'Feb 17', value: 1 }, { name: 'Feb 18', value: 1 }]
         };
     }
-    // Mock for Booking History
     if (report === 'history') {
         return {
             title: 'Booking History',
             chartType: 'none',
-            columns: ['ID', 'Date', 'Client', 'Service', 'Status', 'Action'],
+            columns: ['ID', 'Date', 'Client', 'Service', 'Status'],
             rows: [
                 { id: 1, col1: '#BK-1001', col2: 'Feb 18', col3: 'Fatima Al-Rashid', col4: 'Hair Cut', col5: 'Completed', action: { label: 'View', href: '/bookings/BK-1001' } },
                 { id: 2, col1: '#BK-1002', col2: 'Feb 18', col3: 'Maha Mahmoud', col4: 'Manicure', col5: 'Confirmed', action: { label: 'View', href: '/bookings/BK-1002' } },
                 { id: 3, col1: '#BK-1003', col2: 'Feb 17', col3: 'Layla Ahmed', col4: 'Facial', col5: 'Cancelled', action: { label: 'View', href: '/bookings/BK-1003' } },
+                { id: 4, col1: '#BK-1004', col2: 'Feb 17', col3: 'Nora Salem', col4: 'Massage', col5: 'Completed', action: { label: 'View', href: '/bookings/BK-1004' } },
+                { id: 5, col1: '#BK-1005', col2: 'Feb 16', col3: 'Sara Khalil', col4: 'Laser', col5: 'Completed', action: { label: 'View', href: '/bookings/BK-1005' } },
+                { id: 6, col1: '#BK-1006', col2: 'Feb 16', col3: 'Reem Adel', col4: 'Hair Color', col5: 'Completed', action: { label: 'View', href: '/bookings/BK-1006' } },
+                { id: 7, col1: '#BK-1007', col2: 'Feb 15', col3: 'Huda Farouk', col4: 'Pedicure', col5: 'Completed', action: { label: 'View', href: '/bookings/BK-1007' } },
             ],
             chartData: []
         };
     }
-
+    if (report === 'utilization') {
+        return {
+            title: 'Room & Resource Utilization',
+            chartType: 'bar',
+            columns: ['Resource', 'Type', 'Total Hours', 'Used Hours', 'Utilization'],
+            rows: [
+                { id: 1, col1: 'Room A — VIP Suite', col2: 'Treatment Room', col3: '176', col4: '152', col5: '86%' },
+                { id: 2, col1: 'Room B — Standard', col2: 'Treatment Room', col3: '176', col4: '141', col5: '80%' },
+                { id: 3, col1: 'Room C — Laser', col2: 'Specialized', col3: '176', col4: '95', col5: '54%' },
+                { id: 4, col1: 'Hair Station 1', col2: 'Workstation', col3: '176', col4: '168', col5: '95%' },
+                { id: 5, col1: 'Hair Station 2', col2: 'Workstation', col3: '176', col4: '145', col5: '82%' },
+                { id: 6, col1: 'Nail Station', col2: 'Workstation', col3: '176', col4: '130', col5: '74%' },
+            ],
+            chartData: [{ name: 'VIP Suite', value: 86 }, { name: 'Standard', value: 80 }, { name: 'Laser', value: 54 }, { name: 'Hair 1', value: 95 }, { name: 'Hair 2', value: 82 }, { name: 'Nail', value: 74 }]
+        };
+    }
+    if (report === 'sources') {
+        return {
+            title: 'Online vs Walk-in Bookings',
+            chartType: 'bar',
+            columns: ['Source', 'Bookings', 'Revenue', '% of Total', 'Avg Ticket'],
+            rows: [
+                { id: 1, col1: 'Online — Website', col2: '320', col3: '68,000 EGP', col4: '38%', col5: '213 EGP' },
+                { id: 2, col1: 'Online — App', col2: '185', col3: '42,500 EGP', col4: '22%', col5: '230 EGP' },
+                { id: 3, col1: 'Phone Call', col2: '145', col3: '32,000 EGP', col4: '17%', col5: '221 EGP' },
+                { id: 4, col1: 'Walk-in', col2: '120', col3: '22,800 EGP', col4: '14%', col5: '190 EGP' },
+                { id: 5, col1: 'Social Media', col2: '72', col3: '15,200 EGP', col4: '9%', col5: '211 EGP' },
+            ],
+            chartData: [{ name: 'Website', value: 320 }, { name: 'App', value: 185 }, { name: 'Phone', value: 145 }, { name: 'Walk-in', value: 120 }, { name: 'Social', value: 72 }]
+        };
+    }
     return {
         title: 'Booking Report',
         chartType: 'bar',
-        columns: ['Date', 'Total Bookings', 'Completed', 'Cancelled', 'Utilization', 'Action'],
+        columns: ['Date', 'Total Bookings', 'Completed', 'Cancelled', 'Utilization'],
         rows: [
-            { id: 1, col1: 'Feb 18', col2: 45, col3: 40, col4: 2, col5: '88%', action: { label: 'Details', href: '/reports/bookings/daily?date=2026-02-18' } },
-            { id: 2, col1: 'Feb 17', col2: 42, col3: 38, col4: 1, col5: '85%', action: { label: 'Details', href: '/reports/bookings/daily?date=2026-02-17' } },
+            { id: 1, col1: 'Feb 18', col2: '45', col3: '40', col4: '2', col5: '88%' },
+            { id: 2, col1: 'Feb 17', col2: '42', col3: '38', col4: '1', col5: '85%' },
+            { id: 3, col1: 'Feb 16', col2: '50', col3: '46', col4: '3', col5: '92%' },
+            { id: 4, col1: 'Feb 15', col2: '38', col3: '35', col4: '2', col5: '82%' },
         ],
-        chartData: [{ name: 'Feb 17', value: 42 }, { name: 'Feb 18', value: 45 }]
+        chartData: [{ name: 'Feb 15', value: 38 }, { name: 'Feb 16', value: 50 }, { name: 'Feb 17', value: 42 }, { name: 'Feb 18', value: 45 }]
     };
 };
 
@@ -154,8 +205,8 @@ const getEmployeesData = (report: string) => {
     if (report === 'commissions') {
         return {
             title: 'Commission Report',
-            chartType: 'bar',
-            columns: ['Employee', 'Service Revenue', 'Total Commission', 'Payout Status', 'Action'],
+            chartType: 'bar' as const,
+            columns: ['Employee', 'Service Revenue', 'Total Commission', 'Payout Status'],
             rows: [
                 { id: 1, col1: 'Sara Ahmed', col2: '24,000 EGP', col3: '2,600 EGP', col4: 'Pending', action: { label: 'View Profile', href: '/employees/EMP-001' } },
                 { id: 2, col1: 'Nora Ali', col2: '18,000 EGP', col3: '1,880 EGP', col4: 'Paid', action: { label: 'View Profile', href: '/employees/EMP-002' } },
@@ -164,88 +215,368 @@ const getEmployeesData = (report: string) => {
             chartData: [{ name: 'Sara', value: 2600 }, { name: 'Nora', value: 1880 }, { name: 'Mona', value: 1650 }]
         };
     }
+    if (report === 'sales') {
+        return {
+            title: 'Employee Sales Performance',
+            chartType: 'bar' as const,
+            columns: ['Employee', 'Bookings', 'Revenue', 'Avg per Booking'],
+            rows: [
+                { id: 1, col1: 'Sara Ahmed', col2: '58', col3: '24,000 EGP', col4: '414 EGP' },
+                { id: 2, col1: 'Nora Ali', col2: '44', col3: '18,000 EGP', col4: '409 EGP' },
+                { id: 3, col1: 'Mona Zein', col2: '38', col3: '15,000 EGP', col4: '395 EGP' },
+                { id: 4, col1: 'Layla Hassan', col2: '30', col3: '12,000 EGP', col4: '400 EGP' },
+            ],
+            chartData: [{ name: 'Sara', value: 24000 }, { name: 'Nora', value: 18000 }, { name: 'Mona', value: 15000 }, { name: 'Layla', value: 12000 }]
+        };
+    }
+    if (report === 'attendance') {
+        return {
+            title: 'Attendance Report',
+            chartType: 'none' as const,
+            columns: ['Employee', 'Days Present', 'Days Absent', 'Late Arrivals', 'Utilization'],
+            rows: [
+                { id: 1, col1: 'Sara Ahmed', col2: '22', col3: '1', col4: '2', col5: '92%' },
+                { id: 2, col1: 'Nora Ali', col2: '20', col3: '3', col4: '1', col5: '85%' },
+                { id: 3, col1: 'Mona Zein', col2: '23', col3: '0', col4: '0', col5: '95%' },
+            ],
+            chartData: [] as Array<{ name: string; value: number }>
+        };
+    }
     return {
         title: 'Employee Report',
-        chartType: 'bar',
-        columns: ['Employee', 'Metric A', 'Metric B', 'Action'],
-        rows: [],
+        chartType: 'bar' as const,
+        columns: ['Employee', 'Rating', 'Reviews', 'Satisfaction'],
+        rows: [
+            { id: 1, col1: 'Sara Ahmed', col2: '4.9', col3: '45', col4: '98%' },
+            { id: 2, col1: 'Nora Ali', col2: '4.7', col3: '38', col4: '95%' },
+            { id: 3, col1: 'Mona Zein', col2: '4.8', col3: '42', col4: '96%' },
+        ],
+        chartData: [{ name: 'Sara', value: 49 }, { name: 'Nora', value: 47 }, { name: 'Mona', value: 48 }]
+    };
+};
+
+const getClientsData = (report: string) => {
+    if (report === 'top-spenders') {
+        return {
+            title: 'Top Spenders',
+            chartType: 'bar',
+            columns: ['Client', 'Total Spent', 'Visits', 'Avg Per Visit', 'Last Visit'],
+            rows: [
+                { id: 1, col1: 'Fatima Al-Rashid', col2: '12,500 EGP', col3: '28', col4: '446 EGP', col5: 'Feb 18' },
+                { id: 2, col1: 'Maha Mahmoud', col2: '9,800 EGP', col3: '22', col4: '445 EGP', col5: 'Feb 16' },
+                { id: 3, col1: 'Layla Ahmed', col2: '8,200 EGP', col3: '18', col4: '456 EGP', col5: 'Feb 17' },
+                { id: 4, col1: 'Nora Salem', col2: '7,500 EGP', col3: '15', col4: '500 EGP', col5: 'Feb 14' },
+                { id: 5, col1: 'Sara Khalil', col2: '6,800 EGP', col3: '20', col4: '340 EGP', col5: 'Feb 18' },
+                { id: 6, col1: 'Reem Adel', col2: '5,900 EGP', col3: '14', col4: '421 EGP', col5: 'Feb 15' },
+            ],
+            chartData: [{ name: 'Fatima', value: 12500 }, { name: 'Maha', value: 9800 }, { name: 'Layla', value: 8200 }, { name: 'Nora', value: 7500 }, { name: 'Sara', value: 6800 }, { name: 'Reem', value: 5900 }]
+        };
+    }
+    if (report === 'retention') {
+        return {
+            title: 'Client Retention Rate',
+            chartType: 'bar',
+            columns: ['Segment', 'Total Clients', 'Returned', 'Retention Rate', 'Avg Visits'],
+            rows: [
+                { id: 1, col1: 'VIP (10+ visits)', col2: '45', col3: '42', col4: '93%', col5: '18.5' },
+                { id: 2, col1: 'Regular (5-9 visits)', col2: '120', col3: '98', col4: '82%', col5: '6.8' },
+                { id: 3, col1: 'Occasional (2-4 visits)', col2: '280', col3: '185', col4: '66%', col5: '2.9' },
+                { id: 4, col1: 'First-time', col2: '85', col3: '52', col4: '61%', col5: '1.6' },
+                { id: 5, col1: 'Lapsed (90+ days)', col2: '65', col3: '12', col4: '18%', col5: '3.2' },
+            ],
+            chartData: [{ name: 'VIP', value: 93 }, { name: 'Regular', value: 82 }, { name: 'Occasional', value: 66 }, { name: 'First-time', value: 61 }, { name: 'Lapsed', value: 18 }]
+        };
+    }
+    if (report === 'feedback') {
+        return {
+            title: 'Client Feedback & Ratings',
+            chartType: 'bar',
+            columns: ['Service', 'Avg Rating', 'Reviews', '5-Star %', 'Common Praise'],
+            rows: [
+                { id: 1, col1: 'Full Body Massage', col2: '4.9', col3: '52', col4: '88%', col5: 'Relaxing atmosphere' },
+                { id: 2, col1: 'HydraFacial', col2: '4.8', col3: '85', col4: '82%', col5: 'Visible results' },
+                { id: 3, col1: 'Hair Cut & Style', col2: '4.7', col3: '78', col4: '76%', col5: 'Creative styling' },
+                { id: 4, col1: 'Gel Manicure', col2: '4.6', col3: '65', col4: '72%', col5: 'Long lasting' },
+                { id: 5, col1: 'Laser Hair Removal', col2: '4.5', col3: '25', col4: '68%', col5: 'Effective treatment' },
+            ],
+            chartData: [{ name: 'Massage', value: 49 }, { name: 'HydraFacial', value: 48 }, { name: 'Hair Cut', value: 47 }, { name: 'Manicure', value: 46 }, { name: 'Laser', value: 45 }]
+        };
+    }
+    if (report === 'demographics') {
+        return {
+            title: 'Client Demographics',
+            chartType: 'bar',
+            columns: ['Segment', 'Clients', '% of Total', 'Avg Spend', 'Top Service'],
+            rows: [
+                { id: 1, col1: 'Age 18-25', col2: '185', col3: '15%', col4: '280 EGP', col5: 'Gel Manicure' },
+                { id: 2, col1: 'Age 26-35', col2: '420', col3: '34%', col4: '450 EGP', col5: 'HydraFacial' },
+                { id: 3, col1: 'Age 36-45', col2: '350', col3: '28%', col4: '520 EGP', col5: 'Hair Cut & Style' },
+                { id: 4, col1: 'Age 46-55', col2: '180', col3: '15%', col4: '480 EGP', col5: 'Full Body Massage' },
+                { id: 5, col1: 'Age 55+', col2: '105', col3: '8%', col4: '350 EGP', col5: 'Classic Facial' },
+            ],
+            chartData: [{ name: '18-25', value: 185 }, { name: '26-35', value: 420 }, { name: '36-45', value: 350 }, { name: '46-55', value: 180 }, { name: '55+', value: 105 }]
+        };
+    }
+    return {
+        title: 'Client Report',
+        chartType: 'none',
+        columns: ['Metric', 'Value', 'Change'],
+        rows: [
+            { id: 1, col1: 'Overall Retention', col2: '78%', col3: '+2%' },
+            { id: 2, col1: 'First Visit Return', col2: '62%', col3: '+5%' },
+            { id: 3, col1: 'VIP Retention', col2: '92%', col3: '+1%' },
+        ],
         chartData: []
     };
 };
 
-const generateData = (category: string, report: string) => {
+const getServicesData = (report: string) => {
+    if (report === 'popularity') {
+        return {
+            title: 'Service Popularity',
+            chartType: 'bar',
+            columns: ['Service', 'Category', 'Bookings', 'Revenue', 'Rating'],
+            rows: [
+                { id: 1, col1: 'HydraFacial', col2: 'Skin', col3: '85', col4: '14,000 EGP', col5: '4.9' },
+                { id: 2, col1: 'Hair Cut & Style', col2: 'Hair', col3: '78', col4: '12,750 EGP', col5: '4.8' },
+                { id: 3, col1: 'Gel Manicure', col2: 'Nails', col3: '65', col4: '9,750 EGP', col5: '4.7' },
+                { id: 4, col1: 'Full Body Massage', col2: 'Body', col3: '52', col4: '15,000 EGP', col5: '4.9' },
+                { id: 5, col1: 'Laser Hair Removal', col2: 'Laser', col3: '25', col4: '18,750 EGP', col5: '4.6' },
+                { id: 6, col1: 'Classic Pedicure', col2: 'Nails', col3: '48', col4: '4,800 EGP', col5: '4.5' },
+            ],
+            chartData: [{ name: 'HydraFacial', value: 85 }, { name: 'Hair Cut', value: 78 }, { name: 'Manicure', value: 65 }, { name: 'Massage', value: 52 }, { name: 'Pedicure', value: 48 }, { name: 'Laser', value: 25 }]
+        };
+    }
+    if (report === 'revenue') {
+        return {
+            title: 'Revenue per Service',
+            chartType: 'bar',
+            columns: ['Service', 'Category', 'Qty Sold', 'Revenue', '% of Total'],
+            rows: [
+                { id: 1, col1: 'Laser Hair Removal', col2: 'Laser', col3: '25', col4: '18,750 EGP', col5: '24%' },
+                { id: 2, col1: 'Full Body Massage', col2: 'Body', col3: '52', col4: '15,000 EGP', col5: '19%' },
+                { id: 3, col1: 'HydraFacial', col2: 'Skin', col3: '85', col4: '14,000 EGP', col5: '18%' },
+                { id: 4, col1: 'Hair Cut & Style', col2: 'Hair', col3: '78', col4: '12,750 EGP', col5: '16%' },
+                { id: 5, col1: 'Gel Manicure', col2: 'Nails', col3: '65', col4: '9,750 EGP', col5: '13%' },
+                { id: 6, col1: 'Classic Pedicure', col2: 'Nails', col3: '48', col4: '4,800 EGP', col5: '6%' },
+                { id: 7, col1: 'Hair Color', col2: 'Hair', col3: '22', col4: '3,300 EGP', col5: '4%' },
+            ],
+            chartData: [{ name: 'Laser', value: 18750 }, { name: 'Massage', value: 15000 }, { name: 'HydraFacial', value: 14000 }, { name: 'Hair Cut', value: 12750 }, { name: 'Manicure', value: 9750 }, { name: 'Pedicure', value: 4800 }]
+        };
+    }
+    if (report === 'duration') {
+        return {
+            title: 'Service Duration Analysis',
+            chartType: 'bar',
+            columns: ['Service', 'Scheduled Duration', 'Actual Avg', 'Variance', 'On-Time %'],
+            rows: [
+                { id: 1, col1: 'Hair Cut & Style', col2: '45 min', col3: '42 min', col4: '-3 min', col5: '92%' },
+                { id: 2, col1: 'HydraFacial', col2: '60 min', col3: '58 min', col4: '-2 min', col5: '88%' },
+                { id: 3, col1: 'Full Body Massage', col2: '90 min', col3: '95 min', col4: '+5 min', col5: '78%' },
+                { id: 4, col1: 'Gel Manicure', col2: '30 min', col3: '28 min', col4: '-2 min', col5: '95%' },
+                { id: 5, col1: 'Laser Hair Removal', col2: '45 min', col3: '50 min', col4: '+5 min', col5: '82%' },
+                { id: 6, col1: 'Hair Color', col2: '120 min', col3: '130 min', col4: '+10 min', col5: '72%' },
+            ],
+            chartData: [{ name: 'Hair Cut', value: 42 }, { name: 'HydraFacial', value: 58 }, { name: 'Massage', value: 95 }, { name: 'Manicure', value: 28 }, { name: 'Laser', value: 50 }, { name: 'Hair Color', value: 130 }]
+        };
+    }
+    if (report === 'categories') {
+        return {
+            title: 'Category Performance',
+            chartType: 'bar',
+            columns: ['Category', 'Services', 'Bookings', 'Revenue', 'Avg Rating'],
+            rows: [
+                { id: 1, col1: 'Hair', col2: '8', col3: '142', col4: '28,500 EGP', col5: '4.8' },
+                { id: 2, col1: 'Skin', col2: '6', col3: '125', col4: '22,000 EGP', col5: '4.8' },
+                { id: 3, col1: 'Nails', col2: '5', col3: '113', col4: '14,550 EGP', col5: '4.6' },
+                { id: 4, col1: 'Body', col2: '4', col3: '82', col4: '18,000 EGP', col5: '4.9' },
+                { id: 5, col1: 'Laser', col2: '3', col3: '25', col4: '18,750 EGP', col5: '4.5' },
+            ],
+            chartData: [{ name: 'Hair', value: 28500 }, { name: 'Skin', value: 22000 }, { name: 'Body', value: 18000 }, { name: 'Laser', value: 18750 }, { name: 'Nails', value: 14550 }]
+        };
+    }
+    return {
+        title: 'Service Report',
+        chartType: 'bar',
+        columns: ['Service', 'Value', 'Change'],
+        rows: [
+            { id: 1, col1: 'HydraFacial', col2: '14,000 EGP', col3: '+8%' },
+            { id: 2, col1: 'Hair Cut & Style', col2: '12,750 EGP', col3: '+5%' },
+            { id: 3, col1: 'Full Body Massage', col2: '15,000 EGP', col3: '+12%' },
+        ],
+        chartData: [{ name: 'HydraFacial', value: 14000 }, { name: 'Hair Cut', value: 12750 }, { name: 'Massage', value: 15000 }]
+    };
+};
+
+const getCustomData = (report: string) => {
+    if (report === 'revenue-bookings') {
+        return {
+            title: 'Revenue vs Bookings Correlation',
+            chartType: 'bar',
+            columns: ['Period', 'Bookings', 'Revenue', 'Revenue/Booking', 'Change'],
+            rows: [
+                { id: 1, col1: 'February 2026', col2: '270', col3: '58,000 EGP', col4: '215 EGP', col5: '+12%' },
+                { id: 2, col1: 'January 2026', col2: '235', col3: '55,000 EGP', col4: '234 EGP', col5: '+8%' },
+                { id: 3, col1: 'December 2025', col2: '310', col3: '61,000 EGP', col4: '197 EGP', col5: '+15%' },
+                { id: 4, col1: 'November 2025', col2: '220', col3: '52,000 EGP', col4: '236 EGP', col5: '+5%' },
+                { id: 5, col1: 'October 2025', col2: '198', col3: '48,000 EGP', col4: '242 EGP', col5: '+3%' },
+            ],
+            chartData: [{ name: 'Oct', value: 48000 }, { name: 'Nov', value: 52000 }, { name: 'Dec', value: 61000 }, { name: 'Jan', value: 55000 }, { name: 'Feb', value: 58000 }]
+        };
+    }
+    if (report === 'employee-efficiency') {
+        return {
+            title: 'Employee Efficiency Analysis',
+            chartType: 'bar',
+            columns: ['Employee', 'Hours Worked', 'Revenue Generated', 'Revenue/Hour', 'Clients Served'],
+            rows: [
+                { id: 1, col1: 'Sara Ahmed', col2: '168', col3: '24,000 EGP', col4: '143 EGP', col5: '58' },
+                { id: 2, col1: 'Nora Ali', col2: '160', col3: '18,000 EGP', col4: '113 EGP', col5: '44' },
+                { id: 3, col1: 'Mona Zein', col2: '172', col3: '15,000 EGP', col4: '87 EGP', col5: '38' },
+                { id: 4, col1: 'Layla Hassan', col2: '152', col3: '12,000 EGP', col4: '79 EGP', col5: '30' },
+                { id: 5, col1: 'Reem Adel', col2: '164', col3: '9,000 EGP', col4: '55 EGP', col5: '25' },
+            ],
+            chartData: [{ name: 'Sara', value: 143 }, { name: 'Nora', value: 113 }, { name: 'Mona', value: 87 }, { name: 'Layla', value: 79 }, { name: 'Reem', value: 55 }]
+        };
+    }
+    if (report === 'client-ltv') {
+        return {
+            title: 'Client Lifetime Value',
+            chartType: 'bar',
+            columns: ['Segment', 'Clients', 'Avg LTV', 'Total Value', 'Avg Visits'],
+            rows: [
+                { id: 1, col1: 'Platinum (>10K)', col2: '25', col3: '14,200 EGP', col4: '355,000 EGP', col5: '32' },
+                { id: 2, col1: 'Gold (5K-10K)', col2: '68', col3: '7,500 EGP', col4: '510,000 EGP', col5: '18' },
+                { id: 3, col1: 'Silver (2K-5K)', col2: '185', col3: '3,200 EGP', col4: '592,000 EGP', col5: '8' },
+                { id: 4, col1: 'Bronze (500-2K)', col2: '420', col3: '1,100 EGP', col4: '462,000 EGP', col5: '3' },
+                { id: 5, col1: 'New (<500)', col2: '542', col3: '280 EGP', col4: '151,760 EGP', col5: '1' },
+            ],
+            chartData: [{ name: 'Platinum', value: 14200 }, { name: 'Gold', value: 7500 }, { name: 'Silver', value: 3200 }, { name: 'Bronze', value: 1100 }, { name: 'New', value: 280 }]
+        };
+    }
+    if (report === 'monthly-summary') {
+        return {
+            title: 'Monthly Executive Summary',
+            chartType: 'bar',
+            columns: ['Metric', 'This Month', 'Last Month', 'Change', 'Target'],
+            rows: [
+                { id: 1, col1: 'Total Revenue', col2: '58,000 EGP', col3: '55,000 EGP', col4: '+5.5%', col5: '60,000 EGP' },
+                { id: 2, col1: 'Net Profit', col2: '27,000 EGP', col3: '22,000 EGP', col4: '+22.7%', col5: '25,000 EGP' },
+                { id: 3, col1: 'Total Bookings', col2: '270', col3: '235', col4: '+14.9%', col5: '280' },
+                { id: 4, col1: 'New Clients', col2: '85', col3: '72', col4: '+18.1%', col5: '80' },
+                { id: 5, col1: 'Client Retention', col2: '78%', col3: '76%', col4: '+2.6%', col5: '80%' },
+                { id: 6, col1: 'Avg Client Rating', col2: '4.8', col3: '4.7', col4: '+2.1%', col5: '4.8' },
+                { id: 7, col1: 'Staff Utilization', col2: '85%', col3: '82%', col4: '+3.7%', col5: '88%' },
+            ],
+            chartData: [{ name: 'Revenue', value: 58000 }, { name: 'Profit', value: 27000 }, { name: 'Bookings', value: 270 }, { name: 'New Clients', value: 85 }]
+        };
+    }
+    return {
+        title: report.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+        chartType: 'bar',
+        columns: ['Metric', 'Current', 'Previous', 'Change'],
+        rows: [
+            { id: 1, col1: 'Revenue', col2: '58,000 EGP', col3: '51,500 EGP', col4: '+12.6%' },
+            { id: 2, col1: 'Bookings', col2: '270', col3: '235', col4: '+14.9%' },
+            { id: 3, col1: 'Avg Ticket', col2: '420 EGP', col3: '395 EGP', col4: '+6.3%' },
+        ],
+        chartData: [{ name: 'Revenue', value: 58000 }, { name: 'Bookings', value: 270 }, { name: 'Avg Ticket', value: 420 }]
+    };
+};
+
+const generateData = (category: string, report: string): { title: string; chartType: string; columns: string[]; rows: any[]; chartData: Array<{ name: string; value: number }> } => {
     if (category === 'sales' || category === 'revenue') return getSalesData(report);
     if (category === 'bookings') return getBookingsData(report);
     if (category === 'employees') return getEmployeesData(report);
+    if (category === 'clients') return getClientsData(report);
+    if (category === 'services') return getServicesData(report);
+    if (category === 'custom') return getCustomData(report);
 
     // Fallback
     return {
         title: `${report.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`,
-        chartType: 'none',
-        columns: ['ID', 'Date', 'Description', 'Value', 'Status', 'Action'],
+        chartType: 'bar',
+        columns: ['Metric', 'Current', 'Previous', 'Change'],
         rows: [
-            { id: 1, col1: '#001', col2: '2026-02-18', col3: 'Sample Item 1', col4: '100', col5: 'Active', action: { label: 'View', href: '#' } },
-            { id: 2, col1: '#002', col2: '2026-02-17', col3: 'Sample Item 2', col4: '200', col5: 'Active', action: { label: 'View', href: '#' } },
+            { id: 1, col1: 'Revenue', col2: '58,000 EGP', col3: '51,500 EGP', col4: '+12.6%' },
+            { id: 2, col1: 'Bookings', col2: '270', col3: '235', col4: '+14.9%' },
         ],
-        chartData: []
+        chartData: [{ name: 'Revenue', value: 58000 }, { name: 'Bookings', value: 270 }]
     };
+};
+
+// --- Styles ---
+const tableStyles: Record<string, React.CSSProperties> = {
+    table: { width: '100%', borderCollapse: 'collapse' },
+    th: { padding: 'var(--space-3) var(--space-4)', textAlign: 'left', fontSize: 'var(--text-xs)', fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)', cursor: 'pointer', userSelect: 'none' },
+    td: { padding: 'var(--space-3) var(--space-4)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)', borderBottom: '1px solid var(--border-color)' },
 };
 
 export default function DynamicReportPage({ params }: { params: Promise<{ category: string; report: string }> }) {
     const { category, report } = React.use(params);
     const data = generateData(category, report);
 
-    const tabItems = [
-        { label: 'Overview', href: '/reports', icon: <BarChart3 size={16} /> },
-        { label: 'Revenue', href: '/reports/revenue', icon: <DollarSign size={16} /> },
-        { label: 'Bookings', href: '/reports/bookings', icon: <CalendarDays size={16} /> },
-        { label: 'Clients', href: '/reports/clients', icon: <Users size={16} /> },
-        { label: 'Employees', href: '/reports/employees', icon: <Star size={16} /> },
-        { label: 'Services', href: '/reports/services', icon: <Package size={16} /> },
-        { label: 'Inventory', href: '/reports/inventory', icon: <FileText size={16} /> },
-        { label: 'Custom', href: '/reports/custom', icon: <Activity size={16} /> },
-    ];
+    const [search, setSearch] = useState('');
+    const [sortCol, setSortCol] = useState<number | null>(null);
+    const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+    const [dateRange, setDateRange] = useState('30d');
 
-    const currentTabHref = `/reports/${category}`;
+    const handleSort = (colIndex: number) => {
+        if (sortCol === colIndex) {
+            setSortDir(prev => prev === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortCol(colIndex);
+            setSortDir('asc');
+        }
+    };
+
+    const filteredRows = useMemo(() => {
+        let rows = data.rows;
+
+        // Search
+        if (search) {
+            rows = rows.filter((row: any) => {
+                return ['col1', 'col2', 'col3', 'col4', 'col5'].some(key =>
+                    row[key] && String(row[key]).toLowerCase().includes(search.toLowerCase())
+                );
+            });
+        }
+
+        // Sort
+        if (sortCol !== null) {
+            const key = `col${sortCol + 1}`;
+            rows = [...rows].sort((a: any, b: any) => {
+                const aVal = String(a[key] || '');
+                const bVal = String(b[key] || '');
+                // Try numeric sort
+                const aNum = parseFloat(aVal.replace(/[^0-9.-]/g, ''));
+                const bNum = parseFloat(bVal.replace(/[^0-9.-]/g, ''));
+                if (!isNaN(aNum) && !isNaN(bNum)) {
+                    return sortDir === 'asc' ? aNum - bNum : bNum - aNum;
+                }
+                return sortDir === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+            });
+        }
+
+        return rows;
+    }, [data.rows, search, sortCol, sortDir]);
+
+    const breadcrumb = `${category.charAt(0).toUpperCase() + category.slice(1)} › ${report.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`;
 
     return (
         <div className={styles.page}>
-            {/* Header */}
+            {/* Header — NO duplicate tabs */}
             <div className={styles.header}>
                 <div className={styles.titleGroup}>
-                    <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' }}>Reports</h1>
-                    <div className={styles.subtitle}>
-                        Reports &gt; {category} &gt; {report.replace(/-/g, ' ')}
-                    </div>
+                    <Link href={`/reports/${category}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)', color: 'var(--color-primary-600)', fontSize: 'var(--text-sm)', textDecoration: 'none', marginBottom: 'var(--space-1)' }}>
+                        <ChevronLeft size={16} /> Back to {category.charAt(0).toUpperCase() + category.slice(1)}
+                    </Link>
+                    <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' }}>{data.title}</h1>
+                    <div className={styles.subtitle}>{breadcrumb}</div>
                 </div>
                 <div className={styles.actions}>
-                    <Button variant="outline"><Filter size={16} /> Filters</Button>
-                    <Button><Download size={16} /> Export PDF</Button>
+                    <Button variant="outline"><Download size={16} /> Export PDF</Button>
                 </div>
-            </div>
-
-            {/* Tabs */}
-            <div style={{ display: 'flex', gap: 'var(--space-1)', borderBottom: '2px solid var(--border-color)', overflowX: 'auto', marginBottom: 'var(--space-6)' }}>
-                {tabItems.map((t) => {
-                    const isActive = t.href === currentTabHref;
-                    return (
-                        <Link key={t.href} href={t.href} style={{
-                            display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
-                            padding: 'var(--space-3) var(--space-4)',
-                            fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)',
-                            color: isActive ? 'var(--color-primary-500)' : 'var(--text-tertiary)',
-                            borderBottom: isActive ? '2px solid var(--color-primary-500)' : '2px solid transparent',
-                            marginBottom: '-2px', textDecoration: 'none', whiteSpace: 'nowrap'
-                        }}>
-                            {t.icon} {t.label}
-                        </Link>
-                    )
-                })}
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
-                <h2 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--font-semibold)' }}>{data.title}</h2>
-                <Badge color="primary">Generated Just Now</Badge>
             </div>
 
             {/* Filters */}
@@ -253,21 +584,28 @@ export default function DynamicReportPage({ params }: { params: Promise<{ catego
                 <div className={styles.filterItem}>
                     <Calendar size={16} color="var(--text-tertiary)" />
                     <Select
-                        options={[{ value: '7d', label: 'Last 7 Days' }, { value: '30d', label: 'Last 30 Days' }, { value: 'tm', label: 'This Month' }]}
-                        style={{ width: 140 }}
+                        value={dateRange}
+                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setDateRange(e.target.value)}
+                        options={[{ value: '7d', label: 'Last 7 Days' }, { value: '30d', label: 'Last 30 Days' }, { value: 'tm', label: 'This Month' }, { value: '90d', label: 'Last Quarter' }]}
+                        style={{ width: 150 }}
                     />
                 </div>
                 <div className={styles.filterItem}>
                     <Filter size={16} color="var(--text-tertiary)" />
                     <Select
-                        options={[{ value: 'all', label: 'All Branches' }, { value: 'main', label: 'Main Branch' }]}
-                        style={{ width: 140 }}
+                        options={[{ value: 'all', label: 'All Branches' }, { value: 'main', label: 'Main Branch' }, { value: 'branch2', label: 'Heliopolis' }]}
+                        style={{ width: 150 }}
                     />
                 </div>
                 <div className={styles.filterItem} style={{ marginLeft: 'auto' }}>
                     <div style={{ position: 'relative' }}>
-                        <Search size={14} style={{ position: 'absolute', left: 8, top: 10, color: 'var(--text-tertiary)' }} />
-                        <Input placeholder="Search..." style={{ paddingLeft: 28, width: 200 }} />
+                        <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }} />
+                        <input
+                            placeholder="Search table..."
+                            value={search}
+                            onChange={e => setSearch(e.target.value)}
+                            style={{ paddingLeft: 32, height: 38, width: 200, border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}
+                        />
                     </div>
                 </div>
             </div>
@@ -275,7 +613,7 @@ export default function DynamicReportPage({ params }: { params: Promise<{ catego
             {/* Chart */}
             {data.chartType !== 'none' && data.chartData && data.chartData.length > 0 && (
                 <div className={styles.chartContainer}>
-                    <div className={styles.chartPlaceholder}>
+                    <div style={{ width: '100%', height: '100%' }}>
                         <ResponsiveContainer width="100%" height="100%">
                             {data.chartType === 'line' ? (
                                 <ReLineChart data={data.chartData}>
@@ -303,38 +641,57 @@ export default function DynamicReportPage({ params }: { params: Promise<{ catego
             <div className={styles.tableCard}>
                 <div className={styles.tableHeader}>
                     <span className={styles.tableTitle}>Detailed Data</span>
+                    <Badge color="neutral" size="sm">{filteredRows.length} {filteredRows.length === 1 ? 'row' : 'rows'}</Badge>
                 </div>
-                <div className="table-wrapper">
-                    <table className="data-table">
+                <div style={{ overflowX: 'auto' }}>
+                    <table style={tableStyles.table}>
                         <thead>
                             <tr>
                                 {data.columns.map((col, i) => (
-                                    <th key={i}>{col}</th>
+                                    <th key={i} style={tableStyles.th as React.CSSProperties} onClick={() => handleSort(i)}>
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                            {col}
+                                            <ArrowUpDown size={12} style={{ opacity: sortCol === i ? 1 : 0.3 }} />
+                                        </span>
+                                    </th>
                                 ))}
+                                {data.rows.some((r: any) => r.action) && <th style={tableStyles.th as React.CSSProperties}>Action</th>}
                             </tr>
                         </thead>
                         <tbody>
-                            {data.rows.map((row: any, i) => (
-                                <tr key={i}>
-                                    {['col1', 'col2', 'col3', 'col4', 'col5'].map((key) => row[key] && (
-                                        <td key={key} style={{ fontWeight: key === 'col1' || key === 'col3' ? 'var(--font-bold)' : 'normal' }}>
-                                            {row[key]}
-                                        </td>
-                                    ))}
-                                    {/* Link Action Column */}
-                                    {row.action && (
-                                        <td>
-                                            <Link href={row.action.href} style={{
-                                                display: 'inline-flex', alignItems: 'center', gap: 4,
-                                                fontSize: 'var(--text-sm)', color: 'var(--color-primary-600)', fontWeight: 'var(--font-medium)',
-                                                textDecoration: 'none'
-                                            }}>
-                                                {row.action.label} <ArrowRight size={14} />
-                                            </Link>
-                                        </td>
-                                    )}
-                                </tr>
-                            ))}
+                            {filteredRows.length === 0 ? (
+                                <tr><td colSpan={data.columns.length + 1} style={{ ...tableStyles.td, textAlign: 'center', color: 'var(--text-tertiary)', padding: 'var(--space-6)' }}>No data matches your search</td></tr>
+                            ) : (
+                                filteredRows.map((row: any, i: number) => (
+                                    <tr key={i} style={{ cursor: row.action ? 'pointer' : 'default' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-secondary)'} onMouseLeave={e => e.currentTarget.style.background = ''}>
+                                        {data.columns.map((_, ci) => {
+                                            const key = `col${ci + 1}`;
+                                            const val = row[key];
+                                            const isStatus = typeof val === 'string' && ['Completed', 'Confirmed', 'Cancelled', 'Pending', 'Paid', 'OK', 'Low Stock'].includes(val);
+                                            return (
+                                                <td key={ci} style={{ ...tableStyles.td, fontWeight: ci === 0 ? 'var(--font-medium)' : 'normal' }}>
+                                                    {isStatus ? (
+                                                        <Badge color={val === 'Completed' || val === 'Paid' || val === 'Confirmed' || val === 'OK' ? 'success' : val === 'Pending' ? 'info' : 'error'} size="sm">{val}</Badge>
+                                                    ) : (val ?? '—')}
+                                                </td>
+                                            );
+                                        })}
+                                        {data.rows.some((r: any) => r.action) && (
+                                            <td style={tableStyles.td}>
+                                                {row.action && (
+                                                    <Link href={row.action.href} style={{
+                                                        display: 'inline-flex', alignItems: 'center', gap: 4,
+                                                        fontSize: 'var(--text-sm)', color: 'var(--color-primary-600)', fontWeight: 'var(--font-medium)',
+                                                        textDecoration: 'none'
+                                                    }}>
+                                                        {row.action.label} <ArrowRight size={14} />
+                                                    </Link>
+                                                )}
+                                            </td>
+                                        )}
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
                 </div>

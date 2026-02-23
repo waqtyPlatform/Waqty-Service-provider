@@ -1,7 +1,8 @@
 ﻿'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Download, Calculator, Clock, PieChart, Target } from 'lucide-react';
+import { Download, Calculator, Clock, PieChart, Target, Send } from 'lucide-react';
+import Link from 'next/link';
 import { Select, Input, Button, useToast, EmptyState, Badge } from '@/components/ui';
 
 const subTabs = ['By Services', 'By Segments', 'By Target', 'Extraction'];
@@ -187,8 +188,13 @@ export default function CommissionsPage() {
 
     return (
         <div style={s.page}>
-            <div style={{ fontSize: 'var(--text-3xl)', fontWeight: 'var(--font-bold)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                Commission Calculator
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
+                <div style={{ fontSize: 'var(--text-3xl)', fontWeight: 'var(--font-bold)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                    Commission Calculator
+                </div>
+                <Link href="/employees/payroll">
+                    <Button variant="primary"><Send size={16} /> Send to Payroll</Button>
+                </Link>
             </div>
 
             <div style={s.tabBar}>
