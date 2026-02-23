@@ -7,7 +7,7 @@ import { useToast, SlideOver, Modal, Input, Button, Select, Badge, DropdownMenu 
 
 const tabs = [
     { label: 'Offers', href: '/marketing/offers' },
-    { label: 'Packages', href: '/marketing/packages' },
+    { label: 'Campaigns', href: '/marketing/packages' },
     { label: 'Notifications', href: '/marketing/notifications' },
     { label: 'Promo Codes', href: '/marketing/promo-codes' },
     { label: 'Messages', href: '/marketing/messages' },

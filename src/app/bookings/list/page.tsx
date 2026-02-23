@@ -39,16 +39,16 @@ const paymentConfig: Record<string, { class: string; label: string }> = {
 };
 
 const bookings = [
-    { id: 'BK-1042', branch: 'Main', client: 'Fatima Al-Rashid', mobile: '+20 123 456 789', date: 'Feb 17, 2026', time: '09:00', service: 'Hair Coloring', employee: 'Sara Ahmed', value: 400, status: 'confirmed', payment: 'paid', payMethod: 'Card' },
-    { id: 'BK-1041', branch: 'Main', client: 'Aisha Mohammed', mobile: '+20 111 222 333', date: 'Feb 17, 2026', time: '09:30', service: 'Keratin Treatment', employee: 'Nora Ali', value: 500, status: 'arrived', payment: 'paid', payMethod: 'Cash' },
-    { id: 'BK-1040', branch: 'Main', client: 'Maryam Ibrahim', mobile: '+20 100 200 300', date: 'Feb 17, 2026', time: '10:00', service: 'Classic Facial', employee: 'Layla Hassan', value: 200, status: 'completed', payment: 'paid', payMethod: 'Card' },
-    { id: 'BK-1039', branch: 'Main', client: 'Huda Saleh', mobile: '+20 155 666 777', date: 'Feb 17, 2026', time: '10:30', service: 'Gel Manicure', employee: 'Hana Youssef', value: 150, status: 'unconfirmed', payment: 'unpaid', payMethod: '—' },
-    { id: 'BK-1038', branch: 'Main', client: 'Noura Ahmed', mobile: '+20 199 888 999', date: 'Feb 17, 2026', time: '11:00', service: 'Swedish Massage', employee: 'Reem Mohamed', value: 300, status: 'confirmed', payment: 'partial', payMethod: 'Cash' },
-    { id: 'BK-1037', branch: 'Downtown', client: 'Rania Khalil', mobile: '+20 133 444 555', date: 'Feb 17, 2026', time: '12:00', service: 'HydraFacial', employee: 'Nora Ali', value: 450, status: 'waitingPay', payment: 'unpaid', payMethod: '—' },
-    { id: 'BK-1036', branch: 'Main', client: 'Dana Faris', mobile: '+20 177 333 222', date: 'Feb 17, 2026', time: '14:00', service: 'Olaplex Treatment', employee: 'Sara Ahmed', value: 350, status: 'workDone', payment: 'paid', payMethod: 'Card' },
-    { id: 'BK-1035', branch: 'Main', client: 'Joud Wahid', mobile: '+20 144 555 666', date: 'Feb 16, 2026', time: '16:00', service: 'Laser Hair Removal', employee: 'Layla Hassan', value: 250, status: 'cancelled', payment: 'unpaid', payMethod: '—' },
-    { id: 'BK-1034', branch: 'Mall', client: 'Sama Latif', mobile: '+20 166 777 888', date: 'Feb 16, 2026', time: '09:00', service: 'Haircut & Styling', employee: 'Hana Youssef', value: 150, status: 'completed', payment: 'paid', payMethod: 'Cash' },
-    { id: 'BK-1033', branch: 'Main', client: 'Yara Bassam', mobile: '+20 188 999 000', date: 'Feb 16, 2026', time: '10:00', service: 'Pedicure', employee: 'Reem Mohamed', value: 120, status: 'noShow', payment: 'unpaid', payMethod: '—' },
+    { id: 'BK-1042', branch: 'Downtown', client: 'Fatima Al-Rashid', mobile: '+20 123 456 789', date: 'Feb 17, 2026', time: '09:00', service: 'Hair Coloring', employee: 'Sara Ahmed', value: 400, status: 'confirmed', payment: 'paid', payMethod: 'Card' },
+    { id: 'BK-1041', branch: 'Downtown', client: 'Aisha Mohammed', mobile: '+20 111 222 333', date: 'Feb 17, 2026', time: '09:30', service: 'Keratin Treatment', employee: 'Nora Ali', value: 500, status: 'arrived', payment: 'paid', payMethod: 'Cash' },
+    { id: 'BK-1040', branch: 'Downtown', client: 'Maryam Ibrahim', mobile: '+20 100 200 300', date: 'Feb 17, 2026', time: '10:00', service: 'Classic Facial', employee: 'Layla Hassan', value: 200, status: 'completed', payment: 'paid', payMethod: 'Card' },
+    { id: 'BK-1039', branch: 'Downtown', client: 'Huda Saleh', mobile: '+20 155 666 777', date: 'Feb 17, 2026', time: '10:30', service: 'Gel Manicure', employee: 'Hana Youssef', value: 150, status: 'unconfirmed', payment: 'unpaid', payMethod: '—' },
+    { id: 'BK-1038', branch: 'Downtown', client: 'Noura Ahmed', mobile: '+20 199 888 999', date: 'Feb 17, 2026', time: '11:00', service: 'Swedish Massage', employee: 'Reem Mohamed', value: 300, status: 'confirmed', payment: 'partial', payMethod: 'Cash' },
+    { id: 'BK-1037', branch: 'Mall of Arabia', client: 'Rania Khalil', mobile: '+20 133 444 555', date: 'Feb 17, 2026', time: '12:00', service: 'HydraFacial', employee: 'Nora Ali', value: 450, status: 'waitingPay', payment: 'unpaid', payMethod: '—' },
+    { id: 'BK-1036', branch: 'Downtown', client: 'Dana Faris', mobile: '+20 177 333 222', date: 'Feb 17, 2026', time: '14:00', service: 'Olaplex Treatment', employee: 'Sara Ahmed', value: 350, status: 'workDone', payment: 'paid', payMethod: 'Card' },
+    { id: 'BK-1035', branch: 'Downtown', client: 'Joud Wahid', mobile: '+20 144 555 666', date: 'Feb 16, 2026', time: '16:00', service: 'Laser Hair Removal', employee: 'Layla Hassan', value: 250, status: 'cancelled', payment: 'unpaid', payMethod: '—' },
+    { id: 'BK-1034', branch: 'New Cairo', client: 'Sama Latif', mobile: '+20 166 777 888', date: 'Feb 16, 2026', time: '09:00', service: 'Haircut & Styling', employee: 'Hana Youssef', value: 150, status: 'completed', payment: 'paid', payMethod: 'Cash' },
+    { id: 'BK-1033', branch: 'Downtown', client: 'Yara Bassam', mobile: '+20 188 999 000', date: 'Feb 16, 2026', time: '10:00', service: 'Pedicure', employee: 'Reem Mohamed', value: 120, status: 'noShow', payment: 'unpaid', payMethod: '—' },
 ];
 
 export default function BookingListPage() {

@@ -166,31 +166,6 @@ const getServicesData = () => ({
     ]
 });
 
-const getInventoryData = () => ({
-    title: 'Inventory Dashboard',
-    kpis: [
-        { label: 'Total Products', value: '134', change: '+8', trend: 'up', icon: ShoppingCart, color: 'primary' },
-        { label: 'Stock Value', value: '42,500 EGP', change: '+4%', trend: 'up', icon: DollarSign, color: 'success' },
-        { label: 'Low Stock Items', value: '12', change: '+3', trend: 'up', icon: AlertTriangle, color: 'error' },
-        { label: 'Monthly Usage', value: '8,200 EGP', change: '+7%', trend: 'up', icon: Activity, color: 'info' },
-    ],
-    chart: {
-        title: 'Monthly Product Consumption',
-        type: 'area',
-        data: [
-            { name: 'Sep', value: 6800 }, { name: 'Oct', value: 7200 },
-            { name: 'Nov', value: 7500 }, { name: 'Dec', value: 8900 },
-            { name: 'Jan', value: 7800 }, { name: 'Feb', value: 8200 },
-        ]
-    },
-    reports: [
-        { title: 'Stock Levels', href: '/reports/inventory/stock-levels', desc: 'Current stock with reorder alerts.' },
-        { title: 'Product Usage', href: '/reports/inventory/usage', desc: 'Consumption per service and employee.' },
-        { title: 'Purchase History', href: '/reports/inventory/purchases', desc: 'Recent orders and supplier spend.' },
-        { title: 'Waste & Expiry', href: '/reports/inventory/waste', desc: 'Expired or wasted product tracking.' },
-    ]
-});
-
 const getCustomData = () => ({
     title: 'Custom Reports',
     kpis: [
@@ -205,7 +180,7 @@ const getCustomData = () => ({
         data: [
             { name: 'Revenue', value: 15 }, { name: 'Bookings', value: 12 },
             { name: 'Clients', value: 8 }, { name: 'Employees', value: 6 },
-            { name: 'Services', value: 4 }, { name: 'Inventory', value: 3 },
+            { name: 'Services', value: 4 },
         ]
     },
     reports: [
@@ -229,7 +204,7 @@ export default function ReportCategoryPage({ params }: { params: Promise<{ categ
         case 'clients': data = getClientsData(); break;
         case 'employees': data = getEmployeesData(); break;
         case 'services': data = getServicesData(); break;
-        case 'inventory': data = getInventoryData(); break;
+
         case 'custom': data = getCustomData(); break;
         default: data = getServicesData();
     }
@@ -258,8 +233,9 @@ export default function ReportCategoryPage({ params }: { params: Promise<{ categ
                     <Select
                         options={[
                             { value: 'all', label: 'All Branches' },
-                            { value: 'main', label: 'Main Branch' },
-                            { value: 'branch2', label: 'Heliopolis Branch' },
+                            { value: 'downtown', label: 'Downtown' },
+                            { value: 'mall', label: 'Mall of Arabia' },
+                            { value: 'newcairo', label: 'New Cairo' },
                         ]}
                         style={{ width: 160 }}
                     />

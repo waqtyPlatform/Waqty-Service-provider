@@ -83,6 +83,7 @@ const getNavigation = (businessType: 'clinic' | 'salon' | 'barber' = 'salon', ro
                 { label: 'Best Sales', href: '/transactions/best-sales' },
                 { label: 'Client Sales', href: '/transactions/client-sales' },
                 { label: 'Package Sales', href: '/transactions/package-sales' },
+                { label: 'Expenses', href: '/expenses' },
             ],
         },
         {
@@ -128,7 +129,7 @@ const getNavigation = (businessType: 'clinic' | 'salon' | 'barber' = 'salon', ro
             icon: <Megaphone size={20} />,
             children: [
                 { label: 'Offers', href: '/marketing/offers' },
-                { label: 'Packages', href: '/marketing/packages' },
+                { label: 'Campaigns', href: '/marketing/packages' },
                 { label: 'Notifications', href: '/marketing/notifications' },
                 { label: 'Promo Codes', href: '/marketing/promo-codes' },
                 { label: 'Message Settings', href: '/marketing/messages' },
@@ -150,6 +151,7 @@ const getNavigation = (businessType: 'clinic' | 'salon' | 'barber' = 'salon', ro
                 { label: 'Services', href: '/settings/services' },
                 { label: 'Invoice', href: '/settings/invoice' },
                 { label: 'Payment Methods', href: '/settings/payment-methods' },
+                { label: 'Safes', href: '/settings/safes' },
                 { label: 'Roles & Permissions', href: '/settings/roles' },
                 { label: 'Appearance', href: '/settings/appearance' },
                 { label: 'Devices', href: '/settings/devices' },

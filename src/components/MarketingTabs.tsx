@@ -7,7 +7,7 @@ import { Tag, Package, Bell, MessageSquare, Layers, Percent } from 'lucide-react
 
 const tabs = [
     { label: 'Offers', href: '/marketing/offers', icon: <Tag size={16} /> },
-    { label: 'Packages', href: '/marketing/packages', icon: <Package size={16} /> },
+    { label: 'Campaigns', href: '/marketing/packages', icon: <Package size={16} /> },
     { label: 'Notifications', href: '/marketing/notifications', icon: <Bell size={16} /> },
     { label: 'Promo Codes', href: '/marketing/promo-codes', icon: <Percent size={16} /> },
     { label: 'Messages', href: '/marketing/messages', icon: <MessageSquare size={16} /> },

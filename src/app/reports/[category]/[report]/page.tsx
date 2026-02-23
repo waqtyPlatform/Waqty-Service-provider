@@ -593,7 +593,7 @@ export default function DynamicReportPage({ params }: { params: Promise<{ catego
                 <div className={styles.filterItem}>
                     <Filter size={16} color="var(--text-tertiary)" />
                     <Select
-                        options={[{ value: 'all', label: 'All Branches' }, { value: 'main', label: 'Main Branch' }, { value: 'branch2', label: 'Heliopolis' }]}
+                        options={[{ value: 'all', label: 'All Branches' }, { value: 'downtown', label: 'Downtown' }, { value: 'mall', label: 'Mall of Arabia' }, { value: 'newcairo', label: 'New Cairo' }]}
                         style={{ width: 150 }}
                     />
                 </div>
@@ -667,7 +667,7 @@ export default function DynamicReportPage({ params }: { params: Promise<{ catego
                                         {data.columns.map((_, ci) => {
                                             const key = `col${ci + 1}`;
                                             const val = row[key];
-                                            const isStatus = typeof val === 'string' && ['Completed', 'Confirmed', 'Cancelled', 'Pending', 'Paid', 'OK', 'Low Stock'].includes(val);
+                                            const isStatus = typeof val === 'string' && ['Completed', 'Confirmed', 'Cancelled', 'Pending', 'Paid', 'OK'].includes(val);
                                             return (
                                                 <td key={ci} style={{ ...tableStyles.td, fontWeight: ci === 0 ? 'var(--font-medium)' : 'normal' }}>
                                                     {isStatus ? (

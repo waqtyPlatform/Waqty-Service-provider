@@ -111,8 +111,9 @@ export default function ReportsPage() {
                         onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setBranch(e.target.value)}
                         options={[
                             { value: 'all', label: 'All Branches' },
-                            { value: 'main', label: 'Main Branch' },
-                            { value: 'branch2', label: 'Heliopolis Branch' },
+                            { value: 'downtown', label: 'Downtown' },
+                            { value: 'mall', label: 'Mall of Arabia' },
+                            { value: 'newcairo', label: 'New Cairo' },
                         ]}
                         style={{ width: 170 }}
                     />

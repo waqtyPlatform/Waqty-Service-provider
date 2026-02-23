@@ -72,13 +72,13 @@ const employee = {
 };
 
 const schedule = [
-    { day: 'Monday', start: '10:00 AM', end: '08:00 PM', off: false },
-    { day: 'Tuesday', start: '10:00 AM', end: '08:00 PM', off: false },
-    { day: 'Wednesday', start: '10:00 AM', end: '08:00 PM', off: false },
-    { day: 'Thursday', start: '10:00 AM', end: '09:00 PM', off: false },
-    { day: 'Friday', start: '01:00 PM', end: '10:00 PM', off: false },
-    { day: 'Saturday', start: '-', end: '-', off: true },
-    { day: 'Sunday', start: '10:00 AM', end: '06:00 PM', off: false },
+    { day: 'Monday', start: '10:00 AM', end: '08:00 PM', off: false, breakStart: '02:00 PM', breakEnd: '03:00 PM' },
+    { day: 'Tuesday', start: '10:00 AM', end: '08:00 PM', off: false, breakStart: '02:00 PM', breakEnd: '03:00 PM' },
+    { day: 'Wednesday', start: '10:00 AM', end: '08:00 PM', off: false, breakStart: '01:00 PM', breakEnd: '02:00 PM' },
+    { day: 'Thursday', start: '10:00 AM', end: '09:00 PM', off: false, breakStart: '03:00 PM', breakEnd: '04:00 PM' },
+    { day: 'Friday', start: '01:00 PM', end: '10:00 PM', off: false, breakStart: '', breakEnd: '' },
+    { day: 'Saturday', start: '-', end: '-', off: true, breakStart: '', breakEnd: '' },
+    { day: 'Sunday', start: '10:00 AM', end: '06:00 PM', off: false, breakStart: '01:00 PM', breakEnd: '01:30 PM' },
 ];
 
 const revenueData = [
@@ -111,6 +111,8 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [isEditServicesOpen, setIsEditServicesOpen] = useState(false);
     const [newServiceSelection, setNewServiceSelection] = useState('none');
+    const [isScheduleEditOpen, setIsScheduleEditOpen] = useState(false);
+    const [editableSchedule, setEditableSchedule] = useState(schedule.map(d => ({ ...d })));
 
     const [empServices, setEmpServices] = useState([
         { name: 'Hair Cut & Style', commission: '15%' },
@@ -134,7 +136,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
         email: 'sarah.ahmed@hagzy.app',
         role: 'employee',
         jobTitle: 'Senior Stylist',
-        branch: 'Main'
+        branch: 'Downtown'
     });
 
     const handleActionClick = (action: string) => {
@@ -251,7 +253,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
                     <span className={styles.cardTitle}>Weekly Schedule (Standard)</span>
-                    <Button variant="outline" size="sm">Edit Schedule</Button>
+                    <Button variant="outline" size="sm" onClick={() => { setEditableSchedule(schedule.map(d => ({ ...d }))); setIsScheduleEditOpen(true); }}>Edit Schedule</Button>
                 </div>
                 <div className={styles.cardBody}>
                     <div className={styles.scheduleGrid}>
@@ -265,6 +267,11 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                                         {day.start}<br />
                                         to<br />
                                         {day.end}
+                                        {day.breakStart && (
+                                            <div style={{ fontSize: '10px', color: 'var(--color-warning)', marginTop: '4px' }}>
+                                                Break: {day.breakStart} – {day.breakEnd}
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -409,8 +416,9 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                             value={editEmp.branch}
                             onChange={(e) => setEditEmp({ ...editEmp, branch: e.target.value })}
                             options={[
-                                { value: 'Main', label: 'Main Branch' },
-                                { value: 'Downtown', label: 'Downtown Studio' },
+                                { value: 'Downtown', label: 'Downtown' },
+                                { value: 'Mall of Arabia', label: 'Mall of Arabia' },
+                                { value: 'New Cairo', label: 'New Cairo' },
                             ]}
                         />
                     </div>
@@ -565,6 +573,94 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
                         <Button variant="outline" onClick={() => setIsEditServicesOpen(false)}>Cancel</Button>
                         <Button onClick={() => { setIsEditServicesOpen(false); addToast('success', 'Assigned services updated.'); }}>Save Services</Button>
+                    </div>
+                </div>
+            </Modal>
+
+            {/* Edit Schedule Modal */}
+            <Modal open={isScheduleEditOpen} onClose={() => setIsScheduleEditOpen(false)} title="Edit Weekly Schedule">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)' }}>
+                        Adjust working hours for each day. Toggle &quot;Day Off&quot; to mark non-working days.
+                    </p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', maxHeight: '50vh', overflowY: 'auto' }}>
+                        {editableSchedule.map((day, i) => (
+                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', padding: 'var(--space-3)', background: day.off ? 'var(--color-gray-50)' : 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)' }}>
+                                <div style={{ width: 90, fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-sm)', color: day.off ? 'var(--text-tertiary)' : 'var(--text-primary)' }}>{day.day}</div>
+                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', opacity: day.off ? 0.4 : 1 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', width: 40 }}>Shift</span>
+                                        <Input
+                                            type="time"
+                                            value={day.off ? '' : day.start.replace(/ AM| PM/g, '')}
+                                            disabled={day.off}
+                                            onChange={(e) => {
+                                                const updated = [...editableSchedule];
+                                                updated[i] = { ...updated[i], start: e.target.value };
+                                                setEditableSchedule(updated);
+                                            }}
+                                            style={{ flex: 1 }}
+                                        />
+                                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>to</span>
+                                        <Input
+                                            type="time"
+                                            value={day.off ? '' : day.end.replace(/ AM| PM/g, '')}
+                                            disabled={day.off}
+                                            onChange={(e) => {
+                                                const updated = [...editableSchedule];
+                                                updated[i] = { ...updated[i], end: e.target.value };
+                                                setEditableSchedule(updated);
+                                            }}
+                                            style={{ flex: 1 }}
+                                        />
+                                    </div>
+                                    {!day.off && (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-warning)', width: 40, fontWeight: 'var(--font-medium)' }}>Break</span>
+                                            <Input
+                                                type="time"
+                                                value={day.breakStart?.replace(/ AM| PM/g, '') || ''}
+                                                placeholder="—"
+                                                onChange={(e) => {
+                                                    const updated = [...editableSchedule];
+                                                    updated[i] = { ...updated[i], breakStart: e.target.value };
+                                                    setEditableSchedule(updated);
+                                                }}
+                                                style={{ flex: 1 }}
+                                            />
+                                            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>to</span>
+                                            <Input
+                                                type="time"
+                                                value={day.breakEnd?.replace(/ AM| PM/g, '') || ''}
+                                                placeholder="—"
+                                                onChange={(e) => {
+                                                    const updated = [...editableSchedule];
+                                                    updated[i] = { ...updated[i], breakEnd: e.target.value };
+                                                    setEditableSchedule(updated);
+                                                }}
+                                                style={{ flex: 1 }}
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={day.off}
+                                        onChange={(e) => {
+                                            const updated = [...editableSchedule];
+                                            updated[i] = { ...updated[i], off: e.target.checked, start: e.target.checked ? '-' : '10:00 AM', end: e.target.checked ? '-' : '08:00 PM', breakStart: '', breakEnd: '' };
+                                            setEditableSchedule(updated);
+                                        }}
+                                    />
+                                    Day Off
+                                </label>
+                            </div>
+                        ))}
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
+                        <Button variant="outline" onClick={() => setIsScheduleEditOpen(false)}>Cancel</Button>
+                        <Button onClick={() => { setIsScheduleEditOpen(false); addToast('success', 'Schedule updated successfully.'); }}>Save Schedule</Button>
                     </div>
                 </div>
             </Modal>

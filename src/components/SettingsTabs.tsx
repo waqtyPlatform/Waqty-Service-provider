@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
     Building2, Clock, Palette, Bell, Shield, Globe,
-    CreditCard, FileText, Webhook, Database,
+    CreditCard, FileText, Webhook, Database, Lock,
     MapPin, Scissors, Monitor, UserCog, ScrollText, Crown,
 } from 'lucide-react';
 import styles from './SettingsTabs.module.css';
@@ -17,6 +17,7 @@ const tabs = [
     { label: 'Services', href: '/settings/services', icon: <Scissors size={16} /> },
     { label: 'Invoice', href: '/settings/invoice', icon: <FileText size={16} /> },
     { label: 'Payment Methods', href: '/settings/payment-methods', icon: <CreditCard size={16} /> },
+    { label: 'Safes', href: '/settings/safes', icon: <Lock size={16} /> },
     { label: 'Roles & Permissions', href: '/settings/roles', icon: <UserCog size={16} /> },
     { label: 'Appearance', href: '/settings/appearance', icon: <Palette size={16} /> },
     { label: 'Notifications', href: '/settings/notifications', icon: <Bell size={16} /> },
