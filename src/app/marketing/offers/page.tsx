@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Search, Plus, Calendar, Tag, Percent, Edit, Trash2, Eye, ArrowLeft, Users } from 'lucide-react';
-import { useToast, SlideOver, Modal, Input, Button, Select, Badge } from '@/components/ui';
+import { Search, Plus, Calendar, Tag, Percent, Edit, Trash2, Eye, ArrowLeft, Users, MoreVertical } from 'lucide-react';
+import { useToast, SlideOver, Modal, Input, Button, Select, Badge, DropdownMenu } from '@/components/ui';
 
 const tabs = [
     { label: 'Offers', href: '/marketing/offers' },
@@ -111,8 +111,9 @@ export default function OffersPage() {
                             <div style={s.stat}><Calendar size={12} /> {offer.startDate} → {offer.endDate}</div>
                             <div style={s.stat}>{offer.uses}/{offer.limit} used</div>
                             <div style={s.actions} onClick={e => e.stopPropagation()}>
-                                <button style={s.btnIcon} onClick={() => openEdit(offer)}><Edit size={12} /></button>
-                                <button style={{ ...s.btnIcon, color: 'var(--color-error)' }} onClick={() => openDelete(offer)}><Trash2 size={12} /></button>
+                                <button style={{ ...s.btnIcon, color: 'var(--color-primary-500)' }} onClick={() => openDetail(offer)} title="View Details"><Eye size={12} /></button>
+                                <button style={s.btnIcon} onClick={() => openEdit(offer)} title="Edit"><Edit size={12} /></button>
+                                <button style={{ ...s.btnIcon, color: 'var(--color-error)' }} onClick={() => openDelete(offer)} title="Delete"><Trash2 size={12} /></button>
                             </div>
                         </div>
                     </div>

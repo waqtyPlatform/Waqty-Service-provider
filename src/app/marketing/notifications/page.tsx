@@ -1,10 +1,46 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Plus, Bell, Send, Smartphone, Mail, MessageSquare, Edit, Trash2, MoreVertical, Eye, RefreshCw } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Plus, Bell, Send, Smartphone, Mail, MessageSquare, Edit, Trash2, MoreVertical, Eye, RefreshCw, Search, Check, X, User } from 'lucide-react';
 import { useToast, DropdownMenu, SlideOver, Modal, Input, Button, Select, Badge } from '@/components/ui';
 
 import MarketingTabs from '@/components/MarketingTabs';
+
+// Mock recipient data per notification
+const recipientData: Record<number, Array<{ name: string; phone: string; opened: boolean; openedAt?: string }>> = {
+    1: [
+        { name: 'Fatima Ali', phone: '+201012345678', opened: true, openedAt: '2026-02-10 10:15' },
+        { name: 'Noura Ahmed', phone: '+201087654321', opened: true, openedAt: '2026-02-10 10:22' },
+        { name: 'Huda Saleh', phone: '+201055667788', opened: true, openedAt: '2026-02-10 11:05' },
+        { name: 'Rania Khalil', phone: '+201099887766', opened: false },
+        { name: 'Hana Ali', phone: '+201033445566', opened: true, openedAt: '2026-02-10 12:30' },
+        { name: 'Layla Hassan', phone: '+201077889900', opened: false },
+        { name: 'Sara Mahmoud', phone: '+201011223344', opened: true, openedAt: '2026-02-10 14:00' },
+        { name: 'Mona Tarek', phone: '+201044556677', opened: false },
+    ],
+    2: [
+        { name: 'Fatima Ali', phone: '+201012345678', opened: true, openedAt: '2026-02-17 09:05' },
+        { name: 'Noura Ahmed', phone: '+201087654321', opened: true, openedAt: '2026-02-17 09:10' },
+        { name: 'Huda Saleh', phone: '+201055667788', opened: true, openedAt: '2026-02-17 09:30' },
+        { name: 'Rania Khalil', phone: '+201099887766', opened: false },
+    ],
+    4: [
+        { name: 'Layla Hassan', phone: '+201077889900', opened: true, openedAt: '2026-02-05 10:00' },
+        { name: 'Sara Mahmoud', phone: '+201011223344', opened: false },
+        { name: 'Mona Tarek', phone: '+201044556677', opened: true, openedAt: '2026-02-05 15:15' },
+        { name: 'Hana Ali', phone: '+201033445566', opened: false },
+    ],
+    5: [
+        { name: 'Fatima Ali', phone: '+201012345678', opened: true, openedAt: '2026-02-16 14:10' },
+        { name: 'Noura Ahmed', phone: '+201087654321', opened: true, openedAt: '2026-02-16 14:45' },
+        { name: 'Huda Saleh', phone: '+201055667788', opened: false },
+    ],
+    6: [
+        { name: 'Rania Khalil', phone: '+201099887766', opened: true, openedAt: '2026-02-17 08:00' },
+        { name: 'Hana Ali', phone: '+201033445566', opened: true, openedAt: '2026-02-17 09:00' },
+        { name: 'Layla Hassan', phone: '+201077889900', opened: true, openedAt: '2026-02-17 10:30' },
+    ],
+};
 
 const initialNotifications = [
     { id: 1, title: 'Eid Special Offer!', channel: 'SMS', audience: 'All Clients', sent: 142, opened: 98, date: '2026-02-10', status: 'sent', message: 'Celebrate Eid with us! Get 25% off on all services from Feb 10-20. Book now on our app or call us. Limited spots available! ✨🎉' },
@@ -32,7 +68,6 @@ const s: Record<string, React.CSSProperties> = {
     table: { width: '100%', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-xl)', overflow: 'hidden' },
     th: { padding: 'var(--space-3) var(--space-4)', textAlign: 'left', fontSize: 'var(--text-xs)', fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', background: 'var(--bg-secondary)' },
     td: { padding: 'var(--space-3) var(--space-4)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)', borderTop: '1px solid var(--border-color)' },
-    // Detail styles
     detailSection: { display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' },
     infoGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' },
     infoCard: { background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-4)' },
@@ -41,6 +76,13 @@ const s: Record<string, React.CSSProperties> = {
     sectionTitle: { fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' },
     progressContainer: { height: 8, background: 'var(--bg-tertiary)', borderRadius: 4, overflow: 'hidden' },
     progressFill: { height: '100%', borderRadius: 4, transition: 'width 0.5s ease' },
+    // Recipient list
+    filterBar: { display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-3)' },
+    filterBtn: { padding: '4px 12px', borderRadius: 'var(--radius-full)', fontSize: 'var(--text-xs)', fontWeight: 'var(--font-semibold)', cursor: 'pointer', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-secondary)' },
+    filterBtnActive: { background: 'var(--color-primary-500)', color: 'white', borderColor: 'var(--color-primary-500)' },
+    recipientItem: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--space-3)', borderTop: '1px solid var(--border-color)' },
+    recipientInfo: { display: 'flex', alignItems: 'center', gap: 'var(--space-3)' },
+    recipientAvatar: { width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--text-xs)', fontWeight: 'var(--font-bold)', color: 'white', flexShrink: 0 },
 };
 
 export default function NotificationsPage() {
@@ -51,8 +93,10 @@ export default function NotificationsPage() {
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [isDetailOpen, setIsDetailOpen] = useState(false);
     const [selected, setSelected] = useState<any>(null);
+    const [recipientFilter, setRecipientFilter] = useState<'all' | 'opened' | 'not_opened'>('all');
+    const [recipientSearch, setRecipientSearch] = useState('');
 
-    const openDetail = (n: any) => { setSelected(n); setIsDetailOpen(true); };
+    const openDetail = (n: any) => { setSelected(n); setIsDetailOpen(true); setRecipientFilter('all'); setRecipientSearch(''); };
     const openEdit = (n: any) => { setSelected(n); setIsDetailOpen(false); setIsEditOpen(true); };
     const openDelete = (n: any) => { setSelected(n); setIsDetailOpen(false); setIsDeleteOpen(true); };
 
@@ -65,6 +109,18 @@ export default function NotificationsPage() {
 
     const totalSent = notifications.reduce((a, n) => a + n.sent, 0);
     const totalOpened = notifications.reduce((a, n) => a + n.opened, 0);
+
+    const filteredRecipients = useMemo(() => {
+        if (!selected) return [];
+        const list = recipientData[selected.id] || [];
+        let filtered = list;
+        if (recipientFilter === 'opened') filtered = list.filter(r => r.opened);
+        if (recipientFilter === 'not_opened') filtered = list.filter(r => !r.opened);
+        if (recipientSearch) filtered = filtered.filter(r => r.name.toLowerCase().includes(recipientSearch.toLowerCase()));
+        return filtered;
+    }, [selected, recipientFilter, recipientSearch]);
+
+    const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').toUpperCase();
 
     return (
         <div style={s.page}>
@@ -151,14 +207,69 @@ export default function NotificationsPage() {
                             </div>
                         </div>
 
-                        <div style={s.infoGrid as React.CSSProperties}>
-                            <div style={s.infoCard}>
-                                <div style={s.infoLabel as React.CSSProperties}>Date</div>
-                                <div style={s.infoValue}>{selected.date}</div>
+                        {/* Recipient List with Filter */}
+                        <div>
+                            <div style={{ ...s.sectionTitle as React.CSSProperties, marginBottom: 'var(--space-3)' }}>Recipients</div>
+
+                            {/* Filter tabs */}
+                            <div style={s.filterBar as React.CSSProperties}>
+                                {[
+                                    { key: 'all' as const, label: 'All', count: recipientData[selected.id]?.length || 0 },
+                                    { key: 'opened' as const, label: 'Opened', count: recipientData[selected.id]?.filter(r => r.opened).length || 0 },
+                                    { key: 'not_opened' as const, label: 'Not Opened', count: recipientData[selected.id]?.filter(r => !r.opened).length || 0 },
+                                ].map(f => (
+                                    <button
+                                        key={f.key}
+                                        style={{ ...s.filterBtn, ...(recipientFilter === f.key ? s.filterBtnActive : {}) }}
+                                        onClick={() => setRecipientFilter(f.key)}
+                                    >
+                                        {f.label} ({f.count})
+                                    </button>
+                                ))}
                             </div>
-                            <div style={s.infoCard}>
-                                <div style={s.infoLabel as React.CSSProperties}>Click Rate</div>
-                                <div style={s.infoValue}>{selected.sent > 0 ? Math.round(selected.opened / selected.sent * 70) : 0}%</div>
+
+                            {/* Search */}
+                            <div style={{ position: 'relative' as const, marginBottom: 'var(--space-3)' }}>
+                                <Search size={14} style={{ position: 'absolute' as const, left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }} />
+                                <input
+                                    style={{ width: '100%', height: 36, paddingLeft: 32, border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}
+                                    placeholder="Search recipients..."
+                                    value={recipientSearch}
+                                    onChange={e => setRecipientSearch(e.target.value)}
+                                />
+                            </div>
+
+                            {/* Recipient list */}
+                            <div style={{ border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', overflow: 'hidden', maxHeight: 300, overflowY: 'auto' }}>
+                                {filteredRecipients.length === 0 ? (
+                                    <div style={{ padding: 'var(--space-4)', textAlign: 'center', color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)' }}>
+                                        {recipientData[selected.id] ? 'No recipients match your filter' : 'No recipient data available'}
+                                    </div>
+                                ) : (
+                                    filteredRecipients.map((r, i) => (
+                                        <div key={i} style={{ ...s.recipientItem, borderTop: i === 0 ? 'none' : '1px solid var(--border-color)' }}>
+                                            <div style={s.recipientInfo as React.CSSProperties}>
+                                                <div style={{ ...s.recipientAvatar, background: r.opened ? 'var(--color-success)' : 'var(--color-gray-400)' }}>
+                                                    {getInitials(r.name)}
+                                                </div>
+                                                <div>
+                                                    <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)' }}>{r.name}</div>
+                                                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{r.phone}</div>
+                                                </div>
+                                            </div>
+                                            <div style={{ textAlign: 'right' }}>
+                                                {r.opened ? (
+                                                    <>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--color-success)', fontSize: 'var(--text-xs)', fontWeight: 'var(--font-semibold)' }}><Check size={12} /> Opened</div>
+                                                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{r.openedAt}</div>
+                                                    </>
+                                                ) : (
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--color-gray-400)', fontSize: 'var(--text-xs)', fontWeight: 'var(--font-semibold)' }}><X size={12} /> Not Opened</div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
                             </div>
                         </div>
 

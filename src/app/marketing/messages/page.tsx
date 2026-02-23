@@ -1,10 +1,22 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Plus, Send, Search, MessageSquare, Users, Edit, Trash2, Eye, Copy, Smartphone, Mail, Bell, Check, X } from 'lucide-react';
+import React, { useState, useRef, useMemo } from 'react';
+import { Plus, Send, Search, MessageSquare, Users, Edit, Trash2, Eye, Copy, Smartphone, Mail, Bell, Check, X, ChevronDown, Filter } from 'lucide-react';
 import { useToast, SlideOver, Modal, Input, Button, Select, Badge } from '@/components/ui';
 
 import MarketingTabs from '@/components/MarketingTabs';
+
+const placeholders = [
+    { key: '{name}', label: 'Client Name', description: 'Full name of the client' },
+    { key: '{first_name}', label: 'First Name', description: 'Client first name only' },
+    { key: '{date}', label: 'Date', description: 'Appointment or event date' },
+    { key: '{time}', label: 'Time', description: 'Appointment time' },
+    { key: '{service}', label: 'Service', description: 'Booked service name' },
+    { key: '{discount}', label: 'Discount', description: 'Discount percentage or amount' },
+    { key: '{amount}', label: 'Amount', description: 'Balance or order amount' },
+    { key: '{branch}', label: 'Branch', description: 'Branch name or location' },
+    { key: '{link}', label: 'Link', description: 'Booking or review link' },
+];
 
 const initialTemplates = [
     { id: 1, name: 'Appointment Reminder', channel: 'WhatsApp', body: 'Hi {name}, this is a reminder for your appointment on {date} at {time}. Reply YES to confirm.', lastUsed: '2026-02-17', usageCount: 156 },
@@ -14,12 +26,12 @@ const initialTemplates = [
 ];
 
 const initialHistory = [
-    { id: 1, template: 'Appointment Reminder', recipient: 'Fatima Ali', channel: 'WhatsApp', date: '2026-02-17 10:00', status: 'delivered' },
-    { id: 2, template: 'Thank You Follow-up', recipient: 'Noura Ahmed', channel: 'SMS', date: '2026-02-16 18:30', status: 'delivered' },
-    { id: 3, template: 'Birthday Greeting', recipient: 'Huda Saleh', channel: 'WhatsApp', date: '2026-02-15 09:00', status: 'read' },
-    { id: 4, template: 'Appointment Reminder', recipient: 'Rania Khalil', channel: 'WhatsApp', date: '2026-02-17 09:00', status: 'failed' },
-    { id: 5, template: 'Payment Due Reminder', recipient: 'Hana Ali', channel: 'SMS', date: '2026-02-14 14:00', status: 'delivered' },
-    { id: 6, template: 'Birthday Greeting', recipient: 'Layla Hassan', channel: 'WhatsApp', date: '2026-02-14 08:00', status: 'read' },
+    { id: 1, template: 'Appointment Reminder', recipients: ['Fatima Ali', 'Rania Khalil', 'Sara Mahmoud'], channel: 'WhatsApp', date: '2026-02-17 10:00', status: 'delivered', message: 'Hi {name}, this is a reminder for your appointment on Feb 18 at 10:00 AM. Reply YES to confirm.' },
+    { id: 2, template: 'Thank You Follow-up', recipients: ['Noura Ahmed'], channel: 'SMS', date: '2026-02-16 18:30', status: 'delivered', message: 'Thank you Noura for visiting us! We hope you enjoyed your HydraFacial. See you again soon! ✨' },
+    { id: 3, template: 'Birthday Greeting', recipients: ['Huda Saleh', 'Layla Hassan'], channel: 'WhatsApp', date: '2026-02-15 09:00', status: 'read', message: 'Happy Birthday {name}! 🎂 Enjoy a special 20% off on any service today!' },
+    { id: 4, template: 'Payment Due Reminder', recipients: ['Hana Ali'], channel: 'SMS', date: '2026-02-14 14:00', status: 'delivered', message: 'Hi Hana, you have an outstanding balance of 350 EGP. Please settle at your convenience.' },
+    { id: 5, template: 'Appointment Reminder', recipients: ['Mona Tarek', 'Huda Saleh'], channel: 'WhatsApp', date: '2026-02-13 11:00', status: 'delivered', message: 'Hi {name}, this is a reminder for your appointment on Feb 14 at 3:00 PM. Reply YES to confirm.' },
+    { id: 6, template: 'Thank You Follow-up', recipients: ['Mona Tarek'], channel: 'SMS', date: '2026-02-12 16:30', status: 'delivered', message: 'Thank you Mona for visiting us! We hope you enjoyed your Gel Manicure. See you again soon! ✨' },
 ];
 
 const recipients = [
@@ -29,6 +41,8 @@ const recipients = [
     { name: 'Rania Khalil', phone: '+201099887766' },
     { name: 'Hana Ali', phone: '+201033445566' },
     { name: 'Layla Hassan', phone: '+201077889900' },
+    { name: 'Sara Mahmoud', phone: '+201011223344' },
+    { name: 'Mona Tarek', phone: '+201044556677' },
 ];
 
 const channelIcons: Record<string, React.ReactNode> = {
@@ -43,7 +57,7 @@ const s: Record<string, React.CSSProperties> = {
     section: { fontSize: 'var(--text-lg)', fontWeight: 'var(--font-semibold)' },
     sectionDesc: { fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)' },
     grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 'var(--space-4)' },
-    card: { background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-xl)', padding: 'var(--space-4)', cursor: 'pointer', transition: 'all 0.2s' },
+    card: { background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-xl)', padding: 'var(--space-4)', transition: 'all 0.2s' },
     cardTitle: { fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-2)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
     cardBody: { fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', lineHeight: 1.5, background: 'var(--bg-secondary)', padding: 'var(--space-3)', borderRadius: 'var(--radius-lg)', marginBottom: 'var(--space-3)' },
     cardFooter: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' },
@@ -53,11 +67,20 @@ const s: Record<string, React.CSSProperties> = {
     table: { width: '100%', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-xl)', overflow: 'hidden' },
     th: { padding: 'var(--space-3) var(--space-4)', textAlign: 'left', fontSize: 'var(--text-xs)', fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', background: 'var(--bg-secondary)' },
     td: { padding: 'var(--space-3) var(--space-4)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)', borderTop: '1px solid var(--border-color)' },
-    // Compose styles
     composePreview: { padding: 'var(--space-4)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', fontSize: 'var(--text-sm)', lineHeight: 1.7, whiteSpace: 'pre-wrap', color: 'var(--text-secondary)' },
     recipientChip: { display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 10px', background: 'var(--color-primary-50)', color: 'var(--color-primary-700)', borderRadius: 'var(--radius-full)', fontSize: 'var(--text-xs)', fontWeight: 'var(--font-medium)', cursor: 'pointer' },
-    searchBox: { position: 'relative' },
-    searchIcon: { position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' },
+    // Placeholder dropdown
+    phDropdown: { position: 'absolute', top: '100%', left: 0, right: 0, background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-lg)', zIndex: 50, maxHeight: 220, overflowY: 'auto' },
+    phItem: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', cursor: 'pointer', fontSize: 'var(--text-sm)', borderBottom: '1px solid var(--border-color)' },
+    phKey: { fontFamily: 'monospace', fontSize: 'var(--text-xs)', padding: '2px 8px', background: 'var(--color-primary-50)', color: 'var(--color-primary-700)', borderRadius: 'var(--radius-md)' },
+    // KPIs
+    kpis: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 'var(--space-3)' },
+    kpi: { background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-xl)', padding: 'var(--space-3)', textAlign: 'center' },
+    kpiVal: { fontSize: 'var(--text-xl)', fontWeight: 'var(--font-bold)', color: 'var(--text-primary)' },
+    kpiLbl: { fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: 2 },
+    filterBar: { display: 'flex', gap: 'var(--space-2)' },
+    filterBtn: { padding: '4px 12px', borderRadius: 'var(--radius-full)', fontSize: 'var(--text-xs)', fontWeight: 'var(--font-semibold)', cursor: 'pointer', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-secondary)' },
+    filterBtnActive: { background: 'var(--color-primary-500)', color: 'white', borderColor: 'var(--color-primary-500)' },
 };
 
 export default function MessagesPage() {
@@ -65,6 +88,7 @@ export default function MessagesPage() {
     const [templates, setTemplates] = useState(initialTemplates);
     const [history, setHistory] = useState(initialHistory);
     const [historySearch, setHistorySearch] = useState('');
+    const [historyStatusFilter, setHistoryStatusFilter] = useState<'all' | 'delivered' | 'read' | 'failed'>('all');
 
     // Template CRUD
     const [isAddOpen, setIsAddOpen] = useState(false);
@@ -72,14 +96,63 @@ export default function MessagesPage() {
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
 
+    // Template form state
+    const [formName, setFormName] = useState('');
+    const [formChannel, setFormChannel] = useState('WhatsApp');
+    const [formBody, setFormBody] = useState('');
+    const [showPlaceholders, setShowPlaceholders] = useState(false);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+
     // Compose flow
     const [isComposeOpen, setIsComposeOpen] = useState(false);
     const [composeTemplate, setComposeTemplate] = useState<any>(null);
     const [selectedRecipients, setSelectedRecipients] = useState<string[]>([]);
+    const [recipientSearch, setRecipientSearch] = useState('');
+
+    // Message detail
+    const [isMessageDetailOpen, setIsMessageDetailOpen] = useState(false);
+    const [selectedMessage, setSelectedMessage] = useState<any>(null);
+
+    const openMessageDetail = (m: any) => { setSelectedMessage(m); setIsMessageDetailOpen(true); };
+
+    const openAdd = () => {
+        setFormName('');
+        setFormChannel('WhatsApp');
+        setFormBody('');
+        setIsAddOpen(true);
+    };
+
+    const openEdit = (t: any) => {
+        setSelectedTemplate(t);
+        setFormName(t.name);
+        setFormChannel(t.channel);
+        setFormBody(t.body);
+        setIsEditOpen(true);
+    };
+
+    const insertPlaceholder = (key: string) => {
+        const textarea = textareaRef.current;
+        if (textarea) {
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const newBody = formBody.slice(0, start) + key + formBody.slice(end);
+            setFormBody(newBody);
+            setShowPlaceholders(false);
+            // Set cursor after placeholder
+            setTimeout(() => {
+                textarea.focus();
+                textarea.setSelectionRange(start + key.length, start + key.length);
+            }, 0);
+        } else {
+            setFormBody(prev => prev + key);
+            setShowPlaceholders(false);
+        }
+    };
 
     const openCompose = (t: any) => {
         setComposeTemplate(t);
         setSelectedRecipients([]);
+        setRecipientSearch('');
         setIsComposeOpen(true);
     };
 
@@ -88,17 +161,33 @@ export default function MessagesPage() {
     };
 
     const handleSend = () => {
-        const newMessages = selectedRecipients.map((name, i) => ({
-            id: Date.now() + i,
+        const newEntry = {
+            id: Date.now(),
             template: composeTemplate.name,
-            recipient: name,
+            recipients: [...selectedRecipients],
             channel: composeTemplate.channel,
             date: new Date().toISOString().replace('T', ' ').slice(0, 16),
             status: 'delivered' as const,
-        }));
-        setHistory(prev => [...newMessages, ...prev]);
+            message: composeTemplate.body,
+        };
+        setHistory(prev => [newEntry, ...prev]);
         setIsComposeOpen(false);
         addToast('success', `Message sent to ${selectedRecipients.length} recipient(s)`);
+    };
+
+    const handleAddTemplate = () => {
+        if (!formName.trim()) { addToast('error', 'Template name is required'); return; }
+        setTemplates(prev => [...prev, { id: Date.now(), name: formName, channel: formChannel, body: formBody, lastUsed: 'Never', usageCount: 0 }]);
+        setIsAddOpen(false);
+        addToast('success', 'Template created');
+    };
+
+    const handleEditTemplate = () => {
+        if (!formName.trim()) { addToast('error', 'Template name is required'); return; }
+        setTemplates(prev => prev.map(t => t.id === selectedTemplate.id ? { ...t, name: formName, channel: formChannel, body: formBody } : t));
+        setIsEditOpen(false);
+        setSelectedTemplate(null);
+        addToast('success', 'Template updated');
     };
 
     const handleDeleteTemplate = () => {
@@ -108,9 +197,80 @@ export default function MessagesPage() {
         addToast('success', 'Template deleted');
     };
 
-    const filteredHistory = history.filter(m =>
-        m.recipient.toLowerCase().includes(historySearch.toLowerCase()) ||
-        m.template.toLowerCase().includes(historySearch.toLowerCase())
+    const filteredHistory = useMemo(() => {
+        let result = history;
+        if (historySearch) {
+            result = result.filter(m =>
+                m.recipients.some(r => r.toLowerCase().includes(historySearch.toLowerCase())) ||
+                m.template.toLowerCase().includes(historySearch.toLowerCase())
+            );
+        }
+        if (historyStatusFilter !== 'all') {
+            result = result.filter(m => m.status === historyStatusFilter);
+        }
+        return result;
+    }, [history, historySearch, historyStatusFilter]);
+
+    const filteredRecipients = useMemo(() => {
+        if (!recipientSearch) return recipients;
+        return recipients.filter(r => r.name.toLowerCase().includes(recipientSearch.toLowerCase()) || r.phone.includes(recipientSearch));
+    }, [recipientSearch]);
+
+    const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').toUpperCase();
+
+    const stats = useMemo(() => {
+        const total = history.reduce((a, m) => a + m.recipients.length, 0);
+        const delivered = history.filter(m => m.status === 'delivered').reduce((a, m) => a + m.recipients.length, 0);
+        const read = history.filter(m => m.status === 'read').reduce((a, m) => a + m.recipients.length, 0);
+        const failed = history.filter(m => m.status === 'failed').reduce((a, m) => a + m.recipients.length, 0);
+        return { total, delivered, read, failed };
+    }, [history]);
+
+    const renderPlaceholderDropdown = () => (
+        <div style={{ position: 'relative' as const }}>
+            <button
+                type="button"
+                style={{ ...s.smallBtn, marginBottom: 'var(--space-2)' }}
+                onClick={() => setShowPlaceholders(!showPlaceholders)}
+            >
+                <ChevronDown size={12} /> Insert Placeholder
+            </button>
+            {showPlaceholders && (
+                <div style={s.phDropdown as React.CSSProperties}>
+                    {placeholders.map(p => (
+                        <div
+                            key={p.key}
+                            style={s.phItem}
+                            onClick={() => insertPlaceholder(p.key)}
+                            onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-secondary)')}
+                            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                        >
+                            <div>
+                                <div style={{ fontWeight: 'var(--font-medium)' }}>{p.label}</div>
+                                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{p.description}</div>
+                            </div>
+                            <span style={s.phKey as React.CSSProperties}>{p.key}</span>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+
+    const renderBodyEditor = () => (
+        <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
+                <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)' }}>Message Body</label>
+                {renderPlaceholderDropdown()}
+            </div>
+            <textarea
+                ref={textareaRef}
+                style={{ width: '100%', minHeight: 120, padding: 'var(--space-3)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', fontSize: 'var(--text-sm)', background: 'var(--bg-primary)', color: 'var(--text-primary)', lineHeight: 1.6 }}
+                placeholder="Type your message here. Use the placeholder button above to insert dynamic fields..."
+                value={formBody}
+                onChange={e => setFormBody(e.target.value)}
+            />
+        </div>
     );
 
     return (
@@ -124,7 +284,7 @@ export default function MessagesPage() {
                         <div style={s.section}>Message Templates</div>
                         <div style={s.sectionDesc}>Create reusable templates, then click &quot;Use&quot; to compose and send.</div>
                     </div>
-                    <Button onClick={() => setIsAddOpen(true)}><Plus size={16} /> New Template</Button>
+                    <Button onClick={openAdd}><Plus size={16} /> New Template</Button>
                 </div>
                 <div style={s.grid}>
                     {templates.map(t => (
@@ -137,7 +297,7 @@ export default function MessagesPage() {
                             <div style={s.cardFooter}>
                                 <span>Used {t.usageCount} times · Last: {t.lastUsed}</span>
                                 <div style={s.btnGroup}>
-                                    <button style={s.smallBtn} onClick={() => { setSelectedTemplate(t); setIsEditOpen(true); }}><Edit size={12} /></button>
+                                    <button style={s.smallBtn} onClick={() => openEdit(t)}><Edit size={12} /></button>
                                     <button style={{ ...s.smallBtn, color: 'var(--color-error)', borderColor: 'var(--color-error-light)' }} onClick={() => { setSelectedTemplate(t); setIsDeleteOpen(true); }}><Trash2 size={12} /></button>
                                     <button style={s.sendBtn} onClick={() => openCompose(t)}><Send size={12} /> Use</button>
                                 </div>
@@ -147,40 +307,130 @@ export default function MessagesPage() {
                 </div>
             </div>
 
-            {/* ─── Step 3: Message History ─── */}
+            {/* ─── Message History ─── */}
             <div>
                 <div style={{ ...s.sectionHeader, marginBottom: 'var(--space-3)' }}>
                     <div>
                         <div style={s.section}>Message History</div>
                         <div style={s.sectionDesc}>{history.length} messages sent</div>
                     </div>
-                    <div style={{ ...s.searchBox as React.CSSProperties, maxWidth: 260 }}>
-                        <Search size={14} style={s.searchIcon as React.CSSProperties} />
+                </div>
+
+                {/* KPIs */}
+                <div style={{ ...s.kpis as React.CSSProperties, marginBottom: 'var(--space-4)' }}>
+                    <div style={s.kpi}><div style={s.kpiVal}>{stats.total}</div><div style={s.kpiLbl}>Total</div></div>
+                    <div style={s.kpi}><div style={{ ...s.kpiVal, color: 'var(--color-success)' }}>{stats.delivered}</div><div style={s.kpiLbl}>Delivered</div></div>
+                    <div style={s.kpi}><div style={{ ...s.kpiVal, color: 'var(--color-info)' }}>{stats.read}</div><div style={s.kpiLbl}>Read</div></div>
+                    <div style={s.kpi}><div style={{ ...s.kpiVal, color: 'var(--color-error)' }}>{stats.failed}</div><div style={s.kpiLbl}>Failed</div></div>
+                </div>
+
+                {/* Filters */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)', gap: 'var(--space-3)' }}>
+                    <div style={s.filterBar as React.CSSProperties}>
+                        {[
+                            { key: 'all' as const, label: 'All' },
+                            { key: 'delivered' as const, label: 'Delivered' },
+                            { key: 'read' as const, label: 'Read' },
+                            { key: 'failed' as const, label: 'Failed' },
+                        ].map(f => (
+                            <button key={f.key} style={{ ...s.filterBtn, ...(historyStatusFilter === f.key ? s.filterBtnActive : {}) }} onClick={() => setHistoryStatusFilter(f.key)}>
+                                {f.label}
+                            </button>
+                        ))}
+                    </div>
+                    <div style={{ position: 'relative' as const, maxWidth: 260 }}>
+                        <Search size={14} style={{ position: 'absolute' as const, left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }} />
                         <input
                             style={{ width: '100%', height: 36, paddingLeft: 32, border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}
-                            placeholder="Search history..."
+                            placeholder="Search messages..."
                             value={historySearch}
                             onChange={e => setHistorySearch(e.target.value)}
                         />
                     </div>
                 </div>
+
                 <table style={s.table}>
-                    <thead><tr>{['Template', 'Recipient', 'Channel', 'Date', 'Status'].map(h => <th key={h} style={s.th as React.CSSProperties}>{h}</th>)}</tr></thead>
+                    <thead><tr>{['Template', 'Recipients', 'Channel', 'Date', 'Status'].map(h => <th key={h} style={s.th as React.CSSProperties}>{h}</th>)}</tr></thead>
                     <tbody>
-                        {filteredHistory.map(m => (
-                            <tr key={m.id} className="hoverRow">
-                                <td style={{ ...s.td, fontWeight: 'var(--font-medium)' }}>{m.template}</td>
-                                <td style={s.td}>{m.recipient}</td>
-                                <td style={s.td}><Badge color={channelBadge[m.channel]} size="sm">{m.channel}</Badge></td>
-                                <td style={s.td}>{m.date}</td>
-                                <td style={s.td}><Badge color={statusBadge[m.status]} size="sm">{m.status}</Badge></td>
-                            </tr>
-                        ))}
+                        {filteredHistory.length === 0 ? (
+                            <tr><td colSpan={5} style={{ ...s.td, textAlign: 'center', color: 'var(--text-tertiary)', padding: 'var(--space-5)' }}>No messages match your filters</td></tr>
+                        ) : (
+                            filteredHistory.map(m => (
+                                <tr key={m.id} className="hoverRow" style={{ cursor: 'pointer' }} onClick={() => openMessageDetail(m)}>
+                                    <td style={{ ...s.td, fontWeight: 'var(--font-medium)' }}>{m.template}</td>
+                                    <td style={s.td}>
+                                        {m.recipients.length === 1
+                                            ? m.recipients[0]
+                                            : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Users size={13} /> {m.recipients.length} recipients</span>
+                                        }
+                                    </td>
+                                    <td style={s.td}><Badge color={channelBadge[m.channel]} size="sm">{m.channel}</Badge></td>
+                                    <td style={s.td}>{m.date}</td>
+                                    <td style={s.td}><Badge color={statusBadge[m.status]} size="sm">{m.status}</Badge></td>
+                                </tr>
+                            ))
+                        )}
                     </tbody>
                 </table>
             </div>
 
-            {/* ─── Compose SlideOver (Step 2) ─── */}
+            {/* ─── Message Detail SlideOver ─── */}
+            <SlideOver open={isMessageDetailOpen} onClose={() => { setIsMessageDetailOpen(false); setSelectedMessage(null); }} title="Message Details"
+                footer={
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+                        <Button variant="ghost" onClick={() => { setIsMessageDetailOpen(false); setSelectedMessage(null); }}>Close</Button>
+                        <Button onClick={() => { addToast('success', 'Message resent'); setIsMessageDetailOpen(false); }}><Send size={14} /> Resend</Button>
+                    </div>
+                }
+            >
+                {selectedMessage && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
+                        <div>
+                            <div style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--font-bold)', marginBottom: 'var(--space-2)' }}>{selectedMessage.template}</div>
+                            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                                <Badge color={channelBadge[selectedMessage.channel]} size="sm">{channelIcons[selectedMessage.channel]} {selectedMessage.channel}</Badge>
+                                <Badge color={statusBadge[selectedMessage.status]} size="sm">{selectedMessage.status}</Badge>
+                            </div>
+                        </div>
+
+                        <div style={{ background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-4)' }}>
+                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-1)' }}>Sent At</div>
+                            <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)' }}>{selectedMessage.date}</div>
+                        </div>
+
+                        {/* Recipients List */}
+                        <div>
+                            <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-3)' }}>
+                                Recipients ({selectedMessage.recipients.length})
+                            </div>
+                            <div style={{ border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', overflow: 'hidden', maxHeight: 200, overflowY: 'auto' }}>
+                                {selectedMessage.recipients.map((name: string, i: number) => (
+                                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', padding: 'var(--space-3)', borderTop: i === 0 ? 'none' : '1px solid var(--border-color)' }}>
+                                        <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--color-primary-100)', color: 'var(--color-primary-700)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--text-xs)', fontWeight: 'var(--font-bold)', flexShrink: 0 }}>
+                                            {getInitials(name)}
+                                        </div>
+                                        <div>
+                                            <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)' }}>{name}</div>
+                                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
+                                                {recipients.find(r => r.name === name)?.phone || ''}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div>
+                            <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-3)' }}>Message Content</div>
+                            <div style={{ padding: 'var(--space-4)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
+                                {selectedMessage.message || 'No message content available.'}
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </SlideOver>
+
+            {/* ─── Compose SlideOver ─── */}
             <SlideOver open={isComposeOpen} onClose={() => setIsComposeOpen(false)} title="Compose & Send"
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -194,7 +444,6 @@ export default function MessagesPage() {
             >
                 {composeTemplate && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
-                        {/* Template info */}
                         <div>
                             <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-2)' }}>Template</div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
@@ -203,7 +452,6 @@ export default function MessagesPage() {
                             </div>
                         </div>
 
-                        {/* Message Preview */}
                         <div>
                             <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-2)' }}>Message Preview</div>
                             <div style={s.composePreview as React.CSSProperties}>{composeTemplate.body}</div>
@@ -213,7 +461,6 @@ export default function MessagesPage() {
                         <div>
                             <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-2)' }}>Select Recipients</div>
 
-                            {/* Selected chips */}
                             {selectedRecipients.length > 0 && (
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 'var(--space-3)' }}>
                                     {selectedRecipients.map(name => (
@@ -224,17 +471,31 @@ export default function MessagesPage() {
                                 </div>
                             )}
 
-                            {/* Recipient list */}
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
+                            {/* Search recipients */}
+                            <div style={{ position: 'relative' as const, marginBottom: 'var(--space-2)' }}>
+                                <Search size={14} style={{ position: 'absolute' as const, left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }} />
+                                <input
+                                    style={{ width: '100%', height: 36, paddingLeft: 32, border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}
+                                    placeholder="Search recipients..."
+                                    value={recipientSearch}
+                                    onChange={e => setRecipientSearch(e.target.value)}
+                                />
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 0, border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', overflow: 'hidden', maxHeight: 280, overflowY: 'auto' }}>
                                 <div style={{ padding: 'var(--space-2) var(--space-3)', background: 'var(--bg-secondary)', fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', fontWeight: 'var(--font-semibold)' }}>
                                     <button style={{ ...s.smallBtn, marginBottom: 0 }} onClick={() => {
-                                        if (selectedRecipients.length === recipients.length) setSelectedRecipients([]);
-                                        else setSelectedRecipients(recipients.map(r => r.name));
+                                        const visible = filteredRecipients.map(r => r.name);
+                                        if (visible.every(n => selectedRecipients.includes(n))) {
+                                            setSelectedRecipients(prev => prev.filter(n => !visible.includes(n)));
+                                        } else {
+                                            setSelectedRecipients(prev => [...new Set([...prev, ...visible])]);
+                                        }
                                     }}>
-                                        {selectedRecipients.length === recipients.length ? 'Deselect All' : 'Select All'}
+                                        {filteredRecipients.every(r => selectedRecipients.includes(r.name)) ? 'Deselect All' : 'Select All'}
                                     </button>
                                 </div>
-                                {recipients.map(r => {
+                                {filteredRecipients.map(r => {
                                     const isSelected = selectedRecipients.includes(r.name);
                                     return (
                                         <div key={r.name}
@@ -258,33 +519,25 @@ export default function MessagesPage() {
             </SlideOver>
 
             {/* Add Template Modal */}
-            <Modal open={isAddOpen} onClose={() => setIsAddOpen(false)} title="Create New Template"
-                footer={<div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}><Button variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button><Button onClick={() => { setIsAddOpen(false); addToast('success', 'Template created'); }}>Save Template</Button></div>}
+            <Modal open={isAddOpen} onClose={() => { setIsAddOpen(false); setShowPlaceholders(false); }} title="Create New Template"
+                footer={<div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}><Button variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button><Button onClick={handleAddTemplate}>Save Template</Button></div>}
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label="Template Name" placeholder="e.g. Birthday Greeting" />
-                    <Select label="Channel" options={[{ label: 'SMS', value: 'SMS' }, { label: 'WhatsApp', value: 'WhatsApp' }, { label: 'Email', value: 'Email' }]} />
-                    <div>
-                        <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', display: 'block', marginBottom: 'var(--space-2)' }}>Message Body</label>
-                        <textarea style={{ width: '100%', minHeight: 100, padding: 'var(--space-3)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', fontSize: 'var(--text-sm)', background: 'var(--bg-primary)', color: 'var(--text-primary)' }} placeholder="Use {name}, {date}, {service} as placeholders..." />
-                    </div>
+                    <Input label="Template Name" placeholder="e.g. Birthday Greeting" value={formName} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormName(e.target.value)} />
+                    <Select label="Channel" value={formChannel} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFormChannel(e.target.value)} options={[{ label: 'SMS', value: 'SMS' }, { label: 'WhatsApp', value: 'WhatsApp' }, { label: 'Email', value: 'Email' }]} />
+                    {renderBodyEditor()}
                 </div>
             </Modal>
 
             {/* Edit Template Modal */}
-            <Modal open={isEditOpen} onClose={() => { setIsEditOpen(false); setSelectedTemplate(null); }} title="Edit Template"
-                footer={<div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}><Button variant="ghost" onClick={() => setIsEditOpen(false)}>Cancel</Button><Button onClick={() => { setIsEditOpen(false); addToast('success', 'Template updated'); }}>Save Changes</Button></div>}
+            <Modal open={isEditOpen} onClose={() => { setIsEditOpen(false); setSelectedTemplate(null); setShowPlaceholders(false); }} title="Edit Template"
+                footer={<div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}><Button variant="ghost" onClick={() => setIsEditOpen(false)}>Cancel</Button><Button onClick={handleEditTemplate}>Save Changes</Button></div>}
             >
-                {selectedTemplate && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                        <Input label="Template Name" defaultValue={selectedTemplate.name} />
-                        <Select label="Channel" defaultValue={selectedTemplate.channel} options={[{ label: 'SMS', value: 'SMS' }, { label: 'WhatsApp', value: 'WhatsApp' }, { label: 'Email', value: 'Email' }]} />
-                        <div>
-                            <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', display: 'block', marginBottom: 'var(--space-2)' }}>Message Body</label>
-                            <textarea style={{ width: '100%', minHeight: 100, padding: 'var(--space-3)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', fontSize: 'var(--text-sm)', background: 'var(--bg-primary)', color: 'var(--text-primary)' }} defaultValue={selectedTemplate.body} />
-                        </div>
-                    </div>
-                )}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    <Input label="Template Name" value={formName} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormName(e.target.value)} />
+                    <Select label="Channel" value={formChannel} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFormChannel(e.target.value)} options={[{ label: 'SMS', value: 'SMS' }, { label: 'WhatsApp', value: 'WhatsApp' }, { label: 'Email', value: 'Email' }]} />
+                    {renderBodyEditor()}
+                </div>
             </Modal>
 
             {/* Delete Confirmation Modal */}
