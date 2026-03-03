@@ -1,0 +1,231 @@
+﻿
+> hagzy@0.1.0 lint
+> eslint
+
+
+D:\project\Hagzy\src\app\bookings\[id]\page.tsx
+  57:7   warning  'steps' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  61:13  warning  'id' is assigned a value but never used. Allowed unused vars must match /^_/u     unused-imports/no-unused-vars
+
+D:\project\Hagzy\src\app\customers\[id]\page.tsx
+  68:13  warning  'id' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+D:\project\Hagzy\src\app\customers\groups\page.tsx
+  49:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\customers\last-visits\page.tsx
+  35:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\customers\page.tsx
+  41:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\employees\[id]\page.tsx
+   94:13   warning  'id' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  205:56   error    Unexpected any. Specify a different type                                       @typescript-eslint/no-explicit-any
+  446:180  error    Unexpected any. Specify a different type                                       @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\employees\attendance-settings\page.tsx
+  43:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\employees\attendance\page.tsx
+   65:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  173:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\employees\commission-settings\page.tsx
+  97:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\employees\commissions\page.tsx
+  106:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  124:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  127:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  127:55  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  128:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  128:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  170:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  173:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  173:55  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  174:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  174:63  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  193:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  196:50  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  196:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  197:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  197:59  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  198:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  198:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  199:55  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  199:65  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  387:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  427:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  471:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\employees\departments\page.tsx
+  29:54  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  41:54  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\employees\fingerprints\page.tsx
+  47:62  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\employees\page.tsx
+  35:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  60:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\employees\payroll\page.tsx
+  240:85  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\employees\positions\page.tsx
+   52:52   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  125:136  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  126:242  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  126:280  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\employees\transfers\page.tsx
+   54:62   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  114:26   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  170:170  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  170:204  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  172:170  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  172:202  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  175:75   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  178:192  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\login\page.tsx
+  18:12  warning  'otpMethod' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  47:18  warning  'err' is defined but never used                                                       unused-imports/no-unused-vars
+  68:18  warning  'err' is defined but never used                                                       unused-imports/no-unused-vars
+
+D:\project\Hagzy\src\app\marketing\messages\page.tsx
+   10:7   warning  'initialPlaceholders' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  112:62  error    Unexpected any. Specify a different type                                                        @typescript-eslint/no-explicit-any
+  123:60  error    Unexpected any. Specify a different type                                                        @typescript-eslint/no-explicit-any
+  129:60  error    Unexpected any. Specify a different type                                                        @typescript-eslint/no-explicit-any
+  131:35  error    Unexpected any. Specify a different type                                                        @typescript-eslint/no-explicit-any
+  140:26  error    Unexpected any. Specify a different type                                                        @typescript-eslint/no-explicit-any
+  167:29  error    Unexpected any. Specify a different type                                                        @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\marketing\notifications\page.tsx
+   97:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  101:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  102:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  103:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\marketing\offers\page.tsx
+  60:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  62:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  63:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  64:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\marketing\packages\page.tsx
+  50:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  52:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  53:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  54:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\marketing\page.tsx
+  105:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  110:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  115:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\marketing\promo-codes\page.tsx
+  86:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  91:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  92:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  93:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\marketing\service-groups\page.tsx
+  61:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  77:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  86:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\page.tsx
+  173:9   warning  'bookingTerm' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  335:38  error    Unexpected any. Specify a different type                                                @typescript-eslint/no-explicit-any
+  440:36  error    Unexpected any. Specify a different type                                                @typescript-eslint/no-explicit-any
+  440:47  error    Unexpected any. Specify a different type                                                @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\reports\[category]\[report]\page.tsx
+  476:119  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  527:38   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  537:39   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  537:47   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  647:53   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  654:56   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  668:61   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\reports\[category]\page.tsx
+  211:11  warning  'dateLabel' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+D:\project\Hagzy\src\app\reports\page.tsx
+  155:143  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  155:154  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  173:143  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  173:154  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  197:180  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\returns\cash-refund\page.tsx
+  8:7  warning  'tabs' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+D:\project\Hagzy\src\app\sales\packages\page.tsx
+  50:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\settings\audit-log\page.tsx
+  48:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\settings\branches\[id]\page.tsx
+  51:13  warning  'id' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+D:\project\Hagzy\src\app\settings\branches\page.tsx
+  57:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  99:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\settings\data\page.tsx
+  21:16  warning  'lang' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+D:\project\Hagzy\src\app\settings\devices\page.tsx
+  27:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\settings\integrations\page.tsx
+   85:74  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   92:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   97:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  102:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\settings\page.tsx
+  36:64  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\settings\payment-methods\page.tsx
+  37:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\settings\petty-cash-items\page.tsx
+  35:54  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  38:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\settings\resources\page.tsx
+  36:62  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\settings\roles\page.tsx
+   22:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   22:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   48:54  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   54:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   54:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   76:83  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  180:84  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\settings\safes\page.tsx
+  30:54  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\settings\service-categories\page.tsx
+  36:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\settings\services\new\page.tsx
+  33:22  warning  'setFormData' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+D:\project\Hagzy\src\app\settings\services\page.tsx
+  44:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\contexts\SettingsContext.tsx
+  55:12  warning  'isLoaded' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+Γ£û 132 problems (117 errors, 15 warnings)
+

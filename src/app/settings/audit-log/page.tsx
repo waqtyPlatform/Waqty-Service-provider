@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Search, Download, Filter } from 'lucide-react';
+import { Search, Download } from 'lucide-react';
 import SettingsTabs from '@/components/SettingsTabs';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const logs = [
     { id: 1, time: '2026-02-17 10:05', user: 'Sara Ahmed', action: 'Created', entity: 'Booking #BK-1044', details: 'New booking for Fatima Ali – Hair Coloring', ip: '192.168.1.15' },
@@ -39,27 +40,33 @@ const s: Record<string, React.CSSProperties> = {
 };
 
 export default function AuditLogPage() {
+    const { t, lang } = useTranslation();
     const [search, setSearch] = useState('');
     const filtered = logs.filter(l => l.details.toLowerCase().includes(search.toLowerCase()) || l.user.toLowerCase().includes(search.toLowerCase()));
+
+    const getTranslatedAction = (action: string) => {
+        const key = `settings.audit.action.${action}` as any;
+        return t(key) || action;
+    };
 
     return (
         <div style={s.page}>
             <SettingsTabs />
             <div style={s.toolbar}>
-                <div style={s.searchBox as React.CSSProperties}><Search size={16} style={s.searchIcon as React.CSSProperties} /><input style={s.searchInput} placeholder="Search logs..." value={search} onChange={e => setSearch(e.target.value)} /></div>
-                <button style={s.exportBtn}><Download size={16} /> Export</button>
+                <div style={s.searchBox as React.CSSProperties}><Search size={16} style={{ ...s.searchIcon as React.CSSProperties, left: lang === 'ar' ? 'auto' : 12, right: lang === 'ar' ? 12 : 'auto' }} /><input style={{ ...s.searchInput, paddingLeft: lang === 'ar' ? 16 : 40, paddingRight: lang === 'ar' ? 40 : 16 }} placeholder={t('settings.audit.search')} value={search} onChange={e => setSearch(e.target.value)} /></div>
+                <button style={s.exportBtn}><Download size={16} /> {t('settings.audit.export')}</button>
             </div>
             <table style={s.table}>
-                <thead><tr>{['Time', 'User', 'Action', 'Entity', 'Details', 'IP'].map(h => <th key={h} style={s.th as React.CSSProperties}>{h}</th>)}</tr></thead>
+                <thead><tr>{[t('settings.audit.colTime'), t('settings.audit.colUser'), t('settings.audit.colAction'), t('settings.audit.colEntity'), t('settings.audit.colDetails'), t('settings.audit.colIp')].map(h => <th key={h} style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{h}</th>)}</tr></thead>
                 <tbody>
                     {filtered.map(log => (
                         <tr key={log.id}>
-                            <td style={s.td}>{log.time}</td>
-                            <td style={{ ...s.td, fontWeight: 'var(--font-medium)' }}>{log.user}</td>
-                            <td style={s.td}><span style={{ ...s.badge, ...actionColors[log.action] }}>{log.action}</span></td>
-                            <td style={{ ...s.td, fontWeight: 'var(--font-medium)' }}>{log.entity}</td>
-                            <td style={{ ...s.td, color: 'var(--text-secondary)' }}>{log.details}</td>
-                            <td style={{ ...s.td, fontFamily: 'monospace', fontSize: 'var(--text-xs)' }}>{log.ip}</td>
+                            <td style={{ ...s.td, textAlign: lang === 'ar' ? 'right' : 'left' }}>{log.time}</td>
+                            <td style={{ ...s.td, fontWeight: 'var(--font-medium)', textAlign: lang === 'ar' ? 'right' : 'left' }}>{log.user}</td>
+                            <td style={{ ...s.td, textAlign: lang === 'ar' ? 'right' : 'left' }}><span style={{ ...s.badge, ...actionColors[log.action] }}>{getTranslatedAction(log.action)}</span></td>
+                            <td style={{ ...s.td, fontWeight: 'var(--font-medium)', textAlign: lang === 'ar' ? 'right' : 'left' }}>{log.entity}</td>
+                            <td style={{ ...s.td, color: 'var(--text-secondary)', textAlign: lang === 'ar' ? 'right' : 'left' }}>{log.details}</td>
+                            <td style={{ ...s.td, fontFamily: 'monospace', fontSize: 'var(--text-xs)', textAlign: lang === 'ar' ? 'right' : 'left', direction: 'ltr' }}>{log.ip}</td>
                         </tr>
                     ))}
                 </tbody>

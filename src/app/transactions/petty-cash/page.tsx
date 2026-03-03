@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Search, Download, Plus } from 'lucide-react';
+import { Search, Plus } from 'lucide-react';
 
 const tabs = [
     { label: 'Transaction Log', href: '/transactions' },

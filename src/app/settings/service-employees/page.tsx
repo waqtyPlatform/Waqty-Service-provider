@@ -10,11 +10,10 @@ import {
 import {
     Button,
     Input,
-    Badge,
-    EmptyState,
-    Checkbox
+    Badge
 } from '@/components/ui';
 import styles from './page.module.css';
+import { useTranslation } from '@/hooks/useTranslation';
 
 // Mock Data
 const services = [
@@ -40,6 +39,7 @@ const initialMapping: Record<string, boolean> = {
 };
 
 export default function ServiceEmployeesPage() {
+    const { t } = useTranslation();
     const [mapping, setMapping] = useState(initialMapping);
 
     const toggleMapping = (serviceId: number, empId: number) => {
@@ -51,27 +51,27 @@ export default function ServiceEmployeesPage() {
         <div className={styles.page}>
             <div className={styles.header}>
                 <div className={styles.titleGroup}>
-                    <h1>Service-Employee Mapping</h1>
-                    <div className={styles.subtitle}>Assign which employees can perform which services.</div>
+                    <h1>{t('settings.serviceEmployees.title')}</h1>
+                    <div className={styles.subtitle}>{t('settings.serviceEmployees.desc')}</div>
                 </div>
                 <div className={styles.actions}>
                     <div style={{ position: 'relative' }}>
                         <Search size={16} style={{ position: 'absolute', left: 10, top: 10, color: 'var(--text-tertiary)' }} />
-                        <Input placeholder="Search services..." style={{ paddingLeft: 32, width: 200 }} />
+                        <Input placeholder={t('settings.serviceEmployees.search')} style={{ paddingLeft: 32, width: 200 }} />
                     </div>
-                    <Button><Save size={16} /> Save Changes</Button>
+                    <Button><Save size={16} /> {t('settings.serviceEmployees.saveChanges')}</Button>
                 </div>
             </div>
 
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
-                    <span className={styles.cardTitle}><Users size={18} /> Assignment Matrix</span>
+                    <span className={styles.cardTitle}><Users size={18} /> {t('settings.serviceEmployees.matrix')}</span>
                 </div>
                 <div className="table-wrapper">
                     <table className="data-table">
                         <thead>
                             <tr>
-                                <th style={{ width: '40%' }}>Service Name</th>
+                                <th style={{ width: '40%' }}>{t('settings.serviceEmployees.serviceName')}</th>
                                 {employees.map(emp => (
                                     <th key={emp.id} style={{ textAlign: 'center' }}>
                                         <div>{emp.name}</div>

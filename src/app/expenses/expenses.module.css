@@ -174,7 +174,7 @@
 
 .searchIcon {
     position: absolute;
-    left: 12px;
+    inset-inline-start: 12px;
     top: 50%;
     transform: translateY(-50%);
     color: var(--text-tertiary);
@@ -231,7 +231,7 @@
     height: 10px;
     border-radius: 50%;
     display: inline-block;
-    margin-right: 8px;
+    margin-inline-end: 8px;
 }
 
 .pag {

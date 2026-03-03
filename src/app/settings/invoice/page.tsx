@@ -3,6 +3,7 @@
 import React from 'react';
 import SettingsTabs from '@/components/SettingsTabs';
 import { Save } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const s: Record<string, React.CSSProperties> = {
     page: { display: 'flex', flexDirection: 'column', gap: 'var(--space-5)', maxWidth: 700 },
@@ -18,33 +19,34 @@ const s: Record<string, React.CSSProperties> = {
 };
 
 export default function InvoiceSettingsPage() {
+    const { t } = useTranslation();
     return (
         <div style={s.page}>
             <SettingsTabs />
 
             <div style={s.card}>
                 <div style={s.section}>
-                    <div style={s.sectionTitle}>Business Information</div>
-                    <div style={s.row}><div style={s.label}>Business Name</div><input style={s.input} defaultValue="Hagzy Beauty Center" /></div>
-                    <div style={s.row}><div style={s.label}>Tax Registration No.</div><input style={s.input} defaultValue="123-456-789" /></div>
-                    <div style={s.row}><div style={s.label}>Address</div><input style={s.input} defaultValue="15 Tahrir Street, Cairo" /></div>
-                    <div style={s.row}><div style={s.label}>Phone</div><input style={s.input} defaultValue="+20 2 2345 6789" /></div>
+                    <div style={s.sectionTitle}>{t('settings.invoice.businessInfo')}</div>
+                    <div style={s.row}><div style={s.label}>{t('settings.invoice.businessName')}</div><input style={s.input} defaultValue="Hagzy Beauty Center" /></div>
+                    <div style={s.row}><div style={s.label}>{t('settings.invoice.taxNumber')}</div><input style={s.input} defaultValue="123-456-789" /></div>
+                    <div style={s.row}><div style={s.label}>{t('settings.invoice.address')}</div><input style={s.input} defaultValue="15 Tahrir Street, Cairo" /></div>
+                    <div style={s.row}><div style={s.label}>{t('settings.invoice.phone')}</div><input style={s.input} defaultValue="+20 2 2345 6789" /></div>
                 </div>
 
                 <div style={s.section}>
-                    <div style={s.sectionTitle}>Invoice Format</div>
-                    <div style={s.row}><div style={s.label}>Prefix</div><input style={s.input} defaultValue="INV-" /></div>
-                    <div style={s.row}><div style={s.label}>Next Number</div><input style={s.input} defaultValue="2043" type="number" /></div>
-                    <div style={s.row}><div style={s.label}>Tax Rate %</div><input style={s.input} defaultValue="14" type="number" /></div>
-                    <div style={s.row}><div style={s.label}>Currency</div><select style={s.select}><option>EGP</option><option>USD</option><option>EUR</option><option>SAR</option></select></div>
+                    <div style={s.sectionTitle}>{t('settings.invoice.formatTitle')}</div>
+                    <div style={s.row}><div style={s.label}>{t('settings.invoice.prefix')}</div><input style={s.input} defaultValue="INV-" /></div>
+                    <div style={s.row}><div style={s.label}>{t('settings.invoice.nextNumber')}</div><input style={s.input} defaultValue="2043" type="number" /></div>
+                    <div style={s.row}><div style={s.label}>{t('settings.invoice.taxRate')}</div><input style={s.input} defaultValue="14" type="number" /></div>
+                    <div style={s.row}><div style={s.label}>{t('settings.invoice.currency')}</div><select style={s.select}><option>EGP</option><option>USD</option><option>EUR</option><option>SAR</option></select></div>
                 </div>
 
                 <div style={s.section}>
-                    <div style={s.sectionTitle}>Footer Text</div>
+                    <div style={s.sectionTitle}>{t('settings.invoice.footerTitle')}</div>
                     <div style={s.row}><textarea style={s.textarea} defaultValue="Thank you for choosing Hagzy Beauty Center! We look forward to seeing you again." /></div>
                 </div>
 
-                <button style={s.saveBtn}><Save size={16} /> Save Settings</button>
+                <button style={s.saveBtn}><Save size={16} /> {t('settings.invoice.saveSettings')}</button>
             </div>
         </div>
     );

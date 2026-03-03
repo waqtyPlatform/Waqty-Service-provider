@@ -3,41 +3,43 @@
 import React from 'react';
 import {
     Plus,
-    Calendar,
-    Zap,
-    Clock
+    Zap
 } from 'lucide-react';
 import {
     Button,
     Badge,
     Switch
 } from '@/components/ui';
+import { useTranslation } from '@/hooks/useTranslation';
 import styles from './page.module.css';
 
-// Mock Data
-const rules = [
-    { id: 1, name: 'Auto-Confirm Online Bookings', desc: 'Automatically confirm bookings made online if slot is available.', active: true },
-    { id: 2, name: 'Send Reminder SMS', desc: 'Send an SMS reminder 24 hours before the appointment.', active: true },
-    { id: 3, name: 'Block Double Bookings', desc: 'Prevent booking multiple services for the same staff at the same time.', active: true },
-    { id: 4, name: 'Buffer Time Enforcement', desc: 'Automatically add buffer time after each service.', active: false },
-];
+// Removed mock rules, moved inside component for translation
 
 export default function DiaryAutomationsPage() {
+    const { t, lang } = useTranslation();
+
+    const rules = [
+        { id: 1, name: t('settings.diary.rule1.name'), desc: t('settings.diary.rule1.desc'), active: true },
+        { id: 2, name: t('settings.diary.rule2.name'), desc: t('settings.diary.rule2.desc'), active: true },
+        { id: 3, name: t('settings.diary.rule3.name'), desc: t('settings.diary.rule3.desc'), active: true },
+        { id: 4, name: t('settings.diary.rule4.name'), desc: t('settings.diary.rule4.desc'), active: false },
+    ];
+
     return (
         <div className={styles.page}>
             <div className={styles.header}>
                 <div className={styles.titleGroup}>
-                    <h1>Diary Automations</h1>
-                    <div className={styles.subtitle}>Configure automatic rules for your booking calendar.</div>
+                    <h1>{t('settings.diary.title')}</h1>
+                    <div className={styles.subtitle}>{t('settings.diary.subtitle')}</div>
                 </div>
                 <div className={styles.actions}>
-                    <Button><Plus size={16} /> New Rule</Button>
+                    <Button><Plus size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('settings.diary.newRule')}</Button>
                 </div>
             </div>
 
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
-                    <span className={styles.cardTitle}><Zap size={18} /> Active Rules</span>
+                    <span className={styles.cardTitle}><Zap size={18} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('settings.diary.activeRules')}</span>
                 </div>
                 <div className={styles.rulesList}>
                     {rules.map(rule => (
@@ -45,7 +47,7 @@ export default function DiaryAutomationsPage() {
                             <div className={styles.ruleContent}>
                                 <div className={styles.ruleTitle}>
                                     {rule.name}
-                                    {rule.active && <Badge color="success" size="sm">Active</Badge>}
+                                    {rule.active && <Badge color="success" size="sm">{t('settings.diary.badgeActive')}</Badge>}
                                 </div>
                                 <div className={styles.ruleDesc}>{rule.desc}</div>
                             </div>

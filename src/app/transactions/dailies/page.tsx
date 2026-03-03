@@ -2,7 +2,6 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { CalendarDays, CheckCircle, XCircle } from 'lucide-react';
 
 const tabs = [
     { label: 'Transaction Log', href: '/transactions' },

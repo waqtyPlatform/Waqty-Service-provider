@@ -2,22 +2,19 @@
 
 import React, { useState } from 'react';
 import { DropdownMenu, useToast } from '@/components/ui';
-import Link from 'next/link';
 import {
     Search,
     Plus,
-    ChevronLeft,
-    ChevronRight,
     MoreVertical,
     RotateCcw,
     Receipt,
     Wallet,
     CreditCard,
-    AlertCircle,
     CheckCircle2,
     XCircle,
     Clock,
 } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 import styles from './returns.module.css';
 
 const returns = [
@@ -28,27 +25,9 @@ const returns = [
     { id: 'RTN-295', date: 'Feb 8, 2026', time: '12:00', type: 'service', originalTxn: 'TXN-2010', client: 'Maryam Ibrahim', item: 'HydraFacial', reason: 'Double booking – service cancelled', amount: 450, method: 'Card', status: 'rejected', employee: 'Nora Ali' },
 ];
 
-const typeConfig: Record<string, { bg: string; color: string; label: string }> = {
-    service: { bg: 'var(--color-info-light)', color: 'var(--color-info)', label: 'Service' },
-    advance: { bg: 'var(--color-warning-light)', color: 'var(--color-warning)', label: 'Advance' },
-    petty: { bg: 'var(--color-primary-50)', color: 'var(--color-primary-600)', label: 'Petty Cash' },
-};
-
-const statusConfig: Record<string, { bg: string; color: string; label: string; icon: React.ReactNode }> = {
-    approved: { bg: 'var(--color-success-light)', color: 'var(--color-success)', label: 'Approved', icon: <CheckCircle2 size={12} /> },
-    pending: { bg: 'var(--color-warning-light)', color: 'var(--color-warning)', label: 'Pending', icon: <Clock size={12} /> },
-    rejected: { bg: 'var(--color-error-light)', color: 'var(--color-error)', label: 'Rejected', icon: <XCircle size={12} /> },
-};
-
-const tabItems = [
-    { label: 'All Returns', key: 'all', icon: <RotateCcw size={16} /> },
-    { label: 'Service Refunds', key: 'service', icon: <Receipt size={16} /> },
-    { label: 'Advance Cancellations', key: 'advance', icon: <CreditCard size={16} /> },
-    { label: 'Petty Cash Refunds', key: 'petty', icon: <Wallet size={16} /> },
-];
-
 export default function ReturnsPage() {
     const { addToast } = useToast();
+    const { t, lang } = useTranslation();
     const [activeTab, setActiveTab] = useState('all');
     const [search, setSearch] = useState('');
 
@@ -63,14 +42,33 @@ export default function ReturnsPage() {
     const totalRefunded = returns.filter(r => r.status === 'approved').reduce((s, r) => s + r.amount, 0);
     const pendingCount = returns.filter(r => r.status === 'pending').length;
 
+    const typeConfig: Record<string, { bg: string; color: string; label: string }> = {
+        service: { bg: 'var(--color-info-light)', color: 'var(--color-info)', label: t('rtn.lblService') },
+        advance: { bg: 'var(--color-warning-light)', color: 'var(--color-warning)', label: t('rtn.lblAdvance') },
+        petty: { bg: 'var(--color-primary-50)', color: 'var(--color-primary-600)', label: t('rtn.lblPetty') },
+    };
+
+    const statusConfig: Record<string, { bg: string; color: string; label: string; icon: React.ReactNode }> = {
+        approved: { bg: 'var(--color-success-light)', color: 'var(--color-success)', label: t('rtn.lblApproved'), icon: <CheckCircle2 size={12} /> },
+        pending: { bg: 'var(--color-warning-light)', color: 'var(--color-warning)', label: t('rtn.lblPending'), icon: <Clock size={12} /> },
+        rejected: { bg: 'var(--color-error-light)', color: 'var(--color-error)', label: t('rtn.lblRejected'), icon: <XCircle size={12} /> },
+    };
+
+    const tabItems = [
+        { label: t('rtn.tabAll'), key: 'all', icon: <RotateCcw size={16} /> },
+        { label: t('rtn.tabSrvRefunds'), key: 'service', icon: <Receipt size={16} /> },
+        { label: t('rtn.tabAdvCancellations'), key: 'advance', icon: <CreditCard size={16} /> },
+        { label: t('rtn.tabPetty'), key: 'petty', icon: <Wallet size={16} /> },
+    ];
+
     return (
-        <div className={styles.page}>
+        <div className={styles.page} style={{ direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
             <div className={styles.header}>
                 <div>
-                    <h1 className={styles.h1}>Returns & Refunds</h1>
-                    <p className={styles.sub}>Manage refunds and advance cancellations.</p>
+                    <h1 className={styles.h1}>{t('rtn.title')}</h1>
+                    <p className={styles.sub}>{t('rtn.sub')}</p>
                 </div>
-                <button className={styles.btnP}><Plus size={16} /> New Return</button>
+                <button className={styles.btnP}><Plus size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('rtn.newBtn')}</button>
             </div>
 
             <div className={styles.tabs}>
@@ -83,27 +81,27 @@ export default function ReturnsPage() {
 
             <div className={styles.kpiRow}>
                 <div className={styles.kpi}>
-                    <div className={styles.kpiL}>Total Returns</div>
+                    <div className={styles.kpiL}>{t('rtn.kpiTotal')}</div>
                     <div className={styles.kpiV}>{returns.length}</div>
                 </div>
                 <div className={styles.kpi}>
-                    <div className={styles.kpiL}>Total Refunded</div>
-                    <div className={`${styles.kpiV} ${styles.kpiVError}`}>{totalRefunded.toLocaleString()} EGP</div>
+                    <div className={styles.kpiL}>{t('rtn.kpiRefunded')}</div>
+                    <div className={`${styles.kpiV} ${styles.kpiVError}`} dir="ltr" style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{totalRefunded.toLocaleString()} EGP</div>
                 </div>
                 <div className={styles.kpi}>
-                    <div className={styles.kpiL}>Pending Approval</div>
+                    <div className={styles.kpiL}>{t('rtn.kpiPending')}</div>
                     <div className={`${styles.kpiV} ${styles.kpiVWarning}`}>{pendingCount}</div>
                 </div>
                 <div className={styles.kpi}>
-                    <div className={styles.kpiL}>Avg Refund Time</div>
-                    <div className={styles.kpiV}>1.2 days</div>
+                    <div className={styles.kpiL}>{t('rtn.kpiAvgTime')}</div>
+                    <div className={styles.kpiV} dir="ltr" style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>1.2 {lang === 'ar' ? 'أيام' : 'days'}</div>
                 </div>
             </div>
 
             <div className={styles.ctrl}>
                 <div className={styles.sw}>
-                    <Search size={16} className={styles.si} />
-                    <input className={styles.inp} placeholder="Search returns..." value={search} onChange={(e) => setSearch(e.target.value)} />
+                    <Search size={16} className={styles.si} style={lang === 'ar' ? { right: 12, left: 'auto' } : undefined} />
+                    <input className={styles.inp} style={lang === 'ar' ? { paddingRight: 40, paddingLeft: 12 } : undefined} placeholder={t('rtn.searchRtn')} value={search} onChange={(e) => setSearch(e.target.value)} />
                 </div>
             </div>
 
@@ -112,14 +110,14 @@ export default function ReturnsPage() {
                     <table className={styles.dataTable}>
                         <thead>
                             <tr>
-                                <th className={styles.th}>Return #</th>
-                                <th className={styles.th}>Date</th>
-                                <th className={styles.th}>Type</th>
-                                <th className={styles.th}>Client</th>
-                                <th className={styles.th}>Item</th>
-                                <th className={styles.th}>Reason</th>
-                                <th className={`${styles.th} ${styles.thRight}`}>Amount</th>
-                                <th className={styles.th}>Status</th>
+                                <th className={styles.th} style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('rtn.thRtnNum')}</th>
+                                <th className={styles.th} style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('rtn.thDate')}</th>
+                                <th className={styles.th} style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('rtn.thType')}</th>
+                                <th className={styles.th} style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('rtn.thClient')}</th>
+                                <th className={styles.th} style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('rtn.thItem')}</th>
+                                <th className={styles.th} style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('rtn.thReason')}</th>
+                                <th className={`${styles.th} ${styles.thRight}`}>{t('rtn.thAmount')}</th>
+                                <th className={styles.th} style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('rtn.thStatus')}</th>
                                 <th className={styles.th}></th>
                             </tr>
                         </thead>
@@ -142,7 +140,7 @@ export default function ReturnsPage() {
                                         </td>
                                         <td className={`${styles.td} ${styles.truncate}`}>{r.item}</td>
                                         <td className={`${styles.td} ${styles.truncateReason}`}>{r.reason}</td>
-                                        <td className={`${styles.td} ${styles.amountRefund}`}>
+                                        <td className={`${styles.td} ${styles.amountRefund}`} dir="ltr" style={{ textAlign: lang === 'ar' ? 'left' : 'right' }}>
                                             -{r.amount.toLocaleString()} EGP
                                         </td>
                                         <td className={styles.td}>

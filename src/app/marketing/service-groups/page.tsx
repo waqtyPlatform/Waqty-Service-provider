@@ -2,9 +2,10 @@
 
 import React, { useState } from 'react';
 import { Plus, Search, Edit, Trash2, Layers, Check, X } from 'lucide-react';
-import { useToast, Modal, Input, Button, Badge } from '@/components/ui';
+import { useToast, Modal, Input, Button } from '@/components/ui';
 
 import MarketingTabs from '@/components/MarketingTabs';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const allServices = [
     'Hair Cut', 'Hair Coloring', 'Keratin Treatment', 'Blow Dry', 'Hair Mask', 'Highlights',
@@ -52,6 +53,7 @@ const s: Record<string, React.CSSProperties> = {
 
 export default function ServiceGroupsPage() {
     const { addToast } = useToast();
+    const { t } = useTranslation();
     const [groups, setGroups] = useState(initialGroups);
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
@@ -95,28 +97,28 @@ export default function ServiceGroupsPage() {
     };
 
     const handleAdd = () => {
-        if (!formName.trim()) { addToast('error', 'Group name is required'); return; }
-        if (formServices.length === 0) { addToast('error', 'Select at least one service'); return; }
+        if (!formName.trim()) { addToast('error', t('mkt.msgGroupNameRequired')); return; }
+        if (formServices.length === 0) { addToast('error', t('mkt.msgSelectOneService')); return; }
         const newGroup = { id: Date.now(), name: formName, services: formServices, color: formColor, active: true };
         setGroups(prev => [...prev, newGroup]);
         setIsAddOpen(false);
-        addToast('success', 'Group created successfully');
+        addToast('success', t('mkt.msgGroupCreated'));
     };
 
     const handleEdit = () => {
-        if (!formName.trim()) { addToast('error', 'Group name is required'); return; }
-        if (formServices.length === 0) { addToast('error', 'Select at least one service'); return; }
+        if (!formName.trim()) { addToast('error', t('mkt.msgGroupNameRequired')); return; }
+        if (formServices.length === 0) { addToast('error', t('mkt.msgSelectOneService')); return; }
         setGroups(prev => prev.map(g => g.id === selectedGroup.id ? { ...g, name: formName, color: formColor, services: formServices } : g));
         setIsEditOpen(false);
         setSelectedGroup(null);
-        addToast('success', 'Group updated successfully');
+        addToast('success', t('mkt.msgGroupUpdated'));
     };
 
     const handleDelete = () => {
         setGroups(prev => prev.filter(g => g.id !== selectedGroup?.id));
         setIsDeleteOpen(false);
         setSelectedGroup(null);
-        addToast('success', 'Group deleted');
+        addToast('success', t('mkt.msgGroupDeleted'));
     };
 
     const filteredServices = allServices.filter(svc => svc.toLowerCase().includes(serviceSearch.toLowerCase()));
@@ -124,7 +126,7 @@ export default function ServiceGroupsPage() {
     const renderServiceSelector = () => (
         <div>
             <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', display: 'block', marginBottom: 'var(--space-2)' }}>
-                Assign Services <span style={{ color: 'var(--text-tertiary)', fontWeight: 'normal' }}>({formServices.length} selected)</span>
+                {t('mkt.lblAssignServices')} <span style={{ color: 'var(--text-tertiary)', fontWeight: 'normal' }}>({formServices.length} {t('mkt.lblSelected')})</span>
             </label>
 
             {/* Selected chips */}
@@ -143,7 +145,7 @@ export default function ServiceGroupsPage() {
                 <Search size={14} style={s.searchIcon as React.CSSProperties} />
                 <input
                     style={{ width: '100%', height: 36, paddingLeft: 32, border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}
-                    placeholder="Search services..."
+                    placeholder={t('mkt.phSearchServices')}
                     value={serviceSearch}
                     onChange={e => setServiceSearch(e.target.value)}
                 />
@@ -169,7 +171,7 @@ export default function ServiceGroupsPage() {
     return (
         <div style={s.page}>
             <MarketingTabs />
-            <div style={s.toolbar}><button style={s.addBtn} onClick={openAdd}><Plus size={16} /> New Group</button></div>
+            <div style={s.toolbar}><button style={s.addBtn} onClick={openAdd}><Plus size={16} /> {t('mkt.btnNewGroup')}</button></div>
             <div style={s.grid}>
                 {groups.map(g => (
                     <div key={g.id} style={{ ...s.card, opacity: g.active ? 1 : 0.6 }}>
@@ -178,7 +180,7 @@ export default function ServiceGroupsPage() {
                                 <div style={{ ...s.icon, background: g.color }}><Layers size={16} /></div>
                                 <div>
                                     <div style={s.name}>{g.name}</div>
-                                    <div style={s.count}>{g.services.length} services</div>
+                                    <div style={s.count}>{g.services.length} {t('mkt.lblServices')}</div>
                                 </div>
                             </div>
                             <div style={s.actions}>
@@ -202,13 +204,13 @@ export default function ServiceGroupsPage() {
             </div>
 
             {/* Add Group Modal */}
-            <Modal open={isAddOpen} onClose={() => setIsAddOpen(false)} title="Create New Group"
-                footer={<div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}><Button variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button><Button onClick={handleAdd}>Save Group</Button></div>}
+            <Modal open={isAddOpen} onClose={() => setIsAddOpen(false)} title={t('mkt.lblCreateNewGroup')}
+                footer={<div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}><Button variant="ghost" onClick={() => setIsAddOpen(false)}>{t('rtn.btnBack')}</Button><Button onClick={handleAdd}>{t('mkt.btnSaveGroup')}</Button></div>}
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label="Group Name" placeholder="e.g. Hair Care" value={formName} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormName(e.target.value)} />
+                    <Input label={t('mkt.lblGroupName')} placeholder="e.g. Hair Care" value={formName} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormName(e.target.value)} />
                     <div>
-                        <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', display: 'block', marginBottom: 'var(--space-2)' }}>Color</label>
+                        <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', display: 'block', marginBottom: 'var(--space-2)' }}>{t('mkt.lblColor')}</label>
                         <div style={s.colorPicker as React.CSSProperties}>
                             {colorOptions.map(c => (
                                 <div key={c} style={{ ...s.colorDot, background: c, borderColor: c === formColor ? 'var(--text-primary)' : 'transparent' }} onClick={() => setFormColor(c)}>
@@ -222,13 +224,13 @@ export default function ServiceGroupsPage() {
             </Modal>
 
             {/* Edit Group Modal */}
-            <Modal open={isEditOpen} onClose={() => { setIsEditOpen(false); setSelectedGroup(null); }} title="Edit Group"
-                footer={<div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}><Button variant="ghost" onClick={() => setIsEditOpen(false)}>Cancel</Button><Button onClick={handleEdit}>Save Changes</Button></div>}
+            <Modal open={isEditOpen} onClose={() => { setIsEditOpen(false); setSelectedGroup(null); }} title={t('mkt.lblEditGroup')}
+                footer={<div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}><Button variant="ghost" onClick={() => setIsEditOpen(false)}>{t('rtn.btnBack')}</Button><Button onClick={handleEdit}>{t('settings.saveChanges')}</Button></div>}
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label="Group Name" value={formName} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormName(e.target.value)} />
+                    <Input label={t('mkt.lblGroupName')} value={formName} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormName(e.target.value)} />
                     <div>
-                        <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', display: 'block', marginBottom: 'var(--space-2)' }}>Color</label>
+                        <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', display: 'block', marginBottom: 'var(--space-2)' }}>{t('mkt.lblColor')}</label>
                         <div style={s.colorPicker as React.CSSProperties}>
                             {colorOptions.map(c => (
                                 <div key={c} style={{ ...s.colorDot, background: c, borderColor: c === formColor ? 'var(--text-primary)' : 'transparent' }} onClick={() => setFormColor(c)}>
@@ -242,10 +244,10 @@ export default function ServiceGroupsPage() {
             </Modal>
 
             {/* Delete Confirmation Modal */}
-            <Modal open={isDeleteOpen} onClose={() => { setIsDeleteOpen(false); setSelectedGroup(null); }} title="Delete Group"
-                footer={<div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}><Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>Cancel</Button><Button variant="destructive" onClick={handleDelete}>Confirm Delete</Button></div>}
+            <Modal open={isDeleteOpen} onClose={() => { setIsDeleteOpen(false); setSelectedGroup(null); }} title={t('mkt.lblDeleteGroup')}
+                footer={<div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}><Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>{t('rtn.btnBack')}</Button><Button variant="destructive" onClick={handleDelete}>{t('mkt.lblDeleteGroup')}</Button></div>}
             >
-                <p style={{ color: 'var(--text-secondary)' }}>Are you sure you want to delete the <strong>{selectedGroup?.name}</strong> group?</p>
+                <p style={{ color: 'var(--text-secondary)' }}>{t('mkt.msgDeleteGroupConfirm')} <strong>{selectedGroup?.name}</strong></p>
             </Modal>
         </div>
     );

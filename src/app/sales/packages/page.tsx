@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { ShoppingBag, Package, Search, Plus, Star, Clock, Check, Users, MoreVertical, Edit, Trash2 } from 'lucide-react';
 import { useToast, DropdownMenu, SlideOver, Modal, Button, Input, Select } from '@/components/ui';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const packages = [
     { id: 1, name: 'Bridal Glow Package', price: 2500, oldPrice: 3200, sessions: 8, sold: 34, services: ['Hair Styling', 'Facial', 'Manicure', 'Pedicure', 'Makeup', 'Waxing', 'Lash Extensions', 'Body Scrub'], status: 'active', validity: '60 days', color: '#F59E0B' },
@@ -41,6 +42,7 @@ const s: Record<string, React.CSSProperties> = {
 
 export default function PackagesPage() {
     const { addToast } = useToast();
+    const { t } = useTranslation();
     const [search, setSearch] = useState('');
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
@@ -52,16 +54,16 @@ export default function PackagesPage() {
     return (
         <div style={s.page}>
             <div style={s.tabs}>
-                <Link href="/sales" style={s.tab}><ShoppingBag size={16} /> Services</Link>
-                <Link href="/sales/packages" style={{ ...s.tab, ...s.tabActive }}><Package size={16} /> Packages</Link>
+                <Link href="/sales" style={s.tab}><ShoppingBag size={16} /> {t('sales.lblServices')}</Link>
+                <Link href="/sales/packages" style={{ ...s.tab, ...s.tabActive }}><Package size={16} /> {t('sales.lblPackages')}</Link>
             </div>
 
             <div style={s.toolbar}>
                 <div style={s.searchBox}>
                     <Search size={16} style={s.searchIcon as React.CSSProperties} />
-                    <input style={s.searchInput} placeholder="Search packages..." value={search} onChange={e => setSearch(e.target.value)} />
+                    <input style={s.searchInput} placeholder={t('sales.phSearchPackages')} value={search} onChange={e => setSearch(e.target.value)} />
                 </div>
-                <button style={s.addBtn} onClick={() => setIsAddOpen(true)}><Plus size={16} /> New Package</button>
+                <button style={s.addBtn} onClick={() => setIsAddOpen(true)}><Plus size={16} /> {t('mkt.btnNewPackage')}</button>
             </div>
 
             <div style={s.grid}>
@@ -73,12 +75,12 @@ export default function PackagesPage() {
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                                     <div style={s.name}>{pkg.name}</div>
                                     <span style={{ ...s.badge, background: pkg.status === 'active' ? 'var(--color-success-light)' : 'var(--color-gray-100)', color: pkg.status === 'active' ? 'var(--color-success)' : 'var(--color-gray-500)' }}>
-                                        {pkg.status}
+                                        {t(`mkt.lbl${pkg.status.charAt(0).toUpperCase() + pkg.status.slice(1)}`) || pkg.status}
                                     </span>
                                 </div>
                                 <div style={s.prices}>
-                                    <span style={s.price}>{pkg.price} EGP</span>
-                                    <span style={s.oldPrice}>{pkg.oldPrice} EGP</span>
+                                    <span style={s.price}>{pkg.price} {t('mkt.lblEGP')}</span>
+                                    <span style={s.oldPrice}>{pkg.oldPrice} {t('mkt.lblEGP')}</span>
                                     <span style={{ ...s.badge, background: 'var(--color-error-light)', color: 'var(--color-error)' }}>
                                         -{Math.round((1 - pkg.price / pkg.oldPrice) * 100)}%
                                     </span>
@@ -88,8 +90,8 @@ export default function PackagesPage() {
                                 <DropdownMenu
                                     trigger={<button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)' }}><MoreVertical size={16} /></button>}
                                     items={[
-                                        { label: 'Edit Package', icon: <Edit size={14} />, onClick: () => { setSelectedPackage(pkg); setIsEditOpen(true); } },
-                                        { label: 'Delete Package', destructive: true, icon: <Trash2 size={14} />, onClick: () => { setSelectedPackage(pkg); setIsDeleteOpen(true); } }
+                                        { label: t('mkt.lblEditPackage'), icon: <Edit size={14} />, onClick: () => { setSelectedPackage(pkg); setIsEditOpen(true); } },
+                                        { label: t('mkt.lblDeletePackage'), destructive: true, icon: <Trash2 size={14} />, onClick: () => { setSelectedPackage(pkg); setIsDeleteOpen(true); } }
                                     ]}
                                 />
                             </div>
@@ -102,9 +104,9 @@ export default function PackagesPage() {
                         </div>
 
                         <div style={s.footer}>
-                            <div style={s.stat}><Users size={13} /> {pkg.sold} sold</div>
-                            <div style={s.stat}><Clock size={13} /> {pkg.validity}</div>
-                            <div style={s.stat}><Star size={13} /> {pkg.sessions} sessions</div>
+                            <div style={s.stat}><Users size={13} /> {pkg.sold} {t('mkt.lblSold')}</div>
+                            <div style={s.stat}><Clock size={13} /> {parseInt(pkg.validity)} {t('sales.lblDays')}</div>
+                            <div style={s.stat}><Star size={13} /> {pkg.sessions} {t('sales.lblSessions')}</div>
                         </div>
                     </div>
                 ))}
@@ -114,21 +116,21 @@ export default function PackagesPage() {
             <SlideOver
                 open={isAddOpen}
                 onClose={() => setIsAddOpen(false)}
-                title="Create New Package"
+                title={t('mkt.lblCreateNewPackage')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button>
-                        <Button onClick={() => { setIsAddOpen(false); addToast('success', 'Package created successfully'); }}>Save Package</Button>
+                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>{t('rtn.btnBack')}</Button>
+                        <Button onClick={() => { setIsAddOpen(false); addToast('success', t('sales.msgPackageCreated')); }}>{t('mkt.btnSavePackage')}</Button>
                     </div>
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label="Package Name" placeholder="e.g. Summer Glow" />
-                    <Input label="Price (EGP)" type="number" placeholder="0.00" />
-                    <Input label="Regular Price (EGP)" type="number" placeholder="0.00" />
-                    <Input label="Sessions Include" type="number" placeholder="0" />
-                    <Select label="Validity" options={[{ label: '30 Days', value: '30' }, { label: '60 Days', value: '60' }, { label: '90 Days', value: '90' }]} />
-                    <Select label="Status" options={[{ label: 'Active', value: 'active' }, { label: 'Draft', value: 'draft' }]} />
+                    <Input label={t('mkt.lblPackageName')} placeholder="e.g. Summer Glow" />
+                    <Input label={t('mkt.lblPrice')} type="number" placeholder="0.00" />
+                    <Input label={t('sales.lblRegularPrice')} type="number" placeholder="0.00" />
+                    <Input label={t('sales.lblSessionsIncluded')} type="number" placeholder="0" />
+                    <Select label={t('sales.lblValidity')} options={[{ label: `30 ${t('sales.lblDays')}`, value: '30' }, { label: `60 ${t('sales.lblDays')}`, value: '60' }, { label: `90 ${t('sales.lblDays')}`, value: '90' }]} />
+                    <Select label={t('mkt.lblStatus')} options={[{ label: t('mkt.lblActive'), value: 'active' }, { label: t('mkt.lblDraft'), value: 'draft' }]} />
                 </div>
             </SlideOver>
 
@@ -136,22 +138,22 @@ export default function PackagesPage() {
             <SlideOver
                 open={isEditOpen}
                 onClose={() => { setIsEditOpen(false); setSelectedPackage(null); }}
-                title="Edit Package"
+                title={t('mkt.lblEditPackage')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>Cancel</Button>
-                        <Button onClick={() => { setIsEditOpen(false); addToast('success', 'Package updated successfully'); }}>Save Changes</Button>
+                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>{t('rtn.btnBack')}</Button>
+                        <Button onClick={() => { setIsEditOpen(false); addToast('success', t('sales.msgPackageUpdated')); }}>{t('settings.saveChanges')}</Button>
                     </div>
                 }
             >
                 {selectedPackage && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                        <Input label="Package Name" defaultValue={selectedPackage.name} />
-                        <Input label="Price (EGP)" type="number" defaultValue={selectedPackage.price} />
-                        <Input label="Regular Price (EGP)" type="number" defaultValue={selectedPackage.oldPrice} />
-                        <Input label="Sessions Included" type="number" defaultValue={selectedPackage.sessions} />
-                        <Select label="Validity" defaultValue={selectedPackage.validity} options={[{ label: '30 Days', value: '30 days' }, { label: '60 Days', value: '60 days' }, { label: '90 Days', value: '90 days' }]} />
-                        <Select label="Status" defaultValue={selectedPackage.status} options={[{ label: 'Active', value: 'active' }, { label: 'Draft', value: 'draft' }]} />
+                        <Input label={t('mkt.lblPackageName')} defaultValue={selectedPackage.name} />
+                        <Input label={t('mkt.lblPrice')} type="number" defaultValue={selectedPackage.price} />
+                        <Input label={t('sales.lblRegularPrice')} type="number" defaultValue={selectedPackage.oldPrice} />
+                        <Input label={t('sales.lblSessionsIncluded')} type="number" defaultValue={selectedPackage.sessions} />
+                        <Select label={t('sales.lblValidity')} defaultValue={parseInt(selectedPackage.validity).toString()} options={[{ label: `30 ${t('sales.lblDays')}`, value: '30' }, { label: `60 ${t('sales.lblDays')}`, value: '60' }, { label: `90 ${t('sales.lblDays')}`, value: '90' }]} />
+                        <Select label={t('mkt.lblStatus')} defaultValue={selectedPackage.status} options={[{ label: t('mkt.lblActive'), value: 'active' }, { label: t('mkt.lblDraft'), value: 'draft' }]} />
                     </div>
                 )}
             </SlideOver>
@@ -160,17 +162,17 @@ export default function PackagesPage() {
             <Modal
                 open={isDeleteOpen}
                 onClose={() => { setIsDeleteOpen(false); setSelectedPackage(null); }}
-                title="Delete Package"
+                title={t('mkt.lblDeletePackage')}
                 footer={
                     <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
-                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
-                        <Button variant="destructive" onClick={() => { setIsDeleteOpen(false); addToast('error', 'Package deleted permanently'); }}>Confirm Delete</Button>
+                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>{t('rtn.btnBack')}</Button>
+                        <Button variant="destructive" onClick={() => { setIsDeleteOpen(false); addToast('error', t('sales.msgPackageDeleted')); }}>{t('mkt.lblDeletePackage')}</Button>
                     </div>
                 }
             >
                 <div>
                     <p style={{ color: 'var(--text-secondary)' }}>
-                        Are you sure you want to delete the <strong>{selectedPackage?.name}</strong> package?
+                        {t('mkt.msgDeletePackageConfirm')} <strong>{selectedPackage?.name}</strong>
                     </p>
                 </div>
             </Modal>

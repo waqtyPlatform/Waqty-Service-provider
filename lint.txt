@@ -1,0 +1,187 @@
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\bookings\[id]\page.tsx[24m[0m
+[0m  [2m57:7[22m   [33mwarning[39m  'steps' is assigned a value but never used. Allowed unused vars must match /^_/u  [2munused-imports/no-unused-vars[22m[0m
+[0m  [2m61:13[22m  [33mwarning[39m  'id' is assigned a value but never used. Allowed unused vars must match /^_/u     [2munused-imports/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\customers\[id]\page.tsx[24m[0m
+[0m  [2m68:13[22m  [33mwarning[39m  'id' is assigned a value but never used. Allowed unused vars must match /^_/u  [2munused-imports/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\customers\groups\page.tsx[24m[0m
+[0m  [2m49:56[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\customers\last-visits\page.tsx[24m[0m
+[0m  [2m35:40[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\customers\page.tsx[24m[0m
+[0m  [2m41:58[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\employees\[id]\page.tsx[24m[0m
+[0m   [2m94:13[22m   [33mwarning[39m  'id' is assigned a value but never used. Allowed unused vars must match /^_/u  [2munused-imports/no-unused-vars[22m[0m
+[0m  [2m205:56[22m   [31merror[39m    Unexpected any. Specify a different type                                       [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m446:180[22m  [31merror[39m    Unexpected any. Specify a different type                                       [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\employees\attendance-settings\page.tsx[24m[0m
+[0m  [2m43:60[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\employees\attendance\page.tsx[24m[0m
+[0m   [2m65:58[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m173:26[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\employees\commission-settings\page.tsx[24m[0m
+[0m  [2m97:56[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\employees\departments\page.tsx[24m[0m
+[0m  [2m29:54[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m41:54[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\employees\fingerprints\page.tsx[24m[0m
+[0m  [2m47:62[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\employees\page.tsx[24m[0m
+[0m  [2m35:52[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m60:22[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\employees\payroll\page.tsx[24m[0m
+[0m  [2m240:85[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\employees\positions\page.tsx[24m[0m
+[0m   [2m52:52[22m   [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m125:136[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m126:242[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m126:280[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\employees\transfers\page.tsx[24m[0m
+[0m   [2m54:62[22m   [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m114:26[22m   [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m170:170[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m170:204[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m172:170[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m172:202[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m175:75[22m   [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m178:192[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\login\page.tsx[24m[0m
+[0m  [2m18:12[22m  [33mwarning[39m  'otpMethod' is assigned a value but never used. Allowed unused vars must match /^_/u  [2munused-imports/no-unused-vars[22m[0m
+[0m  [2m47:18[22m  [33mwarning[39m  'err' is defined but never used                                                       [2munused-imports/no-unused-vars[22m[0m
+[0m  [2m68:18[22m  [33mwarning[39m  'err' is defined but never used                                                       [2munused-imports/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\marketing\messages\page.tsx[24m[0m
+[0m   [2m10:7[22m   [33mwarning[39m  'initialPlaceholders' is assigned a value but never used. Allowed unused vars must match /^_/u  [2munused-imports/no-unused-vars[22m[0m
+[0m  [2m112:62[22m  [31merror[39m    Unexpected any. Specify a different type                                                        [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m123:60[22m  [31merror[39m    Unexpected any. Specify a different type                                                        [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m129:60[22m  [31merror[39m    Unexpected any. Specify a different type                                                        [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m131:35[22m  [31merror[39m    Unexpected any. Specify a different type                                                        [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m140:26[22m  [31merror[39m    Unexpected any. Specify a different type                                                        [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m167:29[22m  [31merror[39m    Unexpected any. Specify a different type                                                        [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\marketing\notifications\page.tsx[24m[0m
+[0m   [2m97:46[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m101:28[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m102:26[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m103:28[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\marketing\offers\page.tsx[24m[0m
+[0m  [2m60:56[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m62:32[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m63:30[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m64:32[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\marketing\packages\page.tsx[24m[0m
+[0m  [2m50:60[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m52:30[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m53:28[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m54:30[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\marketing\page.tsx[24m[0m
+[0m  [2m105:56[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m110:56[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m115:52[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\marketing\promo-codes\page.tsx[24m[0m
+[0m  [2m86:46[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m91:28[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m92:26[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m93:28[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\marketing\service-groups\page.tsx[24m[0m
+[0m  [2m61:56[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m77:26[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m86:28[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\page.tsx[24m[0m
+[0m  [2m173:9[22m   [33mwarning[39m  'bookingTerm' is assigned a value but never used. Allowed unused vars must match /^_/u  [2munused-imports/no-unused-vars[22m[0m
+[0m  [2m335:38[22m  [31merror[39m    Unexpected any. Specify a different type                                                [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m440:36[22m  [31merror[39m    Unexpected any. Specify a different type                                                [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m440:47[22m  [31merror[39m    Unexpected any. Specify a different type                                                [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\reports\[category]\[report]\page.tsx[24m[0m
+[0m  [2m46:20[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\reports\[category]\page.tsx[24m[0m
+[0m  [2m211:11[22m  [33mwarning[39m  'dateLabel' is assigned a value but never used. Allowed unused vars must match /^_/u  [2munused-imports/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\reports\page.tsx[24m[0m
+[0m  [2m155:143[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m155:154[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m173:143[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m173:154[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m197:180[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\returns\cash-refund\page.tsx[24m[0m
+[0m  [2m8:7[22m  [33mwarning[39m  'tabs' is assigned a value but never used. Allowed unused vars must match /^_/u  [2munused-imports/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\sales\packages\page.tsx[24m[0m
+[0m  [2m50:60[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\settings\audit-log\page.tsx[24m[0m
+[0m  [2m48:58[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\settings\branches\[id]\page.tsx[24m[0m
+[0m  [2m51:13[22m  [33mwarning[39m  'id' is assigned a value but never used. Allowed unused vars must match /^_/u  [2munused-imports/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\settings\branches\page.tsx[24m[0m
+[0m  [2m57:58[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m99:58[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\settings\data\page.tsx[24m[0m
+[0m  [2m21:16[22m  [33mwarning[39m  'lang' is assigned a value but never used. Allowed unused vars must match /^_/u  [2munused-imports/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\settings\devices\page.tsx[24m[0m
+[0m  [2m27:45[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\settings\integrations\page.tsx[24m[0m
+[0m   [2m85:74[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m92:44[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m97:41[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m102:42[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\settings\page.tsx[24m[0m
+[0m  [2m36:64[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\settings\payment-methods\page.tsx[24m[0m
+[0m  [2m37:58[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\settings\petty-cash-items\page.tsx[24m[0m
+[0m  [2m35:54[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m38:51[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\settings\resources\page.tsx[24m[0m
+[0m  [2m36:62[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\settings\safes\page.tsx[24m[0m
+[0m  [2m30:54[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\settings\service-categories\page.tsx[24m[0m
+[0m  [2m36:52[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\settings\services\new\page.tsx[24m[0m
+[0m  [2m33:22[22m  [33mwarning[39m  'setFormData' is assigned a value but never used. Allowed unused vars must match /^_/u  [2munused-imports/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\app\settings\services\page.tsx[24m[0m
+[0m  [2m44:60[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mD:\project\Hagzy\src\contexts\SettingsContext.tsx[24m[0m
+[0m  [2m55:12[22m  [33mwarning[39m  'isLoaded' is assigned a value but never used. Allowed unused vars must match /^_/u  [2munused-imports/no-unused-vars[22m[0m
+[0m[0m
+[0m[31m[1m✖ 96 problems (81 errors, 15 warnings)[22m[39m[0m
+[0m[31m[1m[22m[39m[0m

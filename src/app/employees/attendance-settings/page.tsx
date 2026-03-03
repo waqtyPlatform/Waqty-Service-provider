@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Save } from 'lucide-react';
 import { Switch, Input, Select, Button, useToast } from '@/components/ui';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const s: Record<string, React.CSSProperties> = {
     page: { display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', paddingBottom: 'var(--space-8)' },
@@ -20,6 +21,7 @@ const s: Record<string, React.CSSProperties> = {
 };
 
 export default function AttendanceSettingsPage() {
+    const { t, lang } = useTranslation();
     const { addToast } = useToast();
     const [isSaving, setIsSaving] = useState(false);
 
@@ -47,123 +49,123 @@ export default function AttendanceSettingsPage() {
         // Simulate API call
         setTimeout(() => {
             setIsSaving(false);
-            addToast('success', 'Attendance settings saved successfully.');
+            addToast('success', t('attendanceSettings.toastSaved'));
         }, 600);
     };
 
     return (
         <div style={s.page}>
-            <div style={s.title}>Attendance Settings</div>
+            <div style={s.title}>{t('attendanceSettings.title')}</div>
 
             <div style={s.card}>
                 <div style={s.section}>
-                    <div style={s.sectionTitle}>Work Hours</div>
-                    <div style={s.row}>
-                        <div style={s.rowContent}>
-                            <div style={s.label}>Standard Work Hours</div>
-                            <div style={s.hint}>Daily required working hours for employees.</div>
+                    <div style={s.sectionTitle}>{t('attendanceSettings.secWorkHours')}</div>
+                    <div style={{ ...s.row, flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}>
+                        <div style={{ ...s.rowContent as React.CSSProperties, paddingRight: lang === 'ar' ? 0 : 'var(--space-6)', paddingLeft: lang === 'ar' ? 'var(--space-6)' : 0, textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                            <div style={s.label}>{t('attendanceSettings.stdHours')}</div>
+                            <div style={s.hint}>{t('attendanceSettings.stdHoursHint')}</div>
                         </div>
-                        <div style={s.rowAction}>
-                            <div style={s.inputGroup}>
+                        <div style={{ ...s.rowAction as React.CSSProperties, justifyContent: lang === 'ar' ? 'flex-end' : 'flex-start' }}>
+                            <div style={{ ...s.inputGroup as React.CSSProperties, flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}>
                                 <Input type="number" value={config.standardHours} onChange={(e) => handleChange('standardHours', e.target.value)} style={{ width: 80, textAlign: 'center', margin: 0 }} />
-                                <span style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)' }}>hrs</span>
+                                <span style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)' }}>{t('attendanceSettings.hrs')}</span>
                             </div>
                         </div>
                     </div>
 
-                    <div style={s.row}>
-                        <div style={s.rowContent}>
-                            <div style={s.label}>Shift Details</div>
-                            <div style={s.hint}>Default start and end times for the standard shift.</div>
+                    <div style={{ ...s.row, flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}>
+                        <div style={{ ...s.rowContent as React.CSSProperties, paddingRight: lang === 'ar' ? 0 : 'var(--space-6)', paddingLeft: lang === 'ar' ? 'var(--space-6)' : 0, textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                            <div style={s.label}>{t('attendanceSettings.shiftDetails')}</div>
+                            <div style={s.hint}>{t('attendanceSettings.shiftDetailsHint')}</div>
                         </div>
-                        <div style={s.rowAction}>
+                        <div style={{ ...s.rowAction as React.CSSProperties, flexDirection: lang === 'ar' ? 'row-reverse' : 'row', justifyContent: lang === 'ar' ? 'flex-end' : 'flex-start' }}>
                             <Input type="time" value={config.shiftStart} onChange={(e) => handleChange('shiftStart', e.target.value)} style={{ width: 110, margin: 0 }} />
-                            <span style={{ color: 'var(--text-tertiary)' }}>to</span>
+                            <span style={{ color: 'var(--text-tertiary)' }}>{t('attendanceSettings.to')}</span>
                             <Input type="time" value={config.shiftEnd} onChange={(e) => handleChange('shiftEnd', e.target.value)} style={{ width: 110, margin: 0 }} />
                         </div>
                     </div>
                 </div>
 
                 <div style={s.section}>
-                    <div style={s.sectionTitle}>Grace Periods</div>
-                    <div style={s.row}>
-                        <div style={s.rowContent}>
-                            <div style={s.label}>Late Arrival Grace</div>
-                            <div style={s.hint}>Minutes after shift start before an employee is marked as 'Late'.</div>
+                    <div style={s.sectionTitle}>{t('attendanceSettings.secGrace')}</div>
+                    <div style={{ ...s.row, flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}>
+                        <div style={{ ...s.rowContent as React.CSSProperties, paddingRight: lang === 'ar' ? 0 : 'var(--space-6)', paddingLeft: lang === 'ar' ? 'var(--space-6)' : 0, textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                            <div style={s.label}>{t('attendanceSettings.lateGrace')}</div>
+                            <div style={s.hint}>{t('attendanceSettings.lateGraceHint')}</div>
                         </div>
-                        <div style={s.rowAction}>
-                            <div style={s.inputGroup}>
+                        <div style={{ ...s.rowAction as React.CSSProperties, justifyContent: lang === 'ar' ? 'flex-end' : 'flex-start' }}>
+                            <div style={{ ...s.inputGroup as React.CSSProperties, flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}>
                                 <Input type="number" value={config.lateGrace} onChange={(e) => handleChange('lateGrace', e.target.value)} style={{ width: 80, textAlign: 'center', margin: 0 }} />
-                                <span style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)' }}>min</span>
+                                <span style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)' }}>{t('attendanceSettings.min')}</span>
                             </div>
                         </div>
                     </div>
 
-                    <div style={s.row}>
-                        <div style={s.rowContent}>
-                            <div style={s.label}>Early Leave Grace</div>
-                            <div style={s.hint}>Minutes allowed to leave before shift end without penalty.</div>
+                    <div style={{ ...s.row, flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}>
+                        <div style={{ ...s.rowContent as React.CSSProperties, paddingRight: lang === 'ar' ? 0 : 'var(--space-6)', paddingLeft: lang === 'ar' ? 'var(--space-6)' : 0, textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                            <div style={s.label}>{t('attendanceSettings.earlyGrace')}</div>
+                            <div style={s.hint}>{t('attendanceSettings.earlyGraceHint')}</div>
                         </div>
-                        <div style={s.rowAction}>
-                            <div style={s.inputGroup}>
+                        <div style={{ ...s.rowAction as React.CSSProperties, justifyContent: lang === 'ar' ? 'flex-end' : 'flex-start' }}>
+                            <div style={{ ...s.inputGroup as React.CSSProperties, flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}>
                                 <Input type="number" value={config.earlyGrace} onChange={(e) => handleChange('earlyGrace', e.target.value)} style={{ width: 80, textAlign: 'center', margin: 0 }} />
-                                <span style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)' }}>min</span>
+                                <span style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)' }}>{t('attendanceSettings.min')}</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div style={s.section}>
-                    <div style={s.sectionTitle}>Penalties & Deductions</div>
+                    <div style={{ ...s.sectionTitle as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('attendanceSettings.secPenalties')}</div>
 
-                    <div style={{ ...s.row, borderBottom: config.autoDeduct ? 'none' : '1px dashed var(--border-color)', paddingBottom: config.autoDeduct ? 0 : 'var(--space-4)' }}>
-                        <div style={s.rowContent}>
-                            <div style={s.label}>Auto-deduct Late Penalty</div>
-                            <div style={s.hint}>Automatically apply a salary deduction when an employee triggers a late arrival.</div>
+                    <div style={{ ...s.row, borderBottom: config.autoDeduct ? 'none' : '1px dashed var(--border-color)', paddingBottom: config.autoDeduct ? 0 : 'var(--space-4)', flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}>
+                        <div style={{ ...s.rowContent as React.CSSProperties, paddingRight: lang === 'ar' ? 0 : 'var(--space-6)', paddingLeft: lang === 'ar' ? 'var(--space-6)' : 0, textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                            <div style={s.label}>{t('attendanceSettings.autoDeduct')}</div>
+                            <div style={s.hint}>{t('attendanceSettings.autoDeductHint')}</div>
                         </div>
-                        <div style={s.rowAction}>
+                        <div style={{ ...s.rowAction as React.CSSProperties, justifyContent: lang === 'ar' ? 'flex-end' : 'flex-start' }}>
                             <Switch checked={config.autoDeduct} onChange={(val) => handleChange('autoDeduct', val)} />
                         </div>
                     </div>
 
                     {config.autoDeduct && (
-                        <div style={s.deductionBox}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+                        <div style={{ ...s.deductionBox as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
                                 <Select
-                                    label="Deduction Type"
+                                    label={t('attendanceSettings.deductType')}
                                     value={config.deductionType}
                                     onChange={(e) => handleChange('deductionType', e.target.value)}
                                     options={[
-                                        { label: 'Percentage of Daily Wage', value: 'percentage' },
-                                        { label: 'Fixed Amount', value: 'fixed' }
+                                        { label: t('attendanceSettings.typePercentage'), value: 'percentage' },
+                                        { label: t('attendanceSettings.typeFixed'), value: 'fixed' }
                                     ]}
                                 />
                                 <Input
-                                    label={`Deduction Value (${config.deductionType === 'percentage' ? '%' : 'Currency'})`}
+                                    label={t('attendanceSettings.deductValue')}
                                     type="number"
                                     value={config.deductionValue}
                                     onChange={(e) => handleChange('deductionValue', e.target.value)}
-                                    hint={config.deductionType === 'percentage' ? "e.g. 5 means 5% of their daily wage is deducted." : "e.g. 50 means $50 fixed deduction."}
+                                    hint={config.deductionType === 'percentage' ? t('attendanceSettings.valueHintPct') : t('attendanceSettings.valueHintFixed')}
                                 />
                             </div>
                         </div>
                     )}
 
-                    <div style={{ ...s.row, borderBottom: 'none', paddingTop: config.autoDeduct ? 'var(--space-6)' : 'var(--space-4)' }}>
-                        <div style={s.rowContent}>
-                            <div style={s.label}>Notify Manager on Absence</div>
-                            <div style={s.hint}>Send an instant push notification to branch managers when an absence occurs.</div>
+                    <div style={{ ...s.row, borderBottom: 'none', paddingTop: config.autoDeduct ? 'var(--space-6)' : 'var(--space-4)', flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}>
+                        <div style={{ ...s.rowContent as React.CSSProperties, paddingRight: lang === 'ar' ? 0 : 'var(--space-6)', paddingLeft: lang === 'ar' ? 'var(--space-6)' : 0, textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                            <div style={s.label}>{t('attendanceSettings.notifyAbsence')}</div>
+                            <div style={s.hint}>{t('attendanceSettings.notifyAbsenceHint')}</div>
                         </div>
-                        <div style={s.rowAction}>
+                        <div style={{ ...s.rowAction as React.CSSProperties, justifyContent: lang === 'ar' ? 'flex-end' : 'flex-start' }}>
                             <Switch checked={config.notifyManager} onChange={(val) => handleChange('notifyManager', val)} />
                         </div>
                     </div>
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid var(--border-color)', paddingTop: 'var(--space-6)', marginTop: 'var(--space-6)' }}>
+                <div style={{ display: 'flex', justifyContent: lang === 'ar' ? 'flex-start' : 'flex-end', borderTop: '1px solid var(--border-color)', paddingTop: 'var(--space-6)', marginTop: 'var(--space-6)' }}>
                     <Button onClick={handleSave} disabled={isSaving}>
-                        <Save size={16} style={{ marginRight: 8 }} />
-                        {isSaving ? 'Saving...' : 'Save Settings'}
+                        <Save size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} />
+                        {isSaving ? t('attendanceSettings.saving') : t('attendanceSettings.saveSettings')}
                     </Button>
                 </div>
             </div>

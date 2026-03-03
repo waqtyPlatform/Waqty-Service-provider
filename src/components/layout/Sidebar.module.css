@@ -1,7 +1,7 @@
 .sidebar {
     position: fixed;
     top: 0;
-    left: 0;
+    inset-inline-start: 0;
     bottom: 0;
     width: var(--sidebar-width);
     background: var(--bg-sidebar);
@@ -213,7 +213,7 @@
 .tooltip {
     display: none;
     position: absolute;
-    left: calc(100% + 8px);
+    inset-inline-start: calc(100% + 8px);
     top: 0;
     background: var(--color-gray-800);
     border: 1px solid var(--color-gray-700);

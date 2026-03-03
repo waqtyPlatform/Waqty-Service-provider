@@ -2,14 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Search, ChevronRight, AlertTriangle } from 'lucide-react';
-
-const tabs = [
-    { label: 'Returns List', href: '/returns' },
-    { label: 'Cash Refund', href: '/returns/cash-refund' },
-    { label: 'Petty Cash Refund', href: '/returns/petty-cash-refund' },
-    { label: 'Cancel Down Payment', href: '/returns/cancel-down-payment' },
-];
+import { Search, AlertTriangle } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const bookings = [
     { id: 'BK-1042', client: 'Fatima Ali', service: 'Bridal Glow Package', date: '2026-04-17', paid: 1000, total: 2500 },
@@ -38,23 +32,31 @@ const s: Record<string, React.CSSProperties> = {
 };
 
 export default function CancelDownPaymentPage() {
+    const { t, lang } = useTranslation();
     const [selected, setSelected] = useState<number | null>(null);
     const [search, setSearch] = useState('');
     const filtered = bookings.filter(b => b.client.toLowerCase().includes(search.toLowerCase()) || b.id.toLowerCase().includes(search.toLowerCase()));
 
+    const translatedTabs = [
+        { label: t('rtn.tabList'), href: '/returns' },
+        { label: t('rtn.tabCash'), href: '/returns/cash-refund' },
+        { label: t('rtn.tabPetty'), href: '/returns/petty-cash-refund' },
+        { label: t('rtn.tabCancelAdvance'), href: '/returns/cancel-down-payment' },
+    ];
+
     return (
-        <div style={s.page}>
+        <div style={{ ...s.page, direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
             <div style={s.tabBar}>
-                {tabs.map(t => <Link key={t.href} href={t.href} style={{ ...s.tab, ...(t.href === '/returns/cancel-down-payment' ? s.tabActive : {}) }}>{t.label}</Link>)}
+                {translatedTabs.map(tab => <Link key={tab.href} href={tab.href} style={{ ...s.tab, ...(tab.href === '/returns/cancel-down-payment' ? s.tabActive : {}) }}>{tab.label}</Link>)}
             </div>
 
-            <div><div style={s.title}>Cancel Down Payment</div><div style={s.desc}>Select a booking with an advance payment to process cancellation.</div></div>
+            <div><div style={s.title}>{t('rtn.cancelTitle')}</div><div style={s.desc}>{t('rtn.cancelDesc')}</div></div>
 
             {selected === null ? (
                 <>
                     <div style={s.searchBox as React.CSSProperties}>
-                        <Search size={16} style={s.searchIcon as React.CSSProperties} />
-                        <input style={s.searchInput} placeholder="Search by booking ID or client..." value={search} onChange={e => setSearch(e.target.value)} />
+                        <Search size={16} style={{ ...s.searchIcon as React.CSSProperties, left: lang === 'ar' ? 'auto' : 12, right: lang === 'ar' ? 12 : 'auto' }} />
+                        <input style={{ ...s.searchInput, paddingLeft: lang === 'ar' ? 12 : 40, paddingRight: lang === 'ar' ? 40 : 12 }} placeholder={t('rtn.searchBkClient')} value={search} onChange={e => setSearch(e.target.value)} />
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
                         {filtered.map((bk, i) => (
@@ -62,11 +64,11 @@ export default function CancelDownPaymentPage() {
                                 <div>
                                     <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)', color: 'var(--color-primary-600)' }}>{bk.id}</div>
                                     <div style={{ fontWeight: 'var(--font-medium)' }}>{bk.client}</div>
-                                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{bk.service} · Scheduled: {bk.date}</div>
+                                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{bk.service} · {t('rtn.lblScheduled')}: {bk.date}</div>
                                 </div>
-                                <div style={{ textAlign: 'right' }}>
-                                    <div style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-bold)', color: 'var(--color-warning)' }}>{bk.paid} EGP paid</div>
-                                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>of {bk.total} EGP total</div>
+                                <div style={{ textAlign: lang === 'ar' ? 'left' : 'right' }}>
+                                    <div style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-bold)', color: 'var(--color-warning)' }} dir="ltr">{bk.paid} EGP {t('rtn.lblPaid')}</div>
+                                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{t('rtn.lblOfTotal').replace('{total}', `${bk.total} EGP`)}</div>
                                 </div>
                             </div>
                         ))}
@@ -74,28 +76,28 @@ export default function CancelDownPaymentPage() {
                 </>
             ) : (
                 <div style={s.form}>
-                    <div style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-4)' }}>Cancel: {bookings[selected].id}</div>
+                    <div style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-4)' }}>{t('rtn.tabCancelAdvance')}: {bookings[selected].id}</div>
                     <div style={{ padding: 'var(--space-3)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', marginBottom: 'var(--space-4)', fontSize: 'var(--text-sm)' }}>
-                        <div><strong>Client:</strong> {bookings[selected].client}</div>
-                        <div><strong>Service:</strong> {bookings[selected].service}</div>
-                        <div><strong>Scheduled:</strong> {bookings[selected].date}</div>
-                        <div><strong>Down Payment:</strong> {bookings[selected].paid} EGP</div>
+                        <div><strong>{t('rtn.thClient')}:</strong> {bookings[selected].client}</div>
+                        <div><strong>{t('rtn.lblService')}:</strong> {bookings[selected].service}</div>
+                        <div><strong>{t('rtn.lblScheduled')}:</strong> {bookings[selected].date}</div>
+                        <div style={{ display: 'flex', gap: '4px' }}><strong>{t('rtn.lblDownPayment')}:</strong> <span dir="ltr">{bookings[selected].paid} EGP</span></div>
                     </div>
                     <div style={s.warning}>
-                        <AlertTriangle size={18} style={{ color: 'var(--color-warning)', flexShrink: 0, marginTop: 2 }} />
-                        <div>This will cancel the booking and refund {bookings[selected].paid} EGP to the client. This action cannot be undone.</div>
+                        <AlertTriangle size={18} style={{ color: 'var(--color-warning)', flexShrink: 0, marginTop: 2, marginLeft: lang === 'ar' ? 12 : 0, marginRight: lang === 'ar' ? 0 : 12 }} />
+                        <div>This will cancel the booking and refund <span dir="ltr">{bookings[selected].paid} EGP</span> to the client. This action cannot be undone.</div>
                     </div>
                     <div style={{ marginBottom: 'var(--space-4)' }}>
-                        <label style={s.label}>Cancellation Reason</label>
+                        <label style={s.label}>{t('rtn.lblCancelReason')}</label>
                         <select style={s.select}><option>Client Request</option><option>Schedule Conflict</option><option>Service Unavailable</option><option>Other</option></select>
                     </div>
                     <div style={{ marginBottom: 'var(--space-4)' }}>
-                        <label style={s.label}>Notes</label>
-                        <textarea style={s.textarea as React.CSSProperties} placeholder="Additional notes..." />
+                        <label style={s.label}>{t('rtn.lblNotes')}</label>
+                        <textarea style={s.textarea as React.CSSProperties} placeholder={t('rtn.phNotes')} />
                     </div>
                     <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-                        <button style={{ ...s.submitBtn, background: 'var(--bg-tertiary)', color: 'var(--text-primary)' }} onClick={() => setSelected(null)}>← Back</button>
-                        <button style={s.submitBtn}>Cancel & Refund {bookings[selected].paid} EGP</button>
+                        <button style={{ ...s.submitBtn, background: 'var(--bg-tertiary)', color: 'var(--text-primary)' }} onClick={() => setSelected(null)}>{lang === 'ar' ? '→' : '←'} {t('rtn.btnBack')}</button>
+                        <button style={s.submitBtn}>{t('rtn.btnCancelRefund')} <span dir="ltr">{bookings[selected].paid} EGP</span></button>
                     </div>
                 </div>
             )}

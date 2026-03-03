@@ -37,7 +37,7 @@
 
 .searchIcon {
     position: absolute;
-    left: var(--space-3);
+    inset-inline-start: var(--space-3);
     top: 50%;
     transform: translateY(-50%);
     color: var(--text-tertiary);

@@ -3,6 +3,7 @@
 import React from 'react';
 import SettingsTabs from '@/components/SettingsTabs';
 import { Switch, Input, Button } from '@/components/ui';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const cs: Record<string, React.CSSProperties> = {
     page: { display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' },
@@ -12,21 +13,22 @@ const cs: Record<string, React.CSSProperties> = {
 };
 
 export default function SecuritySettingsPage() {
+    const { t } = useTranslation();
     return (
         <div style={cs.page}>
             <SettingsTabs />
             <div style={cs.card}>
-                <div style={cs.cardTitle}>Security Settings</div>
-                <div style={cs.cardDesc}>Protect your account and data.</div>
+                <div style={cs.cardTitle}>{t('settings.security.title')}</div>
+                <div style={cs.cardDesc}>{t('settings.security.desc')}</div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Switch checked={true} label="Two-factor authentication" />
-                    <Switch checked={false} label="Require password change every 90 days" />
-                    <Switch checked={true} label="Lock after 3 failed login attempts" />
+                    <Switch checked={true} label={t('settings.security.twoFactor')} />
+                    <Switch checked={false} label={t('settings.security.passwordChange')} />
+                    <Switch checked={true} label={t('settings.security.lockAttempts')} />
 
                     <div style={{ marginTop: 'var(--space-2)' }}>
                         <Input
-                            label="Session Timeout (minutes)"
+                            label={t('settings.security.sessionTimeout')}
                             type="number"
                             defaultValue={30}
                             style={{ maxWidth: 200 }}
@@ -35,7 +37,7 @@ export default function SecuritySettingsPage() {
                 </div>
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <Button>Save Changes</Button>
+                <Button>{t('settings.security.saveChanges')}</Button>
             </div>
         </div>
     );

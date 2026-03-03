@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Plus, Search, Copy, Tag, Edit, Trash2, MoreVertical, Eye, User, Calendar } from 'lucide-react';
+import { Plus, Search, Copy, Tag, Edit, Trash2, MoreVertical, Eye } from 'lucide-react';
 import { useToast, DropdownMenu, SlideOver, Modal, Input, Button, Select, Badge } from '@/components/ui';
 
 import MarketingTabs from '@/components/MarketingTabs';
+import { useTranslation } from '@/hooks/useTranslation';
 
 // Mock client usage data per promo code
 const clientUsageData: Record<number, Array<{ name: string; phone: string; usedAt: string; orderAmount: number; discount: number }>> = {
@@ -85,6 +86,8 @@ export default function PromoCodesPage() {
     const [selected, setSelected] = useState<any>(null);
     const [clientSearch, setClientSearch] = useState('');
 
+    const { t } = useTranslation();
+
     const openDetail = (c: any) => { setSelected(c); setIsDetailOpen(true); setClientSearch(''); };
     const openEdit = (c: any) => { setSelected(c); setIsDetailOpen(false); setIsEditOpen(true); };
     const openDelete = (c: any) => { setSelected(c); setIsDetailOpen(false); setIsDeleteOpen(true); };
@@ -93,7 +96,7 @@ export default function PromoCodesPage() {
         setCodes(prev => prev.filter(c => c.id !== selected?.id));
         setIsDeleteOpen(false);
         setSelected(null);
-        addToast('success', 'Promo code deleted');
+        addToast('success', t('mkt.lblDeletePromoCode'));
     };
 
     const handleCopy = (code: string, e: React.MouseEvent) => {
@@ -121,28 +124,28 @@ export default function PromoCodesPage() {
         <div style={s.page}>
             <MarketingTabs />
             <div style={s.toolbar}>
-                <div style={s.searchBox as React.CSSProperties}><Search size={16} style={s.searchIcon as React.CSSProperties} /><input style={s.searchInput} placeholder="Search codes..." value={search} onChange={e => setSearch(e.target.value)} /></div>
-                <button style={s.addBtn} onClick={() => setIsAddOpen(true)}><Plus size={16} /> Generate Code</button>
+                <div style={s.searchBox as React.CSSProperties}><Search size={16} style={s.searchIcon as React.CSSProperties} /><input style={s.searchInput} placeholder={t('mkt.phSearchCodes')} value={search} onChange={e => setSearch(e.target.value)} /></div>
+                <button style={s.addBtn} onClick={() => setIsAddOpen(true)}><Plus size={16} /> {t('mkt.btnGenerateCode')}</button>
             </div>
             <table style={s.table}>
-                <thead><tr>{['Code', 'Discount', 'Usage', '', 'Min. Order', 'Expires', 'Status', ''].map((h, i) => <th key={i} style={s.th as React.CSSProperties}>{h}</th>)}</tr></thead>
+                <thead><tr>{[t('mkt.lblCode'), t('mkt.lblDiscount'), t('mkt.lblUsage'), '', t('mkt.lblMinOrder'), t('mkt.lblExpires'), t('mkt.lblStatus'), ''].map((h, i) => <th key={i} style={s.th as React.CSSProperties}>{h}</th>)}</tr></thead>
                 <tbody>
                     {filtered.map(c => (
                         <tr key={c.id} style={{ cursor: 'pointer' }} className="hoverRow" onClick={() => openDetail(c)}>
                             <td style={s.td}><span style={s.code}><Tag size={12} /> {c.code} <Copy size={12} style={s.copyBtn} onClick={e => handleCopy(c.code, e)} /></span></td>
-                            <td style={{ ...s.td, fontWeight: 'var(--font-bold)', color: 'var(--color-primary-600)' }}>{c.type === 'percentage' ? `${c.discount}%` : `${c.discount} EGP`}</td>
+                            <td style={{ ...s.td, fontWeight: 'var(--font-bold)', color: 'var(--color-primary-600)' }}>{c.type === 'percentage जीता' ? `${c.discount}%` : `${c.discount} ${t('mkt.lblEGP')}`}</td>
                             <td style={s.td}>{c.uses}/{c.limit}</td>
                             <td style={s.td}><div style={s.progress}><div style={{ ...s.progressFill, width: `${c.uses / c.limit * 100}%`, background: c.uses >= c.limit ? 'var(--color-error)' : 'var(--color-primary-500)' }} /></div></td>
-                            <td style={s.td}>{c.minOrder > 0 ? `${c.minOrder} EGP` : '—'}</td>
+                            <td style={s.td}>{c.minOrder > 0 ? `${c.minOrder} ${t('mkt.lblEGP')}` : '—'}</td>
                             <td style={s.td}>{c.expires}</td>
-                            <td style={s.td}><Badge color={statusBadge[c.status]} size="sm">{c.status}</Badge></td>
+                            <td style={s.td}><Badge color={statusBadge[c.status]} size="sm">{t(`mkt.lbl${c.status.charAt(0).toUpperCase() + c.status.slice(1)}`)}</Badge></td>
                             <td style={{ ...s.td, textAlign: 'right' }} onClick={e => e.stopPropagation()}>
                                 <DropdownMenu
                                     trigger={<button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)' }}><MoreVertical size={16} /></button>}
                                     items={[
-                                        { label: 'View Details', icon: <Eye size={14} />, onClick: () => openDetail(c) },
-                                        { label: 'Edit', icon: <Edit size={14} />, onClick: () => openEdit(c) },
-                                        { label: 'Delete', destructive: true, icon: <Trash2 size={14} />, onClick: () => openDelete(c) }
+                                        { label: t('mkt.lblPromoCodeDetails'), icon: <Eye size={14} />, onClick: () => openDetail(c) },
+                                        { label: t('mkt.lblEditCode'), icon: <Edit size={14} />, onClick: () => openEdit(c) },
+                                        { label: t('mkt.lblDeletePromoCode'), destructive: true, icon: <Trash2 size={14} />, onClick: () => openDelete(c) }
                                     ]}
                                 />
                             </td>
@@ -152,11 +155,11 @@ export default function PromoCodesPage() {
             </table>
 
             {/* Detail SlideOver */}
-            <SlideOver open={isDetailOpen} onClose={() => { setIsDetailOpen(false); setSelected(null); }} title="Promo Code Details"
+            <SlideOver open={isDetailOpen} onClose={() => { setIsDetailOpen(false); setSelected(null); }} title={t('mkt.lblPromoCodeDetails')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => openDelete(selected)}><Trash2 size={14} /> Delete</Button>
-                        <Button onClick={() => openEdit(selected)}><Edit size={14} /> Edit Code</Button>
+                        <Button variant="ghost" onClick={() => openDelete(selected)}><Trash2 size={14} /> {t('mkt.lblDeletePromoCode')}</Button>
+                        <Button onClick={() => openEdit(selected)}><Edit size={14} /> {t('mkt.lblEditCode')}</Button>
                     </div>
                 }
             >
@@ -165,49 +168,49 @@ export default function PromoCodesPage() {
                         {/* Big Code Display */}
                         <div style={{ textAlign: 'center', padding: 'var(--space-5)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-xl)' }}>
                             <div style={{ fontFamily: 'monospace', fontSize: 'var(--text-3xl)', fontWeight: 'var(--font-bold)', letterSpacing: '0.1em', color: 'var(--color-primary-600)', marginBottom: 'var(--space-2)' }}>{selected.code}</div>
-                            <Button size="sm" variant="ghost" onClick={() => { navigator.clipboard.writeText(selected.code); addToast('success', 'Copied!'); }}><Copy size={14} /> Copy Code</Button>
-                            <div style={{ marginTop: 'var(--space-2)' }}><Badge color={statusBadge[selected.status]}>{selected.status}</Badge></div>
+                            <Button size="sm" variant="ghost" onClick={() => { navigator.clipboard.writeText(selected.code); addToast('success', t('mkt.lblCopyCode')); }}><Copy size={14} /> {t('mkt.lblCopyCode')}</Button>
+                            <div style={{ marginTop: 'var(--space-2)' }}><Badge color={statusBadge[selected.status]}>{t(`mkt.lbl${selected.status.charAt(0).toUpperCase() + selected.status.slice(1)}`)}</Badge></div>
                         </div>
 
                         <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', lineHeight: 1.6 }}>{selected.description}</div>
 
                         <div style={s.infoGrid as React.CSSProperties}>
                             <div style={s.infoCard}>
-                                <div style={s.infoLabel as React.CSSProperties}>Discount</div>
-                                <div style={{ ...s.infoValue, fontSize: 'var(--text-xl)', color: 'var(--color-primary-600)' }}>{selected.type === 'percentage' ? `${selected.discount}%` : `${selected.discount} EGP`}</div>
+                                <div style={s.infoLabel as React.CSSProperties}>{t('mkt.lblDiscount')}</div>
+                                <div style={{ ...s.infoValue, fontSize: 'var(--text-xl)', color: 'var(--color-primary-600)' }}>{selected.type === 'percentage' ? `${selected.discount}%` : `${selected.discount} ${t('mkt.lblEGP')}`}</div>
                             </div>
                             <div style={s.infoCard}>
-                                <div style={s.infoLabel as React.CSSProperties}>Type</div>
-                                <div style={s.infoValue}>{selected.type === 'percentage' ? 'Percentage' : 'Fixed Amount'}</div>
+                                <div style={s.infoLabel as React.CSSProperties}>{t('mkt.lblDiscountType')}</div>
+                                <div style={s.infoValue}>{selected.type === 'percentage' ? t('mkt.lblPercentage') : t('mkt.lblFixedAmount')}</div>
                             </div>
                             <div style={s.infoCard}>
-                                <div style={s.infoLabel as React.CSSProperties}>Min. Order</div>
-                                <div style={s.infoValue}>{selected.minOrder > 0 ? `${selected.minOrder} EGP` : 'None'}</div>
+                                <div style={s.infoLabel as React.CSSProperties}>{t('mkt.lblMinOrder')}</div>
+                                <div style={s.infoValue}>{selected.minOrder > 0 ? `${selected.minOrder} ${t('mkt.lblEGP')}` : '—'}</div>
                             </div>
                             <div style={s.infoCard}>
-                                <div style={s.infoLabel as React.CSSProperties}>Expires</div>
+                                <div style={s.infoLabel as React.CSSProperties}>{t('mkt.lblExpires')}</div>
                                 <div style={s.infoValue}>{selected.expires}</div>
                             </div>
                         </div>
 
                         {/* Usage Progress */}
                         <div>
-                            <div style={{ ...s.sectionTitle as React.CSSProperties, marginBottom: 'var(--space-3)' }}>Usage</div>
+                            <div style={{ ...s.sectionTitle as React.CSSProperties, marginBottom: 'var(--space-3)' }}>{t('mkt.lblUsage')}</div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 'var(--space-2)' }}>
-                                <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)' }}>{selected.uses} / {selected.limit} used</span>
+                                <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)' }}>{selected.uses} / {selected.limit} {t('mkt.lblUsed')}</span>
                                 <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)' }}>{Math.round(selected.uses / selected.limit * 100)}%</span>
                             </div>
                             <div style={s.progressLg}>
                                 <div style={{ ...s.progressFillLg, width: `${Math.min(selected.uses / selected.limit * 100, 100)}%`, background: selected.uses >= selected.limit ? 'var(--color-error)' : 'var(--color-primary-500)' }} />
                             </div>
-                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: 'var(--space-2)' }}>{selected.limit - selected.uses} remaining</div>
+                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: 'var(--space-2)' }}>{selected.limit - selected.uses} {t('mkt.lblRemaining')}</div>
                         </div>
 
                         {/* Client Usage List */}
                         <div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
-                                <div style={s.sectionTitle as React.CSSProperties}>Clients Who Used This Code ({(clientUsageData[selected.id] || []).length})</div>
-                                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>Total saved: {totalSaved} EGP</div>
+                                <div style={s.sectionTitle as React.CSSProperties}>{t('mkt.lblClientsWhoUsed')} ({(clientUsageData[selected.id] || []).length})</div>
+                                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{t('mkt.lblTotalSaved')} {totalSaved} {t('mkt.lblEGP')}</div>
                             </div>
 
                             {/* Search clients */}
@@ -215,7 +218,7 @@ export default function PromoCodesPage() {
                                 <Search size={14} style={{ position: 'absolute' as const, left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }} />
                                 <input
                                     style={{ width: '100%', height: 36, paddingLeft: 32, border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}
-                                    placeholder="Search clients..."
+                                    placeholder={t('mkt.phSearchClients')}
                                     value={clientSearch}
                                     onChange={e => setClientSearch(e.target.value)}
                                 />
@@ -224,7 +227,7 @@ export default function PromoCodesPage() {
                             <div style={{ border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', overflow: 'hidden', maxHeight: 320, overflowY: 'auto' }}>
                                 {filteredClients.length === 0 ? (
                                     <div style={{ padding: 'var(--space-4)', textAlign: 'center', color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)' }}>
-                                        {clientUsageData[selected.id] ? 'No clients match your search' : 'No usage data yet'}
+                                        {clientUsageData[selected.id] ? t('mkt.msgNoClientsMatch') : t('mkt.msgNoUsageData')}
                                     </div>
                                 ) : (
                                     filteredClients.map((c, i) => (
@@ -238,10 +241,10 @@ export default function PromoCodesPage() {
                                             </div>
                                             <div style={{ textAlign: 'right' }}>
                                                 <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)' }}>
-                                                    Order: {c.orderAmount} EGP
+                                                    {t('mkt.lblOrder')} {c.orderAmount} {t('mkt.lblEGP')}
                                                 </div>
                                                 <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-success)', fontWeight: 'var(--font-medium)' }}>
-                                                    Saved: {c.discount} EGP
+                                                    {t('mkt.lblSaved')} {c.discount} {t('mkt.lblEGP')}
                                                 </div>
                                                 <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
                                                     {c.usedAt}
@@ -254,7 +257,7 @@ export default function PromoCodesPage() {
                         </div>
 
                         <div style={s.infoCard}>
-                            <div style={s.infoLabel as React.CSSProperties}>Created</div>
+                            <div style={s.infoLabel as React.CSSProperties}>{t('mkt.lblCreated')}</div>
                             <div style={s.infoValue}>{selected.createdAt}</div>
                         </div>
                     </div>
@@ -262,38 +265,38 @@ export default function PromoCodesPage() {
             </SlideOver>
 
             {/* Add Promo Modal */}
-            <Modal open={isAddOpen} onClose={() => setIsAddOpen(false)} title="Generate Promo Code"
-                footer={<div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}><Button variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button><Button onClick={() => { setIsAddOpen(false); addToast('success', 'Code generated successfully'); }}>Save Code</Button></div>}
+            <Modal open={isAddOpen} onClose={() => setIsAddOpen(false)} title={t('mkt.lblGeneratePromoCode')}
+                footer={<div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}><Button variant="ghost" onClick={() => setIsAddOpen(false)}>{t('rtn.btnBack')}</Button><Button onClick={() => { setIsAddOpen(false); addToast('success', t('mkt.btnGenerateCode')); }}>{t('mkt.btnGenerateCode')}</Button></div>}
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <div style={{ display: 'flex', gap: 'var(--space-3)' }}><div style={{ flex: 1 }}><Input label="Promo Code" placeholder="e.g. WELCOME10" /></div><div style={{ flex: 1 }}><Select label="Discount Type" options={[{ label: 'Percentage', value: 'percentage' }, { label: 'Fixed Amount', value: 'fixed' }]} /></div></div>
-                    <div style={{ display: 'flex', gap: 'var(--space-3)' }}><div style={{ flex: 1 }}><Input label="Discount Value" type="number" placeholder="0" /></div><div style={{ flex: 1 }}><Input label="Usage Limit" type="number" placeholder="No Limit" /></div></div>
-                    <div style={{ display: 'flex', gap: 'var(--space-3)' }}><div style={{ flex: 1 }}><Input label="Min. Order Value (EGP)" type="number" placeholder="0" /></div><div style={{ flex: 1 }}><Input label="Expiration Date" type="date" /></div></div>
-                    <Input label="Description" placeholder="Brief description of this promo code" />
-                    <Select label="Status" options={[{ label: 'Active', value: 'active' }, { label: 'Scheduled', value: 'scheduled' }]} />
+                    <div style={{ display: 'flex', gap: 'var(--space-3)' }}><div style={{ flex: 1 }}><Input label={t('mkt.lblCode')} placeholder="e.g. WELCOME10" /></div><div style={{ flex: 1 }}><Select label={t('mkt.lblDiscountType')} options={[{ label: t('mkt.lblPercentage'), value: 'percentage' }, { label: t('mkt.lblFixedAmount'), value: 'fixed' }]} /></div></div>
+                    <div style={{ display: 'flex', gap: 'var(--space-3)' }}><div style={{ flex: 1 }}><Input label={t('mkt.lblDiscountValue')} type="number" placeholder="0" /></div><div style={{ flex: 1 }}><Input label={t('mkt.lblUsageLimit')} type="number" placeholder="No Limit" /></div></div>
+                    <div style={{ display: 'flex', gap: 'var(--space-3)' }}><div style={{ flex: 1 }}><Input label={t('mkt.lblMinOrderValue')} type="number" placeholder="0" /></div><div style={{ flex: 1 }}><Input label={t('mkt.lblExpirationDate')} type="date" /></div></div>
+                    <Input label={t('mkt.lblDescription')} placeholder="Brief description of this promo code" />
+                    <Select label={t('mkt.lblStatus')} options={[{ label: t('mkt.lblActive'), value: 'active' }, { label: t('mkt.lblScheduled'), value: 'scheduled' }]} />
                 </div>
             </Modal>
 
             {/* Edit Promo Modal */}
-            <Modal open={isEditOpen} onClose={() => { setIsEditOpen(false); setSelected(null); }} title="Edit Promo Code"
-                footer={<div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}><Button variant="ghost" onClick={() => setIsEditOpen(false)}>Cancel</Button><Button onClick={() => { setIsEditOpen(false); addToast('success', 'Code updated successfully'); }}>Save Changes</Button></div>}
+            <Modal open={isEditOpen} onClose={() => { setIsEditOpen(false); setSelected(null); }} title={t('mkt.lblEditCode')}
+                footer={<div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}><Button variant="ghost" onClick={() => setIsEditOpen(false)}>{t('rtn.btnBack')}</Button><Button onClick={() => { setIsEditOpen(false); addToast('success', t('mkt.lblEditCode')); }}>{t('mkt.lblEditCode')}</Button></div>}
             >
                 {selected && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                        <div style={{ display: 'flex', gap: 'var(--space-3)' }}><div style={{ flex: 1 }}><Input label="Promo Code" defaultValue={selected.code} /></div><div style={{ flex: 1 }}><Select label="Discount Type" defaultValue={selected.type} options={[{ label: 'Percentage', value: 'percentage' }, { label: 'Fixed Amount', value: 'fixed' }]} /></div></div>
-                        <div style={{ display: 'flex', gap: 'var(--space-3)' }}><div style={{ flex: 1 }}><Input label="Discount Value" type="number" defaultValue={selected.discount} /></div><div style={{ flex: 1 }}><Input label="Usage Limit" type="number" defaultValue={selected.limit} /></div></div>
-                        <div style={{ display: 'flex', gap: 'var(--space-3)' }}><div style={{ flex: 1 }}><Input label="Min. Order Value (EGP)" type="number" defaultValue={selected.minOrder} /></div><div style={{ flex: 1 }}><Input label="Expiration Date" type="date" defaultValue={selected.expires} /></div></div>
-                        <Input label="Description" defaultValue={selected.description} />
-                        <Select label="Status" defaultValue={selected.status} options={[{ label: 'Active', value: 'active' }, { label: 'Scheduled', value: 'scheduled' }, { label: 'Exhausted', value: 'exhausted' }]} />
+                        <div style={{ display: 'flex', gap: 'var(--space-3)' }}><div style={{ flex: 1 }}><Input label={t('mkt.lblCode')} defaultValue={selected.code} /></div><div style={{ flex: 1 }}><Select label={t('mkt.lblDiscountType')} defaultValue={selected.type} options={[{ label: t('mkt.lblPercentage'), value: 'percentage' }, { label: t('mkt.lblFixedAmount'), value: 'fixed' }]} /></div></div>
+                        <div style={{ display: 'flex', gap: 'var(--space-3)' }}><div style={{ flex: 1 }}><Input label={t('mkt.lblDiscountValue')} type="number" defaultValue={selected.discount} /></div><div style={{ flex: 1 }}><Input label={t('mkt.lblUsageLimit')} type="number" defaultValue={selected.limit} /></div></div>
+                        <div style={{ display: 'flex', gap: 'var(--space-3)' }}><div style={{ flex: 1 }}><Input label={t('mkt.lblMinOrderValue')} type="number" defaultValue={selected.minOrder} /></div><div style={{ flex: 1 }}><Input label={t('mkt.lblExpirationDate')} type="date" defaultValue={selected.expires} /></div></div>
+                        <Input label={t('mkt.lblDescription')} defaultValue={selected.description} />
+                        <Select label={t('mkt.lblStatus')} defaultValue={selected.status} options={[{ label: t('mkt.lblActive'), value: 'active' }, { label: t('mkt.lblScheduled'), value: 'scheduled' }, { label: t('mkt.lblExhausted'), value: 'exhausted' }]} />
                     </div>
                 )}
             </Modal>
 
             {/* Delete Confirmation Modal */}
-            <Modal open={isDeleteOpen} onClose={() => { setIsDeleteOpen(false); setSelected(null); }} title="Delete Promo Code"
-                footer={<div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}><Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>Cancel</Button><Button variant="destructive" onClick={handleDelete}>Confirm Delete</Button></div>}
+            <Modal open={isDeleteOpen} onClose={() => { setIsDeleteOpen(false); setSelected(null); }} title={t('mkt.lblDeletePromoCode')}
+                footer={<div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}><Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>{t('rtn.btnBack')}</Button><Button variant="destructive" onClick={handleDelete}>{t('mkt.lblDeletePromoCode')}</Button></div>}
             >
-                <p style={{ color: 'var(--text-secondary)' }}>Are you sure you want to delete the <strong>{selected?.code}</strong> promo code?</p>
+                <p style={{ color: 'var(--text-secondary)' }}>{t('mkt.msgDeletePromoCodeConfirm')} <strong>{selected?.code}</strong></p>
             </Modal>
 
             <style>{`.hoverRow:hover { background-color: var(--bg-secondary); }`}</style>

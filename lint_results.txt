@@ -1,0 +1,499 @@
+﻿
+> hagzy@0.1.0 lint
+> eslint
+
+
+D:\project\Hagzy\src\app\bookings\[id]\page.tsx
+  14:5   warning  'AlertTriangle' is defined but never used   @typescript-eslint/no-unused-vars
+  15:5   warning  'MapPin' is defined but never used          @typescript-eslint/no-unused-vars
+  23:5   warning  'EmptyState' is defined but never used      @typescript-eslint/no-unused-vars
+  60:7   warning  'steps' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  64:13  warning  'id' is assigned a value but never used     @typescript-eslint/no-unused-vars
+
+D:\project\Hagzy\src\app\bookings\list\page.tsx
+   5:8  warning  'Link' is defined but never used          @typescript-eslint/no-unused-vars
+   8:5  warning  'CalendarDays' is defined but never used  @typescript-eslint/no-unused-vars
+  10:5  warning  'DoorOpen' is defined but never used      @typescript-eslint/no-unused-vars
+  11:5  warning  'Plus' is defined but never used          @typescript-eslint/no-unused-vars
+  12:5  warning  'Printer' is defined but never used       @typescript-eslint/no-unused-vars
+
+D:\project\Hagzy\src\app\bookings\new\page.tsx
+   4:8  warning  'Link' is defined but never used          @typescript-eslint/no-unused-vars
+   8:5  warning  'CalendarDays' is defined but never used  @typescript-eslint/no-unused-vars
+   9:5  warning  'List' is defined but never used          @typescript-eslint/no-unused-vars
+  10:5  warning  'DoorOpen' is defined but never used      @typescript-eslint/no-unused-vars
+  11:5  warning  'Plus' is defined but never used          @typescript-eslint/no-unused-vars
+  12:5  warning  'Printer' is defined but never used       @typescript-eslint/no-unused-vars
+  17:5  warning  'CreditCard' is defined but never used    @typescript-eslint/no-unused-vars
+  20:5  warning  'ChevronRight' is defined but never used  @typescript-eslint/no-unused-vars
+  23:8  warning  'styles' is defined but never used        @typescript-eslint/no-unused-vars
+
+D:\project\Hagzy\src\app\bookings\print\page.tsx
+   3:17  warning  'useState' is defined but never used      @typescript-eslint/no-unused-vars
+   4:8   warning  'Link' is defined but never used          @typescript-eslint/no-unused-vars
+   6:5   warning  'CalendarDays' is defined but never used  @typescript-eslint/no-unused-vars
+   7:5   warning  'List' is defined but never used          @typescript-eslint/no-unused-vars
+   8:5   warning  'DoorOpen' is defined but never used      @typescript-eslint/no-unused-vars
+   9:5   warning  'Plus' is defined but never used          @typescript-eslint/no-unused-vars
+  11:5   warning  'Clock' is defined but never used         @typescript-eslint/no-unused-vars
+  12:5   warning  'User' is defined but never used          @typescript-eslint/no-unused-vars
+  14:8   warning  'styles' is defined but never used        @typescript-eslint/no-unused-vars
+
+D:\project\Hagzy\src\app\bookings\rooms\page.tsx
+   3:17  warning  'useState' is defined but never used      @typescript-eslint/no-unused-vars
+   4:8   warning  'Link' is defined but never used          @typescript-eslint/no-unused-vars
+   6:5   warning  'CalendarDays' is defined but never used  @typescript-eslint/no-unused-vars
+   7:5   warning  'List' is defined but never used          @typescript-eslint/no-unused-vars
+   8:5   warning  'DoorOpen' is defined but never used      @typescript-eslint/no-unused-vars
+   9:5   warning  'Plus' is defined but never used          @typescript-eslint/no-unused-vars
+  10:5   warning  'Printer' is defined but never used       @typescript-eslint/no-unused-vars
+
+D:\project\Hagzy\src\app\customers\[id]\page.tsx
+  12:5   warning  'Clock' is defined but never used        @typescript-eslint/no-unused-vars
+  13:5   warning  'Scissors' is defined but never used     @typescript-eslint/no-unused-vars
+  20:5   warning  'CheckCircle' is defined but never used  @typescript-eslint/no-unused-vars
+  26:5   warning  'KPICard' is defined but never used      @typescript-eslint/no-unused-vars
+  72:13  warning  'id' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\project\Hagzy\src\app\customers\groups\page.tsx
+   5:45  warning  'Percent' is defined but never used       @typescript-eslint/no-unused-vars
+  49:56  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\customers\last-visits\page.tsx
+   5:18  warning  'Download' is defined but never used      @typescript-eslint/no-unused-vars
+   5:28  warning  'CalendarDays' is defined but never used  @typescript-eslint/no-unused-vars
+  35:40  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\customers\page.tsx
+  41:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\employees\[id]\page.tsx
+    6:5    warning  'Phone' is defined but never used         @typescript-eslint/no-unused-vars
+    7:5    warning  'Mail' is defined but never used          @typescript-eslint/no-unused-vars
+    8:5    warning  'MapPin' is defined but never used        @typescript-eslint/no-unused-vars
+   13:5    warning  'Scissors' is defined but never used      @typescript-eslint/no-unused-vars
+   18:5    warning  'CheckCircle' is defined but never used   @typescript-eslint/no-unused-vars
+   20:5    warning  'Percent' is defined but never used       @typescript-eslint/no-unused-vars
+   39:5    warning  'Switch' is defined but never used        @typescript-eslint/no-unused-vars
+   50:5    warning  'BarChart' is defined but never used      @typescript-eslint/no-unused-vars
+   51:5    warning  'Bar' is defined but never used           @typescript-eslint/no-unused-vars
+  103:13   warning  'id' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  214:56   error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  455:180  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\employees\attendance-settings\page.tsx
+  43:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\employees\attendance\page.tsx
+    4:35  warning  'AlertTriangle' is defined but never used   @typescript-eslint/no-unused-vars
+    4:70  warning  'ArrowRightLeft' is defined but never used  @typescript-eslint/no-unused-vars
+   65:58  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  173:26  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\employees\commission-settings\page.tsx
+  97:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\employees\commissions\page.tsx
+  106:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  124:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  127:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  127:55  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  128:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  128:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  170:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  173:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  173:55  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  174:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  174:63  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  193:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  196:50  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  196:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  197:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  197:59  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  198:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  198:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  199:55  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  199:65  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  387:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  427:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  471:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\employees\departments\page.tsx
+  29:54  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  41:54  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\employees\fingerprints\page.tsx
+   4:50  warning  'ShieldCheck' is defined but never used   @typescript-eslint/no-unused-vars
+   5:17  warning  'Input' is defined but never used         @typescript-eslint/no-unused-vars
+  47:62  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\employees\layout.tsx
+   3:17  warning  'useState' is defined but never used  @typescript-eslint/no-unused-vars
+  11:5   warning  'Award' is defined but never used     @typescript-eslint/no-unused-vars
+
+D:\project\Hagzy\src\app\employees\page.tsx
+   4:25  warning  'UserPlus' is defined but never used      @typescript-eslint/no-unused-vars
+  35:52  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  60:22  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\employees\payroll\page.tsx
+    7:20  warning  'X' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+    7:23  warning  'User' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+    7:29  warning  'Building' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+    7:39  warning  'Hash' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+    7:45  warning  'ChevronRight' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+   10:26  warning  'Input' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+  114:50  error    Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+D:\project\Hagzy\src\app\employees\payroll\page.tsx:114:50
+  112 |
+  113 |     const handleAddPm = (empId: string) => {
+> 114 |         const newPm: PaymentMethod = { id: `pm-${Date.now()}`, type: pmForm.type, label: pmForm.label || pmForm.type, details: pmForm.details, isDefault: !(paymentMethods[empId]?.length) };
+      |                                                  ^^^^^^^^^^ Cannot call impure function
+  115 |         setPaymentMethods(prev => ({ ...prev, [empId]: [...(prev[empId] || []), newPm] }));
+  116 |         setPmForm({ type: 'Bank Transfer', label: '', details: '' });
+  117 |         setPmShowForm(false);  react-hooks/purity
+  181:23  error    Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+D:\project\Hagzy\src\app\employees\payroll\page.tsx:181:23
+  179 |         setPayrollStatus(prev => ({ ...prev, [empId]: 'Paid' }));
+  180 |         const newPayout = {
+> 181 |             id: `PO-${Date.now()}`,
+      |                       ^^^^^^^^^^ Cannot call impure function
+  182 |             date: new Date().toISOString().slice(0, 10),
+  183 |             employee: emp.name,
+  184 |             type: 'Salary + Commission',                                                                                                                                                                                                    react-hooks/purity
+  235:85  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\employees\positions\page.tsx
+   52:52   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  125:136  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  126:242  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  126:280  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\employees\transfers\page.tsx
+    4:54   warning  'Filter' is defined but never used        @typescript-eslint/no-unused-vars
+    5:61   warning  'DropdownMenu' is defined but never used  @typescript-eslint/no-unused-vars
+   54:62   error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  114:26   error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  170:170  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  170:204  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  172:170  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  172:202  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  175:75   error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  178:192  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\expenses\page.tsx
+  10:5  warning  'ChevronLeft' is defined but never used   @typescript-eslint/no-unused-vars
+  11:5  warning  'ChevronRight' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\project\Hagzy\src\app\login\page.tsx
+  18:12  warning  'otpMethod' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  47:18  warning  'err' is defined but never used                 @typescript-eslint/no-unused-vars
+  68:18  warning  'err' is defined but never used                 @typescript-eslint/no-unused-vars
+
+D:\project\Hagzy\src\app\marketing\messages\page.tsx
+    4:66   warning  'Eye' is defined but never used                           @typescript-eslint/no-unused-vars
+    4:71   warning  'Copy' is defined but never used                          @typescript-eslint/no-unused-vars
+    4:124  warning  'Filter' is defined but never used                        @typescript-eslint/no-unused-vars
+   10:7    warning  'initialPlaceholders' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  112:62   error    Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  123:60   error    Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  129:60   error    Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  131:35   error    Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  140:26   error    Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  167:29   error    Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\marketing\notifications\page.tsx
+    4:22   warning  'Send' is defined but never used          @typescript-eslint/no-unused-vars
+    4:123  warning  'User' is defined but never used          @typescript-eslint/no-unused-vars
+   97:46   error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  101:28   error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  102:26   error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  103:28   error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\marketing\offers\page.tsx
+   4:8   warning  'Link' is defined but never used          @typescript-eslint/no-unused-vars
+   5:10  warning  'Search' is defined but never used        @typescript-eslint/no-unused-vars
+   5:39  warning  'Percent' is defined but never used       @typescript-eslint/no-unused-vars
+   5:67  warning  'ArrowLeft' is defined but never used     @typescript-eslint/no-unused-vars
+   5:78  warning  'Users' is defined but never used         @typescript-eslint/no-unused-vars
+   5:85  warning  'MoreVertical' is defined but never used  @typescript-eslint/no-unused-vars
+   6:68  warning  'DropdownMenu' is defined but never used  @typescript-eslint/no-unused-vars
+  61:56  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  63:32  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  64:30  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  65:32  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\marketing\packages\page.tsx
+  50:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  52:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  53:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  54:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\marketing\page.tsx
+   12:5   warning  'Users' is defined but never used         @typescript-eslint/no-unused-vars
+   13:5   warning  'Percent' is defined but never used       @typescript-eslint/no-unused-vars
+   15:5   warning  'Clock' is defined but never used         @typescript-eslint/no-unused-vars
+  108:56  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  113:56  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  118:52  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\marketing\promo-codes\page.tsx
+   4:68  warning  'User' is defined but never used          @typescript-eslint/no-unused-vars
+   4:74  warning  'Calendar' is defined but never used      @typescript-eslint/no-unused-vars
+  86:46  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  91:28  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  92:26  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  93:28  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\marketing\service-groups\page.tsx
+   5:42  warning  'Badge' is defined but never used         @typescript-eslint/no-unused-vars
+  61:56  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  77:26  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  86:28  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\page.tsx
+  165:9   warning  'bookingTerm' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+  196:54  error    Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+D:\project\Hagzy\src\app\page.tsx:196:54
+  194 |     return occupancyData.map(d => {
+  195 |       const total = 9 * days;
+> 196 |       const pct = Math.min(100, Math.max(0, d.pct + (Math.random() * 10 - 5)));
+      |                                                      ^^^^^^^^^^^^^ Cannot call impure function
+  197 |       const booked = Math.round((pct / 100) * total);
+  198 |       return { ...d, total, booked: Math.min(booked, total), pct: Math.round(pct) };
+  199 |     });  react-hooks/purity
+  327:38  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-explicit-any
+  432:36  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-explicit-any
+  432:47  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\reports\[category]\[report]\page.tsx
+   10:5    warning  'TrendingUp' is defined but never used    @typescript-eslint/no-unused-vars
+   11:5    warning  'Users' is defined but never used         @typescript-eslint/no-unused-vars
+   12:5    warning  'DollarSign' is defined but never used    @typescript-eslint/no-unused-vars
+   13:5    warning  'CalendarDays' is defined but never used  @typescript-eslint/no-unused-vars
+   14:5    warning  'Clock' is defined but never used         @typescript-eslint/no-unused-vars
+   15:5    warning  'Star' is defined but never used          @typescript-eslint/no-unused-vars
+   16:5    warning  'Package' is defined but never used       @typescript-eslint/no-unused-vars
+   17:5    warning  'FileText' is defined but never used      @typescript-eslint/no-unused-vars
+   18:5    warning  'Activity' is defined but never used      @typescript-eslint/no-unused-vars
+   39:5    warning  'AreaChart' is defined but never used     @typescript-eslint/no-unused-vars
+   40:5    warning  'Area' is defined but never used          @typescript-eslint/no-unused-vars
+  487:119  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  538:38   error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  548:39   error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  548:47   error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  658:53   error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  665:56   error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  679:61   error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\reports\[category]\page.tsx
+   19:5   warning  'ShoppingCart' is defined but never used        @typescript-eslint/no-unused-vars
+   22:5   warning  'BarChart3' is defined but never used           @typescript-eslint/no-unused-vars
+   23:5   warning  'Sliders' is defined but never used             @typescript-eslint/no-unused-vars
+   36:10  warning  'Button' is defined but never used              @typescript-eslint/no-unused-vars
+  214:11  warning  'dateLabel' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\project\Hagzy\src\app\reports\layout.tsx
+  13:5   warning  'FileText' is defined but never used  @typescript-eslint/no-unused-vars
+  16:5   warning  'Filter' is defined but never used    @typescript-eslint/no-unused-vars
+  18:18  warning  'Select' is defined but never used    @typescript-eslint/no-unused-vars
+
+D:\project\Hagzy\src\app\reports\page.tsx
+    3:27   warning  'useMemo' is defined but never used       @typescript-eslint/no-unused-vars
+  155:143  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  155:154  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  173:143  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  173:154  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  197:180  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\returns\cancel-down-payment\page.tsx
+  5:18  warning  'ChevronRight' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\project\Hagzy\src\app\returns\cash-refund\page.tsx
+  5:10  warning  'RotateCcw' is defined but never used      @typescript-eslint/no-unused-vars
+  8:7   warning  'tabs' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\project\Hagzy\src\app\returns\page.tsx
+   5:8  warning  'Link' is defined but never used          @typescript-eslint/no-unused-vars
+   9:5  warning  'ChevronLeft' is defined but never used   @typescript-eslint/no-unused-vars
+  10:5  warning  'ChevronRight' is defined but never used  @typescript-eslint/no-unused-vars
+  16:5  warning  'AlertCircle' is defined but never used   @typescript-eslint/no-unused-vars
+
+D:\project\Hagzy\src\app\sales\packages\page.tsx
+  50:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\sales\page.tsx
+  22:33  warning  'Input' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\project\Hagzy\src\app\settings\audit-log\page.tsx
+   4:28  warning  'Filter' is defined but never used        @typescript-eslint/no-unused-vars
+  48:58  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\settings\branches\[id]\page.tsx
+   6:5   warning  'MapPin' is defined but never used       @typescript-eslint/no-unused-vars
+   7:5   warning  'Phone' is defined but never used        @typescript-eslint/no-unused-vars
+   9:5   warning  'CreditCard' is defined but never used   @typescript-eslint/no-unused-vars
+  15:5   warning  'CheckCircle' is defined but never used  @typescript-eslint/no-unused-vars
+  24:5   warning  'EmptyState' is defined but never used   @typescript-eslint/no-unused-vars
+  56:13  warning  'id' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\project\Hagzy\src\app\settings\branches\page.tsx
+  57:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  99:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\settings\data\page.tsx
+  21:16  warning  'lang' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\project\Hagzy\src\app\settings\devices\page.tsx
+  27:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\settings\diary-automations\page.tsx
+  6:5  warning  'Calendar' is defined but never used  @typescript-eslint/no-unused-vars
+  8:5  warning  'Clock' is defined but never used     @typescript-eslint/no-unused-vars
+
+D:\project\Hagzy\src\app\settings\fingerprint-areas\page.tsx
+   9:5  warning  'Users' is defined but never used       @typescript-eslint/no-unused-vars
+  14:5  warning  'EmptyState' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\project\Hagzy\src\app\settings\fingerprint-devices\page.tsx
+  15:5  warning  'EmptyState' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\project\Hagzy\src\app\settings\integrations\page.tsx
+    7:32  warning  'ExternalLink' is defined but never used  @typescript-eslint/no-unused-vars
+   85:74  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   92:44  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   97:41  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  102:42  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\settings\page.tsx
+  36:64  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\settings\payment-methods\page.tsx
+   9:5   warning  'DollarSign' is defined but never used    @typescript-eslint/no-unused-vars
+  15:5   warning  'EmptyState' is defined but never used    @typescript-eslint/no-unused-vars
+  39:58  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\settings\petty-cash-items\page.tsx
+   9:5   warning  'Tag' is defined but never used           @typescript-eslint/no-unused-vars
+  14:5   warning  'EmptyState' is defined but never used    @typescript-eslint/no-unused-vars
+  37:54  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  40:51  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\settings\resources\page.tsx
+  16:5   warning  'EmptyState' is defined but never used    @typescript-eslint/no-unused-vars
+  37:62  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\settings\roles\page.tsx
+    4:10  warning  'Shield' is defined but never used        @typescript-eslint/no-unused-vars
+    4:30  warning  'Check' is defined but never used         @typescript-eslint/no-unused-vars
+    4:37  warning  'X' is defined but never used             @typescript-eslint/no-unused-vars
+   22:32  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   22:40  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   48:54  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   54:25  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   54:49  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   76:83  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  180:84  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\settings\safes\page.tsx
+   6:20  warning  'TrendingUp' is defined but never used    @typescript-eslint/no-unused-vars
+   6:32  warning  'ArrowUpDown' is defined but never used   @typescript-eslint/no-unused-vars
+  30:54  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\settings\service-categories\page.tsx
+  14:5   warning  'EmptyState' is defined but never used    @typescript-eslint/no-unused-vars
+  37:52  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\settings\service-employees\page.tsx
+  14:5  warning  'EmptyState' is defined but never used  @typescript-eslint/no-unused-vars
+  15:5  warning  'Checkbox' is defined but never used    @typescript-eslint/no-unused-vars
+
+D:\project\Hagzy\src\app\settings\services\new\page.tsx
+   8:5   warning  'Upload' is defined but never used                @typescript-eslint/no-unused-vars
+   9:5   warning  'DollarSign' is defined but never used            @typescript-eslint/no-unused-vars
+  10:5   warning  'Clock' is defined but never used                 @typescript-eslint/no-unused-vars
+  11:5   warning  'Users' is defined but never used                 @typescript-eslint/no-unused-vars
+  12:5   warning  'FileText' is defined but never used              @typescript-eslint/no-unused-vars
+  38:22  warning  'setFormData' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\project\Hagzy\src\app\settings\services\page.tsx
+   4:8   warning  'Link' is defined but never used          @typescript-eslint/no-unused-vars
+  45:60  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\project\Hagzy\src\app\settings\shift-automations\page.tsx
+  7:5  warning  'Zap' is defined but never used        @typescript-eslint/no-unused-vars
+  8:5  warning  'UserCheck' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\project\Hagzy\src\app\transactions\cash-sales\page.tsx
+  5:10  warning  'Receipt' is defined but never used   @typescript-eslint/no-unused-vars
+  5:37  warning  'Banknote' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\project\Hagzy\src\app\transactions\dailies\page.tsx
+  5:10  warning  'CalendarDays' is defined but never used  @typescript-eslint/no-unused-vars
+  5:24  warning  'CheckCircle' is defined but never used   @typescript-eslint/no-unused-vars
+  5:37  warning  'XCircle' is defined but never used       @typescript-eslint/no-unused-vars
+
+D:\project\Hagzy\src\app\transactions\package-sales\page.tsx
+  5:10  warning  'Package' is defined but never used   @typescript-eslint/no-unused-vars
+  5:19  warning  'Download' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\project\Hagzy\src\app\transactions\page.tsx
+   4:8  warning  'Link' is defined but never used            @typescript-eslint/no-unused-vars
+  11:5  warning  'Wallet' is defined but never used          @typescript-eslint/no-unused-vars
+  12:5  warning  'CreditCard' is defined but never used      @typescript-eslint/no-unused-vars
+  13:5  warning  'PiggyBank' is defined but never used       @typescript-eslint/no-unused-vars
+  14:5  warning  'ArrowLeftRight' is defined but never used  @typescript-eslint/no-unused-vars
+  15:5  warning  'ShieldCheck' is defined but never used     @typescript-eslint/no-unused-vars
+  16:5  warning  'CalendarClock' is defined but never used   @typescript-eslint/no-unused-vars
+  17:5  warning  'ClipboardList' is defined but never used   @typescript-eslint/no-unused-vars
+  18:5  warning  'TrendingUp' is defined but never used      @typescript-eslint/no-unused-vars
+  19:5  warning  'Users' is defined but never used           @typescript-eslint/no-unused-vars
+  20:5  warning  'Package' is defined but never used         @typescript-eslint/no-unused-vars
+
+D:\project\Hagzy\src\app\transactions\petty-cash\page.tsx
+  5:18  warning  'Download' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\project\Hagzy\src\app\transactions\shifts\page.tsx
+  5:10  warning  'Clock' is defined but never used     @typescript-eslint/no-unused-vars
+  5:17  warning  'Download' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\project\Hagzy\src\app\transactions\transfers\page.tsx
+  3:17  warning  'useState' is defined but never used  @typescript-eslint/no-unused-vars
+  5:10  warning  'Search' is defined but never used    @typescript-eslint/no-unused-vars
+  5:18  warning  'Download' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\project\Hagzy\src\components\layout\Sidebar.tsx
+  21:5  warning  'ChevronRight' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\project\Hagzy\src\contexts\AuthContext.tsx
+  46:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+D:\project\Hagzy\src\contexts\AuthContext.tsx:46:13
+  44 |         const storedUser = localStorage.getItem('hagzy_user');
+  45 |         if (storedUser) {
+> 46 |             setUser(JSON.parse(storedUser));
+     |             ^^^^^^^ Avoid calling setState() directly within an effect
+  47 |         }
+  48 |         setLoading(false);
+  49 |     }, []);  react-hooks/set-state-in-effect
+
+D:\project\Hagzy\src\contexts\SettingsContext.tsx
+  55:12  warning  'isLoaded' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Γ£û 304 problems (121 errors, 183 warnings)
+

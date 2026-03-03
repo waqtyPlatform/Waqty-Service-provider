@@ -168,13 +168,13 @@
     flex-direction: column;
     gap: var(--space-6);
     position: relative;
-    padding-left: var(--space-4);
+    padding-inline-start: var(--space-4);
 }
 
 .timeline::before {
     content: '';
     position: absolute;
-    left: 0;
+    inset-inline-start: 0;
     top: 8px;
     bottom: 0;
     width: 2px;
@@ -187,7 +187,7 @@
 
 .timelineDot {
     position: absolute;
-    left: -21px;
+    inset-inline-start: -21px;
     top: 4px;
     width: 10px;
     height: 10px;

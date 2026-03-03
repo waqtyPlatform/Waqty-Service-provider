@@ -3,41 +3,43 @@
 import React from 'react';
 import {
     Plus,
-    Clock,
-    Zap,
-    UserCheck
+    Clock
 } from 'lucide-react';
 import {
     Button,
     Badge,
     Switch
 } from '@/components/ui';
+import { useTranslation } from '@/hooks/useTranslation';
 import styles from './page.module.css';
 
-// Mock Data
-const rules = [
-    { id: 1, name: 'Auto-Clock Out at Midnight', desc: 'Automatically clock out employees who forgot to sign out.', active: true },
-    { id: 2, name: 'Late Arrival Grace Period', desc: 'Allow 15 minutes grace period before marking as late.', active: true },
-    { id: 3, name: 'Overtime Calculation', desc: 'Automatically calculate overtime after 9 hours.', active: false },
-    { id: 4, name: 'Shift Rotation', desc: 'Rotate shifts weekly for junior staff.', active: false },
-];
+// Removed mock rules, moved inside component for translation
 
 export default function ShiftAutomationsPage() {
+    const { t, lang } = useTranslation();
+
+    const rules = [
+        { id: 1, name: t('settings.shift.rule1.name'), desc: t('settings.shift.rule1.desc'), active: true },
+        { id: 2, name: t('settings.shift.rule2.name'), desc: t('settings.shift.rule2.desc'), active: true },
+        { id: 3, name: t('settings.shift.rule3.name'), desc: t('settings.shift.rule3.desc'), active: false },
+        { id: 4, name: t('settings.shift.rule4.name'), desc: t('settings.shift.rule4.desc'), active: false },
+    ];
+
     return (
         <div className={styles.page}>
             <div className={styles.header}>
                 <div className={styles.titleGroup}>
-                    <h1>Shift Automations</h1>
-                    <div className={styles.subtitle}>Manage rules for employee attendance and shifts.</div>
+                    <h1>{t('settings.shift.title')}</h1>
+                    <div className={styles.subtitle}>{t('settings.shift.subtitle')}</div>
                 </div>
                 <div className={styles.actions}>
-                    <Button><Plus size={16} /> New Rule</Button>
+                    <Button><Plus size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('settings.shift.newRule')}</Button>
                 </div>
             </div>
 
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
-                    <span className={styles.cardTitle}><Clock size={18} /> Attendance Rules</span>
+                    <span className={styles.cardTitle}><Clock size={18} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('settings.shift.attendanceRules')}</span>
                 </div>
                 <div className={styles.rulesList}>
                     {rules.map(rule => (
@@ -45,7 +47,7 @@ export default function ShiftAutomationsPage() {
                             <div className={styles.ruleContent}>
                                 <div className={styles.ruleTitle}>
                                     {rule.name}
-                                    {rule.active && <Badge color="success" size="sm">Active</Badge>}
+                                    {rule.active && <Badge color="success" size="sm">{t('settings.shift.badgeActive')}</Badge>}
                                 </div>
                                 <div className={styles.ruleDesc}>{rule.desc}</div>
                             </div>

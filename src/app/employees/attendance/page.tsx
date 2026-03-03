@@ -1,8 +1,9 @@
 ﻿'use client';
 
 import React, { useState } from 'react';
-import { Search, Download, Clock, AlertTriangle, Plus, Edit, Trash2, ArrowRightLeft } from 'lucide-react';
+import { Search, Download, Clock, Plus, Edit, Trash2 } from 'lucide-react';
 import { SlideOver, Modal, Input, Select, Button, useToast, EmptyState } from '@/components/ui';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const initialData = [
     { id: 'AT-001', employee: 'Sara Ahmed', date: '2026-02-17', checkIn: '08:55', checkOut: '18:05', hours: '9h 10m', late: false, overtime: '10m', status: 'present' },
@@ -42,11 +43,20 @@ const s: Record<string, React.CSSProperties> = {
 };
 
 export default function AttendancePage() {
+    const { t, lang } = useTranslation();
     const [records, setRecords] = useState(initialData);
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('All');
     const [dateFilter, setDateFilter] = useState(''); // Default to empty so all show
     const { addToast } = useToast();
+
+    const getTranslatedStatus = (status: string) => {
+        if (status === 'present') return t('attendance.kpiPresent');
+        if (status === 'late') return t('attendance.kpiLate');
+        if (status === 'absent') return t('attendance.kpiAbsent');
+        if (status === 'early_leave') return t('attendance.kpiEarlyLeave');
+        return status;
+    };
 
     // Modals
     const [isAddOpen, setIsAddOpen] = useState(false);
@@ -78,16 +88,16 @@ export default function AttendancePage() {
     // Helper to calculate hours and overtime
     const calculateTime = (inTime: string, outTime: string) => {
         if (!inTime || !outTime || inTime === '-' || outTime === '-') return { hours: '-', overtime: '-' };
-        
+
         const [inH, inM] = inTime.split(':').map(Number);
         const [outH, outM] = outTime.split(':').map(Number);
-        
+
         let diffMins = (outH * 60 + outM) - (inH * 60 + inM);
         if (diffMins < 0) diffMins += 24 * 60; // Handle cross-midnight (unlikely but safe)
-        
+
         const h = Math.floor(diffMins / 60);
         const m = diffMins % 60;
-        
+
         // Assume 9 hours is standard shift
         const standardMins = 9 * 60;
         let ot = '0m';
@@ -102,8 +112,8 @@ export default function AttendancePage() {
     };
 
     const handleSaveAdd = () => {
-        if (!formData.employee) return addToast('error', 'Employee name is required.');
-        if (!formData.date) return addToast('error', 'Date is required.');
+        if (!formData.employee) return addToast('error', t('attendance.toastAddReqEmp'));
+        if (!formData.date) return addToast('error', t('attendance.toastAddReqDate'));
 
         let calculated = { hours: '-', overtime: '-' };
         if (formData.status !== 'absent') {
@@ -121,15 +131,15 @@ export default function AttendancePage() {
             overtime: calculated.overtime,
             status: formData.status
         };
-        
+
         setRecords([newRecord, ...records]);
         setIsAddOpen(false);
         setFormData({ employee: '', date: getTodayStr(), checkIn: '09:00', checkOut: '18:00', status: 'present' });
-        addToast('success', 'Attendance record added successfully.');
+        addToast('success', t('attendance.toastAddSuccess'));
     };
 
     const handleSaveEdit = () => {
-        if (!formData.employee) return addToast('error', 'Employee name is required.');
+        if (!formData.employee) return addToast('error', t('attendance.toastAddReqEmp'));
 
         let calculated = { hours: '-', overtime: '-' };
         if (formData.status !== 'absent') {
@@ -147,17 +157,17 @@ export default function AttendancePage() {
             overtime: calculated.overtime,
             status: formData.status
         } : r));
-        
+
         setIsEditOpen(false);
         setSelectedRecord(null);
-        addToast('success', 'Attendance record updated successfully.');
+        addToast('success', t('attendance.toastUpdateSuccess'));
     };
 
     const handleDelete = () => {
         setRecords(records.filter(r => r.id !== selectedRecord.id));
         setIsDeleteOpen(false);
         setSelectedRecord(null);
-        addToast('success', 'Attendance record deleted.');
+        addToast('success', t('attendance.toastDeleteSuccess'));
     };
 
     const openEdit = (r: any) => {
@@ -173,42 +183,42 @@ export default function AttendancePage() {
     };
 
     return (
-        <div style={s.page}>
-            <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' }}>Attendance Log</div>
+        <div style={{ ...s.page, direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
+            <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' }}>{t('attendance.title')}</div>
 
             <div style={s.kpis}>
-                <div style={s.kpi}><div style={{ ...s.kpiVal, color: 'var(--color-success)' }}>{kpiData.filter(d => d.status === 'present').length}</div><div style={s.kpiLbl}>Present</div></div>
-                <div style={s.kpi}><div style={{ ...s.kpiVal, color: 'var(--color-warning)' }}>{kpiData.filter(d => d.status === 'late').length}</div><div style={s.kpiLbl}>Late</div></div>
-                <div style={s.kpi}><div style={{ ...s.kpiVal, color: 'var(--color-error)' }}>{kpiData.filter(d => d.status === 'absent').length}</div><div style={s.kpiLbl}>Absent</div></div>
-                <div style={s.kpi}><div style={{ ...s.kpiVal, color: 'var(--color-info)' }}>{kpiData.filter(d => d.status === 'early_leave').length}</div><div style={s.kpiLbl}>Early Leave</div></div>
+                <div style={s.kpi}><div style={{ ...s.kpiVal, color: 'var(--color-success)' }}>{kpiData.filter(d => d.status === 'present').length}</div><div style={s.kpiLbl}>{t('attendance.kpiPresent')}</div></div>
+                <div style={s.kpi}><div style={{ ...s.kpiVal, color: 'var(--color-warning)' }}>{kpiData.filter(d => d.status === 'late').length}</div><div style={s.kpiLbl}>{t('attendance.kpiLate')}</div></div>
+                <div style={s.kpi}><div style={{ ...s.kpiVal, color: 'var(--color-error)' }}>{kpiData.filter(d => d.status === 'absent').length}</div><div style={s.kpiLbl}>{t('attendance.kpiAbsent')}</div></div>
+                <div style={s.kpi}><div style={{ ...s.kpiVal, color: 'var(--color-info)' }}>{kpiData.filter(d => d.status === 'early_leave').length}</div><div style={s.kpiLbl}>{t('attendance.kpiEarlyLeave')}</div></div>
             </div>
 
             <div style={s.toolbar}>
                 <div style={s.filterGroup as React.CSSProperties}>
                     <div style={s.searchBox as React.CSSProperties}>
-                        <Search size={16} style={s.searchIcon as React.CSSProperties} />
-                        <input style={s.searchInput} placeholder="Search employees..." value={search} onChange={e => setSearch(e.target.value)} />
+                        <Search size={16} style={{ ...s.searchIcon as React.CSSProperties, left: lang === 'ar' ? 'auto' : 12, right: lang === 'ar' ? 12 : 'auto' }} />
+                        <input style={{ ...s.searchInput, paddingLeft: lang === 'ar' ? 16 : 40, paddingRight: lang === 'ar' ? 40 : 16 }} placeholder={t('attendance.searchEmp')} value={search} onChange={e => setSearch(e.target.value)} />
                     </div>
                     <Input type="date" value={dateFilter} onChange={e => setDateFilter(e.target.value)} style={{ height: 40, margin: 0 }} />
-                    <Select 
-                        value={statusFilter} 
+                    <Select
+                        value={statusFilter}
                         onChange={e => setStatusFilter(e.target.value)}
                         options={[
-                            { label: 'All Statuses', value: 'All' },
-                            { label: 'Present', value: 'present' },
-                            { label: 'Late', value: 'late' },
-                            { label: 'Absent', value: 'absent' },
-                            { label: 'Early Leave', value: 'early_leave' },
+                            { label: t('attendance.filterAll'), value: 'All' },
+                            { label: t('attendance.kpiPresent'), value: 'present' },
+                            { label: t('attendance.kpiLate'), value: 'late' },
+                            { label: t('attendance.kpiAbsent'), value: 'absent' },
+                            { label: t('attendance.kpiEarlyLeave'), value: 'early_leave' },
                         ]}
                         style={{ width: 140 }}
                     />
                 </div>
                 <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-                    <Button variant="outline" onClick={() => addToast('info', 'Exporting attendance log...')}>
-                        <Download size={16} style={{ marginRight: 8 }} /> Export
+                    <Button variant="outline" onClick={() => addToast('info', t('attendance.toastExporting'))}>
+                        <Download size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('attendance.export')}
                     </Button>
                     <Button onClick={() => setIsAddOpen(true)}>
-                        <Plus size={16} style={{ marginRight: 8 }} /> Add Record
+                        <Plus size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('attendance.addRecord')}
                     </Button>
                 </div>
             </div>
@@ -217,8 +227,8 @@ export default function AttendancePage() {
                 <table style={s.table}>
                     <thead>
                         <tr>
-                            {['Employee', 'Date', 'Check In', 'Check Out', 'Hours', 'Overtime', 'Status', 'Actions'].map(h => 
-                                <th key={h} style={s.th as React.CSSProperties}>{h}</th>
+                            {[t('attendance.colEmp'), t('attendance.colDate'), t('attendance.colCheckIn'), t('attendance.colCheckOut'), t('attendance.colHours'), t('attendance.colOvertime'), t('attendance.colStatus'), t('attendance.colActions')].map(h =>
+                                <th key={h} style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{h}</th>
                             )}
                         </tr>
                     </thead>
@@ -227,14 +237,14 @@ export default function AttendancePage() {
                             const st = statusMap[row.status];
                             return (
                                 <tr key={row.id} className="hoverRow">
-                                    <td style={{ ...s.td, fontWeight: 'var(--font-medium)' } as React.CSSProperties}>{row.employee}</td>
-                                    <td style={s.td}>{row.date}</td>
-                                    <td style={s.td}>{row.checkIn}</td>
-                                    <td style={s.td}>{row.checkOut}</td>
-                                    <td style={s.td}>{row.hours}</td>
-                                    <td style={{ ...s.td, color: row.overtime !== '0m' && row.overtime !== '-' ? 'var(--color-primary-600)' : 'var(--text-tertiary)' } as React.CSSProperties}>{row.overtime}</td>
-                                    <td style={s.td}><span style={{ ...s.badge, background: st.bg, color: st.color }}>{st.label}</span></td>
-                                    <td style={s.td}>
+                                    <td style={{ ...s.td, fontWeight: 'var(--font-medium)', textAlign: lang === 'ar' ? 'right' : 'left' } as React.CSSProperties}>{row.employee}</td>
+                                    <td style={{ ...s.td, textAlign: lang === 'ar' ? 'right' : 'left' }}>{row.date}</td>
+                                    <td style={{ ...s.td, textAlign: lang === 'ar' ? 'right' : 'left' }}>{row.checkIn}</td>
+                                    <td style={{ ...s.td, textAlign: lang === 'ar' ? 'right' : 'left' }}>{row.checkOut}</td>
+                                    <td style={{ ...s.td, textAlign: lang === 'ar' ? 'right' : 'left' }}>{row.hours}</td>
+                                    <td style={{ ...s.td, color: row.overtime !== '0m' && row.overtime !== '-' ? 'var(--color-primary-600)' : 'var(--text-tertiary)', textAlign: lang === 'ar' ? 'right' : 'left' } as React.CSSProperties}>{row.overtime}</td>
+                                    <td style={{ ...s.td, textAlign: lang === 'ar' ? 'right' : 'left' }}><span style={{ ...s.badge, background: st.bg, color: st.color }}>{getTranslatedStatus(row.status)}</span></td>
+                                    <td style={{ ...s.td, textAlign: lang === 'ar' ? 'right' : 'left' }}>
                                         <div style={s.actions}>
                                             <button style={s.btnIcon} onClick={() => openEdit(row)} title="Edit Record">
                                                 <Edit size={14} />
@@ -250,7 +260,7 @@ export default function AttendancePage() {
                     </tbody>
                 </table>
             ) : (
-                <EmptyState icon={<Clock size={32} color="var(--text-tertiary)" />} title="No attendance records found" description="Adjust your filters or search query." />
+                <EmptyState icon={<Clock size={32} color="var(--text-tertiary)" />} title={t('attendance.emptyTitle')} description={t('attendance.emptyDesc')} />
             )}
 
             <style>{`
@@ -262,28 +272,28 @@ export default function AttendancePage() {
             <SlideOver
                 open={isAddOpen}
                 onClose={() => setIsAddOpen(false)}
-                title="Add Attendance Record"
+                title={t('attendance.addModalTitle')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button>
-                        <Button onClick={handleSaveAdd}>Save Record</Button>
+                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>{t('attendance.cancel')}</Button>
+                        <Button onClick={handleSaveAdd}>{t('attendance.saveRecord')}</Button>
                     </div>
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label="Employee Name" placeholder="e.g. Sara Ahmed" value={formData.employee} onChange={e => setFormData({ ...formData, employee: e.target.value })} />
-                    <Input type="date" label="Date" value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} />
-                    <Select label="Status" value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value })} options={[
-                        { label: 'Present', value: 'present' },
-                        { label: 'Late', value: 'late' },
-                        { label: 'Absent', value: 'absent' },
-                        { label: 'Early Leave', value: 'early_leave' },
+                    <Input label={t('attendance.empNameLabel')} placeholder={t('attendance.empNamePlaceholder')} value={formData.employee} onChange={e => setFormData({ ...formData, employee: e.target.value })} />
+                    <Input type="date" label={t('attendance.dateLabel')} value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} />
+                    <Select label={t('attendance.statusLabel')} value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value })} options={[
+                        { label: t('attendance.kpiPresent'), value: 'present' },
+                        { label: t('attendance.kpiLate'), value: 'late' },
+                        { label: t('attendance.kpiAbsent'), value: 'absent' },
+                        { label: t('attendance.kpiEarlyLeave'), value: 'early_leave' },
                     ]} />
-                    
+
                     {formData.status !== 'absent' && (
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
-                            <Input type="time" label="Check In Time" value={formData.checkIn} onChange={e => setFormData({ ...formData, checkIn: e.target.value })} />
-                            <Input type="time" label="Check Out Time" value={formData.checkOut} onChange={e => setFormData({ ...formData, checkOut: e.target.value })} />
+                            <Input type="time" label={t('attendance.checkInLabel')} value={formData.checkIn} onChange={e => setFormData({ ...formData, checkIn: e.target.value })} />
+                            <Input type="time" label={t('attendance.checkOutLabel')} value={formData.checkOut} onChange={e => setFormData({ ...formData, checkOut: e.target.value })} />
                         </div>
                     )}
                 </div>
@@ -293,28 +303,28 @@ export default function AttendancePage() {
             <SlideOver
                 open={isEditOpen}
                 onClose={() => { setIsEditOpen(false); setSelectedRecord(null); }}
-                title="Edit Attendance Record"
+                title={t('attendance.editModalTitle')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>Cancel</Button>
-                        <Button onClick={handleSaveEdit}>Save Changes</Button>
+                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>{t('attendance.cancel')}</Button>
+                        <Button onClick={handleSaveEdit}>{t('attendance.saveChanges')}</Button>
                     </div>
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label="Employee Name" value={formData.employee} onChange={e => setFormData({ ...formData, employee: e.target.value })} />
-                    <Input type="date" label="Date" value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} />
-                    <Select label="Status" value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value })} options={[
-                        { label: 'Present', value: 'present' },
-                        { label: 'Late', value: 'late' },
-                        { label: 'Absent', value: 'absent' },
-                        { label: 'Early Leave', value: 'early_leave' },
+                    <Input label={t('attendance.empNameLabel')} value={formData.employee} onChange={e => setFormData({ ...formData, employee: e.target.value })} />
+                    <Input type="date" label={t('attendance.dateLabel')} value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} />
+                    <Select label={t('attendance.statusLabel')} value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value })} options={[
+                        { label: t('attendance.kpiPresent'), value: 'present' },
+                        { label: t('attendance.kpiLate'), value: 'late' },
+                        { label: t('attendance.kpiAbsent'), value: 'absent' },
+                        { label: t('attendance.kpiEarlyLeave'), value: 'early_leave' },
                     ]} />
-                    
+
                     {formData.status !== 'absent' && (
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
-                            <Input type="time" label="Check In Time" value={formData.checkIn} onChange={e => setFormData({ ...formData, checkIn: e.target.value })} />
-                            <Input type="time" label="Check Out Time" value={formData.checkOut} onChange={e => setFormData({ ...formData, checkOut: e.target.value })} />
+                            <Input type="time" label={t('attendance.checkInLabel')} value={formData.checkIn} onChange={e => setFormData({ ...formData, checkIn: e.target.value })} />
+                            <Input type="time" label={t('attendance.checkOutLabel')} value={formData.checkOut} onChange={e => setFormData({ ...formData, checkOut: e.target.value })} />
                         </div>
                     )}
                 </div>
@@ -324,16 +334,16 @@ export default function AttendancePage() {
             <Modal
                 open={isDeleteOpen}
                 onClose={() => { setIsDeleteOpen(false); setSelectedRecord(null); }}
-                title="Delete Attendance Record"
+                title={t('attendance.deleteModalTitle')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
-                        <Button variant="destructive" onClick={handleDelete}>Delete Permanently</Button>
+                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>{t('attendance.cancel')}</Button>
+                        <Button variant="destructive" onClick={handleDelete}>{t('attendance.deleteConfirmBtn')}</Button>
                     </div>
                 }
             >
                 <p style={{ color: 'var(--text-secondary)' }}>
-                    Are you sure you want to delete the attendance record for <strong>{selectedRecord?.employee}</strong> on {selectedRecord?.date}? This action cannot be undone.
+                    {t('attendance.deleteConfirmMsg1')}<strong>{selectedRecord?.employee}</strong>{t('attendance.deleteConfirmMsg2')}{selectedRecord?.date}{t('attendance.deleteConfirmMsg3')}
                 </p>
             </Modal>
         </div>

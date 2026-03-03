@@ -4,50 +4,9 @@ import React, { useState } from 'react';
 import { Check, Crown, Zap, Star, Calendar, CreditCard, Users, Building2, ArrowRight, Shield } from 'lucide-react';
 import SettingsTabs from '@/components/SettingsTabs';
 import { Button } from '@/components/ui';
+import { useTranslation } from '@/hooks/useTranslation';
 
-const plans = [
-    {
-        name: 'Starter',
-        price: 499,
-        period: '/mo',
-        current: false,
-        color: 'var(--color-gray-500)',
-        gradient: 'linear-gradient(135deg, var(--color-gray-50), var(--color-gray-100))',
-        borderColor: 'var(--border-color)',
-        icon: <Zap size={24} />,
-        desc: 'Perfect for solo stylists and small shops getting started.',
-        features: ['1 Branch', 'Up to 5 Employees', 'Basic Reports', 'SMS Notifications', 'Email Support'],
-    },
-    {
-        name: 'Professional',
-        price: 999,
-        period: '/mo',
-        current: true,
-        color: 'var(--color-primary-500)',
-        gradient: 'linear-gradient(135deg, var(--color-primary-50), rgba(99,102,241,0.08))',
-        borderColor: 'var(--color-primary-500)',
-        icon: <Star size={24} />,
-        desc: 'Ideal for growing salons with multiple branches and teams.',
-        features: ['3 Branches', 'Up to 15 Employees', 'Advanced Reports', 'SMS + WhatsApp', 'Priority Support', 'Marketing Tools', 'Integrations'],
-    },
-    {
-        name: 'Enterprise',
-        price: 1999,
-        period: '/mo',
-        current: false,
-        color: '#F59E0B',
-        gradient: 'linear-gradient(135deg, #FFFBEB, rgba(245,158,11,0.06))',
-        borderColor: '#F59E0B',
-        icon: <Crown size={24} />,
-        desc: 'Full power for large businesses and franchise operations.',
-        features: ['Unlimited Branches', 'Unlimited Employees', 'Custom Reports', 'All Channels', '24/7 Support', 'Full Marketing Suite', 'All Integrations', 'API Access', 'Dedicated Account Manager'],
-    },
-];
-
-const usageStats = [
-    { label: 'Team Members', value: '8 / 15', icon: <Users size={18} />, percent: 53 },
-    { label: 'Active Branches', value: '2 / 3', icon: <Building2 size={18} />, percent: 67 },
-];
+// Removed hardcoded plans/stats from here as they need translation and have been moved into the component
 
 const s: Record<string, React.CSSProperties> = {
     page: { display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' },
@@ -120,6 +79,51 @@ const s: Record<string, React.CSSProperties> = {
 
 export default function SubscriptionPage() {
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
+    const { t, lang } = useTranslation();
+
+    const plans = [
+        {
+            name: t('settings.subscription.plans.starter'),
+            price: 499,
+            period: t('settings.subscription.mo'),
+            current: false,
+            color: 'var(--color-gray-500)',
+            gradient: 'linear-gradient(135deg, var(--color-gray-50), var(--color-gray-100))',
+            borderColor: 'var(--border-color)',
+            icon: <Zap size={24} />,
+            desc: t('settings.subscription.starterDesc'),
+            features: [t('settings.subscription.feat.1branch'), t('settings.subscription.feat.5emp'), t('settings.subscription.feat.basicRep'), t('settings.subscription.feat.sms'), t('settings.subscription.feat.emailSup')],
+        },
+        {
+            name: t('settings.subscription.plans.pro'),
+            price: 999,
+            period: t('settings.subscription.mo'),
+            current: true,
+            color: 'var(--color-primary-500)',
+            gradient: 'linear-gradient(135deg, var(--color-primary-50), rgba(99,102,241,0.08))',
+            borderColor: 'var(--color-primary-500)',
+            icon: <Star size={24} />,
+            desc: t('settings.subscription.proDesc'),
+            features: [t('settings.subscription.feat.3branches'), t('settings.subscription.feat.15emp'), t('settings.subscription.feat.advRep'), t('settings.subscription.feat.smsWa'), t('settings.subscription.feat.prioSup'), t('settings.subscription.feat.marketing'), t('settings.subscription.feat.integrations')],
+        },
+        {
+            name: t('settings.subscription.plans.enterprise'),
+            price: 1999,
+            period: t('settings.subscription.mo'),
+            current: false,
+            color: '#F59E0B',
+            gradient: 'linear-gradient(135deg, #FFFBEB, rgba(245,158,11,0.06))',
+            borderColor: '#F59E0B',
+            icon: <Crown size={24} />,
+            desc: t('settings.subscription.enterpriseDesc'),
+            features: [t('settings.subscription.feat.unlBranches'), t('settings.subscription.feat.unlEmp'), t('settings.subscription.feat.customRep'), t('settings.subscription.feat.allChan'), t('settings.subscription.feat.support247'), t('settings.subscription.feat.fullMarketing'), t('settings.subscription.feat.allIntegrations'), t('settings.subscription.feat.api'), t('settings.subscription.feat.accManager')],
+        },
+    ];
+
+    const usageStats = [
+        { label: t('settings.subscription.teamMembers'), value: '8 / 15', icon: <Users size={18} />, percent: 53 },
+        { label: t('settings.subscription.activeBranches'), value: '2 / 3', icon: <Building2 size={18} />, percent: 67 },
+    ];
 
     return (
         <div style={s.page}>
@@ -129,17 +133,17 @@ export default function SubscriptionPage() {
             <div style={s.currentPlan}>
                 <div style={s.currentPlanHeader}>
                     <div>
-                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Current Plan</div>
+                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>{t('settings.subscription.currentPlanLabel')}</div>
                         <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                            <Star size={20} style={{ color: 'var(--color-primary-500)' }} /> Professional
+                            <Star size={20} style={{ color: 'var(--color-primary-500)' }} /> {t('settings.subscription.plans.pro')}
                         </div>
                         <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginTop: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <Calendar size={14} /> Renews on March 17, 2026
+                            <Calendar size={14} /> {t('settings.subscription.renewsOn')}
                         </div>
                     </div>
-                    <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)', color: 'var(--color-primary-600)' }}>999 EGP<span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', fontWeight: 'var(--font-normal)' }}>/mo</span></div>
-                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: 2 }}>Billed monthly</div>
+                    <div style={{ textAlign: lang === 'ar' ? 'left' : 'right' }}>
+                        <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)', color: 'var(--color-primary-600)' }}>999 <span style={{ fontSize: 'var(--text-sm)' }}>EGP</span><span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', fontWeight: 'var(--font-normal)' }}>{t('settings.subscription.mo')}</span></div>
+                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: 2 }}>{t('settings.subscription.billedMonthly')}</div>
                     </div>
                 </div>
 
@@ -181,7 +185,7 @@ export default function SubscriptionPage() {
                                 transition: 'all 0.2s',
                             }}
                         >
-                            {cycle === 'monthly' ? 'Monthly' : 'Annual'} {cycle === 'annual' && <span style={{ color: 'var(--color-success)', fontSize: 11, fontWeight: 'var(--font-bold)' }}>Save 20%</span>}
+                            {cycle === 'monthly' ? t('settings.subscription.monthly') : t('settings.subscription.annual')} {cycle === 'annual' && <span style={{ color: 'var(--color-success)', fontSize: 11, fontWeight: 'var(--font-bold)' }}>{t('settings.subscription.save20')}</span>}
                         </button>
                     ))}
                 </div>
@@ -200,7 +204,7 @@ export default function SubscriptionPage() {
                                 background: plan.gradient,
                             }}
                         >
-                            {plan.current && <div style={s.currentBadge}><Star size={12} /> Your Plan</div>}
+                            {plan.current && <div style={s.currentBadge}><Star size={12} /> {t('settings.subscription.yourPlan')}</div>}
 
                             <div style={s.cardHeader}>
                                 <div style={{ ...s.iconCircle, background: `${plan.color}15`, color: plan.color }}>
@@ -234,7 +238,7 @@ export default function SubscriptionPage() {
                                 }}
                                 disabled={plan.current}
                             >
-                                {plan.current ? '✓ Current Plan' : <>Upgrade <ArrowRight size={16} /></>}
+                                {plan.current ? t('settings.subscription.currentPlanBtn') : <>{t('settings.subscription.upgrade')} <ArrowRight size={16} className={lang === 'ar' ? 'mr-2' : 'ml-2'} /></>}
                             </Button>
                         </div>
                     );
@@ -246,15 +250,15 @@ export default function SubscriptionPage() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
                     <div style={{ color: 'var(--text-tertiary)' }}><CreditCard size={20} /></div>
                     <div>
-                        <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)' }}>Payment Method</div>
-                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>Visa ending in 4242</div>
+                        <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)' }}>{t('settings.subscription.paymentMethod')}</div>
+                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{t('settings.subscription.visaEnding')}</div>
                     </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 'var(--text-xs)', color: 'var(--color-success)' }}>
-                        <Shield size={14} /> Secured by Paymob
+                        <Shield size={14} /> {t('settings.subscription.securedBy')}
                     </div>
-                    <Button variant="ghost" size="sm">Update</Button>
+                    <Button variant="ghost" size="sm">{t('settings.subscription.update')}</Button>
                 </div>
             </div>
         </div>

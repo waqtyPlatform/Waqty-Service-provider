@@ -4,7 +4,7 @@ import React from 'react';
 import SettingsTabs from '@/components/SettingsTabs';
 import { useToast, Modal, Button, SlideOver, Input, Select, Switch } from '@/components/ui';
 import {
-    CheckCircle, XCircle, Zap, ExternalLink, Settings,
+    CheckCircle, XCircle, Zap, Settings,
     MessageCircle, CreditCard, CalendarDays, Mail, Workflow,
     Instagram, MapPin, Phone,
 } from 'lucide-react';

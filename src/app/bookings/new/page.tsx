@@ -1,27 +1,19 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui';
 import {
-    CalendarDays,
-    List,
-    DoorOpen,
-    Plus,
-    Printer,
     User,
     Search,
     Clock,
     Scissors,
-    CreditCard,
     MapPin,
     FileText,
-    ChevronRight,
     Check,
 } from 'lucide-react';
-import styles from '../bookings.module.css';
 import BookingsTabs from '../BookingsTabs';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const services = [
     { id: 'S01', name: 'Haircut & Styling', duration: '45 min', price: 150, category: 'Hair' },
@@ -85,15 +77,16 @@ export default function NewBookingPage() {
 
     const router = useRouter();
     const { addToast } = useToast();
+    const { t } = useTranslation();
 
     const total = selectedService.price - (selectedService.price * discount / 100);
 
     const handleSubmit = () => {
         if (!clientName.trim() || !clientPhone.trim()) {
-            addToast('error', 'Client Name and Phone are required fields');
+            addToast('error', t('bookings.reqFields'));
             return;
         }
-        addToast('success', `Booking confirmed for ${clientName}`);
+        addToast('success', `${t('bookings.confirmSuccess')} ${clientName}`);
         router.push('/bookings');
     };
 
@@ -103,7 +96,7 @@ export default function NewBookingPage() {
             <BookingsTabs />
 
             <div style={cs.header}>
-                <h1 style={cs.h1}>New Booking</h1>
+                <h1 style={cs.h1}>{t('bookings.newBooking')}</h1>
             </div>
 
             <div style={cs.formGrid}>
@@ -111,19 +104,19 @@ export default function NewBookingPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
                     {/* Client */}
                     <div style={cs.card}>
-                        <div style={cs.cardTitle}><User size={18} /> Client</div>
+                        <div style={cs.cardTitle}><User size={18} /> {t('bookings.client')}</div>
                         <div style={cs.searchWrap}>
                             <Search size={16} style={cs.searchIcon} />
                             <input
-                                style={{ ...cs.input, paddingLeft: 36 }}
-                                placeholder="Search existing client or add walk-in..."
+                                style={{ ...cs.input, paddingInlineStart: 36 }}
+                                placeholder={t('bookings.searchClient')}
                                 value={clientName}
                                 onChange={(e) => setClientName(e.target.value)}
                             />
                         </div>
                         <div style={cs.row}>
                             <div style={cs.field}>
-                                <label style={cs.label}>Phone <span style={{ color: 'var(--color-error)' }}>*</span></label>
+                                <label style={cs.label}>{t('bookings.phone')} <span style={{ color: 'var(--color-error)' }}>*</span></label>
                                 <input
                                     style={cs.input}
                                     placeholder="+20 1XX XXX XXXX"
@@ -132,7 +125,7 @@ export default function NewBookingPage() {
                                 />
                             </div>
                             <div style={cs.field}>
-                                <label style={cs.label}>Email</label>
+                                <label style={cs.label}>{t('bookings.email')}</label>
                                 <input style={cs.input} type="email" placeholder="client@email.com" />
                             </div>
                         </div>
@@ -140,9 +133,9 @@ export default function NewBookingPage() {
 
                     {/* Service */}
                     <div style={cs.card}>
-                        <div style={cs.cardTitle}><Scissors size={18} /> Service</div>
+                        <div style={cs.cardTitle}><Scissors size={18} /> {t('bookings.service')}</div>
                         <div style={cs.field}>
-                            <label style={cs.label}>Service</label>
+                            <label style={cs.label}>{t('bookings.service')}</label>
                             <select style={cs.select} value={selectedService.id} onChange={(e) => setSelectedService(services.find(s => s.id === e.target.value) || services[0])}>
                                 {services.map((s) => (
                                     <option key={s.id} value={s.id}>{s.name} — {s.price} EGP ({s.duration})</option>
@@ -150,7 +143,7 @@ export default function NewBookingPage() {
                             </select>
                         </div>
                         <div style={cs.field}>
-                            <label style={cs.label}>Employee</label>
+                            <label style={cs.label}>{t('bookings.employee')}</label>
                             <select style={cs.select} value={selectedEmployee.id} onChange={(e) => setSelectedEmployee(employees.find(em => em.id === e.target.value) || employees[0])}>
                                 {employees.map((em) => (
                                     <option key={em.id} value={em.id}>{em.name} — {em.role}</option>
@@ -161,14 +154,14 @@ export default function NewBookingPage() {
 
                     {/* Date & Time */}
                     <div style={cs.card}>
-                        <div style={cs.cardTitle}><Clock size={18} /> Date & Time</div>
+                        <div style={cs.cardTitle}><Clock size={18} /> {t('bookings.dateTime')}</div>
                         <div style={cs.row}>
                             <div style={cs.field}>
-                                <label style={cs.label}>Date</label>
+                                <label style={cs.label}>{t('bookings.date')}</label>
                                 <input style={cs.input} type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} />
                             </div>
                             <div style={cs.field}>
-                                <label style={cs.label}>Time</label>
+                                <label style={cs.label}>{t('bookings.time')}</label>
                                 <select style={cs.select} value={selectedTime} onChange={(e) => setSelectedTime(e.target.value)}>
                                     {timeSlots.map((t) => (
                                         <option key={t} value={t}>{t}</option>
@@ -180,23 +173,23 @@ export default function NewBookingPage() {
 
                     {/* Room & Notes */}
                     <div style={cs.card}>
-                        <div style={cs.cardTitle}><MapPin size={18} /> Additional Details</div>
+                        <div style={cs.cardTitle}><MapPin size={18} /> {t('bookings.additionalDetails')}</div>
                         <div style={cs.row}>
                             <div style={cs.field}>
-                                <label style={cs.label}>Room</label>
+                                <label style={cs.label}>{t('bookings.room')}</label>
                                 <select style={cs.select}>
-                                    <option value="">Auto-assign</option>
+                                    <option value="">{t('bookings.autoAssign')}</option>
                                     {rooms.map((r) => <option key={r} value={r}>{r}</option>)}
                                 </select>
                             </div>
                             <div style={cs.field}>
-                                <label style={cs.label}>Discount (%)</label>
+                                <label style={cs.label}>{t('bookings.discount')}</label>
                                 <input style={cs.input} type="number" min={0} max={100} value={discount} onChange={(e) => setDiscount(Number(e.target.value))} />
                             </div>
                         </div>
                         <div style={cs.field}>
-                            <label style={cs.label}>Notes</label>
-                            <textarea style={cs.textarea} placeholder="Internal notes for this booking..." />
+                            <label style={cs.label}>{t('bookings.notes')}</label>
+                            <textarea style={cs.textarea} placeholder={t('bookings.notesPlaceholder')} />
                         </div>
                     </div>
                 </div>
@@ -204,43 +197,43 @@ export default function NewBookingPage() {
                 {/* Right – Summary */}
                 <div style={cs.summaryCard}>
                     <div style={cs.card}>
-                        <div style={cs.cardTitle}><FileText size={18} /> Booking Summary</div>
+                        <div style={cs.cardTitle}><FileText size={18} /> {t('bookings.summary')}</div>
                         <div style={cs.summaryRow}>
-                            <span style={cs.summaryLabel}>Client</span>
-                            <span style={cs.summaryValue}>{clientName || 'Walk-in'}</span>
+                            <span style={cs.summaryLabel}>{t('bookings.client')}</span>
+                            <span style={cs.summaryValue}>{clientName || t('bookings.walkIn')}</span>
                         </div>
                         <div style={cs.summaryRow}>
-                            <span style={cs.summaryLabel}>Service</span>
+                            <span style={cs.summaryLabel}>{t('bookings.service')}</span>
                             <span style={cs.summaryValue}>{selectedService.name}</span>
                         </div>
                         <div style={cs.summaryRow}>
-                            <span style={cs.summaryLabel}>Duration</span>
+                            <span style={cs.summaryLabel}>{t('bookings.duration')}</span>
                             <span style={cs.summaryValue}>{selectedService.duration}</span>
                         </div>
                         <div style={cs.summaryRow}>
-                            <span style={cs.summaryLabel}>Employee</span>
+                            <span style={cs.summaryLabel}>{t('bookings.employee')}</span>
                             <span style={cs.summaryValue}>{selectedEmployee.name}</span>
                         </div>
                         <div style={cs.summaryRow}>
-                            <span style={cs.summaryLabel}>Date & Time</span>
-                            <span style={cs.summaryValue}>{selectedDate} at {selectedTime}</span>
+                            <span style={cs.summaryLabel}>{t('bookings.dateTime')}</span>
+                            <span style={cs.summaryValue}>{selectedDate} / {selectedTime}</span>
                         </div>
                         <div style={cs.summaryRow}>
-                            <span style={cs.summaryLabel}>Service Price</span>
+                            <span style={cs.summaryLabel}>{t('bookings.servicePrice')}</span>
                             <span style={cs.summaryValue}>{selectedService.price} EGP</span>
                         </div>
                         {discount > 0 && (
                             <div style={cs.summaryRow}>
-                                <span style={cs.summaryLabel}>Discount ({discount}%)</span>
+                                <span style={cs.summaryLabel}>{t('bookings.discount')}</span>
                                 <span style={{ ...cs.summaryValue, color: 'var(--color-error)' }}>-{(selectedService.price * discount / 100).toFixed(0)} EGP</span>
                             </div>
                         )}
                         <div style={cs.totalRow}>
-                            <span>Total</span>
+                            <span>{t('bookings.total')}</span>
                             <span style={{ color: 'var(--color-primary-600)' }}>{total.toFixed(0)} EGP</span>
                         </div>
                         <button style={cs.btnPrimary} onClick={handleSubmit}>
-                            <Check size={16} /> Confirm Booking
+                            <Check size={16} /> {t('bookings.confirmBooking')}
                         </button>
                     </div>
                 </div>

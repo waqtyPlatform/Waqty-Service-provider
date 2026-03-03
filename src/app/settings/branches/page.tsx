@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Building2, Plus, MoreVertical, Edit, Trash2, MapPin, ExternalLink } from 'lucide-react';
 import { useToast, SlideOver, Modal, Input, Select, Button, DropdownMenu } from '@/components/ui';
 import SettingsTabs from '@/components/SettingsTabs';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const GOVERNORATES = [
     'Cairo', 'Giza', 'Alexandria', 'Qalyubia', 'Dakahlia', 'Sharqia', 'Gharbia',
@@ -56,40 +57,42 @@ const s: Record<string, React.CSSProperties> = {
 function BranchForm({ defaultValues }: { defaultValues?: any }) {
     const [governorate, setGovernorate] = useState(defaultValues?.governorate || '');
     const cities = CITIES[governorate] || [];
+    const { t } = useTranslation();
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-            <Input label="Branch Name" placeholder="e.g. Downtown Branch" defaultValue={defaultValues?.name} />
-            <Input label="Contact Phone" placeholder="+20 1XX XXX XXXX" defaultValue={defaultValues?.phone} />
-            <Input label="Manager Name" placeholder="e.g. Sara Ahmed" defaultValue={defaultValues?.manager} />
+            <Input label={t('settings.branches.branchName')} placeholder="e.g. Downtown Branch" defaultValue={defaultValues?.name} />
+            <Input label={t('settings.branches.contactPhone')} placeholder="+20 1XX XXX XXXX" defaultValue={defaultValues?.phone} />
+            <Input label={t('settings.branches.managerName')} placeholder="e.g. Sara Ahmed" defaultValue={defaultValues?.manager} />
 
-            <div style={s.sectionLabel}>📍 Location Details</div>
+            <div style={s.sectionLabel}>📍 {t('settings.branches.locDetails')}</div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
                 <Select
-                    label="Governorate"
+                    label={t('settings.branches.governorate')}
                     defaultValue={defaultValues?.governorate || ''}
-                    options={[{ label: '— Select governorate —', value: '' }, ...GOVERNORATES.map(g => ({ label: g, value: g }))]}
+                    options={[{ label: t('settings.branches.selGov'), value: '' }, ...GOVERNORATES.map(g => ({ label: g, value: g }))]}
                     onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setGovernorate(e.target.value)}
                 />
                 <Select
-                    label="City"
+                    label={t('settings.branches.city')}
                     defaultValue={defaultValues?.city || ''}
                     options={cities.length > 0
-                        ? [{ label: '— Select city —', value: '' }, ...cities.map(c => ({ label: c, value: c }))]
-                        : [{ label: 'Select governorate first', value: '' }]
+                        ? [{ label: t('settings.branches.selCity'), value: '' }, ...cities.map(c => ({ label: c, value: c }))]
+                        : [{ label: t('settings.branches.selCityFirst'), value: '' }]
                     }
                 />
             </div>
 
-            <Input label="Full Address" placeholder="e.g. 15 Tahrir Street, Building 3, Floor 1" defaultValue={defaultValues?.address} />
-            <Input label="Google Maps Link" placeholder="https://maps.app.goo.gl/..." defaultValue={defaultValues?.mapLink} />
+            <Input label={t('settings.branches.fullAddress')} placeholder="e.g. 15 Tahrir Street, Building 3, Floor 1" defaultValue={defaultValues?.address} />
+            <Input label={t('settings.branches.mapsLink')} placeholder="https://maps.app.goo.gl/..." defaultValue={defaultValues?.mapLink} />
         </div>
     );
 }
 
 export default function BranchesPage() {
     const { addToast } = useToast();
+    const { t } = useTranslation();
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -99,7 +102,7 @@ export default function BranchesPage() {
         <div style={s.page}>
             <SettingsTabs />
             <div style={s.toolbar}>
-                <Button onClick={() => setIsAddOpen(true)}><Plus size={16} style={{ marginRight: 8 }} /> Add Branch</Button>
+                <Button onClick={() => setIsAddOpen(true)}><Plus size={16} style={{ marginRight: 8 }} /> {t('settings.branches.addBranch')}</Button>
             </div>
             <div style={s.grid}>
                 {branches.map(b => (
@@ -112,21 +115,21 @@ export default function BranchesPage() {
                             <DropdownMenu
                                 trigger={<button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)' }}><MoreVertical size={16} /></button>}
                                 items={[
-                                    { label: 'Edit Branch', icon: <Edit size={14} />, onClick: () => { setSelectedBranch(b); setIsEditOpen(true); } },
-                                    { label: 'Delete Branch', destructive: true, icon: <Trash2 size={14} />, onClick: () => { setSelectedBranch(b); setIsDeleteOpen(true); } }
+                                    { label: t('settings.branches.editBranch'), icon: <Edit size={14} />, onClick: () => { setSelectedBranch(b); setIsEditOpen(true); } },
+                                    { label: t('settings.branches.deleteBranch'), destructive: true, icon: <Trash2 size={14} />, onClick: () => { setSelectedBranch(b); setIsDeleteOpen(true); } }
                                 ]}
                             />
                         </div>
-                        <div style={s.row}><span style={s.label}>Governorate</span><span style={s.val}>{b.governorate}</span></div>
-                        <div style={s.row}><span style={s.label}>City</span><span style={s.val}>{b.city}</span></div>
-                        <div style={s.row}><span style={s.label}>Address</span><span style={s.val}>{b.address}</span></div>
-                        <div style={s.row}><span style={s.label}>Phone</span><span style={s.val}>{b.phone}</span></div>
-                        <div style={s.row}><span style={s.label}>Manager</span><span style={s.val}>{b.manager}</span></div>
-                        <div style={s.row}><span style={s.label}>Employees</span><span style={s.val}>{b.employees}</span></div>
+                        <div style={s.row}><span style={s.label}>{t('settings.branches.governorate')}</span><span style={s.val}>{b.governorate}</span></div>
+                        <div style={s.row}><span style={s.label}>{t('settings.branches.city')}</span><span style={s.val}>{b.city}</span></div>
+                        <div style={s.row}><span style={s.label}>{t('settings.branches.address')}</span><span style={s.val}>{b.address}</span></div>
+                        <div style={s.row}><span style={s.label}>{t('settings.branches.phone')}</span><span style={s.val}>{b.phone}</span></div>
+                        <div style={s.row}><span style={s.label}>{t('settings.branches.manager')}</span><span style={s.val}>{b.manager}</span></div>
+                        <div style={s.row}><span style={s.label}>{t('settings.branches.employees')}</span><span style={s.val}>{b.employees}</span></div>
                         <div style={{ ...s.row, ...s.rowLast }}>
-                            <span style={s.label}>Location</span>
+                            <span style={s.label}>{t('settings.branches.location')}</span>
                             <a href={b.mapLink} target="_blank" rel="noopener noreferrer" style={s.mapLink}>
-                                <MapPin size={14} /> View on Map <ExternalLink size={12} />
+                                <MapPin size={14} /> {t('settings.branches.viewMap')} <ExternalLink size={12} />
                             </a>
                         </div>
                     </div>
@@ -137,11 +140,11 @@ export default function BranchesPage() {
             <SlideOver
                 open={isAddOpen}
                 onClose={() => setIsAddOpen(false)}
-                title="Add New Branch"
+                title={t('settings.branches.addNewBranch')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button>
-                        <Button onClick={() => { setIsAddOpen(false); addToast('success', 'Branch created successfully'); }}>Save Branch</Button>
+                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>{t('settings.branches.cancel')}</Button>
+                        <Button onClick={() => { setIsAddOpen(false); addToast('success', 'Branch created successfully'); }}>{t('settings.branches.saveBranch')}</Button>
                     </div>
                 }
             >
@@ -152,11 +155,11 @@ export default function BranchesPage() {
             <SlideOver
                 open={isEditOpen}
                 onClose={() => { setIsEditOpen(false); setSelectedBranch(null); }}
-                title="Edit Branch"
+                title={t('settings.branches.editBranch')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>Cancel</Button>
-                        <Button onClick={() => { setIsEditOpen(false); addToast('success', 'Branch updated successfully'); }}>Save Changes</Button>
+                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>{t('settings.branches.cancel')}</Button>
+                        <Button onClick={() => { setIsEditOpen(false); addToast('success', 'Branch updated successfully'); }}>{t('settings.saveChanges')}</Button>
                     </div>
                 }
             >
@@ -167,17 +170,17 @@ export default function BranchesPage() {
             <Modal
                 open={isDeleteOpen}
                 onClose={() => { setIsDeleteOpen(false); setSelectedBranch(null); }}
-                title="Delete Branch"
+                title={t('settings.branches.deleteBranch')}
                 footer={
                     <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
-                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
-                        <Button variant="destructive" onClick={() => { setIsDeleteOpen(false); addToast('error', 'Branch deleted'); }}>Confirm Delete</Button>
+                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>{t('settings.branches.cancel')}</Button>
+                        <Button variant="destructive" onClick={() => { setIsDeleteOpen(false); addToast('error', 'Branch deleted'); }}>{t('settings.branches.confirmDelete')}</Button>
                     </div>
                 }
             >
                 <div>
                     <p style={{ color: 'var(--text-secondary)' }}>
-                        Are you sure you want to delete the <strong>{selectedBranch?.name}</strong> branch? All employees and bookings currently tied to this branch will need to be reassigned.
+                        {t('settings.branches.deleteWarning')}
                     </p>
                 </div>
             </Modal>

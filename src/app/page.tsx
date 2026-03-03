@@ -28,6 +28,7 @@ import {
 } from 'recharts';
 import { motion } from 'framer-motion';
 import styles from './page.module.css';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const dateRanges = ['Today', 'This Week', 'This Month', 'This Quarter', 'Custom'];
 
@@ -149,10 +150,19 @@ function getRankClass(rank: number) {
   return '';
 }
 
+function pseudoRandom(seed: string) {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) {
+    h = Math.imul(31, h) + seed.charCodeAt(i) | 0;
+  }
+  return (Math.abs(h) % 100) / 100;
+}
+
 export default function DashboardPage() {
   const [activeDate, setActiveDate] = useState('Today');
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   const businessType = user?.businessType || 'salon';
   const isClinic = businessType === 'clinic';
@@ -183,7 +193,7 @@ export default function DashboardPage() {
     return kpiData.map(kpi => ({
       ...kpi,
       value: formatNum(Math.round(parseInt(kpi.value.replace(/,/g, '')) * m)),
-      sparkData: kpi.sparkData.map(d => ({ v: Math.round(d.v * (1 + (Math.random() * 0.2 - 0.1))) }))
+      sparkData: kpi.sparkData.map((d, i) => ({ v: Math.round(d.v * (1 + (pseudoRandom(kpi.label + activeDate + i) * 0.2 - 0.1))) }))
     }));
   }, [activeDate]);
 
@@ -191,7 +201,7 @@ export default function DashboardPage() {
     const days = Math.max(1, Math.round(getMultiplier(activeDate)));
     return occupancyData.map(d => {
       const total = 9 * days;
-      const pct = Math.min(100, Math.max(0, d.pct + (Math.random() * 10 - 5)));
+      const pct = Math.min(100, Math.max(0, d.pct + (pseudoRandom(d.employee + activeDate) * 10 - 5)));
       const booked = Math.round((pct / 100) * total);
       return { ...d, total, booked: Math.min(booked, total), pct: Math.round(pct) };
     });
@@ -236,8 +246,8 @@ export default function DashboardPage() {
       {/* Header */}
       <div className={styles.header}>
         <div className={styles.headerLeft}>
-          <h1>Dashboard</h1>
-          <p>Welcome back! Here&apos;s what&apos;s happening today.</p>
+          <h1>{t('dash.dashboard')}</h1>
+          <p>{t('dash.welcome')}</p>
         </div>
         <div className={styles.headerRight}>
           <div className={styles.dateControls}>
@@ -253,10 +263,10 @@ export default function DashboardPage() {
             ))}
           </div>
           <button className={styles.quickActionBtn} onClick={() => router.push('/bookings/new')}>
-            <CalendarCheck size={16} /> New Booking
+            <CalendarCheck size={16} /> {t('dash.newBooking')}
           </button>
           <button className={styles.quickActionBtnOutline} onClick={() => router.push('/sales?quick=true')}>
-            <DollarSign size={16} /> Quick Sale
+            <DollarSign size={16} /> {t('dash.quickSale')}
           </button>
         </div>
       </div>
@@ -352,8 +362,8 @@ export default function DashboardPage() {
           }}
         >
           <div className={styles.cardHeader}>
-            <span className={styles.cardTitle}>{employeesTerm} Occupancy</span>
-            <Link href="/employees" className={styles.cardAction}>View All</Link>
+            <span className={styles.cardTitle}>{employeesTerm} {t('dash.occupancy')}</span>
+            <Link href="/employees" className={styles.cardAction}>{t('dash.viewAll')}</Link>
           </div>
           <table className={styles.dataTable}>
             <thead>
@@ -405,8 +415,8 @@ export default function DashboardPage() {
           }}
         >
           <div className={styles.cardHeader}>
-            <span className={styles.cardTitle}>Booking Status</span>
-            <Link href="/bookings" className={styles.cardAction}>Details</Link>
+            <span className={styles.cardTitle}>{t('dash.bookingStatus')}</span>
+            <Link href="/bookings" className={styles.cardAction}>{t('dash.details')}</Link>
           </div>
           <div style={{ height: 200, position: 'relative' }}>
             <ResponsiveContainer width="100%" height="100%">
@@ -441,7 +451,7 @@ export default function DashboardPage() {
               className={styles.donutCenter}
             >
               <div className={styles.donutTotal}>{totalBookings}</div>
-              <div className={styles.donutLabel}>Total</div>
+              <div className={styles.donutLabel}>{t('dash.total')}</div>
             </div>
           </div>
           <div className={styles.donutLegend}>
@@ -479,8 +489,8 @@ export default function DashboardPage() {
           }}
         >
           <div className={styles.cardHeader}>
-            <span className={styles.cardTitle}>Top {clientsTerm}</span>
-            <Link href="/customers" className={styles.cardAction}>View All</Link>
+            <span className={styles.cardTitle}>{t('dash.top')} {clientsTerm}</span>
+            <Link href="/customers" className={styles.cardAction}>{t('dash.viewAll')}</Link>
           </div>
           <table className={styles.dataTable}>
             <thead>
@@ -517,8 +527,8 @@ export default function DashboardPage() {
           }}
         >
           <div className={styles.cardHeader}>
-            <span className={styles.cardTitle}>Top {employeesTerm}</span>
-            <Link href="/employees" className={styles.cardAction}>View All</Link>
+            <span className={styles.cardTitle}>{t('dash.top')} {employeesTerm}</span>
+            <Link href="/employees" className={styles.cardAction}>{t('dash.viewAll')}</Link>
           </div>
           <table className={styles.dataTable}>
             <thead>
@@ -555,8 +565,8 @@ export default function DashboardPage() {
           }}
         >
           <div className={styles.cardHeader}>
-            <span className={styles.cardTitle}>Top Services</span>
-            <Link href="/sales" className={styles.cardAction}>View All</Link>
+            <span className={styles.cardTitle}>{t('dash.topServices')}</span>
+            <Link href="/sales" className={styles.cardAction}>{t('dash.viewAll')}</Link>
           </div>
           <table className={styles.dataTable}>
             <thead>
@@ -632,7 +642,7 @@ export default function DashboardPage() {
           </div>
           <div className={styles.summaryContent}>
             <h3>Fatima A.</h3>
-            <p>🌟 {clientTerm} of the Month</p>
+            <p>🌟 {clientTerm} {t('dash.clientOfMonth')}</p>
           </div>
         </div>
       </div >

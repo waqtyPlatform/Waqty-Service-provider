@@ -17,6 +17,7 @@ import {
     CreditCard,
 } from 'lucide-react';
 import styles from './customers.module.css';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const clients = [
     { id: 'C001', name: 'Fatima Al-Rashid', phone: '+20 123 456 789', email: 'fatima@email.com', visits: 24, spend: 8400, lastVisit: 'Feb 15, 2026', vip: true, hasAllergy: true, group: 'VIP', status: 'active' },
@@ -41,6 +42,7 @@ export default function CustomersPage() {
 
     const router = useRouter();
     const { addToast } = useToast();
+    const { t } = useTranslation();
 
     const filtered = clients.filter((c) => {
         const matchSearch =
@@ -61,7 +63,7 @@ export default function CustomersPage() {
                     </div>
                     <div>
                         <div className={styles.kpiValue}>{clients.length}</div>
-                        <div className={styles.kpiLabel}>Total Clients</div>
+                        <div className={styles.kpiLabel}>{t('customers.totalClients')}</div>
                     </div>
                 </div>
                 <div className={styles.kpiCard}>
@@ -70,7 +72,7 @@ export default function CustomersPage() {
                     </div>
                     <div>
                         <div className={styles.kpiValue}>{clients.filter((c) => c.vip).length}</div>
-                        <div className={styles.kpiLabel}>VIP Clients</div>
+                        <div className={styles.kpiLabel}>{t('customers.vipClients')}</div>
                     </div>
                 </div>
                 <div className={styles.kpiCard}>
@@ -79,7 +81,7 @@ export default function CustomersPage() {
                     </div>
                     <div>
                         <div className={styles.kpiValue}>{clients.filter((c) => c.group === 'New').length}</div>
-                        <div className={styles.kpiLabel}>New This Month</div>
+                        <div className={styles.kpiLabel}>{t('customers.newThisMonth')}</div>
                     </div>
                 </div>
                 <div className={styles.kpiCard}>
@@ -88,7 +90,7 @@ export default function CustomersPage() {
                     </div>
                     <div>
                         <div className={styles.kpiValue}>{clients.filter((c) => c.status === 'inactive').length}</div>
-                        <div className={styles.kpiLabel}>Inactive (30d+)</div>
+                        <div className={styles.kpiLabel}>{t('customers.inactive')}</div>
                     </div>
                 </div>
             </div>
@@ -98,7 +100,7 @@ export default function CustomersPage() {
                     <Search size={16} className={styles.searchIcon} />
                     <input
                         className={styles.searchInput}
-                        placeholder="Search by name, phone, email..."
+                        placeholder={t('customers.search')}
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
@@ -109,13 +111,13 @@ export default function CustomersPage() {
                         value={groupFilter}
                         onChange={(e) => setGroupFilter(e.target.value)}
                     >
-                        <option value="all">All Groups</option>
+                        <option value="all">{t('customers.allGroups')}</option>
                         <option value="vip">VIP</option>
                         <option value="regular">Regular</option>
                         <option value="new">New</option>
                     </select>
                     <button className={styles.btnPrimary} onClick={() => setIsAddOpen(true)}>
-                        <UserPlus size={16} /> Add Client
+                        <UserPlus size={16} /> {t('customers.addClient')}
                     </button>
                 </div>
             </div>
@@ -207,7 +209,7 @@ export default function CustomersPage() {
                             </tbody>
                         </table>
                         <div className={styles.pagination}>
-                            <span className={styles.pageInfo}>Showing {filtered.length} of {clients.length} clients</span>
+                            <span className={styles.pageInfo}>{t('customers.showing')} {filtered.length} {t('customers.of')} {clients.length}</span>
                             <div className={styles.pageButtons}>
                                 <button className={styles.pageBtn}><ChevronLeft size={16} /></button>
                                 <button className={`${styles.pageBtn} ${styles.pageBtnActive}`}>1</button>
@@ -219,8 +221,8 @@ export default function CustomersPage() {
                     <div style={{ padding: 'var(--space-12) 0' }}>
                         <EmptyState
                             icon={<Users size={32} color="var(--text-tertiary)" />}
-                            title="No clients found"
-                            description="We couldn't find any clients matching your search or filter criteria."
+                            title={t('customers.noClients')}
+                            description={t('customers.noClientsDesc')}
                         />
                     </div>
                 )}
@@ -230,29 +232,29 @@ export default function CustomersPage() {
             <SlideOver
                 open={isAddOpen}
                 onClose={() => setIsAddOpen(false)}
-                title="Add New Client"
+                title={t('customers.addClientTitle')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button>
-                        <Button onClick={() => { setIsAddOpen(false); addToast('success', 'Client created successfully'); }}>Save Client</Button>
+                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>{t('customers.cancel')}</Button>
+                        <Button onClick={() => { setIsAddOpen(false); addToast('success', 'Client created successfully'); }}>{t('customers.saveClient')}</Button>
                     </div>
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label="Full Name" placeholder="e.g. Fatima Al-Rashid" />
-                    <Input label="Phone Number" placeholder="+20 1XX XXX XXXX" />
-                    <Input label="Email Address" placeholder="client@example.com" />
-                    <Select label="Group" options={[
-                        { label: 'Regular', value: 'Regular' },
-                        { label: 'VIP', value: 'VIP' },
-                        { label: 'New', value: 'New' }
+                    <Input label={t('customers.fullName')} placeholder="e.g. Fatima Al-Rashid" />
+                    <Input label={t('customers.phoneOption')} placeholder="+20 1XX XXX XXXX" />
+                    <Input label={t('customers.emailOption')} placeholder="client@example.com" />
+                    <Select label={t('customers.groupLabel')} options={[
+                        { label: t('customers.regular'), value: 'Regular' },
+                        { label: t('customers.vip'), value: 'VIP' },
+                        { label: t('customers.new'), value: 'New' }
                     ]} />
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', marginTop: 'var(--space-2)' }}>
-                        <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)' }}>Notes / Allergies</label>
+                        <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)' }}>{t('customers.notesLabel')}</label>
                         <textarea
                             className={styles.searchInput}
                             style={{ height: '80px', padding: 'var(--space-3)' }}
-                            placeholder="Add any specific client notes here..."
+                            placeholder={t('customers.notesPlaceholder')}
                         />
                     </div>
                 </div>
@@ -262,23 +264,23 @@ export default function CustomersPage() {
             <SlideOver
                 open={isEditOpen}
                 onClose={() => { setIsEditOpen(false); setSelectedClient(null); }}
-                title="Edit Client Profile"
+                title={t('customers.editClientTitle')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>Cancel</Button>
-                        <Button onClick={() => { setIsEditOpen(false); addToast('success', 'Profile updated successfully'); }}>Save Changes</Button>
+                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>{t('customers.cancel')}</Button>
+                        <Button onClick={() => { setIsEditOpen(false); addToast('success', 'Profile updated successfully'); }}>{t('customers.saveChanges')}</Button>
                     </div>
                 }
             >
                 {selectedClient && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                        <Input label="Full Name" defaultValue={selectedClient.name} />
-                        <Input label="Phone Number" defaultValue={selectedClient.phone} />
-                        <Input label="Email Address" defaultValue={selectedClient.email} />
-                        <Select label="Group" defaultValue={selectedClient.group} options={[
-                            { label: 'Regular', value: 'Regular' },
-                            { label: 'VIP', value: 'VIP' },
-                            { label: 'New', value: 'New' }
+                        <Input label={t('customers.fullName')} defaultValue={selectedClient.name} />
+                        <Input label={t('customers.phoneOption')} defaultValue={selectedClient.phone} />
+                        <Input label={t('customers.emailOption')} defaultValue={selectedClient.email} />
+                        <Select label={t('customers.groupLabel')} defaultValue={selectedClient.group} options={[
+                            { label: t('customers.regular'), value: 'Regular' },
+                            { label: t('customers.vip'), value: 'VIP' },
+                            { label: t('customers.new'), value: 'New' }
                         ]} />
                     </div>
                 )}
@@ -288,17 +290,17 @@ export default function CustomersPage() {
             <Modal
                 open={isDeleteOpen}
                 onClose={() => { setIsDeleteOpen(false); setSelectedClient(null); }}
-                title="Delete Client"
+                title={t('customers.deleteClientTitle')}
                 footer={
                     <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
-                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
-                        <Button variant="destructive" onClick={() => { setIsDeleteOpen(false); addToast('error', 'Client permanently deleted'); }}>Delete Client</Button>
+                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>{t('customers.cancel')}</Button>
+                        <Button variant="destructive" onClick={() => { setIsDeleteOpen(false); addToast('error', 'Client permanently deleted'); }}>{t('customers.deleteConfirm')}</Button>
                     </div>
                 }
             >
                 <div>
                     <p style={{ color: 'var(--text-secondary)' }}>
-                        Are you sure you want to delete <strong>{selectedClient?.name}</strong>? This action cannot be undone and will remove all their historical data from the system.
+                        {t('customers.deleteWarning')}
                     </p>
                 </div>
             </Modal>

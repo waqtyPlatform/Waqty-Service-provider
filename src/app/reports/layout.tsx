@@ -10,40 +10,40 @@ import {
     Users,
     Star,
     Package,
-    FileText,
     Activity,
-    Download,
-    Filter
+    Download
 } from 'lucide-react';
-import { Button, Select } from '@/components/ui';
+import { Button } from '@/components/ui';
+import { useTranslation } from '@/hooks/useTranslation';
 import styles from './reports.module.css';
-
-const tabItems = [
-    { label: 'Overview', href: '/reports', icon: <BarChart3 size={16} /> },
-    { label: 'Revenue', href: '/reports/revenue', icon: <DollarSign size={16} /> },
-    { label: 'Bookings', href: '/reports/bookings', icon: <CalendarDays size={16} /> },
-    { label: 'Clients', href: '/reports/clients', icon: <Users size={16} /> },
-    { label: 'Employees', href: '/reports/employees', icon: <Star size={16} /> },
-    { label: 'Services', href: '/reports/services', icon: <Package size={16} /> },
-    { label: 'Custom', href: '/reports/custom', icon: <Activity size={16} /> },
-];
 
 export default function ReportsLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
+    const { t, lang } = useTranslation();
+
+    const tabItems = [
+        { label: t('reports.tabOverview'), href: '/reports', icon: <BarChart3 size={16} /> },
+        { label: t('reports.tabRevenue'), href: '/reports/revenue', icon: <DollarSign size={16} /> },
+        { label: t('reports.tabBookings'), href: '/reports/bookings', icon: <CalendarDays size={16} /> },
+        { label: t('reports.tabClients'), href: '/reports/clients', icon: <Users size={16} /> },
+        { label: t('reports.tabEmployees'), href: '/reports/employees', icon: <Star size={16} /> },
+        { label: t('reports.tabServices'), href: '/reports/services', icon: <Package size={16} /> },
+        { label: t('reports.tabCustom'), href: '/reports/custom', icon: <Activity size={16} /> },
+    ];
 
     return (
-        <div className={styles.container}>
+        <div className={styles.container} style={{ direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
             {/* Sticky Header Wrapper */}
             <div className={styles.stickyHeader}>
                 <div className={styles.headerContent}>
                     <div>
-                        <h1 className={styles.title}>Reports</h1>
+                        <h1 className={styles.title}>{t('reports.title')}</h1>
                         <div className={styles.subtitle}>
-                            Analyze business performance and trends.
+                            {t('reports.subtitle')}
                         </div>
                     </div>
                     <div className={styles.actions}>
-                        <Button variant="outline"><Download size={16} /> Export Report</Button>
+                        <Button variant="outline"><Download size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('reports.exportBtn')}</Button>
                     </div>
                 </div>
 

@@ -2,7 +2,6 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Package, Download } from 'lucide-react';
 
 const tabs = [
     { label: 'Transaction Log', href: '/transactions' },

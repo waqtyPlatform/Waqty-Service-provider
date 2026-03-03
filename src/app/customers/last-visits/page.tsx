@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Search, Download, CalendarDays, AlertCircle, Phone } from 'lucide-react';
+import { Search, AlertCircle, Phone } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const data = [
     { id: 1, client: 'Fatima Ali', phone: '+20 123 456 789', lastService: 'Hair Coloring', lastEmployee: 'Sara Ahmed', lastDate: '2026-02-17', daysSince: 0, followUp: false },
@@ -31,46 +32,47 @@ const s: Record<string, React.CSSProperties> = {
     callBtn: { display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', cursor: 'pointer', fontSize: 12, color: 'var(--color-primary-600)' },
 };
 
-function getDaysBadge(days: number) {
-    if (days <= 7) return { bg: 'var(--color-success-light)', color: 'var(--color-success)', label: `${days}d ago` };
-    if (days <= 30) return { bg: 'var(--color-warning-light)', color: 'var(--color-warning)', label: `${days}d ago` };
-    return { bg: 'var(--color-error-light)', color: 'var(--color-error)', label: `${days}d ago` };
+function getDaysBadge(days: number, t: any) {
+    if (days <= 7) return { bg: 'var(--color-success-light)', color: 'var(--color-success)', label: `${days} ${t('custVisits.daysAgo')}` };
+    if (days <= 30) return { bg: 'var(--color-warning-light)', color: 'var(--color-warning)', label: `${days} ${t('custVisits.daysAgo')}` };
+    return { bg: 'var(--color-error-light)', color: 'var(--color-error)', label: `${days} ${t('custVisits.daysAgo')}` };
 }
 
 export default function LastVisitsPage() {
+    const { t, lang } = useTranslation();
     const [search, setSearch] = useState('');
     const filtered = data.filter(d => d.client.toLowerCase().includes(search.toLowerCase()));
 
     return (
-        <div style={s.page}>
-            <div style={s.tabs}>
-                <Link href="/customers" style={s.tab}>Clients</Link>
-                <Link href="/customers/groups" style={s.tab}>Groups</Link>
-                <Link href="/customers/statements" style={s.tab}>Statements</Link>
-                <Link href="/customers/last-visits" style={{ ...s.tab, ...s.tabActive }}>Last Visits</Link>
+        <div style={{ ...s.page, direction: lang === 'ar' ? 'rtl' : 'ltr' } as React.CSSProperties}>
+            <div style={s.tabs as React.CSSProperties}>
+                <Link href="/customers" style={s.tab as React.CSSProperties}>{t('custGroups.tabClients')}</Link>
+                <Link href="/customers/groups" style={s.tab as React.CSSProperties}>{t('custGroups.tabGroups')}</Link>
+                <Link href="/customers/statements" style={s.tab as React.CSSProperties}>{t('custGroups.tabStatements')}</Link>
+                <Link href="/customers/last-visits" style={{ ...s.tab, ...s.tabActive } as React.CSSProperties}>{t('custGroups.tabLastVisits')}</Link>
             </div>
 
-            <div style={s.toolbar}>
-                <div style={s.searchBox as React.CSSProperties}><Search size={16} style={s.searchIcon as React.CSSProperties} /><input style={s.searchInput} placeholder="Search clients..." value={search} onChange={e => setSearch(e.target.value)} /></div>
+            <div style={s.toolbar as React.CSSProperties}>
+                <div style={s.searchBox as React.CSSProperties}><Search size={16} style={{ ...s.searchIcon, ...(lang === 'ar' ? { right: 12, left: 'auto' } : { left: 12, right: 'auto' }) } as React.CSSProperties} /><input style={{ ...s.searchInput, ...(lang === 'ar' ? { paddingRight: 40, paddingLeft: 12 } : { paddingLeft: 40, paddingRight: 12 }) } as React.CSSProperties} placeholder={t('custStmts.searchPlaceholder')} value={search} onChange={e => setSearch(e.target.value)} /></div>
             </div>
 
-            <table style={s.table}>
-                <thead><tr>{['Client', 'Phone', 'Last Service', 'Employee', 'Last Visit', 'Days Since', 'Follow-up', ''].map((h, i) => <th key={i} style={s.th as React.CSSProperties}>{h}</th>)}</tr></thead>
+            <table style={s.table as React.CSSProperties}>
+                <thead><tr>{[t('custStmts.colClient'), t('custProfile.lblPhone'), t('custVisits.colLastService'), t('custProfile.colEmp'), t('custVisits.colLastVisit'), t('custVisits.colDaysSince'), t('custVisits.colFollowUp'), ''].map((h, i) => <th key={i} style={{ ...s.th, textAlign: lang === 'ar' ? 'right' : 'left' } as React.CSSProperties}>{h}</th>)}</tr></thead>
                 <tbody>
                     {filtered.map(row => {
-                        const daysInfo = getDaysBadge(row.daysSince);
+                        const daysInfo = getDaysBadge(row.daysSince, t);
                         return (
                             <tr key={row.id}>
-                                <td style={{ ...s.td, fontWeight: 'var(--font-medium)' }}>{row.client}</td>
-                                <td style={s.td}>{row.phone}</td>
-                                <td style={s.td}>{row.lastService}</td>
-                                <td style={s.td}>{row.lastEmployee}</td>
-                                <td style={s.td}>{row.lastDate}</td>
-                                <td style={s.td}><span style={{ ...s.badge, background: daysInfo.bg, color: daysInfo.color }}>{daysInfo.label}</span></td>
-                                <td style={s.td}>
-                                    {row.followUp && <span style={{ ...s.badge, background: 'var(--color-warning-light)', color: 'var(--color-warning)' }}><AlertCircle size={12} /> Needs Follow-up</span>}
+                                <td style={{ ...s.td, fontWeight: 'var(--font-medium)' } as React.CSSProperties}>{row.client}</td>
+                                <td style={s.td as React.CSSProperties} dir="ltr" className={lang === 'ar' ? 'text-right' : 'text-left'}>{row.phone}</td>
+                                <td style={s.td as React.CSSProperties}>{row.lastService}</td>
+                                <td style={s.td as React.CSSProperties}>{row.lastEmployee}</td>
+                                <td style={s.td as React.CSSProperties}>{row.lastDate}</td>
+                                <td style={s.td as React.CSSProperties}><span style={{ ...s.badge, background: daysInfo.bg, color: daysInfo.color } as React.CSSProperties}>{daysInfo.label}</span></td>
+                                <td style={s.td as React.CSSProperties}>
+                                    {row.followUp && <span style={{ ...s.badge, background: 'var(--color-warning-light)', color: 'var(--color-warning)' } as React.CSSProperties}><AlertCircle size={12} className={lang === 'ar' ? 'ml-1' : 'mr-1'} /> {t('custVisits.needsFollowUp')}</span>}
                                 </td>
-                                <td style={s.td}><button style={s.callBtn}><Phone size={12} /> Call</button></td>
+                                <td style={s.td as React.CSSProperties}><button style={s.callBtn as React.CSSProperties}><Phone size={12} className={lang === 'ar' ? 'ml-1' : 'mr-1'} /> {t('custVisits.callBtn')}</button></td>
                             </tr>
                         );
                     })}

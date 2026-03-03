@@ -7,15 +7,6 @@ import {
     Download,
     Filter,
     Search,
-    TrendingUp,
-    Users,
-    DollarSign,
-    CalendarDays,
-    Clock,
-    Star,
-    Package,
-    FileText,
-    Activity,
     ArrowRight,
     ArrowUpDown,
     ChevronLeft,
@@ -35,10 +26,33 @@ import {
     XAxis,
     YAxis,
     CartesianGrid,
-    Tooltip,
-    AreaChart,
-    Area
+    Tooltip
 } from 'recharts';
+
+// --- Data Types ---
+export interface ReportAction {
+    label: string;
+    href: string;
+}
+
+export interface ReportRow {
+    id: number | string;
+    col1?: string;
+    col2?: string;
+    col3?: string;
+    col4?: string;
+    col5?: string;
+    action?: ReportAction;
+    [key: string]: any;
+}
+
+export interface ReportData {
+    title: string;
+    chartType: 'bar' | 'line' | 'none';
+    columns: string[];
+    rows: ReportRow[];
+    chartData: Array<{ name: string; value: number }>;
+}
 
 // --- Data Generators ---
 
@@ -127,7 +141,7 @@ const getBookingsData = (report: string) => {
     if (report === 'cancellations') {
         return {
             title: 'Cancellation Report',
-            chartType: 'bar',
+            chartType: 'bar' as const,
             columns: ['Date', 'Cancelled By', 'Reason', 'Lost Revenue'],
             rows: [
                 { id: 1, col1: '2026-02-18', col2: 'Client', col3: 'Sick', col4: '450 EGP', action: { label: 'View Booking', href: '/bookings/BK-28492' } },
@@ -142,7 +156,7 @@ const getBookingsData = (report: string) => {
     if (report === 'history') {
         return {
             title: 'Booking History',
-            chartType: 'none',
+            chartType: 'none' as const,
             columns: ['ID', 'Date', 'Client', 'Service', 'Status'],
             rows: [
                 { id: 1, col1: '#BK-1001', col2: 'Feb 18', col3: 'Fatima Al-Rashid', col4: 'Hair Cut', col5: 'Completed', action: { label: 'View', href: '/bookings/BK-1001' } },
@@ -159,7 +173,7 @@ const getBookingsData = (report: string) => {
     if (report === 'utilization') {
         return {
             title: 'Room & Resource Utilization',
-            chartType: 'bar',
+            chartType: 'bar' as const,
             columns: ['Resource', 'Type', 'Total Hours', 'Used Hours', 'Utilization'],
             rows: [
                 { id: 1, col1: 'Room A — VIP Suite', col2: 'Treatment Room', col3: '176', col4: '152', col5: '86%' },
@@ -175,7 +189,7 @@ const getBookingsData = (report: string) => {
     if (report === 'sources') {
         return {
             title: 'Online vs Walk-in Bookings',
-            chartType: 'bar',
+            chartType: 'bar' as const,
             columns: ['Source', 'Bookings', 'Revenue', '% of Total', 'Avg Ticket'],
             rows: [
                 { id: 1, col1: 'Online — Website', col2: '320', col3: '68,000 EGP', col4: '38%', col5: '213 EGP' },
@@ -189,7 +203,7 @@ const getBookingsData = (report: string) => {
     }
     return {
         title: 'Booking Report',
-        chartType: 'bar',
+        chartType: 'bar' as const,
         columns: ['Date', 'Total Bookings', 'Completed', 'Cancelled', 'Utilization'],
         rows: [
             { id: 1, col1: 'Feb 18', col2: '45', col3: '40', col4: '2', col5: '88%' },
@@ -259,7 +273,7 @@ const getClientsData = (report: string) => {
     if (report === 'top-spenders') {
         return {
             title: 'Top Spenders',
-            chartType: 'bar',
+            chartType: 'bar' as const,
             columns: ['Client', 'Total Spent', 'Visits', 'Avg Per Visit', 'Last Visit'],
             rows: [
                 { id: 1, col1: 'Fatima Al-Rashid', col2: '12,500 EGP', col3: '28', col4: '446 EGP', col5: 'Feb 18' },
@@ -275,7 +289,7 @@ const getClientsData = (report: string) => {
     if (report === 'retention') {
         return {
             title: 'Client Retention Rate',
-            chartType: 'bar',
+            chartType: 'bar' as const,
             columns: ['Segment', 'Total Clients', 'Returned', 'Retention Rate', 'Avg Visits'],
             rows: [
                 { id: 1, col1: 'VIP (10+ visits)', col2: '45', col3: '42', col4: '93%', col5: '18.5' },
@@ -290,7 +304,7 @@ const getClientsData = (report: string) => {
     if (report === 'feedback') {
         return {
             title: 'Client Feedback & Ratings',
-            chartType: 'bar',
+            chartType: 'bar' as const,
             columns: ['Service', 'Avg Rating', 'Reviews', '5-Star %', 'Common Praise'],
             rows: [
                 { id: 1, col1: 'Full Body Massage', col2: '4.9', col3: '52', col4: '88%', col5: 'Relaxing atmosphere' },
@@ -305,7 +319,7 @@ const getClientsData = (report: string) => {
     if (report === 'demographics') {
         return {
             title: 'Client Demographics',
-            chartType: 'bar',
+            chartType: 'bar' as const,
             columns: ['Segment', 'Clients', '% of Total', 'Avg Spend', 'Top Service'],
             rows: [
                 { id: 1, col1: 'Age 18-25', col2: '185', col3: '15%', col4: '280 EGP', col5: 'Gel Manicure' },
@@ -319,7 +333,7 @@ const getClientsData = (report: string) => {
     }
     return {
         title: 'Client Report',
-        chartType: 'none',
+        chartType: 'none' as const,
         columns: ['Metric', 'Value', 'Change'],
         rows: [
             { id: 1, col1: 'Overall Retention', col2: '78%', col3: '+2%' },
@@ -334,7 +348,7 @@ const getServicesData = (report: string) => {
     if (report === 'popularity') {
         return {
             title: 'Service Popularity',
-            chartType: 'bar',
+            chartType: 'bar' as const,
             columns: ['Service', 'Category', 'Bookings', 'Revenue', 'Rating'],
             rows: [
                 { id: 1, col1: 'HydraFacial', col2: 'Skin', col3: '85', col4: '14,000 EGP', col5: '4.9' },
@@ -350,7 +364,7 @@ const getServicesData = (report: string) => {
     if (report === 'revenue') {
         return {
             title: 'Revenue per Service',
-            chartType: 'bar',
+            chartType: 'bar' as const,
             columns: ['Service', 'Category', 'Qty Sold', 'Revenue', '% of Total'],
             rows: [
                 { id: 1, col1: 'Laser Hair Removal', col2: 'Laser', col3: '25', col4: '18,750 EGP', col5: '24%' },
@@ -367,7 +381,7 @@ const getServicesData = (report: string) => {
     if (report === 'duration') {
         return {
             title: 'Service Duration Analysis',
-            chartType: 'bar',
+            chartType: 'bar' as const,
             columns: ['Service', 'Scheduled Duration', 'Actual Avg', 'Variance', 'On-Time %'],
             rows: [
                 { id: 1, col1: 'Hair Cut & Style', col2: '45 min', col3: '42 min', col4: '-3 min', col5: '92%' },
@@ -383,7 +397,7 @@ const getServicesData = (report: string) => {
     if (report === 'categories') {
         return {
             title: 'Category Performance',
-            chartType: 'bar',
+            chartType: 'bar' as const,
             columns: ['Category', 'Services', 'Bookings', 'Revenue', 'Avg Rating'],
             rows: [
                 { id: 1, col1: 'Hair', col2: '8', col3: '142', col4: '28,500 EGP', col5: '4.8' },
@@ -397,7 +411,7 @@ const getServicesData = (report: string) => {
     }
     return {
         title: 'Service Report',
-        chartType: 'bar',
+        chartType: 'bar' as const,
         columns: ['Service', 'Value', 'Change'],
         rows: [
             { id: 1, col1: 'HydraFacial', col2: '14,000 EGP', col3: '+8%' },
@@ -412,7 +426,7 @@ const getCustomData = (report: string) => {
     if (report === 'revenue-bookings') {
         return {
             title: 'Revenue vs Bookings Correlation',
-            chartType: 'bar',
+            chartType: 'bar' as const,
             columns: ['Period', 'Bookings', 'Revenue', 'Revenue/Booking', 'Change'],
             rows: [
                 { id: 1, col1: 'February 2026', col2: '270', col3: '58,000 EGP', col4: '215 EGP', col5: '+12%' },
@@ -427,7 +441,7 @@ const getCustomData = (report: string) => {
     if (report === 'employee-efficiency') {
         return {
             title: 'Employee Efficiency Analysis',
-            chartType: 'bar',
+            chartType: 'bar' as const,
             columns: ['Employee', 'Hours Worked', 'Revenue Generated', 'Revenue/Hour', 'Clients Served'],
             rows: [
                 { id: 1, col1: 'Sara Ahmed', col2: '168', col3: '24,000 EGP', col4: '143 EGP', col5: '58' },
@@ -442,7 +456,7 @@ const getCustomData = (report: string) => {
     if (report === 'client-ltv') {
         return {
             title: 'Client Lifetime Value',
-            chartType: 'bar',
+            chartType: 'bar' as const,
             columns: ['Segment', 'Clients', 'Avg LTV', 'Total Value', 'Avg Visits'],
             rows: [
                 { id: 1, col1: 'Platinum (>10K)', col2: '25', col3: '14,200 EGP', col4: '355,000 EGP', col5: '32' },
@@ -457,7 +471,7 @@ const getCustomData = (report: string) => {
     if (report === 'monthly-summary') {
         return {
             title: 'Monthly Executive Summary',
-            chartType: 'bar',
+            chartType: 'bar' as const,
             columns: ['Metric', 'This Month', 'Last Month', 'Change', 'Target'],
             rows: [
                 { id: 1, col1: 'Total Revenue', col2: '58,000 EGP', col3: '55,000 EGP', col4: '+5.5%', col5: '60,000 EGP' },
@@ -473,7 +487,7 @@ const getCustomData = (report: string) => {
     }
     return {
         title: report.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-        chartType: 'bar',
+        chartType: 'bar' as const,
         columns: ['Metric', 'Current', 'Previous', 'Change'],
         rows: [
             { id: 1, col1: 'Revenue', col2: '58,000 EGP', col3: '51,500 EGP', col4: '+12.6%' },
@@ -484,7 +498,7 @@ const getCustomData = (report: string) => {
     };
 };
 
-const generateData = (category: string, report: string): { title: string; chartType: string; columns: string[]; rows: any[]; chartData: Array<{ name: string; value: number }> } => {
+const generateData = (category: string, report: string): ReportData => {
     if (category === 'sales' || category === 'revenue') return getSalesData(report);
     if (category === 'bookings') return getBookingsData(report);
     if (category === 'employees') return getEmployeesData(report);
@@ -535,8 +549,8 @@ export default function DynamicReportPage({ params }: { params: Promise<{ catego
 
         // Search
         if (search) {
-            rows = rows.filter((row: any) => {
-                return ['col1', 'col2', 'col3', 'col4', 'col5'].some(key =>
+            rows = rows.filter((row: ReportRow) => {
+                return (['col1', 'col2', 'col3', 'col4', 'col5'] as const).some(key =>
                     row[key] && String(row[key]).toLowerCase().includes(search.toLowerCase())
                 );
             });
@@ -544,8 +558,8 @@ export default function DynamicReportPage({ params }: { params: Promise<{ catego
 
         // Sort
         if (sortCol !== null) {
-            const key = `col${sortCol + 1}`;
-            rows = [...rows].sort((a: any, b: any) => {
+            const key = `col${sortCol + 1}` as keyof ReportRow;
+            rows = [...rows].sort((a: ReportRow, b: ReportRow) => {
                 const aVal = String(a[key] || '');
                 const bVal = String(b[key] || '');
                 // Try numeric sort
@@ -655,17 +669,17 @@ export default function DynamicReportPage({ params }: { params: Promise<{ catego
                                         </span>
                                     </th>
                                 ))}
-                                {data.rows.some((r: any) => r.action) && <th style={tableStyles.th as React.CSSProperties}>Action</th>}
+                                {data.rows.some((r: ReportRow) => r.action) && <th style={tableStyles.th as React.CSSProperties}>Action</th>}
                             </tr>
                         </thead>
                         <tbody>
                             {filteredRows.length === 0 ? (
                                 <tr><td colSpan={data.columns.length + 1} style={{ ...tableStyles.td, textAlign: 'center', color: 'var(--text-tertiary)', padding: 'var(--space-6)' }}>No data matches your search</td></tr>
                             ) : (
-                                filteredRows.map((row: any, i: number) => (
+                                filteredRows.map((row: ReportRow, i: number) => (
                                     <tr key={i} style={{ cursor: row.action ? 'pointer' : 'default' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-secondary)'} onMouseLeave={e => e.currentTarget.style.background = ''}>
                                         {data.columns.map((_, ci) => {
-                                            const key = `col${ci + 1}`;
+                                            const key = `col${ci + 1}` as keyof ReportRow;
                                             const val = row[key];
                                             const isStatus = typeof val === 'string' && ['Completed', 'Confirmed', 'Cancelled', 'Pending', 'Paid', 'OK'].includes(val);
                                             return (
@@ -676,7 +690,7 @@ export default function DynamicReportPage({ params }: { params: Promise<{ catego
                                                 </td>
                                             );
                                         })}
-                                        {data.rows.some((r: any) => r.action) && (
+                                        {data.rows.some((r: ReportRow) => r.action) && (
                                             <td style={tableStyles.td}>
                                                 {row.action && (
                                                     <Link href={row.action.href} style={{

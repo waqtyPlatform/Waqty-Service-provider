@@ -11,6 +11,7 @@ export interface SettingsState {
     address: string;
     phone: string;
     email: string;
+    language: 'en' | 'ar';
 
     // Preferences
     allowOnlineBooking: boolean;
@@ -31,6 +32,7 @@ const defaultSettings: SettingsState = {
     address: '12 El-Nozha St, Heliopolis, Cairo, Egypt',
     phone: '+20 2 1234 5678',
     email: 'info@hagzy.com',
+    language: 'en',
     allowOnlineBooking: true,
     allowWalkIn: true,
     requireDeposit: false,
@@ -65,6 +67,14 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             setIsLoaded(true);
         }
     }, []);
+
+    // Sync language with HTML document
+    useEffect(() => {
+        if (typeof document !== 'undefined') {
+            document.documentElement.lang = settings.language === 'ar' ? 'ar-EG' : 'en';
+            document.documentElement.dir = settings.language === 'ar' ? 'rtl' : 'ltr';
+        }
+    }, [settings.language]);
 
     // Update settings wrapper
     const updateSettings = (newSettings: Partial<SettingsState>) => {

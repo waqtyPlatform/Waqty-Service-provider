@@ -209,8 +209,8 @@
 .kpiSparkline {
   position: absolute;
   bottom: 0;
-  left: 0;
-  right: 0;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
   height: 40px;
   opacity: 0.15;
   pointer-events: none;
@@ -353,7 +353,7 @@
 }
 
 .legendValue {
-  margin-left: auto;
+  margin-inline-start: auto;
   font-weight: var(--font-semibold);
   color: var(--text-primary);
 }

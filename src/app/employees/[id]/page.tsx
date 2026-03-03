@@ -3,21 +3,15 @@
 import React, { useState } from 'react';
 import {
     User,
-    Phone,
-    Mail,
-    MapPin,
     Calendar,
     Briefcase,
     Award,
     Clock,
-    Scissors,
     TrendingUp,
     DollarSign,
     MoreHorizontal,
     Edit,
-    CheckCircle,
     UserCheck,
-    Percent,
     Lock,
     Shield,
     Activity,
@@ -35,9 +29,9 @@ import {
     Modal,
     Input,
     Select,
-    DropdownMenu,
-    Switch
+    DropdownMenu
 } from '@/components/ui';
+import { useTranslation } from '@/hooks/useTranslation';
 import {
     AreaChart,
     Area,
@@ -45,9 +39,7 @@ import {
     YAxis,
     CartesianGrid,
     Tooltip as RechartsTooltip,
-    ResponsiveContainer,
-    BarChart,
-    Bar
+    ResponsiveContainer
 } from 'recharts';
 import styles from './page.module.css';
 
@@ -100,6 +92,7 @@ const modules = ['dashboard', 'sales', 'transactions', 'returns', 'customers', '
 
 export default function EmployeeProfilePage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = React.use(params);
+    const { t, lang } = useTranslation();
     const [activeTab, setActiveTab] = useState('performance');
     const { addToast } = useToast();
 
@@ -146,12 +139,12 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
         else if (action === 'Reset Password') setIsResetPasswordOpen(true);
         else if (action === 'Suspend Account') setIsSuspendOpen(true);
         else if (action === 'Delete Employee') setIsDeleteOpen(true);
-        else addToast('info', `${action} action is developing. Will be available soon.`);
+        else addToast('info', `${action} ${t('empProfile.actionDev')}`);
     };
 
     const handleSaveEdit = () => {
         setIsEditOpen(false);
-        addToast('success', 'Profile updated successfully');
+        addToast('success', t('empProfile.profileUpd'));
     };
 
     const renderPerformance = () => (
@@ -163,7 +156,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                         iconBg="var(--color-success-100)"
                         iconColor="var(--color-success-600)"
                         value={employee.stats.revenue}
-                        label="Monthly Revenue (EGP)"
+                        label={t('empProfile.kpiRev')}
                         trend={{ value: '12%', up: true }}
                     />
                     <KPICard
@@ -171,7 +164,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                         iconBg="var(--color-primary-100)"
                         iconColor="var(--color-primary-600)"
                         value={employee.stats.retention}
-                        label="Client Retention"
+                        label={t('empProfile.kpiRet')}
                         trend={{ value: '5%', up: true }}
                     />
                     <KPICard
@@ -179,7 +172,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                         iconBg="var(--color-purple-100)"
                         iconColor="var(--color-purple-600)"
                         value={employee.stats.appointments}
-                        label="Appointments"
+                        label={t('empProfile.kpiAppts')}
                         trend={{ value: '2', up: false }}
                     />
                     <KPICard
@@ -187,13 +180,13 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                         iconBg="var(--color-amber-100)"
                         iconColor="var(--color-amber-600)"
                         value={employee.stats.rating}
-                        label="Avg Rating"
+                        label={t('empProfile.kpiRating')}
                     />
                 </div>
 
                 <div className={styles.card} style={{ marginTop: 'var(--space-6)' }}>
                     <div className={styles.cardHeader}>
-                        <span className={styles.cardTitle}><TrendingUp size={18} /> Performance Analytics</span>
+                        <span className={styles.cardTitle}><TrendingUp size={18} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('empProfile.perfAnalytics')}</span>
                     </div>
                     <div className={styles.cardBody} style={{ height: '300px', paddingTop: 'var(--space-4)' }}>
                         <ResponsiveContainer width="100%" height="100%">
@@ -205,7 +198,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                                     </linearGradient>
                                 </defs>
                                 <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }} tickFormatter={(val) => `${val / 1000}k`} />
+                                <YAxis orientation={lang === 'ar' ? 'right' : 'left'} axisLine={false} tickLine={false} tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }} tickFormatter={(val) => `${val / 1000}k`} />
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
                                 <RechartsTooltip
                                     contentStyle={{ borderRadius: '8px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}
@@ -219,7 +212,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
 
                 <div className={styles.card}>
                     <div className={styles.cardHeader}>
-                        <span className={styles.cardTitle}><Clock size={18} /> Recent Activity</span>
+                        <span className={styles.cardTitle}><Clock size={18} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('empProfile.recentActivity')}</span>
                     </div>
                     <div className={styles.cardBody}>
                         <Timeline events={recentActivity} />
@@ -230,7 +223,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
             <div className={styles.sidePanel}>
                 <div className={styles.card}>
                     <div className={styles.cardHeader}>
-                        <span className={styles.cardTitle}>Assigned Services</span>
+                        <span className={styles.cardTitle}>{t('empProfile.assignedServ')}</span>
                         <Button variant="ghost" size="sm" iconOnly onClick={() => setIsEditServicesOpen(true)}><Edit size={14} /></Button>
                     </div>
                     <div className={styles.cardBody}>
@@ -252,8 +245,8 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
         <div className={styles.mainPanel}>
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
-                    <span className={styles.cardTitle}>Weekly Schedule (Standard)</span>
-                    <Button variant="outline" size="sm" onClick={() => { setEditableSchedule(schedule.map(d => ({ ...d }))); setIsScheduleEditOpen(true); }}>Edit Schedule</Button>
+                    <span className={styles.cardTitle}>{t('empProfile.weeklySchedule')}</span>
+                    <Button variant="outline" size="sm" onClick={() => { setEditableSchedule(schedule.map(d => ({ ...d }))); setIsScheduleEditOpen(true); }}>{t('empProfile.editSchedule')}</Button>
                 </div>
                 <div className={styles.cardBody}>
                     <div className={styles.scheduleGrid}>
@@ -261,15 +254,15 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                             <div key={i} className={styles.scheduleDay}>
                                 <div className={styles.dayName}>{day.day}</div>
                                 {day.off ? (
-                                    <div className={styles.dayOff}>OFF</div>
+                                    <div className={styles.dayOff}>{t('empProfile.dayOff')}</div>
                                 ) : (
                                     <div className={styles.dayTime}>
                                         {day.start}<br />
-                                        to<br />
+                                        {t('empProfile.to')}<br />
                                         {day.end}
                                         {day.breakStart && (
                                             <div style={{ fontSize: '10px', color: 'var(--color-warning)', marginTop: '4px' }}>
-                                                Break: {day.breakStart} – {day.breakEnd}
+                                                {t('empProfile.break')} {day.breakStart} – {day.breakEnd}
                                             </div>
                                         )}
                                     </div>
@@ -283,7 +276,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
     );
 
     return (
-        <div className={styles.page}>
+        <div className={styles.page} style={{ direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
             {/* Header */}
             <div className={styles.header}>
                 <div className={styles.headerTop}>
@@ -295,40 +288,40 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                                 <Badge color="primary">{employee.position}</Badge>
                             </h1>
                             <div className={styles.meta}>
-                                <span className={styles.metaItem}><Briefcase size={14} /> {employee.department}</span>
-                                <span className={styles.metaItem}><User size={14} /> ID: {employee.id}</span>
-                                <Badge color="success">Active</Badge>
+                                <span className={styles.metaItem}><Briefcase size={14} className={lang === 'ar' ? 'ml-1' : 'mr-1'} /> {employee.department}</span>
+                                <span className={styles.metaItem}><User size={14} className={lang === 'ar' ? 'ml-1' : 'mr-1'} /> ID: {employee.id}</span>
+                                <Badge color="success">{t('empProfile.activeBadge')}</Badge>
                             </div>
                         </div>
                     </div>
                     <div className={styles.actions}>
                         <DropdownMenu
                             trigger={<Button variant="outline" iconOnly><MoreHorizontal size={20} /></Button>}
-                            align="right"
+                            align={lang === 'ar' ? 'left' : 'right'}
                             items={[
-                                { label: 'Manage Permissions', icon: <Shield size={16} />, onClick: () => handleActionClick('Manage Permissions') },
-                                { label: 'View Activity Log', icon: <Activity size={16} />, onClick: () => handleActionClick('View Activity Log') },
-                                { label: 'Reset Password', icon: <Lock size={16} />, onClick: () => handleActionClick('Reset Password') },
-                                { label: 'Suspend Account', icon: <Clock size={16} />, onClick: () => handleActionClick('Suspend Account') },
-                                { label: 'Delete Employee', icon: <Trash2 size={16} />, onClick: () => handleActionClick('Delete Employee'), destructive: true },
+                                { label: t('empProfile.managePermBtn'), icon: <Shield size={16} />, onClick: () => handleActionClick('Manage Permissions') },
+                                { label: t('empProfile.viewLogBtn'), icon: <Activity size={16} />, onClick: () => handleActionClick('View Activity Log') },
+                                { label: t('empProfile.resetPwdBtn'), icon: <Lock size={16} />, onClick: () => handleActionClick('Reset Password') },
+                                { label: t('empProfile.suspendBtn'), icon: <Clock size={16} />, onClick: () => handleActionClick('Suspend Account') },
+                                { label: t('empProfile.deleteBtn'), icon: <Trash2 size={16} />, onClick: () => handleActionClick('Delete Employee'), destructive: true },
                             ]}
                         />
-                        <Button variant="outline" onClick={() => handleActionClick('Edit Profile')}><Edit size={16} /> Edit Profile</Button>
+                        <Button variant="outline" onClick={() => handleActionClick('Edit Profile')}><Edit size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('empProfile.editAction')}</Button>
                     </div>
                 </div>
 
                 <div className={styles.headerStats}>
                     <div className={styles.statItem}>
                         <span className={styles.statValue}>{employee.performance}%</span>
-                        <span className={styles.statLabel}>Performance</span>
+                        <span className={styles.statLabel}>{t('empProfile.tabPerformance')}</span>
                     </div>
                     <div className={styles.statItem}>
                         <span className={styles.statValue}>{employee.joined}</span>
-                        <span className={styles.statLabel}>Joined Date</span>
+                        <span className={styles.statLabel}>{t('empProfile.joinedLabel')}</span>
                     </div>
                     <div className={styles.statItem}>
                         <span className={styles.statValue}>{employee.phone}</span>
-                        <span className={styles.statLabel}>Phone</span>
+                        <span className={styles.statLabel}>{t('empProfile.phoneLabel')}</span>
                     </div>
                 </div>
             </div>
@@ -338,9 +331,9 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                 active={activeTab}
                 onChange={setActiveTab}
                 items={[
-                    { key: 'performance', label: 'Performance', icon: <TrendingUp size={16} /> },
-                    { key: 'schedule', label: 'Schedule', icon: <Calendar size={16} /> },
-                    { key: 'attendance', label: 'Attendance', icon: <Clock size={16} /> },
+                    { key: 'performance', label: t('empProfile.tabPerformance'), icon: <TrendingUp size={16} /> },
+                    { key: 'schedule', label: t('empProfile.tabSchedule'), icon: <Calendar size={16} /> },
+                    { key: 'attendance', label: t('empProfile.tabAttendance'), icon: <Clock size={16} /> },
                 ]}
             />
 
@@ -350,22 +343,22 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
             {activeTab === 'attendance' && (
                 <EmptyState
                     icon={<Clock size={48} />}
-                    title="No attendance records"
-                    description="Attendance logs will appear here once the employee clocks in."
+                    title={t('empProfile.emptyAttTitle')}
+                    description={t('empProfile.emptyAttDesc')}
                 />
             )}
 
-            <Modal open={isEditOpen} onClose={() => setIsEditOpen(false)} title="Edit Employee Profile">
+            <Modal open={isEditOpen} onClose={() => setIsEditOpen(false)} title={t('empProfile.editTitle')}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
                         <Input
-                            label="First Name"
+                            label={t('empProfile.lblFName')}
                             placeholder="Sarah"
                             value={editEmp.fname}
                             onChange={(e) => setEditEmp({ ...editEmp, fname: e.target.value })}
                         />
                         <Input
-                            label="Last Name"
+                            label={t('empProfile.lblLName')}
                             placeholder="Ahmed"
                             value={editEmp.lname}
                             onChange={(e) => setEditEmp({ ...editEmp, lname: e.target.value })}
@@ -373,13 +366,13 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
                         <Input
-                            label="Phone Number"
+                            label={t('empProfile.lblPhone')}
                             placeholder="+20 100 123 4567"
                             value={editEmp.phone}
                             onChange={(e) => setEditEmp({ ...editEmp, phone: e.target.value })}
                         />
                         <Input
-                            label="Email Address"
+                            label={t('empProfile.lblEmail')}
                             type="email"
                             placeholder="sarah.ahmed@hagzy.app"
                             value={editEmp.email}
@@ -390,7 +383,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                     <div style={{ borderTop: '1px solid var(--border-color)', margin: 'var(--space-2) 0' }}></div>
 
                     <Select
-                        label="System Role"
+                        label={t('empProfile.lblRole')}
                         value={editEmp.role}
                         onChange={(e) => setEditEmp({ ...editEmp, role: e.target.value })}
                         options={[
@@ -402,7 +395,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
                         <Select
-                            label="Job Title"
+                            label={t('empProfile.lblJobTitle')}
                             value={editEmp.jobTitle}
                             onChange={(e) => setEditEmp({ ...editEmp, jobTitle: e.target.value })}
                             options={[
@@ -412,7 +405,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                             ]}
                         />
                         <Select
-                            label="Primary Branch"
+                            label={t('empProfile.lblBranch')}
                             value={editEmp.branch}
                             onChange={(e) => setEditEmp({ ...editEmp, branch: e.target.value })}
                             options={[
@@ -424,33 +417,33 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
-                        <Button variant="outline" onClick={() => setIsEditOpen(false)}>Cancel</Button>
-                        <Button onClick={handleSaveEdit}>Save Changes</Button>
+                        <Button variant="outline" onClick={() => setIsEditOpen(false)}>{t('empProfile.btnCancel')}</Button>
+                        <Button onClick={handleSaveEdit}>{t('empProfile.btnSave')}</Button>
                     </div>
                 </div>
             </Modal>
 
             {/* Manage Permissions Modal */}
-            <Modal open={isPermissionsOpen} onClose={() => setIsPermissionsOpen(false)} title="Manage Permissions">
+            <Modal open={isPermissionsOpen} onClose={() => setIsPermissionsOpen(false)} title={t('empProfile.permTitle')}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                     <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)' }}>
-                        Configure granular access rights and module visibility for {employee.name}. This will override their default Job Role permissions.
+                        {t('empProfile.permDesc1')}<strong>{employee.name}</strong>{t('empProfile.permDesc2')}
                     </p>
                     <div style={{ border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                             <thead style={{ background: 'var(--bg-secondary)' }}>
                                 <tr>
-                                    <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'left', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>Module</th>
-                                    <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>View</th>
-                                    <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>Create</th>
-                                    <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>Edit</th>
-                                    <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>Delete</th>
+                                    <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: lang === 'ar' ? 'right' : 'left', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>{t('empProfile.colMod')}</th>
+                                    <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>{t('empProfile.colView')}</th>
+                                    <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>{t('empProfile.colCreate')}</th>
+                                    <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>{t('empProfile.colEdit')}</th>
+                                    <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>{t('empProfile.colDel')}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {modules.map(m => (
                                     <tr key={m}>
-                                        <td style={{ padding: 'var(--space-2) var(--space-3)', fontSize: 13, borderBottom: '1px solid var(--border-color)' }}>{m.charAt(0).toUpperCase() + m.slice(1)}</td>
+                                        <td style={{ padding: 'var(--space-2) var(--space-3)', fontSize: 13, borderBottom: '1px solid var(--border-color)' }}>{t(`modules.${m}` as any)}</td>
                                         <td style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', borderBottom: '1px solid var(--border-color)' }}><input type="checkbox" defaultChecked={m === 'dashboard' || m === 'sales'} /></td>
                                         <td style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', borderBottom: '1px solid var(--border-color)' }}><input type="checkbox" defaultChecked={m === 'sales'} /></td>
                                         <td style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', borderBottom: '1px solid var(--border-color)' }}><input type="checkbox" defaultChecked={false} /></td>
@@ -461,66 +454,66 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                         </table>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
-                        <Button variant="outline" onClick={() => setIsPermissionsOpen(false)}>Cancel</Button>
-                        <Button onClick={() => { setIsPermissionsOpen(false); addToast('success', 'Permissions updated properly.'); }}>Save Permissions</Button>
+                        <Button variant="outline" onClick={() => setIsPermissionsOpen(false)}>{t('empProfile.btnCancel')}</Button>
+                        <Button onClick={() => { setIsPermissionsOpen(false); addToast('success', t('empProfile.toastPermSec')); }}>{t('empProfile.btnSavePerm')}</Button>
                     </div>
                 </div>
             </Modal>
 
             {/* View Activity Log Modal */}
-            <Modal open={isActivityOpen} onClose={() => setIsActivityOpen(false)} title="Recent Activity">
+            <Modal open={isActivityOpen} onClose={() => setIsActivityOpen(false)} title={t('empProfile.actModalTitle')}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', maxHeight: '60vh', overflowY: 'auto' }}>
                     <Timeline events={recentActivity} />
                     <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 'var(--space-2)' }}>
-                        <Button variant="outline" onClick={() => setIsActivityOpen(false)}>Close</Button>
+                        <Button variant="outline" onClick={() => setIsActivityOpen(false)}>{t('empProfile.btnClose')}</Button>
                     </div>
                 </div>
             </Modal>
 
             {/* Reset Password Modal */}
-            <Modal open={isResetPasswordOpen} onClose={() => setIsResetPasswordOpen(false)} title="Reset Password">
+            <Modal open={isResetPasswordOpen} onClose={() => setIsResetPasswordOpen(false)} title={t('empProfile.resPwdTitle')}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                     <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)' }}>
-                        Are you sure you want to forcibly reset the password for <strong>{employee.name}</strong>? They will be signed out from all active sessions and an automated email with a temporary password link will be dispatched to <strong>{employee.email}</strong>.
+                        {t('empProfile.resPwdDesc1')}<strong>{employee.name}</strong>{t('empProfile.resPwdDesc2')}<strong>{employee.email}</strong>.
                     </p>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
-                        <Button variant="outline" onClick={() => setIsResetPasswordOpen(false)}>Cancel</Button>
-                        <Button onClick={() => { setIsResetPasswordOpen(false); addToast('success', 'Password reset email dispatched.'); }}>Confirm Reset</Button>
+                        <Button variant="outline" onClick={() => setIsResetPasswordOpen(false)}>{t('empProfile.btnCancel')}</Button>
+                        <Button onClick={() => { setIsResetPasswordOpen(false); addToast('success', t('empProfile.toastPwdSec')); }}>{t('empProfile.btnConfirmReset')}</Button>
                     </div>
                 </div>
             </Modal>
 
             {/* Suspend Account Modal */}
-            <Modal open={isSuspendOpen} onClose={() => setIsSuspendOpen(false)} title="Suspend Account">
+            <Modal open={isSuspendOpen} onClose={() => setIsSuspendOpen(false)} title={t('empProfile.suspTitle')}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                     <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)' }}>
-                        Are you sure you want to temporarily suspend <strong>{employee.name}'s</strong> account? They will lose access to the system immediately until the account is reinstated. This action does not delete data.
+                        {t('empProfile.suspDesc1')}<strong>{employee.name}</strong>{t('empProfile.suspDesc2')}
                     </p>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
-                        <Button variant="outline" onClick={() => setIsSuspendOpen(false)}>Cancel</Button>
-                        <Button variant="destructive" onClick={() => { setIsSuspendOpen(false); addToast('error', 'Account has been suspended.'); }}>Suspend Account</Button>
+                        <Button variant="outline" onClick={() => setIsSuspendOpen(false)}>{t('empProfile.btnCancel')}</Button>
+                        <Button variant="destructive" onClick={() => { setIsSuspendOpen(false); addToast('error', t('empProfile.toastSuspSec')); }}>{t('empProfile.suspendBtn')}</Button>
                     </div>
                 </div>
             </Modal>
 
             {/* Delete Employee Modal */}
-            <Modal open={isDeleteOpen} onClose={() => setIsDeleteOpen(false)} title="Delete Employee">
+            <Modal open={isDeleteOpen} onClose={() => setIsDeleteOpen(false)} title={t('empProfile.delTitleModal')}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                     <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)' }}>
-                        Are you sure you want to permanently delete <strong>{employee.name}'s</strong> profile? This action is irreversible and all historic schedule and metric assignments will be orphaned.
+                        {t('empProfile.delDesc1')}<strong>{employee.name}</strong>{t('empProfile.delDesc2')}
                     </p>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
-                        <Button variant="outline" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
-                        <Button variant="destructive" onClick={() => { setIsDeleteOpen(false); addToast('error', 'Employee deleted successfully.'); }}>Delete Permanently</Button>
+                        <Button variant="outline" onClick={() => setIsDeleteOpen(false)}>{t('empProfile.btnCancel')}</Button>
+                        <Button variant="destructive" onClick={() => { setIsDeleteOpen(false); addToast('error', t('empProfile.toastDelSec')); }}>{t('empProfile.btnDelPerm')}</Button>
                     </div>
                 </div>
             </Modal>
 
             {/* Edit Assigned Services Modal */}
-            <Modal open={isEditServicesOpen} onClose={() => setIsEditServicesOpen(false)} title="Edit Assigned Services">
+            <Modal open={isEditServicesOpen} onClose={() => setIsEditServicesOpen(false)} title={t('empProfile.editServTitle')}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                     <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)' }}>
-                        Adjust commission rates per service, unassign existing services, or assign new ones to this employee. Custom rates override the global service settings.
+                        {t('empProfile.servDesc')}
                     </p>
 
                     {/* Add New Service Row */}
@@ -538,15 +531,15 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                                 if (newServiceSelection !== 'none') {
                                     setEmpServices([...empServices, { name: newServiceSelection, commission: '10%' }]);
                                     setNewServiceSelection('none');
-                                    addToast('success', `${newServiceSelection} assigned with default 10% commission.`);
+                                    addToast('success', `${newServiceSelection}${t('empProfile.toastAssignedPart')}`);
                                 }
                             }}
                         >
-                            <Plus size={16} /> Add
+                            <Plus size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('empProfile.btnAdd')}
                         </Button>
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', maxHeight: '50vh', overflowY: 'auto', paddingRight: 'var(--space-1)', marginRight: '-var(--space-1)' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', maxHeight: '50vh', overflowY: 'auto', ...(lang === 'ar' ? { paddingLeft: 'var(--space-1)', marginLeft: '-var(--space-1)' } : { paddingRight: 'var(--space-1)', marginRight: '-var(--space-1)' }) }}>
                         {empServices.map((s, idx) => (
                             <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', padding: 'var(--space-3)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)' }}>
                                 <div style={{ flex: 1, fontWeight: 'var(--font-medium)', fontSize: 'var(--text-sm)' }}>
@@ -555,9 +548,9 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                                 <div style={{ position: 'relative', width: '80px' }}>
                                     <Input
                                         defaultValue={s.commission.replace('%', '')}
-                                        style={{ textAlign: 'right', paddingRight: '22px' }}
+                                        style={lang === 'ar' ? { textAlign: 'left', paddingLeft: '22px' } : { textAlign: 'right', paddingRight: '22px' }}
                                     />
-                                    <span style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)', pointerEvents: 'none' }}>%</span>
+                                    <span style={{ position: 'absolute', ...(lang === 'ar' ? { left: '10px' } : { right: '10px' }), top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)', pointerEvents: 'none' }}>%</span>
                                 </div>
                                 <Button
                                     variant="ghost"
@@ -571,17 +564,17 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                         ))}
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
-                        <Button variant="outline" onClick={() => setIsEditServicesOpen(false)}>Cancel</Button>
-                        <Button onClick={() => { setIsEditServicesOpen(false); addToast('success', 'Assigned services updated.'); }}>Save Services</Button>
+                        <Button variant="outline" onClick={() => setIsEditServicesOpen(false)}>{t('empProfile.btnCancel')}</Button>
+                        <Button onClick={() => { setIsEditServicesOpen(false); addToast('success', t('empProfile.toastServSec')); }}>{t('empProfile.btnSaveServ')}</Button>
                     </div>
                 </div>
             </Modal>
 
             {/* Edit Schedule Modal */}
-            <Modal open={isScheduleEditOpen} onClose={() => setIsScheduleEditOpen(false)} title="Edit Weekly Schedule">
+            <Modal open={isScheduleEditOpen} onClose={() => setIsScheduleEditOpen(false)} title={t('empProfile.editSchedTitle')}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                     <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)' }}>
-                        Adjust working hours for each day. Toggle &quot;Day Off&quot; to mark non-working days.
+                        {t('empProfile.schedDesc')}
                     </p>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', maxHeight: '50vh', overflowY: 'auto' }}>
                         {editableSchedule.map((day, i) => (
@@ -589,7 +582,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                                 <div style={{ width: 90, fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-sm)', color: day.off ? 'var(--text-tertiary)' : 'var(--text-primary)' }}>{day.day}</div>
                                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', opacity: day.off ? 0.4 : 1 }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', width: 40 }}>Shift</span>
+                                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', width: 40 }}>{t('empProfile.lblShift')}</span>
                                         <Input
                                             type="time"
                                             value={day.off ? '' : day.start.replace(/ AM| PM/g, '')}
@@ -601,7 +594,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                                             }}
                                             style={{ flex: 1 }}
                                         />
-                                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>to</span>
+                                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{t('empProfile.to')}</span>
                                         <Input
                                             type="time"
                                             value={day.off ? '' : day.end.replace(/ AM| PM/g, '')}
@@ -616,7 +609,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                                     </div>
                                     {!day.off && (
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                                            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-warning)', width: 40, fontWeight: 'var(--font-medium)' }}>Break</span>
+                                            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-warning)', width: 40, fontWeight: 'var(--font-medium)' }}>{t('empProfile.break').replace(':', '')}</span>
                                             <Input
                                                 type="time"
                                                 value={day.breakStart?.replace(/ AM| PM/g, '') || ''}
@@ -628,7 +621,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                                                 }}
                                                 style={{ flex: 1 }}
                                             />
-                                            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>to</span>
+                                            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{t('empProfile.to')}</span>
                                             <Input
                                                 type="time"
                                                 value={day.breakEnd?.replace(/ AM| PM/g, '') || ''}
@@ -653,14 +646,14 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                                             setEditableSchedule(updated);
                                         }}
                                     />
-                                    Day Off
+                                    {t('empProfile.lblDayOff')}
                                 </label>
                             </div>
                         ))}
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
-                        <Button variant="outline" onClick={() => setIsScheduleEditOpen(false)}>Cancel</Button>
-                        <Button onClick={() => { setIsScheduleEditOpen(false); addToast('success', 'Schedule updated successfully.'); }}>Save Schedule</Button>
+                        <Button variant="outline" onClick={() => setIsScheduleEditOpen(false)}>{t('empProfile.btnCancel')}</Button>
+                        <Button onClick={() => { setIsScheduleEditOpen(false); addToast('success', t('empProfile.toastSchedSec')); }}>{t('empProfile.btnSaveSched')}</Button>
                     </div>
                 </div>
             </Modal>

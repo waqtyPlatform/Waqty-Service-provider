@@ -9,10 +9,7 @@ import {
     Tag,
     MessageSquare,
     Gift,
-    Users,
-    Percent,
     Calendar,
-    Clock,
     Eye,
     ShoppingCart,
     MoreVertical,
@@ -22,6 +19,7 @@ import {
     Trash2,
 } from 'lucide-react';
 import styles from './marketing.module.css';
+import { useTranslation } from '@/hooks/useTranslation';
 
 // ─── OFFERS DATA ─────────────────────────────────────────────────────
 const offers = [
@@ -98,6 +96,7 @@ export default function MarketingPage() {
     const { addToast } = useToast();
     const [activeTab, setActiveTab] = useState<TabKey>('offers');
     const [search, setSearch] = useState('');
+    const { t } = useTranslation();
 
     // CRUD State
     const [isOfferAddOpen, setIsOfferAddOpen] = useState(false);
@@ -120,8 +119,8 @@ export default function MarketingPage() {
             {/* Header */}
             <div className={styles.header}>
                 <div>
-                    <h1>Marketing</h1>
-                    <p>Offers, promo codes, campaigns, and messaging.</p>
+                    <h1>{t('marketing.title')}</h1>
+                    <p>{t('marketing.desc')}</p>
                 </div>
                 <div className={styles.headerActions}>
                     <button
@@ -133,7 +132,7 @@ export default function MarketingPage() {
                         }}
                     >
                         <Plus size={16} />
-                        {activeTab === 'offers' ? 'New Offer' : activeTab === 'promos' ? 'New Promo Code' : activeTab === 'messages' ? 'New Template' : 'New Campaign'}
+                        {activeTab === 'offers' ? t('marketing.newOffer') : activeTab === 'promos' ? t('marketing.newPromo') : activeTab === 'messages' ? t('marketing.newMsg') : t('marketing.newCamp')}
                     </button>
                 </div>
             </div>
@@ -141,16 +140,16 @@ export default function MarketingPage() {
             {/* Tabs */}
             <div className={styles.tabs}>
                 <button className={`${styles.tab} ${activeTab === 'offers' ? styles.tabActive : ''}`} onClick={() => setActiveTab('offers')}>
-                    <Gift size={16} /> Offers
+                    <Gift size={16} /> {t('marketing.tabOffers')}
                 </button>
                 <button className={`${styles.tab} ${activeTab === 'promos' ? styles.tabActive : ''}`} onClick={() => setActiveTab('promos')}>
-                    <Tag size={16} /> Promo Codes
+                    <Tag size={16} /> {t('marketing.tabPromos')}
                 </button>
                 <button className={`${styles.tab} ${activeTab === 'messages' ? styles.tabActive : ''}`} onClick={() => setActiveTab('messages')}>
-                    <MessageSquare size={16} /> Messages
+                    <MessageSquare size={16} /> {t('marketing.tabMsg')}
                 </button>
                 <button className={`${styles.tab} ${activeTab === 'campaigns' ? styles.tabActive : ''}`} onClick={() => setActiveTab('campaigns')}>
-                    <Megaphone size={16} /> Campaigns
+                    <Megaphone size={16} /> {t('marketing.tabCamp')}
                 </button>
             </div>
 
@@ -162,7 +161,7 @@ export default function MarketingPage() {
                     </div>
                     <div>
                         <div className={styles.kpiValue}>{offers.filter(o => o.status === 'active').length}</div>
-                        <div className={styles.kpiLabel}>Active Offers</div>
+                        <div className={styles.kpiLabel}>{t('marketing.activeOffers')}</div>
                     </div>
                 </div>
                 <div className={styles.kpiCard}>
@@ -171,7 +170,7 @@ export default function MarketingPage() {
                     </div>
                     <div>
                         <div className={styles.kpiValue}>{promoCodes.filter(p => p.status === 'active').length}</div>
-                        <div className={styles.kpiLabel}>Active Codes</div>
+                        <div className={styles.kpiLabel}>{t('marketing.activeCodes')}</div>
                     </div>
                 </div>
                 <div className={styles.kpiCard}>
@@ -180,7 +179,7 @@ export default function MarketingPage() {
                     </div>
                     <div>
                         <div className={styles.kpiValue}>207</div>
-                        <div className={styles.kpiLabel}>Redemptions (Mo)</div>
+                        <div className={styles.kpiLabel}>{t('marketing.redemptions')}</div>
                     </div>
                 </div>
                 <div className={styles.kpiCard}>
@@ -189,7 +188,7 @@ export default function MarketingPage() {
                     </div>
                     <div>
                         <div className={styles.kpiValue} style={{ color: 'var(--color-success)' }}>+18.3%</div>
-                        <div className={styles.kpiLabel}>Conversion Rate</div>
+                        <div className={styles.kpiLabel}>{t('marketing.convRate')}</div>
                     </div>
                 </div>
             </div>

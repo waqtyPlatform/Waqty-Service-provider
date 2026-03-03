@@ -5,6 +5,7 @@ import { Plus, Package, Check, Users, Edit, Trash2, MoreVertical, Eye } from 'lu
 import { useToast, SlideOver, Modal, Input, Button, DropdownMenu, Select, Badge } from '@/components/ui';
 
 import MarketingTabs from '@/components/MarketingTabs';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const initialPackages = [
     { id: 1, name: 'Summer Glow Campaign', price: 899, originalPrice: 1200, services: ['Body Scrub', 'Spray Tan', 'Gel Nails', 'Lash Lift'], target: 'New Clients', active: true, sold: 15, color: '#F59E0B', description: 'A complete glow-up package for the summer season. Perfect for new clients looking to try multiple services.' },
@@ -40,6 +41,7 @@ const s: Record<string, React.CSSProperties> = {
 
 export default function MarketingPackagesPage() {
     const { addToast } = useToast();
+    const { t } = useTranslation();
     const [packages, setPackages] = useState(initialPackages);
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
@@ -55,13 +57,13 @@ export default function MarketingPackagesPage() {
         setPackages(prev => prev.filter(p => p.id !== selectedPackage?.id));
         setIsDeleteOpen(false);
         setSelectedPackage(null);
-        addToast('success', 'Package deleted successfully');
+        addToast('success', t('mkt.lblDeletePackage'));
     };
 
     return (
         <div style={s.page}>
             <MarketingTabs />
-            <div style={s.toolbar}><button style={s.addBtn} onClick={() => setIsAddOpen(true)}><Plus size={16} /> New Package</button></div>
+            <div style={s.toolbar}><button style={s.addBtn} onClick={() => setIsAddOpen(true)}><Plus size={16} /> {t('mkt.btnNewPackage')}</button></div>
             <div style={s.grid}>
                 {packages.map(pkg => (
                     <div key={pkg.id} style={{ ...s.card, opacity: pkg.active ? 1 : 0.6 }} onClick={() => openDetail(pkg)}>
@@ -69,16 +71,16 @@ export default function MarketingPackagesPage() {
                             <div style={{ ...s.icon, background: pkg.color }}><Package size={20} /></div>
                             <div style={{ flex: 1 }}>
                                 <div style={s.name}>{pkg.name}</div>
-                                <div style={s.price}>{pkg.price} EGP</div>
-                                <div style={s.target}>Target: {pkg.target}</div>
+                                <div style={s.price}>{pkg.price} {t('mkt.lblEGP')}</div>
+                                <div style={s.target}>{t('mkt.lblTarget')} {pkg.target}</div>
                             </div>
                             <div style={{ marginLeft: 'auto' }} onClick={e => e.stopPropagation()}>
                                 <DropdownMenu
                                     trigger={<button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)' }}><MoreVertical size={16} /></button>}
                                     items={[
-                                        { label: 'View Details', icon: <Eye size={14} />, onClick: () => openDetail(pkg) },
-                                        { label: 'Edit Package', icon: <Edit size={14} />, onClick: () => openEdit(pkg) },
-                                        { label: 'Delete Package', destructive: true, icon: <Trash2 size={14} />, onClick: () => openDelete(pkg) }
+                                        { label: t('bk.actionView'), icon: <Eye size={14} />, onClick: () => openDetail(pkg) },
+                                        { label: t('mkt.lblEditPackage'), icon: <Edit size={14} />, onClick: () => openEdit(pkg) },
+                                        { label: t('mkt.lblDeletePackage'), destructive: true, icon: <Trash2 size={14} />, onClick: () => openDelete(pkg) }
                                     ]}
                                 />
                             </div>
@@ -87,8 +89,8 @@ export default function MarketingPackagesPage() {
                             {pkg.services.map((svc, i) => <div key={i} style={s.svcItem}><Check size={14} style={{ color: 'var(--color-success)' }} /> {svc}</div>)}
                         </div>
                         <div style={s.footer}>
-                            <span><Users size={12} style={{ display: 'inline', marginRight: 4 }} /> {pkg.sold} sold</span>
-                            <span>{pkg.active ? '🟢 Active' : '⚪ Inactive'}</span>
+                            <span><Users size={12} style={{ display: 'inline', marginRight: 4 }} /> {pkg.sold} {t('mkt.lblSold')}</span>
+                            <span>{pkg.active ? `🟢 ${t('mkt.lblActive')}` : '⚪ Inactive'}</span>
                         </div>
                     </div>
                 ))}
@@ -98,11 +100,11 @@ export default function MarketingPackagesPage() {
             <SlideOver
                 open={isDetailOpen}
                 onClose={() => { setIsDetailOpen(false); setSelectedPackage(null); }}
-                title="Package Details"
+                title={t('mkt.lblPackageDetails')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => openDelete(selectedPackage)}><Trash2 size={14} /> Delete</Button>
-                        <Button onClick={() => openEdit(selectedPackage)}><Edit size={14} /> Edit Package</Button>
+                        <Button variant="ghost" onClick={() => openDelete(selectedPackage)}><Trash2 size={14} /> {t('mkt.lblDeletePackage')}</Button>
+                        <Button onClick={() => openEdit(selectedPackage)}><Edit size={14} /> {t('mkt.lblEditPackage')}</Button>
                     </div>
                 }
             >
@@ -113,9 +115,9 @@ export default function MarketingPackagesPage() {
                             <div>
                                 <div style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--font-bold)', marginBottom: 'var(--space-1)' }}>{selectedPackage.name}</div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                                    <span style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)', color: 'var(--color-primary-600)' }}>{selectedPackage.price} EGP</span>
-                                    <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', textDecoration: 'line-through' }}>{selectedPackage.originalPrice} EGP</span>
-                                    <Badge color={selectedPackage.active ? 'success' : 'neutral'} size="sm">{selectedPackage.active ? 'Active' : 'Inactive'}</Badge>
+                                    <span style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)', color: 'var(--color-primary-600)' }}>{selectedPackage.price} {t('mkt.lblEGP')}</span>
+                                    <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', textDecoration: 'line-through' }}>{selectedPackage.originalPrice} {t('mkt.lblEGP')}</span>
+                                    <Badge color={selectedPackage.active ? 'success' : 'neutral'} size="sm">{selectedPackage.active ? t('mkt.lblActive') : 'Inactive'}</Badge>
                                 </div>
                             </div>
                         </div>
@@ -126,25 +128,25 @@ export default function MarketingPackagesPage() {
 
                         <div style={s.infoGrid as React.CSSProperties}>
                             <div style={s.infoCard}>
-                                <div style={s.infoLabel as React.CSSProperties}>Target Audience</div>
+                                <div style={s.infoLabel as React.CSSProperties}>{t('mkt.lblTargetAudience')}</div>
                                 <div style={s.infoValue}>{selectedPackage.target}</div>
                             </div>
                             <div style={s.infoCard}>
-                                <div style={s.infoLabel as React.CSSProperties}>Total Sold</div>
-                                <div style={s.infoValue}>{selectedPackage.sold} packages</div>
+                                <div style={s.infoLabel as React.CSSProperties}>{t('mkt.lblTotalSold')}</div>
+                                <div style={s.infoValue}>{selectedPackage.sold} {t('mkt.lblPackages')}</div>
                             </div>
                             <div style={s.infoCard}>
-                                <div style={s.infoLabel as React.CSSProperties}>Revenue Generated</div>
-                                <div style={s.infoValue}>{(selectedPackage.sold * selectedPackage.price).toLocaleString()} EGP</div>
+                                <div style={s.infoLabel as React.CSSProperties}>{t('mkt.lblRevenueGenerated')}</div>
+                                <div style={s.infoValue}>{(selectedPackage.sold * selectedPackage.price).toLocaleString()} {t('mkt.lblEGP')}</div>
                             </div>
                             <div style={s.infoCard}>
-                                <div style={s.infoLabel as React.CSSProperties}>Savings Per Package</div>
-                                <div style={s.infoValue}>{selectedPackage.originalPrice - selectedPackage.price} EGP ({Math.round((1 - selectedPackage.price / selectedPackage.originalPrice) * 100)}% off)</div>
+                                <div style={s.infoLabel as React.CSSProperties}>{t('mkt.lblSavingsPerPackage')}</div>
+                                <div style={s.infoValue}>{selectedPackage.originalPrice - selectedPackage.price} {t('mkt.lblEGP')} ({Math.round((1 - selectedPackage.price / selectedPackage.originalPrice) * 100)}% {t('mkt.lblOFF').toLowerCase()})</div>
                             </div>
                         </div>
 
                         <div>
-                            <div style={{ ...s.sectionTitle as React.CSSProperties, marginBottom: 'var(--space-3)' }}>Included Services ({selectedPackage.services.length})</div>
+                            <div style={{ ...s.sectionTitle as React.CSSProperties, marginBottom: 'var(--space-3)' }}>{t('mkt.lblIncludedServices')} ({selectedPackage.services.length})</div>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                                 {selectedPackage.services.map((svc: string, i: number) => (
                                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', padding: 'var(--space-3)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)' }}>
@@ -159,44 +161,44 @@ export default function MarketingPackagesPage() {
             </SlideOver>
 
             {/* Add Package SlideOver */}
-            <SlideOver open={isAddOpen} onClose={() => setIsAddOpen(false)} title="Create New Package"
-                footer={<div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}><Button variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button><Button onClick={() => { setIsAddOpen(false); addToast('success', 'Package created successfully'); }}>Save Package</Button></div>}
+            <SlideOver open={isAddOpen} onClose={() => setIsAddOpen(false)} title={t('mkt.lblCreateNewPackage')}
+                footer={<div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}><Button variant="ghost" onClick={() => setIsAddOpen(false)}>{t('rtn.btnBack')}</Button><Button onClick={() => { setIsAddOpen(false); addToast('success', t('mkt.btnSavePackage')); }}>{t('mkt.btnSavePackage')}</Button></div>}
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label="Package Name" placeholder="e.g. Summer Glow" />
-                    <Input label="Description" placeholder="Brief description" />
+                    <Input label={t('mkt.lblPackageName')} placeholder="e.g. Summer Glow" />
+                    <Input label={t('mkt.lblDescription')} placeholder="Brief description" />
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
-                        <Input label="Price (EGP)" type="number" placeholder="0.00" />
-                        <Input label="Original Price (EGP)" type="number" placeholder="0.00" />
+                        <Input label={t('mkt.lblPrice')} type="number" placeholder="0.00" />
+                        <Input label={t('mkt.lblOriginalPrice')} type="number" placeholder="0.00" />
                     </div>
-                    <Input label="Target Audience" placeholder="e.g. New Clients" />
-                    <Select label="Status" options={[{ label: 'Active', value: 'active' }, { label: 'Draft', value: 'draft' }]} />
+                    <Input label={t('mkt.lblTargetAudience')} placeholder="e.g. New Clients" />
+                    <Select label={t('mkt.lblStatus')} options={[{ label: t('mkt.lblActive'), value: 'active' }, { label: t('mkt.lblDraft'), value: 'draft' }]} />
                 </div>
             </SlideOver>
 
             {/* Edit Package SlideOver */}
-            <SlideOver open={isEditOpen} onClose={() => { setIsEditOpen(false); setSelectedPackage(null); }} title="Edit Package"
-                footer={<div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}><Button variant="ghost" onClick={() => setIsEditOpen(false)}>Cancel</Button><Button onClick={() => { setIsEditOpen(false); addToast('success', 'Package updated successfully'); }}>Save Changes</Button></div>}
+            <SlideOver open={isEditOpen} onClose={() => { setIsEditOpen(false); setSelectedPackage(null); }} title={t('mkt.lblEditPackage')}
+                footer={<div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}><Button variant="ghost" onClick={() => setIsEditOpen(false)}>{t('rtn.btnBack')}</Button><Button onClick={() => { setIsEditOpen(false); addToast('success', t('settings.saveChanges')); }}>{t('settings.saveChanges')}</Button></div>}
             >
                 {selectedPackage && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                        <Input label="Package Name" defaultValue={selectedPackage.name} />
-                        <Input label="Description" defaultValue={selectedPackage.description} />
+                        <Input label={t('mkt.lblPackageName')} defaultValue={selectedPackage.name} />
+                        <Input label={t('mkt.lblDescription')} defaultValue={selectedPackage.description} />
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
-                            <Input label="Price (EGP)" type="number" defaultValue={selectedPackage.price} />
-                            <Input label="Original Price (EGP)" type="number" defaultValue={selectedPackage.originalPrice} />
+                            <Input label={t('mkt.lblPrice')} type="number" defaultValue={selectedPackage.price} />
+                            <Input label={t('mkt.lblOriginalPrice')} type="number" defaultValue={selectedPackage.originalPrice} />
                         </div>
-                        <Input label="Target Audience" defaultValue={selectedPackage.target} />
-                        <Select label="Status" defaultValue={selectedPackage.active ? 'active' : 'draft'} options={[{ label: 'Active', value: 'active' }, { label: 'Draft', value: 'draft' }]} />
+                        <Input label={t('mkt.lblTargetAudience')} defaultValue={selectedPackage.target} />
+                        <Select label={t('mkt.lblStatus')} defaultValue={selectedPackage.active ? 'active' : 'draft'} options={[{ label: t('mkt.lblActive'), value: 'active' }, { label: t('mkt.lblDraft'), value: 'draft' }]} />
                     </div>
                 )}
             </SlideOver>
 
             {/* Delete Confirmation Modal */}
-            <Modal open={isDeleteOpen} onClose={() => { setIsDeleteOpen(false); setSelectedPackage(null); }} title="Delete Package"
-                footer={<div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}><Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>Cancel</Button><Button variant="destructive" onClick={handleDelete}>Confirm Delete</Button></div>}
+            <Modal open={isDeleteOpen} onClose={() => { setIsDeleteOpen(false); setSelectedPackage(null); }} title={t('mkt.lblDeletePackage')}
+                footer={<div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}><Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>{t('rtn.btnBack')}</Button><Button variant="destructive" onClick={handleDelete}>{t('mkt.lblDeletePackage')}</Button></div>}
             >
-                <p style={{ color: 'var(--text-secondary)' }}>Are you sure you want to delete the <strong>{selectedPackage?.name}</strong> package?</p>
+                <p style={{ color: 'var(--text-secondary)' }}>{t('mkt.msgDeletePackageConfirm')} <strong>{selectedPackage?.name}</strong></p>
             </Modal>
         </div>
     );

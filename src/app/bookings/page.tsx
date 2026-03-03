@@ -15,6 +15,7 @@ import {
 import { EmptyState } from '@/components/ui';
 import styles from './bookings.module.css';
 import BookingsTabs from './BookingsTabs';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const employees = [
     { name: 'Sara A.', initials: 'SA', color: '#8B5CF6', status: 'Available' },
@@ -70,6 +71,7 @@ const statusBlockClass: Record<string, string> = {
 export default function BookingsCalendarPage() {
     const [calendarView, setCalendarView] = useState<'day' | 'week' | 'month'>('day');
     const router = useRouter();
+    const { t } = useTranslation();
 
     return (
         <div className={styles.bookingsPage}>
@@ -82,7 +84,7 @@ export default function BookingsCalendarPage() {
                     <button className={styles.navBtn}><ChevronLeft size={18} /></button>
                     <span className={styles.calendarTitle}>Monday, Feb 17, 2026</span>
                     <button className={styles.navBtn}><ChevronRight size={18} /></button>
-                    <button className={styles.todayBtn}>Today</button>
+                    <button className={styles.todayBtn}>{t('bookings.today')}</button>
                 </div>
 
                 <div className={styles.viewToggle}>
@@ -92,17 +94,17 @@ export default function BookingsCalendarPage() {
                             className={`${styles.viewBtn} ${calendarView === v ? styles.viewBtnActive : ''}`}
                             onClick={() => setCalendarView(v)}
                         >
-                            {v.charAt(0).toUpperCase() + v.slice(1)}
+                            {t(`bookings.${v}`)}
                         </button>
                     ))}
                 </div>
 
                 <div className={styles.calendarActions}>
                     <button className={styles.filterBtn}>
-                        <Filter size={16} /> Filters
+                        <Filter size={16} /> {t('bookings.filters')}
                     </button>
                     <Link href="/bookings/new" className={styles.btnPrimary}>
-                        <Plus size={16} /> New Booking
+                        <Plus size={16} /> {t('bookings.newBooking')}
                     </Link>
                 </div>
             </div>
@@ -166,8 +168,8 @@ export default function BookingsCalendarPage() {
                     <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--border-color)' }}>
                         <EmptyState
                             icon={<CalendarDays size={48} />}
-                            title={`Advanced ${calendarView.charAt(0).toUpperCase() + calendarView.slice(1)} View`}
-                            description={`The standard day-view is active. ${calendarView.charAt(0).toUpperCase() + calendarView.slice(1)} views are part of the advanced scheduling package.`}
+                            title={t('bookings.advancedViewTitle')}
+                            description={t('bookings.advancedViewDesc')}
                         />
                     </div>
                 )}
@@ -177,7 +179,7 @@ export default function BookingsCalendarPage() {
                     {/* Next Appointment */}
                     <div className={styles.sidePanelCard}>
                         <div className={styles.sidePanelTitle}>
-                            <Clock size={16} /> Next Appointment
+                            <Clock size={16} /> {t('bookings.nextAppt')}
                         </div>
                         <div
                             className={styles.nextApptCard}
@@ -196,24 +198,24 @@ export default function BookingsCalendarPage() {
                     {/* Today's Summary */}
                     <div className={styles.sidePanelCard}>
                         <div className={styles.sidePanelTitle}>
-                            <CalendarDays size={16} /> Today&apos;s Summary
+                            <CalendarDays size={16} /> {t('bookings.todaySummary')}
                         </div>
                         <div className={styles.summaryGrid}>
                             <div className={styles.summaryItem}>
                                 <div className={styles.summaryValue}>14</div>
-                                <div className={styles.summaryLabel}>Total</div>
+                                <div className={styles.summaryLabel}>{t('bookings.total')}</div>
                             </div>
                             <div className={styles.summaryItem}>
                                 <div className={styles.summaryValue} style={{ color: 'var(--status-confirmed)' }}>8</div>
-                                <div className={styles.summaryLabel}>Confirmed</div>
+                                <div className={styles.summaryLabel}>{t('bookings.confirmed')}</div>
                             </div>
                             <div className={styles.summaryItem}>
                                 <div className={styles.summaryValue} style={{ color: 'var(--status-completed)' }}>3</div>
-                                <div className={styles.summaryLabel}>Completed</div>
+                                <div className={styles.summaryLabel}>{t('bookings.completed')}</div>
                             </div>
                             <div className={styles.summaryItem}>
                                 <div className={styles.summaryValue} style={{ color: 'var(--status-cancelled)' }}>1</div>
-                                <div className={styles.summaryLabel}>Cancelled</div>
+                                <div className={styles.summaryLabel}>{t('bookings.cancelled')}</div>
                             </div>
                         </div>
                     </div>
@@ -221,7 +223,7 @@ export default function BookingsCalendarPage() {
                     {/* Revenue */}
                     <div className={styles.sidePanelCard}>
                         <div className={styles.sidePanelTitle}>
-                            <Building2 size={16} /> Revenue Today
+                            <Building2 size={16} /> {t('bookings.revenueToday')}
                         </div>
                         <div style={{ textAlign: 'center', padding: 'var(--space-2)' }}>
                             <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)', color: 'var(--color-primary-600)' }}>

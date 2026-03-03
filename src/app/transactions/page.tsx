@@ -1,26 +1,16 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
 import {
     Search,
     Download,
     ChevronLeft,
     ChevronRight,
     Receipt,
-    Wallet,
-    CreditCard,
-    PiggyBank,
-    ArrowLeftRight,
-    ShieldCheck,
-    CalendarClock,
-    ClipboardList,
-    TrendingUp,
-    Users,
-    Package,
 } from 'lucide-react';
 import { EmptyState } from '@/components/ui';
 import styles from './transactions.module.css';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const transactions = [
     { id: 'TXN-2048', date: 'Feb 17, 2026', time: '09:15', type: 'sale', client: 'Fatima Al-Rashid', service: 'Hair Coloring', employee: 'Sara Ahmed', method: 'Card', amount: 400 },
@@ -46,6 +36,7 @@ const typeConfig: Record<string, { class: string; label: string }> = {
 export default function TransactionsPage() {
     const [search, setSearch] = useState('');
     const [typeFilter, setTypeFilter] = useState('all');
+    const { t } = useTranslation();
 
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
@@ -75,24 +66,24 @@ export default function TransactionsPage() {
         <div className={styles.transactionsPage}>
             <div className={styles.header}>
                 <div>
-                    <h1>Transactions</h1>
-                    <p>All financial activities across the branch.</p>
+                    <h1>{t('transactions.title')}</h1>
+                    <p>{t('transactions.desc')}</p>
                 </div>
                 <button className={styles.btnOutline}>
-                    <Download size={16} /> Export
+                    <Download size={16} /> {t('transactions.export')}
                 </button>
             </div>
 
             {/* KPI Row */}
             <div className={styles.kpiRow}>
                 <div className={styles.kpiCard}>
-                    <div className={styles.kpiLabel}>Total Sales</div>
+                    <div className={styles.kpiLabel}>{t('transactions.totalSales')}</div>
                     <div className={styles.kpiValue} style={{ color: 'var(--color-success)' }}>
                         {totalSales.toLocaleString()} EGP
                     </div>
                 </div>
                 <div className={styles.kpiCard}>
-                    <div className={styles.kpiLabel}>Total Refunds</div>
+                    <div className={styles.kpiLabel}>{t('transactions.totalRefunds')}</div>
                     <div className={styles.kpiValue} style={{ color: 'var(--color-error)' }}>
                         {totalRefunds.toLocaleString()} EGP
                     </div>

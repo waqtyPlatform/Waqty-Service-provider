@@ -1,8 +1,8 @@
 ﻿'use client';
 
 import React, { useState } from 'react';
-import { Fingerprint, Search, RefreshCw, Trash2, ShieldCheck } from 'lucide-react';
-import { Modal, Input, Select, Button, useToast, EmptyState } from '@/components/ui';
+import { Fingerprint, Search, RefreshCw, Trash2 } from 'lucide-react';
+import { Modal, Select, Button, useToast, EmptyState } from '@/components/ui';
 
 const initialData = [
     { id: 1, employee: 'Sara Ahmed', device: 'BioStation A2', enrollDate: '2026-01-05', fingers: 2, status: 'enrolled' },

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Plus, Search, Edit, Trash2 } from 'lucide-react';
 import { SlideOver, Modal, Input, Select, Button, useToast, EmptyState } from '@/components/ui';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const initialPositions = [
     { id: 1, title: 'Senior Stylist', level: 'Senior', department: 'Hair Styling', employees: 2, minSalary: 6000, maxSalary: 10000 },
@@ -39,6 +40,7 @@ const s: Record<string, React.CSSProperties> = {
 };
 
 export default function PositionsPage() {
+    const { t, lang } = useTranslation();
     const [positions, setPositions] = useState(initialPositions);
     const [search, setSearch] = useState('');
     const { addToast } = useToast();
@@ -55,7 +57,7 @@ export default function PositionsPage() {
     const filtered = positions.filter(p => p.title.toLowerCase().includes(search.toLowerCase()));
 
     const handleSaveAdd = () => {
-        if (!formData.title) return addToast('error', 'Position title is required.');
+        if (!formData.title) return addToast('error', t('positions.toastReqTitle'));
         const newPos = {
             id: positions.length + 1,
             title: formData.title,
@@ -68,11 +70,11 @@ export default function PositionsPage() {
         setPositions([...positions, newPos]);
         setIsAddOpen(false);
         setFormData({ title: '', level: 'Mid', department: 'Hair Styling', minSalary: '', maxSalary: '' });
-        addToast('success', 'Position added successfully');
+        addToast('success', t('positions.toastAddSec'));
     };
 
     const handleSaveEdit = () => {
-        if (!formData.title) return addToast('error', 'Position title is required.');
+        if (!formData.title) return addToast('error', t('positions.toastReqTitle'));
         setPositions(positions.map(p => p.id === selectedPos.id ? {
             ...p,
             title: formData.title,
@@ -83,27 +85,27 @@ export default function PositionsPage() {
         } : p));
         setIsEditOpen(false);
         setSelectedPos(null);
-        addToast('success', 'Position updated successfully');
+        addToast('success', t('positions.toastUpdateSec'));
     };
 
     const handleDelete = () => {
         setPositions(positions.filter(p => p.id !== selectedPos.id));
         setIsDeleteOpen(false);
         setSelectedPos(null);
-        addToast('success', 'Position removed successfully');
+        addToast('success', t('positions.toastRemSec'));
     };
 
     return (
-        <div style={s.page}>
-            <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' }}>Positions</div>
+        <div style={{ ...s.page, direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
+            <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' }}>{t('positions.title')}</div>
 
             <div style={s.toolbar}>
                 <div style={s.searchBox as React.CSSProperties}>
-                    <Search size={16} style={s.searchIcon as React.CSSProperties} />
-                    <input style={s.searchInput} placeholder="Search positions..." value={search} onChange={e => setSearch(e.target.value)} />
+                    <Search size={16} style={{ ...s.searchIcon, ...(lang === 'ar' ? { right: 12, left: 'auto' } : {}) } as React.CSSProperties} />
+                    <input style={{ ...s.searchInput, ...(lang === 'ar' ? { paddingRight: 40, paddingLeft: 12 } : { paddingLeft: 40, paddingRight: 12 }) }} placeholder={t('positions.search')} value={search} onChange={e => setSearch(e.target.value)} />
                 </div>
                 <Button onClick={() => setIsAddOpen(true)}>
-                    <Plus size={16} style={{ marginRight: 8 }} /> New Position
+                    <Plus size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('positions.newPosition')}
                 </Button>
             </div>
 
@@ -111,8 +113,8 @@ export default function PositionsPage() {
                 <table style={s.table}>
                     <thead>
                         <tr>
-                            {['Title', 'Level', 'Department', 'Employees', 'Salary Range', 'Actions'].map(h =>
-                                <th key={h} style={s.th as React.CSSProperties}>{h}</th>
+                            {[{ label: t('positions.colTitle'), key: 'title' }, { label: t('positions.colLevel'), key: 'level' }, { label: t('positions.colDept'), key: 'dept' }, { label: t('positions.colEmployees'), key: 'employees' }, { label: t('positions.colSalary'), key: 'salary' }, { label: t('positions.colActions'), key: 'actions' }].map(h =>
+                                <th key={h.key} style={{ ...(s.th as React.CSSProperties), textAlign: lang === 'ar' ? 'right' : 'left' }}>{h.label}</th>
                             )}
                         </tr>
                     </thead>
@@ -120,10 +122,10 @@ export default function PositionsPage() {
                         {filtered.map(p => (
                             <tr key={p.id} className="hoverRow">
                                 <td style={{ ...s.td, fontWeight: 'var(--font-medium)' } as React.CSSProperties}>{p.title}</td>
-                                <td style={s.td}><span style={{ ...s.badge, ...levelColors[p.level] }}>{p.level}</span></td>
-                                <td style={s.td}>{p.department}</td>
+                                <td style={s.td}><span style={{ ...s.badge, ...levelColors[p.level] }}>{t(`positions.lvl${p.level}` as any)}</span></td>
+                                <td style={s.td}>{t(`positions.${({ 'Hair Styling': 'deptHair', 'Skin Care': 'deptSkin', 'Massage & Body': 'deptMassage', 'Nails': 'deptNails', 'Reception': 'deptReception', 'Administration': 'deptAdmin' } as any)[p.department] || 'deptHair'}` as any)}</td>
                                 <td style={s.td}>{p.employees}</td>
-                                <td style={s.td}>{p.minSalary.toLocaleString()}  {p.maxSalary.toLocaleString()} EGP</td>
+                                <td style={s.td}>{p.minSalary.toLocaleString()} - {p.maxSalary.toLocaleString()} EGP</td>
                                 <td style={s.td}>
                                     <div style={s.actions}>
                                         <button style={s.btnIcon} onClick={() => {
@@ -146,7 +148,7 @@ export default function PositionsPage() {
                     </tbody>
                 </table>
             ) : (
-                <EmptyState icon={<Edit size={32} color="var(--text-tertiary)" />} title="No positions found" description="We couldn't find any positions matching your search." />
+                <EmptyState icon={<Edit size={32} color="var(--text-tertiary)" />} title={t('positions.emptyTitle')} description={t('positions.emptyDesc')} />
             )}
             <style>{`
                 .hoverRow:hover { background-color: var(--bg-secondary); }
@@ -156,34 +158,34 @@ export default function PositionsPage() {
             <SlideOver
                 open={isAddOpen}
                 onClose={() => setIsAddOpen(false)}
-                title="Create Position"
+                title={t('positions.addTitle')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button>
-                        <Button onClick={handleSaveAdd}>Create Position</Button>
+                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>{t('positions.btnCancel')}</Button>
+                        <Button onClick={handleSaveAdd}>{t('positions.btnCreate')}</Button>
                     </div>
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label="Position Title" placeholder="e.g. Master Barber" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} />
-                    <Select label="Level" value={formData.level} onChange={e => setFormData({ ...formData, level: e.target.value })} options={[
-                        { label: 'Entry', value: 'Entry' },
-                        { label: 'Junior', value: 'Junior' },
-                        { label: 'Mid', value: 'Mid' },
-                        { label: 'Senior', value: 'Senior' },
-                        { label: 'Management', value: 'Management' },
+                    <Input label={t('positions.lblTitle')} placeholder={t('positions.phTitle')} value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} />
+                    <Select label={t('positions.lblLevel')} value={formData.level} onChange={e => setFormData({ ...formData, level: e.target.value })} options={[
+                        { label: t('positions.lvlEntry'), value: 'Entry' },
+                        { label: t('positions.lvlJunior'), value: 'Junior' },
+                        { label: t('positions.lvlMid'), value: 'Mid' },
+                        { label: t('positions.lvlSenior'), value: 'Senior' },
+                        { label: t('positions.lvlManagement'), value: 'Management' },
                     ]} />
-                    <Select label="Department" value={formData.department} onChange={e => setFormData({ ...formData, department: e.target.value })} options={[
-                        { label: 'Hair Styling', value: 'Hair Styling' },
-                        { label: 'Skin Care', value: 'Skin Care' },
-                        { label: 'Massage & Body', value: 'Massage & Body' },
-                        { label: 'Nails', value: 'Nails' },
-                        { label: 'Reception', value: 'Reception' },
-                        { label: 'Administration', value: 'Administration' },
+                    <Select label={t('positions.lblDept')} value={formData.department} onChange={e => setFormData({ ...formData, department: e.target.value })} options={[
+                        { label: t('positions.deptHair'), value: 'Hair Styling' },
+                        { label: t('positions.deptSkin'), value: 'Skin Care' },
+                        { label: t('positions.deptMassage'), value: 'Massage & Body' },
+                        { label: t('positions.deptNails'), value: 'Nails' },
+                        { label: t('positions.deptReception'), value: 'Reception' },
+                        { label: t('positions.deptAdmin'), value: 'Administration' },
                     ]} />
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
-                        <Input type="number" label="Min Salary (EGP)" placeholder="0" value={formData.minSalary} onChange={e => setFormData({ ...formData, minSalary: e.target.value })} />
-                        <Input type="number" label="Max Salary (EGP)" placeholder="0" value={formData.maxSalary} onChange={e => setFormData({ ...formData, maxSalary: e.target.value })} />
+                        <Input type="number" label={t('positions.lblMinSal')} placeholder="0" value={formData.minSalary} onChange={e => setFormData({ ...formData, minSalary: e.target.value })} />
+                        <Input type="number" label={t('positions.lblMaxSal')} placeholder="0" value={formData.maxSalary} onChange={e => setFormData({ ...formData, maxSalary: e.target.value })} />
                     </div>
                 </div>
             </SlideOver>
@@ -192,34 +194,34 @@ export default function PositionsPage() {
             <SlideOver
                 open={isEditOpen}
                 onClose={() => { setIsEditOpen(false); setSelectedPos(null); }}
-                title="Edit Position"
+                title={t('positions.editTitle')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>Cancel</Button>
-                        <Button onClick={handleSaveEdit}>Save Changes</Button>
+                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>{t('positions.btnCancel')}</Button>
+                        <Button onClick={handleSaveEdit}>{t('positions.btnSave')}</Button>
                     </div>
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label="Position Title" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} />
-                    <Select label="Level" value={formData.level} onChange={e => setFormData({ ...formData, level: e.target.value })} options={[
-                        { label: 'Entry', value: 'Entry' },
-                        { label: 'Junior', value: 'Junior' },
-                        { label: 'Mid', value: 'Mid' },
-                        { label: 'Senior', value: 'Senior' },
-                        { label: 'Management', value: 'Management' },
+                    <Input label={t('positions.lblTitle')} value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} />
+                    <Select label={t('positions.lblLevel')} value={formData.level} onChange={e => setFormData({ ...formData, level: e.target.value })} options={[
+                        { label: t('positions.lvlEntry'), value: 'Entry' },
+                        { label: t('positions.lvlJunior'), value: 'Junior' },
+                        { label: t('positions.lvlMid'), value: 'Mid' },
+                        { label: t('positions.lvlSenior'), value: 'Senior' },
+                        { label: t('positions.lvlManagement'), value: 'Management' },
                     ]} />
-                    <Select label="Department" value={formData.department} onChange={e => setFormData({ ...formData, department: e.target.value })} options={[
-                        { label: 'Hair Styling', value: 'Hair Styling' },
-                        { label: 'Skin Care', value: 'Skin Care' },
-                        { label: 'Massage & Body', value: 'Massage & Body' },
-                        { label: 'Nails', value: 'Nails' },
-                        { label: 'Reception', value: 'Reception' },
-                        { label: 'Administration', value: 'Administration' },
+                    <Select label={t('positions.lblDept')} value={formData.department} onChange={e => setFormData({ ...formData, department: e.target.value })} options={[
+                        { label: t('positions.deptHair'), value: 'Hair Styling' },
+                        { label: t('positions.deptSkin'), value: 'Skin Care' },
+                        { label: t('positions.deptMassage'), value: 'Massage & Body' },
+                        { label: t('positions.deptNails'), value: 'Nails' },
+                        { label: t('positions.deptReception'), value: 'Reception' },
+                        { label: t('positions.deptAdmin'), value: 'Administration' },
                     ]} />
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
-                        <Input type="number" label="Min Salary (EGP)" value={formData.minSalary} onChange={e => setFormData({ ...formData, minSalary: e.target.value })} />
-                        <Input type="number" label="Max Salary (EGP)" value={formData.maxSalary} onChange={e => setFormData({ ...formData, maxSalary: e.target.value })} />
+                        <Input type="number" label={t('positions.lblMinSal')} value={formData.minSalary} onChange={e => setFormData({ ...formData, minSalary: e.target.value })} />
+                        <Input type="number" label={t('positions.lblMaxSal')} value={formData.maxSalary} onChange={e => setFormData({ ...formData, maxSalary: e.target.value })} />
                     </div>
                 </div>
             </SlideOver>
@@ -228,16 +230,16 @@ export default function PositionsPage() {
             <Modal
                 open={isDeleteOpen}
                 onClose={() => { setIsDeleteOpen(false); setSelectedPos(null); }}
-                title="Remove Position"
+                title={t('positions.delTitle')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
-                        <Button variant="destructive" onClick={handleDelete}>Remove Anyway</Button>
+                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>{t('positions.btnCancel')}</Button>
+                        <Button variant="destructive" onClick={handleDelete}>{t('positions.btnRemoveAnyway')}</Button>
                     </div>
                 }
             >
                 <p style={{ color: 'var(--text-secondary)' }}>
-                    Are you sure you want to remove the <strong>{selectedPos?.title}</strong> position? You cannot undo this action.
+                    {t('positions.delConfirmMsg1')}<strong>{selectedPos?.title}</strong>{t('positions.delConfirmMsg2')}
                 </p>
             </Modal>
         </div>

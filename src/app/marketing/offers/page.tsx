@@ -1,18 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
-import { Search, Plus, Calendar, Tag, Percent, Edit, Trash2, Eye, ArrowLeft, Users, MoreVertical } from 'lucide-react';
-import { useToast, SlideOver, Modal, Input, Button, Select, Badge, DropdownMenu } from '@/components/ui';
-
-const tabs = [
-    { label: 'Offers', href: '/marketing/offers' },
-    { label: 'Campaigns', href: '/marketing/packages' },
-    { label: 'Notifications', href: '/marketing/notifications' },
-    { label: 'Promo Codes', href: '/marketing/promo-codes' },
-    { label: 'Messages', href: '/marketing/messages' },
-    { label: 'Service Groups', href: '/marketing/service-groups' },
-];
+import { Plus, Calendar, Tag, Edit, Trash2, Eye } from 'lucide-react';
+import { useToast, SlideOver, Modal, Input, Button, Select, Badge } from '@/components/ui';
+import MarketingTabs from '@/components/MarketingTabs';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const initialOffers = [
     { id: 1, name: 'Spring Beauty Festival', discount: 30, type: 'percentage', services: ['Hair Coloring', 'HydraFacial', 'Manicure'], startDate: '2026-03-01', endDate: '2026-03-15', status: 'scheduled', color: '#EC4899', uses: 0, limit: 100, description: 'Celebrate spring with our biggest beauty festival! Get 30% off on select services.' },
@@ -71,22 +63,22 @@ export default function OffersPage() {
     const openEdit = (offer: any) => { setSelectedOffer(offer); setIsDetailOpen(false); setIsEditOpen(true); };
     const openDelete = (offer: any) => { setSelectedOffer(offer); setIsDetailOpen(false); setIsDeleteOpen(true); };
 
+    const { t } = useTranslation();
+
     const handleDelete = () => {
         setOffers(prev => prev.filter(o => o.id !== selectedOffer?.id));
         setIsDeleteOpen(false);
         setSelectedOffer(null);
-        addToast('success', 'Offer deleted successfully');
+        addToast('success', t('mkt.lblDeleteOffer'));
     };
 
     return (
         <div style={s.page}>
-            <div style={s.tabBar}>
-                {tabs.map(t => <Link key={t.href} href={t.href} style={{ ...s.tab, ...(t.href === '/marketing/offers' ? s.tabActive : {}) }}>{t.label}</Link>)}
-            </div>
+            <MarketingTabs />
 
             <div style={s.toolbar}>
-                <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)' }}>{offers.filter(o => o.status === 'active').length} active offers</div>
-                <button style={s.addBtn} onClick={() => setIsAddOpen(true)}><Plus size={16} /> New Offer</button>
+                <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)' }}>{offers.filter(o => o.status === 'active').length} {t('mkt.lblActiveOffers')}</div>
+                <button style={s.addBtn} onClick={() => setIsAddOpen(true)}><Plus size={16} /> {t('mkt.btnNewOffer')}</button>
             </div>
 
             <div style={s.grid}>
@@ -97,10 +89,10 @@ export default function OffersPage() {
                             <div style={{ flex: 1 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                                     <div style={s.name}>{offer.name}</div>
-                                    <Badge color={statusBadge[offer.status]} size="sm">{offer.status}</Badge>
+                                    <Badge color={statusBadge[offer.status]} size="sm">{t(`mkt.lbl${offer.status.charAt(0).toUpperCase() + offer.status.slice(1)}`)}</Badge>
                                 </div>
                                 <div style={s.discount}>
-                                    {offer.type === 'percentage' ? `${offer.discount}% OFF` : `-${offer.discount} EGP`}
+                                    {offer.type === 'percentage' ? `${offer.discount}% ${t('mkt.lblOFF')}` : `-${offer.discount} ${t('mkt.lblEGP')}`}
                                 </div>
                             </div>
                         </div>
@@ -109,11 +101,11 @@ export default function OffersPage() {
                         </div>
                         <div style={s.footer}>
                             <div style={s.stat}><Calendar size={12} /> {offer.startDate} → {offer.endDate}</div>
-                            <div style={s.stat}>{offer.uses}/{offer.limit} used</div>
+                            <div style={s.stat}>{offer.uses}/{offer.limit} {t('mkt.lblUsed')}</div>
                             <div style={s.actions} onClick={e => e.stopPropagation()}>
-                                <button style={{ ...s.btnIcon, color: 'var(--color-primary-500)' }} onClick={() => openDetail(offer)} title="View Details"><Eye size={12} /></button>
-                                <button style={s.btnIcon} onClick={() => openEdit(offer)} title="Edit"><Edit size={12} /></button>
-                                <button style={{ ...s.btnIcon, color: 'var(--color-error)' }} onClick={() => openDelete(offer)} title="Delete"><Trash2 size={12} /></button>
+                                <button style={{ ...s.btnIcon, color: 'var(--color-primary-500)' }} onClick={() => openDetail(offer)} title={t('mkt.lblOfferDetails')}><Eye size={12} /></button>
+                                <button style={s.btnIcon} onClick={() => openEdit(offer)} title={t('mkt.lblEditOffer')}><Edit size={12} /></button>
+                                <button style={{ ...s.btnIcon, color: 'var(--color-error)' }} onClick={() => openDelete(offer)} title={t('mkt.lblDeleteOffer')}><Trash2 size={12} /></button>
                             </div>
                         </div>
                     </div>
@@ -124,11 +116,11 @@ export default function OffersPage() {
             <SlideOver
                 open={isDetailOpen}
                 onClose={() => { setIsDetailOpen(false); setSelectedOffer(null); }}
-                title="Offer Details"
+                title={t('mkt.lblOfferDetails')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => openDelete(selectedOffer)}><Trash2 size={14} /> Delete</Button>
-                        <Button onClick={() => openEdit(selectedOffer)}><Edit size={14} /> Edit Offer</Button>
+                        <Button variant="ghost" onClick={() => openDelete(selectedOffer)}><Trash2 size={14} /> {t('mkt.lblDeleteOffer')}</Button>
+                        <Button onClick={() => openEdit(selectedOffer)}><Edit size={14} /> {t('mkt.lblEditOffer')}</Button>
                     </div>
                 }
             >
@@ -139,10 +131,10 @@ export default function OffersPage() {
                             <div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-1)' }}>
                                     <div style={s.detailName}>{selectedOffer.name}</div>
-                                    <Badge color={statusBadge[selectedOffer.status]}>{selectedOffer.status}</Badge>
+                                    <Badge color={statusBadge[selectedOffer.status]}>{t(`mkt.lbl${selectedOffer.status.charAt(0).toUpperCase() + selectedOffer.status.slice(1)}`)}</Badge>
                                 </div>
                                 <div style={s.detailDiscount}>
-                                    {selectedOffer.type === 'percentage' ? `${selectedOffer.discount}% OFF` : `-${selectedOffer.discount} EGP`}
+                                    {selectedOffer.type === 'percentage' ? `${selectedOffer.discount}% ${t('mkt.lblOFF')}` : `-${selectedOffer.discount} ${t('mkt.lblEGP')}`}
                                 </div>
                             </div>
                         </div>
@@ -153,26 +145,26 @@ export default function OffersPage() {
 
                         <div style={s.infoGrid as React.CSSProperties}>
                             <div style={s.infoCard}>
-                                <div style={s.infoLabel as React.CSSProperties}>Start Date</div>
+                                <div style={s.infoLabel as React.CSSProperties}>{t('mkt.lblStartDate')}</div>
                                 <div style={s.infoValue}>{selectedOffer.startDate}</div>
                             </div>
                             <div style={s.infoCard}>
-                                <div style={s.infoLabel as React.CSSProperties}>End Date</div>
+                                <div style={s.infoLabel as React.CSSProperties}>{t('mkt.lblEndDate')}</div>
                                 <div style={s.infoValue}>{selectedOffer.endDate}</div>
                             </div>
                             <div style={s.infoCard}>
-                                <div style={s.infoLabel as React.CSSProperties}>Discount Type</div>
-                                <div style={s.infoValue}>{selectedOffer.type === 'percentage' ? 'Percentage' : 'Fixed Amount'}</div>
+                                <div style={s.infoLabel as React.CSSProperties}>{t('mkt.lblDiscountType')}</div>
+                                <div style={s.infoValue}>{selectedOffer.type === 'percentage' ? t('mkt.lblPercentage') : t('mkt.lblFixedAmount')}</div>
                             </div>
                             <div style={s.infoCard}>
-                                <div style={s.infoLabel as React.CSSProperties}>Usage Limit</div>
-                                <div style={s.infoValue}>{selectedOffer.limit} redemptions</div>
+                                <div style={s.infoLabel as React.CSSProperties}>{t('mkt.lblUsageLimit')}</div>
+                                <div style={s.infoValue}>{selectedOffer.limit} {t('mkt.lblRedemptions')}</div>
                             </div>
                         </div>
 
                         {/* Usage Progress */}
                         <div>
-                            <div style={{ ...s.sectionTitle as React.CSSProperties, marginBottom: 'var(--space-3)' }}>Usage</div>
+                            <div style={{ ...s.sectionTitle as React.CSSProperties, marginBottom: 'var(--space-3)' }}>{t('mkt.lblUsage')}</div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 'var(--space-2)' }}>
                                 <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)' }}>{selectedOffer.uses} / {selectedOffer.limit}</span>
                                 <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)' }}>{Math.round(selectedOffer.uses / selectedOffer.limit * 100)}%</span>
@@ -184,7 +176,7 @@ export default function OffersPage() {
 
                         {/* Services */}
                         <div>
-                            <div style={{ ...s.sectionTitle as React.CSSProperties, marginBottom: 'var(--space-3)' }}>Included Services</div>
+                            <div style={{ ...s.sectionTitle as React.CSSProperties, marginBottom: 'var(--space-3)' }}>{t('mkt.lblIncludedServices')}</div>
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                                 {selectedOffer.services.map((svc: string) => (
                                     <span key={svc} style={{ padding: '6px 14px', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-full)', fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>{svc}</span>
@@ -199,23 +191,23 @@ export default function OffersPage() {
             <SlideOver
                 open={isAddOpen}
                 onClose={() => setIsAddOpen(false)}
-                title="Create New Offer"
+                title={t('mkt.lblCreateNewOffer')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button>
-                        <Button onClick={() => { setIsAddOpen(false); addToast('success', 'Offer created successfully'); }}>Save Offer</Button>
+                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>{t('rtn.btnBack')}</Button>
+                        <Button onClick={() => { setIsAddOpen(false); addToast('success', t('mkt.btnNewOffer')); }}>{t('mkt.btnNewOffer')}</Button>
                     </div>
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label="Offer Name" placeholder="e.g. Summer Special" />
-                    <Input label="Description" placeholder="Brief description of the offer" />
-                    <Select label="Discount Type" options={[{ label: 'Percentage', value: 'percentage' }, { label: 'Fixed Amount', value: 'fixed' }]} />
-                    <Input label="Discount Value" type="number" placeholder="0" />
-                    <Input label="Usage Limit" type="number" placeholder="e.g. 100" />
-                    <Input label="Start Date" type="date" />
-                    <Input label="End Date" type="date" />
-                    <Select label="Status" options={[{ label: 'Active', value: 'active' }, { label: 'Scheduled', value: 'scheduled' }]} />
+                    <Input label={t('mkt.lblOfferName')} placeholder="e.g. Summer Special" />
+                    <Input label={t('mkt.lblDescription')} placeholder="Brief description of the offer" />
+                    <Select label={t('mkt.lblDiscountType')} options={[{ label: t('mkt.lblPercentage'), value: 'percentage' }, { label: t('mkt.lblFixedAmount'), value: 'fixed' }]} />
+                    <Input label={t('mkt.lblDiscountValue')} type="number" placeholder="0" />
+                    <Input label={t('mkt.lblUsageLimit')} type="number" placeholder="e.g. 100" />
+                    <Input label={t('mkt.lblStartDate')} type="date" />
+                    <Input label={t('mkt.lblEndDate')} type="date" />
+                    <Select label={t('mkt.lblStatus')} options={[{ label: t('mkt.lblActive'), value: 'active' }, { label: t('mkt.lblScheduled'), value: 'scheduled' }]} />
                 </div>
             </SlideOver>
 
@@ -223,24 +215,24 @@ export default function OffersPage() {
             <SlideOver
                 open={isEditOpen}
                 onClose={() => { setIsEditOpen(false); setSelectedOffer(null); }}
-                title="Edit Offer"
+                title={t('mkt.lblEditOffer')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>Cancel</Button>
-                        <Button onClick={() => { setIsEditOpen(false); addToast('success', 'Offer updated successfully'); }}>Save Changes</Button>
+                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>{t('rtn.btnBack')}</Button>
+                        <Button onClick={() => { setIsEditOpen(false); addToast('success', t('mkt.lblEditOffer')); }}>{t('mkt.lblEditOffer')}</Button>
                     </div>
                 }
             >
                 {selectedOffer && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                        <Input label="Offer Name" defaultValue={selectedOffer.name} />
-                        <Input label="Description" defaultValue={selectedOffer.description} />
-                        <Select label="Discount Type" defaultValue={selectedOffer.type} options={[{ label: 'Percentage', value: 'percentage' }, { label: 'Fixed Amount', value: 'fixed' }]} />
-                        <Input label="Discount Value" type="number" defaultValue={selectedOffer.discount} />
-                        <Input label="Usage Limit" type="number" defaultValue={selectedOffer.limit} />
-                        <Input label="Start Date" type="date" defaultValue={selectedOffer.startDate} />
-                        <Input label="End Date" type="date" defaultValue={selectedOffer.endDate} />
-                        <Select label="Status" defaultValue={selectedOffer.status} options={[{ label: 'Active', value: 'active' }, { label: 'Scheduled', value: 'scheduled' }, { label: 'Expired', value: 'expired' }]} />
+                        <Input label={t('mkt.lblOfferName')} defaultValue={selectedOffer.name} />
+                        <Input label={t('mkt.lblDescription')} defaultValue={selectedOffer.description} />
+                        <Select label={t('mkt.lblDiscountType')} defaultValue={selectedOffer.type} options={[{ label: t('mkt.lblPercentage'), value: 'percentage' }, { label: t('mkt.lblFixedAmount'), value: 'fixed' }]} />
+                        <Input label={t('mkt.lblDiscountValue')} type="number" defaultValue={selectedOffer.discount} />
+                        <Input label={t('mkt.lblUsageLimit')} type="number" defaultValue={selectedOffer.limit} />
+                        <Input label={t('mkt.lblStartDate')} type="date" defaultValue={selectedOffer.startDate} />
+                        <Input label={t('mkt.lblEndDate')} type="date" defaultValue={selectedOffer.endDate} />
+                        <Select label={t('mkt.lblStatus')} defaultValue={selectedOffer.status} options={[{ label: t('mkt.lblActive'), value: 'active' }, { label: t('mkt.lblScheduled'), value: 'scheduled' }, { label: t('mkt.lblExpired'), value: 'expired' }]} />
                     </div>
                 )}
             </SlideOver>
@@ -249,17 +241,17 @@ export default function OffersPage() {
             <Modal
                 open={isDeleteOpen}
                 onClose={() => { setIsDeleteOpen(false); setSelectedOffer(null); }}
-                title="Delete Offer"
+                title={t('mkt.lblDeleteOffer')}
                 footer={
                     <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
-                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
-                        <Button variant="destructive" onClick={handleDelete}>Confirm Delete</Button>
+                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>{t('rtn.btnBack')}</Button>
+                        <Button variant="destructive" onClick={handleDelete}>{t('mkt.lblDeleteOffer')}</Button>
                     </div>
                 }
             >
                 <div>
                     <p style={{ color: 'var(--text-secondary)' }}>
-                        Are you sure you want to delete the <strong>{selectedOffer?.name}</strong> offer?
+                        {t('mkt.msgDeleteOfferConfirm')} <strong>{selectedOffer?.name}</strong>
                     </p>
                 </div>
             </Modal>

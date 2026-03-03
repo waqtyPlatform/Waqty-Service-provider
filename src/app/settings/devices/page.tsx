@@ -3,6 +3,7 @@
 import React from 'react';
 import { Monitor, Smartphone, Printer, Wifi, WifiOff } from 'lucide-react';
 import SettingsTabs from '@/components/SettingsTabs';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const devices = [
     { id: 1, name: 'Reception POS', type: 'POS Terminal', model: 'Sunmi V2 Pro', branch: 'Downtown', lastSeen: '2026-02-17 10:05', online: true },
@@ -13,11 +14,24 @@ const devices = [
     { id: 6, name: 'New Cairo POS', type: 'POS Terminal', model: 'Sunmi V2 Pro', branch: 'New Cairo', lastSeen: '2026-02-16 18:00', online: false },
 ];
 
-const typeIcons: Record<string, React.ReactNode> = {
-    'POS Terminal': <Monitor size={20} />,
-    'Fingerprint Scanner': <Smartphone size={20} />,
-    'Face Recognition': <Smartphone size={20} />,
-    'Printer': <Printer size={20} />,
+const getTypeIcon = (type: string) => {
+    switch (type) {
+        case 'POS Terminal': return <Monitor size={20} />;
+        case 'Fingerprint Scanner':
+        case 'Face Recognition': return <Smartphone size={20} />;
+        case 'Printer': return <Printer size={20} />;
+        default: return <Monitor size={20} />;
+    }
+};
+
+const getTranslatedType = (type: string, t: any) => {
+    switch (type) {
+        case 'POS Terminal': return t('settings.devices.types.pos');
+        case 'Fingerprint Scanner': return t('settings.devices.types.fingerprint');
+        case 'Face Recognition': return t('settings.devices.types.face');
+        case 'Printer': return t('settings.devices.types.printer');
+        default: return type;
+    }
 };
 
 const s: Record<string, React.CSSProperties> = {
@@ -29,22 +43,33 @@ const s: Record<string, React.CSSProperties> = {
 };
 
 export default function DevicesPage() {
+    const { t, lang } = useTranslation();
+
     return (
         <div style={s.page}>
             <SettingsTabs />
             <table style={s.table}>
-                <thead><tr>{['Device', 'Type', 'Model', 'Branch', 'Last Seen', 'Status'].map(h => <th key={h} style={s.th as React.CSSProperties}>{h}</th>)}</tr></thead>
+                <thead>
+                    <tr>
+                        <th style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('settings.devices.colDevice')}</th>
+                        <th style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('settings.devices.colType')}</th>
+                        <th style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('settings.devices.colModel')}</th>
+                        <th style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('settings.devices.colBranch')}</th>
+                        <th style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('settings.devices.colLastSeen')}</th>
+                        <th style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('settings.devices.colStatus')}</th>
+                    </tr>
+                </thead>
                 <tbody>
                     {devices.map(d => (
                         <tr key={d.id}>
-                            <td style={{ ...s.td, fontWeight: 'var(--font-medium)' }}>{d.name}</td>
-                            <td style={s.td}><div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>{typeIcons[d.type]} {d.type}</div></td>
-                            <td style={s.td}>{d.model}</td>
-                            <td style={s.td}>{d.branch}</td>
-                            <td style={s.td}>{d.lastSeen}</td>
-                            <td style={s.td}>
+                            <td style={{ ...s.td, fontWeight: 'var(--font-medium)', textAlign: lang === 'ar' ? 'right' : 'left' }}>{d.name}</td>
+                            <td style={{ ...s.td, textAlign: lang === 'ar' ? 'right' : 'left' }}><div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>{getTypeIcon(d.type)} {getTranslatedType(d.type, t)}</div></td>
+                            <td style={{ ...s.td, textAlign: lang === 'ar' ? 'right' : 'left' }}>{d.model}</td>
+                            <td style={{ ...s.td, textAlign: lang === 'ar' ? 'right' : 'left' }}>{d.branch}</td>
+                            <td style={{ ...s.td, textAlign: lang === 'ar' ? 'right' : 'left' }}>{d.lastSeen}</td>
+                            <td style={{ ...s.td, textAlign: lang === 'ar' ? 'right' : 'left' }}>
                                 <span style={{ ...s.badge, background: d.online ? 'var(--color-success-light)' : 'var(--color-error-light)', color: d.online ? 'var(--color-success)' : 'var(--color-error)' }}>
-                                    {d.online ? <><Wifi size={12} /> Online</> : <><WifiOff size={12} /> Offline</>}
+                                    {d.online ? <><Wifi size={12} /> {t('settings.devices.online')}</> : <><WifiOff size={12} /> {t('settings.devices.offline')}</>}
                                 </span>
                             </td>
                         </tr>

@@ -7,8 +7,6 @@ import {
     Search,
     Plus,
     Download,
-    ChevronLeft,
-    ChevronRight,
     MoreVertical,
     Receipt,
     FileText,
@@ -17,6 +15,7 @@ import {
     PieChart,
 } from 'lucide-react';
 import styles from './expenses.module.css';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const expenses = [
     { id: 'EXP-401', date: 'Feb 17, 2026', category: 'Supplies', description: 'Hair color supplies (L\'Oréal)', vendor: 'Beauty Suppliers Co.', amount: 2500, method: 'Transfer', status: 'approved' },
@@ -57,6 +56,7 @@ export default function ExpensesPage() {
     const [search, setSearch] = useState('');
     const [catFilter, setCatFilter] = useState('all');
     const { addToast } = useToast();
+    const { t } = useTranslation();
 
     const filtered = expenses.filter((e) => {
         const matchSearch =
@@ -73,12 +73,12 @@ export default function ExpensesPage() {
         <div className={styles.page}>
             <div className={styles.header}>
                 <div>
-                    <h1 className={styles.h1}>Expenses</h1>
-                    <p className={styles.sub}>Track and manage all business expenses.</p>
+                    <h1 className={styles.h1}>{t('expenses.title')}</h1>
+                    <p className={styles.sub}>{t('expenses.desc')}</p>
                 </div>
                 <div className={styles.actions}>
-                    <button className={styles.btnOutline}><Download size={16} /> Export</button>
-                    <button className={styles.btnPrimary}><Plus size={16} /> Add Expense</button>
+                    <button className={styles.btnOutline}><Download size={16} /> {t('expenses.export')}</button>
+                    <button className={styles.btnPrimary}><Plus size={16} /> {t('expenses.add')}</button>
                 </div>
             </div>
 
@@ -93,15 +93,15 @@ export default function ExpensesPage() {
             {/* Summary */}
             <div className={styles.summaryGrid}>
                 <div className={styles.summaryCard}>
-                    <div className={styles.summaryLabel}>Total Expenses (Month)</div>
+                    <div className={styles.summaryLabel}>{t('expenses.total')}</div>
                     <div className={styles.summaryValue}>{totalExpenses.toLocaleString()} EGP</div>
                 </div>
                 <div className={styles.summaryCard}>
-                    <div className={styles.summaryLabel}>Pending Approval</div>
+                    <div className={styles.summaryLabel}>{t('expenses.pending')}</div>
                     <div className={styles.summaryValueWarning}>{expenses.filter(e => e.status === 'pending').length}</div>
                 </div>
                 <div className={styles.summaryCard}>
-                    <div className={styles.summaryLabel}>Top Category</div>
+                    <div className={styles.summaryLabel}>{t('expenses.topCategory')}</div>
                     <div className={styles.summaryValueNormal}>Salary</div>
                 </div>
             </div>

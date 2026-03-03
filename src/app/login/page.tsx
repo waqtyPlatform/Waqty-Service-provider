@@ -4,11 +4,13 @@ import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Mail, Smartphone, ArrowRight, ShieldCheck, RefreshCw } from 'lucide-react';
 import { useToast } from '@/components/ui';
+import { useTranslation } from '@/hooks/useTranslation';
 import styles from './login.module.css';
 
 export default function LoginPage() {
     const { requestOTP, verifyOTP } = useAuth();
     const { addToast } = useToast();
+    const { t } = useTranslation();
 
     // State Machine: 'request' -> 'verify'
     const [step, setStep] = useState<'request' | 'verify'>('request');
@@ -31,7 +33,7 @@ export default function LoginPage() {
 
     const handleRequestOTP = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!identifier.trim()) return addToast('error', 'Please enter an Email or Phone number');
+        if (!identifier.trim()) return addToast('error', t('auth.errorEmpty'));
 
         setIsLoading(true);
         try {
@@ -40,10 +42,10 @@ export default function LoginPage() {
                 setOtpMethod(res.type);
                 setStep('verify');
                 setCountdown(60);
-                addToast('success', `Verification code sent via ${res.type === 'email' ? 'Email' : 'WhatsApp'}`);
+                addToast('success', res.type === 'email' ? t('auth.otpSentEmail') : t('auth.otpSentWhatsApp'));
             }
         } catch (err) {
-            addToast('error', 'Failed to request OTP');
+            addToast('error', t('auth.errorRequest'));
         } finally {
             setIsLoading(false);
         }
@@ -52,19 +54,19 @@ export default function LoginPage() {
     const handleVerifyOTP = async (e: React.FormEvent) => {
         e.preventDefault();
         const code = otpCode.join('');
-        if (code.length < 6) return addToast('error', 'Please enter the 6-digit code');
+        if (code.length < 6) return addToast('error', t('auth.error6Digits'));
 
         setIsLoading(true);
         try {
             const res = await verifyOTP(identifier, code);
             if (!res.success) {
-                addToast('error', res.error || 'Invalid code');
+                addToast('error', res.error || t('auth.errorVerify'));
                 setOtpCode(['', '', '', '', '', '']); // clear on fail
             } else {
-                addToast('success', 'Authentication successful!');
+                addToast('success', t('auth.successLogin'));
             }
         } catch (err) {
-            addToast('error', 'Verification failed');
+            addToast('error', t('auth.errorVerify'));
         } finally {
             setIsLoading(false);
         }
@@ -99,18 +101,18 @@ export default function LoginPage() {
                         <div className={styles.logoMark}></div>
                         <span>Hagzy</span>
                     </div>
-                    <h1>{step === 'request' ? 'Welcome Back' : 'Verify Identity'}</h1>
+                    <h1>{step === 'request' ? t('auth.welcomeBack') : t('auth.verifyIdentity')}</h1>
                     <p>
                         {step === 'request'
-                            ? 'Enter your email or phone number to sign in securely.'
-                            : `We sent a 6-digit code to ${identifier}.`}
+                            ? t('auth.enterIdentifier')
+                            : <>{t('auth.codeSentTo')} <bdi>{identifier}</bdi></>}
                     </p>
                 </div>
 
                 {step === 'request' ? (
                     <form className={styles.form} onSubmit={handleRequestOTP}>
                         <div className={styles.inputGroup}>
-                            <label className={styles.label}>Email or Phone Number</label>
+                            <label className={styles.label}>{t('auth.lblIdentifier')}</label>
                             <div style={{ position: 'relative' }}>
                                 <div style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }}>
                                     {identifier.includes('@') ? <Mail size={18} /> : <Smartphone size={18} />}
@@ -119,7 +121,7 @@ export default function LoginPage() {
                                     type="text"
                                     className={styles.loginInput}
                                     style={{ width: '100%', height: 48, paddingLeft: 44, paddingRight: 16, borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)', fontSize: 'var(--text-base)' }}
-                                    placeholder="user@example.com or +20..."
+                                    placeholder={t('auth.phIdentifier')}
                                     value={identifier}
                                     onChange={(e) => setIdentifier(e.target.value)}
                                     autoFocus
@@ -133,13 +135,13 @@ export default function LoginPage() {
                             disabled={isLoading}
                         >
                             {isLoading ? <RefreshCw size={18} className="spin" /> : <ArrowRight size={18} />}
-                            {isLoading ? 'Sending Code...' : 'Continue'}
+                            {isLoading ? t('auth.btnSending') : t('auth.btnContinue')}
                         </button>
                     </form>
                 ) : (
                     <form className={styles.form} onSubmit={handleVerifyOTP}>
                         <div className={styles.inputGroup}>
-                            <label className={styles.label} style={{ textAlign: 'center' }}>Secure OTP Code</label>
+                            <label className={styles.label} style={{ textAlign: 'center' }}>{t('auth.lblOtp')}</label>
                             <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'center', marginTop: 'var(--space-2)' }}>
                                 {otpCode.map((digit, idx) => (
                                     <input
@@ -177,7 +179,7 @@ export default function LoginPage() {
                             disabled={isLoading || otpCode.join('').length < 6}
                         >
                             {isLoading ? <RefreshCw size={18} className="spin" /> : <ShieldCheck size={18} />}
-                            {isLoading ? 'Verifying...' : 'Verify & Login'}
+                            {isLoading ? t('auth.btnVerifying') : t('auth.btnVerifyLogin')}
                         </button>
 
                         <div style={{ display: 'flex', justifyContent: 'center', marginTop: 'var(--space-4)' }}>
@@ -194,7 +196,7 @@ export default function LoginPage() {
                                     cursor: countdown > 0 ? 'not-allowed' : 'pointer'
                                 }}
                             >
-                                {countdown > 0 ? `Resend code in 0:${countdown.toString().padStart(2, '0')}` : 'Resend Code'}
+                                {countdown > 0 ? `${t('auth.resendIn')} 0:${countdown.toString().padStart(2, '0')}` : t('auth.resendCode')}
                             </button>
                         </div>
                     </form>
@@ -202,8 +204,8 @@ export default function LoginPage() {
 
                 <div className={styles.tip} style={{ marginTop: 'var(--space-6)' }}>
                     {step === 'request'
-                        ? 'For this demo, enter any email (e.g. clinic@hagzy.com) to simulate sending an OTP.'
-                        : <span>The mock Verification Code is <strong>123456</strong>.</span>}
+                        ? t('auth.demoTipRequest')
+                        : <span>{t('auth.demoTipVerify')} <bdi><strong>123456</strong></bdi>.</span>}
                 </div>
             </div>
         </div>

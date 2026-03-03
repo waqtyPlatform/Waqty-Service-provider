@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Search, Users, UserPlus, MoreVertical, Edit, Trash2 } from 'lucide-react';
+import { Search, Users, MoreVertical, Edit, Trash2 } from 'lucide-react';
 import { EmptyState, DropdownMenu, useToast, SlideOver, Modal, Input, Select, Button } from '@/components/ui';
 import { useRouter } from 'next/navigation';
 import styles from './employees.module.css';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const initialEmployees = [
     { id: 'E001', name: 'Sara Ahmed', role: 'Senior Stylist', phone: '+20 123 456 789', email: 'sara.a@hagzy.com', branch: 'Downtown', status: 'available', bookingsToday: 7, rating: 4.9, revenue: 14200, avatar: 'SA', color: '#8B5CF6' },
@@ -15,11 +16,11 @@ const initialEmployees = [
     { id: 'E006', name: 'Dina Kamal', role: 'Junior Stylist', phone: '+20 144 555 666', email: 'dina.k@hagzy.com', branch: 'Mall of Arabia', status: 'off', bookingsToday: 0, rating: 4.5, revenue: 5400, avatar: 'DK', color: '#6366F1' },
 ];
 
-const statusMap: Record<string, { label: string; bg: string; color: string }> = {
-    available: { label: 'Available', bg: 'var(--color-success-light)', color: 'var(--color-success)' },
-    'in-session': { label: 'In Session', bg: 'var(--color-info-light)', color: 'var(--color-info)' },
-    break: { label: 'On Break', bg: 'var(--color-warning-light)', color: 'var(--color-warning)' },
-    off: { label: 'Day Off', bg: 'var(--color-gray-100)', color: 'var(--color-gray-500)' },
+const statusMap: Record<string, { labelKey: string; bg: string; color: string }> = {
+    available: { labelKey: 'employees.available', bg: 'var(--color-success-light)', color: 'var(--color-success)' },
+    'in-session': { labelKey: 'employees.inSession', bg: 'var(--color-info-light)', color: 'var(--color-info)' },
+    break: { labelKey: 'employees.onBreak', bg: 'var(--color-warning-light)', color: 'var(--color-warning)' },
+    off: { labelKey: 'employees.dayOff', bg: 'var(--color-gray-100)', color: 'var(--color-gray-500)' },
 };
 
 export default function EmployeesPage() {
@@ -27,6 +28,7 @@ export default function EmployeesPage() {
     const [search, setSearch] = useState('');
     const router = useRouter();
     const { addToast } = useToast();
+    const { t } = useTranslation();
 
     // CRUD state
     const [isAddOpen, setIsAddOpen] = useState(false);
@@ -91,7 +93,7 @@ export default function EmployeesPage() {
                     <Search size={16} className={styles.searchIcon} />
                     <input
                         className={styles.searchInput}
-                        placeholder="Search employees..."
+                        placeholder={t('employees.search')}
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
@@ -119,7 +121,7 @@ export default function EmployeesPage() {
                                     </div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                                         <span className={styles.statusBadge} style={{ background: st.bg, color: st.color }}>
-                                            {st.label}
+                                            {t(st.labelKey)}
                                         </span>
                                         <DropdownMenu
                                             trigger={
@@ -172,27 +174,27 @@ export default function EmployeesPage() {
             <SlideOver
                 open={isAddOpen}
                 onClose={() => setIsAddOpen(false)}
-                title="Add New Employee"
+                title={t('employees.addEmployeeTitle')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button>
-                        <Button onClick={handleSaveAdd}>Save Employee</Button>
+                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>{t('employees.cancel')}</Button>
+                        <Button onClick={handleSaveAdd}>{t('employees.saveEmployee')}</Button>
                     </div>
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
-                        <Input label="First Name" placeholder="e.g. Sara" value={newEmp.fname} onChange={e => setNewEmp({ ...newEmp, fname: e.target.value })} />
-                        <Input label="Last Name" placeholder="e.g. Ahmed" value={newEmp.lname} onChange={e => setNewEmp({ ...newEmp, lname: e.target.value })} />
+                        <Input label={t('employees.firstName')} placeholder="e.g. Sara" value={newEmp.fname} onChange={e => setNewEmp({ ...newEmp, fname: e.target.value })} />
+                        <Input label={t('employees.lastName')} placeholder="e.g. Ahmed" value={newEmp.lname} onChange={e => setNewEmp({ ...newEmp, lname: e.target.value })} />
                     </div>
-                    <Input label="Phone Number" placeholder="+20 1XX XXX XXXX" value={newEmp.phone} onChange={e => setNewEmp({ ...newEmp, phone: e.target.value })} />
-                    <Input label="Email Address" type="email" placeholder="employee@hagzy.com" value={newEmp.email} onChange={e => setNewEmp({ ...newEmp, email: e.target.value })} />
+                    <Input label={t('employees.phoneOption')} placeholder="+20 1XX XXX XXXX" value={newEmp.phone} onChange={e => setNewEmp({ ...newEmp, phone: e.target.value })} />
+                    <Input label={t('employees.emailOption')} type="email" placeholder="employee@hagzy.com" value={newEmp.email} onChange={e => setNewEmp({ ...newEmp, email: e.target.value })} />
 
                     <div style={{ borderTop: '1px solid var(--border-color)', margin: 'var(--space-2) 0' }} />
-                    <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)', color: 'var(--text-primary)', marginBottom: '-4px' }}>Job Details</h3>
+                    <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)', color: 'var(--text-primary)', marginBottom: '-4px' }}>{t('employees.jobDetailsTitle')}</h3>
 
                     <Select
-                        label="Job Title"
+                        label={t('employees.jobTitle')}
                         value={newEmp.jobTitle}
                         onChange={e => setNewEmp({ ...newEmp, jobTitle: e.target.value })}
                         options={[
@@ -204,43 +206,43 @@ export default function EmployeesPage() {
                         ]}
                     />
                     <Select
-                        label="Branch"
+                        label={t('employees.branch')}
                         value={newEmp.branch}
                         onChange={e => setNewEmp({ ...newEmp, branch: e.target.value })}
                         options={[
-                            { label: 'Downtown', value: 'Downtown' },
-                            { label: 'Mall of Arabia', value: 'Mall of Arabia' },
-                            { label: 'New Cairo', value: 'New Cairo' }
+                            { label: t('employees.downtown'), value: 'Downtown' },
+                            { label: t('employees.mall'), value: 'Mall of Arabia' },
+                            { label: t('employees.newCairo'), value: 'New Cairo' }
                         ]}
                     />
-                    <Input label="Base Salary (EGP)" type="number" placeholder="0" />
+                    <Input label={t('employees.baseSalary')} type="number" placeholder="0" />
                 </div>
             </SlideOver>
             {/* Edit Employee SlideOver */}
             <SlideOver
                 open={isEditOpen}
                 onClose={() => { setIsEditOpen(false); setSelectedEmp(null); }}
-                title="Edit Employee Detail"
+                title={t('employees.editEmployeeTitle')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>Cancel</Button>
-                        <Button onClick={() => { setIsEditOpen(false); addToast('success', 'Employee details updated'); }}>Save Changes</Button>
+                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>{t('employees.cancel')}</Button>
+                        <Button onClick={() => { setIsEditOpen(false); addToast('success', 'Employee details updated'); }}>{t('employees.saveChanges')}</Button>
                     </div>
                 }
             >
                 {selectedEmp && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                        <Input label="Full Name" defaultValue={selectedEmp.name} />
-                        <Input label="Email Address" type="email" defaultValue={`${selectedEmp.name.split(' ')[0].toLowerCase()}@example.com`} />
-                        <Input label="Phone Number" defaultValue={selectedEmp.phone} />
+                        <Input label={t('employees.fullName')} defaultValue={selectedEmp.name} />
+                        <Input label={t('employees.emailOption')} type="email" defaultValue={`${selectedEmp.name.split(' ')[0].toLowerCase()}@example.com`} />
+                        <Input label={t('employees.phoneOption')} defaultValue={selectedEmp.phone} />
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
-                            <Select label="System Role" defaultValue="employee" options={[
-                                { label: 'Admin', value: 'admin' },
-                                { label: 'Branch Manager', value: 'manager' },
-                                { label: 'Cashier', value: 'cashier' },
-                                { label: 'Base Employee', value: 'employee' }
+                            <Select label={t('employees.systemRole')} defaultValue="employee" options={[
+                                { label: t('employees.admin'), value: 'admin' },
+                                { label: t('employees.manager'), value: 'manager' },
+                                { label: t('employees.cashier'), value: 'cashier' },
+                                { label: t('employees.baseEmployee'), value: 'employee' }
                             ]} />
-                            <Select label="Job Title" defaultValue={selectedEmp.role} options={[
+                            <Select label={t('employees.jobTitle')} defaultValue={selectedEmp.role} options={[
                                 { label: 'Senior Stylist', value: 'Senior Stylist' },
                                 { label: 'Junior Stylist', value: 'Junior Stylist' },
                                 { label: 'Skin Specialist', value: 'Skin Specialist' },
@@ -248,10 +250,10 @@ export default function EmployeesPage() {
                                 { label: 'Nail Technician', value: 'Nail Technician' }
                             ]} />
                         </div>
-                        <Select label="Branch" defaultValue={selectedEmp.branch} options={[
-                            { label: 'Downtown', value: 'Downtown' },
-                            { label: 'Mall of Arabia', value: 'Mall of Arabia' },
-                            { label: 'New Cairo', value: 'New Cairo' }
+                        <Select label={t('employees.branch')} defaultValue={selectedEmp.branch} options={[
+                            { label: t('employees.downtown'), value: 'Downtown' },
+                            { label: t('employees.mall'), value: 'Mall of Arabia' },
+                            { label: t('employees.newCairo'), value: 'New Cairo' }
                         ]} />
                     </div>
                 )}
@@ -261,17 +263,17 @@ export default function EmployeesPage() {
             <Modal
                 open={isDeleteOpen}
                 onClose={() => { setIsDeleteOpen(false); setSelectedEmp(null); }}
-                title="Remove Employee"
+                title={t('employees.deleteEmployeeTitle')}
                 footer={
                     <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
-                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
-                        <Button variant="destructive" onClick={handleDelete}>Confirm Removal</Button>
+                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>{t('employees.cancel')}</Button>
+                        <Button variant="destructive" onClick={handleDelete}>{t('employees.confirmRemoval')}</Button>
                     </div>
                 }
             >
                 <div>
                     <p style={{ color: 'var(--text-secondary)' }}>
-                        Are you sure you want to remove <strong>{selectedEmp?.name}</strong>? This will revoke their platform access immediately and detach them from future active bookings.
+                        <strong>{selectedEmp?.name}</strong> - {t('employees.deleteWarning')}
                     </p>
                 </div>
             </Modal>

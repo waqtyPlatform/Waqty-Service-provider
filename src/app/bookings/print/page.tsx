@@ -1,18 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
-import Link from 'next/link';
+import React from 'react';
 import {
-    CalendarDays,
-    List,
-    DoorOpen,
-    Plus,
     Printer,
-    Clock,
-    User,
 } from 'lucide-react';
-import styles from '../bookings.module.css';
 import BookingsTabs from '../BookingsTabs';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const employees = [
     { id: 'E01', name: 'Sara Ahmed', role: 'Senior Stylist', color: '#F59E0B' },
@@ -79,17 +72,18 @@ const s: Record<string, React.CSSProperties> = {
 };
 
 export default function EmployeePrintPage() {
+    const { t, lang } = useTranslation();
     return (
-        <div style={s.page}>
+        <div style={{ ...s.page, direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
             <BookingsTabs />
 
             <div style={s.header}>
                 <div>
-                    <h1 style={s.h1}>Employee Schedule — Feb 17, 2026</h1>
-                    <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginTop: 'var(--space-1)' }}>Print-ready schedule cards for each employee.</p>
+                    <h1 style={s.h1}>{t('bk.printTitle')} — Feb 17, 2026</h1>
+                    <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginTop: 'var(--space-1)' }}>{t('bk.printSub')}</p>
                 </div>
                 <button style={s.printBtn} onClick={() => window.print()}>
-                    <Printer size={16} /> Print All
+                    <Printer size={16} /> {t('bk.btnPrintAll')}
                 </button>
             </div>
 
@@ -104,17 +98,17 @@ export default function EmployeePrintPage() {
                                     <div style={s.empName}>{emp.name}</div>
                                     <div style={s.empRole}>{emp.role}</div>
                                 </div>
-                                <span style={s.count}>{bookings.length} bookings</span>
+                                <span style={s.count}>{bookings.length} {t('bk.lblBookingsCount')}</span>
                             </div>
                             {bookings.map((b, i) => (
                                 <div key={i} style={{ ...s.row, ...(i === bookings.length - 1 ? { borderBottom: 'none' } : {}) }}>
                                     <span style={s.time}>{b.time}</span>
-                                    <div style={s.details}>
+                                    <div style={{ ...s.details, textAlign: lang === 'ar' ? 'right' : 'left' }}>
                                         <div style={s.svc}>{b.service}</div>
                                         <div style={s.client}>{b.client}</div>
                                     </div>
                                     <span style={s.dur}>{b.duration}</span>
-                                    {b.status === 'Pending' && <span style={s.pending}>Pending</span>}
+                                    {b.status === 'Pending' && <span style={s.pending}>{t('bk.stUnconfirmed')}</span>}
                                 </div>
                             ))}
                         </div>

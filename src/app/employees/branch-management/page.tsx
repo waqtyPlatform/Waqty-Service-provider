@@ -2,12 +2,7 @@
 
 import React from 'react';
 import { Building2, Users } from 'lucide-react';
-
-const branches = [
-    { name: 'Downtown Branch', manager: 'Sara Ahmed', employees: ['Sara Ahmed', 'Nora Ali', 'Layla Hassan', 'Hana Youssef', 'Reem Mohamed', 'Dina Nabil'], color: '#10B981' },
-    { name: 'Mall of Arabia', manager: 'Fatma Hosny', employees: ['Fatma Hosny', 'Maya Adel', 'Rana Fawzy'], color: '#3B82F6' },
-    { name: 'New Cairo Branch', manager: 'Amira Sayed', employees: ['Amira Sayed', 'Salma Karim', 'Nadia Omar', 'Yara Emad'], color: '#8B5CF6' },
-];
+import { useTranslation } from '@/hooks/useTranslation';
 
 const s: Record<string, React.CSSProperties> = {
     page: { display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' },
@@ -28,9 +23,17 @@ const s: Record<string, React.CSSProperties> = {
 const avatarColors = ['#F59E0B', '#EC4899', '#10B981', '#3B82F6', '#8B5CF6', '#EF4444'];
 
 export default function BranchManagementPage() {
+    const { t, lang } = useTranslation();
+
+    const branches = [
+        { name: t('branchMgt.downtown'), manager: 'Sara Ahmed', employees: ['Sara Ahmed', 'Nora Ali', 'Layla Hassan', 'Hana Youssef', 'Reem Mohamed', 'Dina Nabil'], color: '#10B981' },
+        { name: t('branchMgt.mallOfArabia'), manager: 'Fatma Hosny', employees: ['Fatma Hosny', 'Maya Adel', 'Rana Fawzy'], color: '#3B82F6' },
+        { name: t('branchMgt.newCairo'), manager: 'Amira Sayed', employees: ['Amira Sayed', 'Salma Karim', 'Nadia Omar', 'Yara Emad'], color: '#8B5CF6' },
+    ];
+
     return (
-        <div style={s.page}>
-            <div style={s.title}>Branch Employees</div>
+        <div style={{ ...s.page, direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
+            <div style={s.title}>{t('branchMgt.title')}</div>
             <div style={s.grid}>
                 {branches.map(branch => (
                     <div key={branch.name} style={s.card}>
@@ -38,7 +41,10 @@ export default function BranchManagementPage() {
                             <div style={{ ...s.icon, background: branch.color }}><Building2 size={20} /></div>
                             <div>
                                 <div style={s.branchName}>{branch.name}</div>
-                                <div style={s.meta}><Users size={12} /> {branch.employees.length} employees</div>
+                                <div style={s.meta}>
+                                    <Users size={12} style={{ ...(lang === 'ar' ? { marginLeft: 4 } : { marginRight: 4 }) }} />
+                                    {branch.employees.length} {t('branchMgt.employees')}
+                                </div>
                             </div>
                         </div>
                         <div style={s.employeeList}>
@@ -46,7 +52,7 @@ export default function BranchManagementPage() {
                                 <div key={emp} style={{ ...s.emp, borderBottom: i === branch.employees.length - 1 ? 'none' : '1px solid var(--border-color)' }}>
                                     <div style={{ ...s.avatar, background: avatarColors[i % avatarColors.length] }}>{emp.charAt(0)}</div>
                                     <div style={s.empName}>{emp}</div>
-                                    {emp === branch.manager && <span style={s.mgr}>Manager</span>}
+                                    {emp === branch.manager && <span style={s.mgr}>{t('branchMgt.manager')}</span>}
                                 </div>
                             ))}
                         </div>

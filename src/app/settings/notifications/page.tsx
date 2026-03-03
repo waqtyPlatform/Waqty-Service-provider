@@ -3,6 +3,7 @@
 import React from 'react';
 import SettingsTabs from '@/components/SettingsTabs';
 import { Switch, Button } from '@/components/ui';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const cs: Record<string, React.CSSProperties> = {
     page: { display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' },
@@ -12,24 +13,25 @@ const cs: Record<string, React.CSSProperties> = {
 };
 
 export default function NotificationsSettingsPage() {
+    const { t } = useTranslation();
     return (
         <div style={cs.page}>
             <SettingsTabs />
             <div style={cs.card}>
-                <div style={cs.cardTitle}>Notification Preferences</div>
-                <div style={cs.cardDesc}>Choose what notifications you receive.</div>
+                <div style={cs.cardTitle}>{t('settings.notifications.title')}</div>
+                <div style={cs.cardDesc}>{t('settings.notifications.desc')}</div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Switch checked={true} label="New booking alerts" />
-                    <Switch checked={true} label="Booking cancellation alerts" />
-                    <Switch checked={true} label="Payment received" />
-                    <Switch checked={false} label="Daily summary email" />
-                    <Switch checked={false} label="Employee clock-in alerts" />
-                    <Switch checked={true} label="Client birthday reminders" />
+                    <Switch checked={true} label={t('settings.notifications.newBooking')} />
+                    <Switch checked={true} label={t('settings.notifications.cancelBooking')} />
+                    <Switch checked={true} label={t('settings.notifications.paymentReceived')} />
+                    <Switch checked={false} label={t('settings.notifications.dailySummary')} />
+                    <Switch checked={false} label={t('settings.notifications.employeeClockIn')} />
+                    <Switch checked={true} label={t('settings.notifications.clientBirthday')} />
                 </div>
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <Button>Save Changes</Button>
+                <Button>{t('settings.notifications.saveChanges')}</Button>
             </div>
         </div>
     );

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Receipt, Search, Download, Banknote } from 'lucide-react';
+import { Search, Download } from 'lucide-react';
 
 const tabs = [
     { label: 'Transaction Log', href: '/transactions' },

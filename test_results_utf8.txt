@@ -1,0 +1,151 @@
+﻿
+Running 8 tests using 1 worker
+
+Navigating to dashboard...
+  Γ£ÿ  1 e2e\navigation.spec.ts:8:9 ΓÇ║ Navigation Verification ΓÇ║ Dashboard loads (3.4s)
+  Γ£ÿ  2 e2e\navigation.spec.ts:15:9 ΓÇ║ Navigation Verification ΓÇ║ Sales Packages (3.2s)
+  Γ£ÿ  3 e2e\navigation.spec.ts:24:9 ΓÇ║ Navigation Verification ΓÇ║ Transactions Navigation (3.2s)
+  Γ£ÿ  4 e2e\navigation.spec.ts:34:9 ΓÇ║ Navigation Verification ΓÇ║ Returns Navigation (3.2s)
+  Γ£ÿ  5 e2e\navigation.spec.ts:43:9 ΓÇ║ Navigation Verification ΓÇ║ Customers Navigation (3.2s)
+  Γ£ÿ  6 e2e\navigation.spec.ts:52:9 ΓÇ║ Navigation Verification ΓÇ║ Employees Navigation (3.2s)
+  Γ£ÿ  7 e2e\navigation.spec.ts:61:9 ΓÇ║ Navigation Verification ΓÇ║ Marketing Navigation (3.2s)
+  Γ£ÿ  8 e2e\navigation.spec.ts:70:9 ΓÇ║ Navigation Verification ΓÇ║ Settings Navigation (3.2s)
+
+
+  1) e2e\navigation.spec.ts:8:9 ΓÇ║ Navigation Verification ΓÇ║ Dashboard loads ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3000/
+    Call log:
+    [2m  - navigating to "http://127.0.0.1:3000/", waiting until "load"[22m
+
+
+       8 |     test('Dashboard loads', async ({ page }) => {
+       9 |         console.log('Navigating to dashboard...');
+    > 10 |         await page.goto(baseURL);
+         |                    ^
+      11 |         console.log('Navigated. Title:', await page.title());
+      12 |         await expect(page.getByText('Total Revenue')).toBeVisible();
+      13 |     });
+        at D:\project\Hagzy\e2e\navigation.spec.ts:10:20
+
+  2) e2e\navigation.spec.ts:15:9 ΓÇ║ Navigation Verification ΓÇ║ Sales Packages ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3000/
+    Call log:
+    [2m  - navigating to "http://127.0.0.1:3000/", waiting until "load"[22m
+
+
+      14 |
+      15 |     test('Sales Packages', async ({ page }) => {
+    > 16 |         await page.goto(baseURL);
+         |                    ^
+      17 |         await page.getByRole('button', { name: 'Sales' }).click();
+      18 |         await page.waitForTimeout(500);
+      19 |         await page.getByRole('link', { name: 'Packages' }).click();
+        at D:\project\Hagzy\e2e\navigation.spec.ts:16:20
+
+  3) e2e\navigation.spec.ts:24:9 ΓÇ║ Navigation Verification ΓÇ║ Transactions Navigation ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3000/
+    Call log:
+    [2m  - navigating to "http://127.0.0.1:3000/", waiting until "load"[22m
+
+
+      23 |
+      24 |     test('Transactions Navigation', async ({ page }) => {
+    > 25 |         await page.goto(baseURL);
+         |                    ^
+      26 |         await page.getByRole('button', { name: 'Transactions' }).click();
+      27 |         await page.waitForTimeout(500);
+      28 |         await page.getByRole('link', { name: 'Cash Sales' }).click();
+        at D:\project\Hagzy\e2e\navigation.spec.ts:25:20
+
+  4) e2e\navigation.spec.ts:34:9 ΓÇ║ Navigation Verification ΓÇ║ Returns Navigation ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3000/
+    Call log:
+    [2m  - navigating to "http://127.0.0.1:3000/", waiting until "load"[22m
+
+
+      33 |
+      34 |     test('Returns Navigation', async ({ page }) => {
+    > 35 |         await page.goto(baseURL);
+         |                    ^
+      36 |         await page.getByRole('button', { name: 'Returns' }).click();
+      37 |         await page.waitForTimeout(500);
+      38 |         await page.getByRole('link', { name: 'Cash Refund', exact: true }).click();
+        at D:\project\Hagzy\e2e\navigation.spec.ts:35:20
+
+  5) e2e\navigation.spec.ts:43:9 ΓÇ║ Navigation Verification ΓÇ║ Customers Navigation ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3000/
+    Call log:
+    [2m  - navigating to "http://127.0.0.1:3000/", waiting until "load"[22m
+
+
+      42 |
+      43 |     test('Customers Navigation', async ({ page }) => {
+    > 44 |         await page.goto(baseURL);
+         |                    ^
+      45 |         await page.getByRole('button', { name: 'Customers' }).click();
+      46 |         await page.waitForTimeout(500);
+      47 |         await page.getByRole('link', { name: 'Client Groups' }).click();
+        at D:\project\Hagzy\e2e\navigation.spec.ts:44:20
+
+  6) e2e\navigation.spec.ts:52:9 ΓÇ║ Navigation Verification ΓÇ║ Employees Navigation ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3000/
+    Call log:
+    [2m  - navigating to "http://127.0.0.1:3000/", waiting until "load"[22m
+
+
+      51 |
+      52 |     test('Employees Navigation', async ({ page }) => {
+    > 53 |         await page.goto(baseURL);
+         |                    ^
+      54 |         await page.getByRole('button', { name: 'Employees' }).click();
+      55 |         await page.waitForTimeout(500);
+      56 |         await page.getByRole('link', { name: 'Departments' }).click();
+        at D:\project\Hagzy\e2e\navigation.spec.ts:53:20
+
+  7) e2e\navigation.spec.ts:61:9 ΓÇ║ Navigation Verification ΓÇ║ Marketing Navigation ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3000/
+    Call log:
+    [2m  - navigating to "http://127.0.0.1:3000/", waiting until "load"[22m
+
+
+      60 |
+      61 |     test('Marketing Navigation', async ({ page }) => {
+    > 62 |         await page.goto(baseURL);
+         |                    ^
+      63 |         await page.getByRole('button', { name: 'Marketing' }).click();
+      64 |         await page.waitForTimeout(500);
+      65 |         await page.getByRole('link', { name: 'Offers' }).click();
+        at D:\project\Hagzy\e2e\navigation.spec.ts:62:20
+
+  8) e2e\navigation.spec.ts:70:9 ΓÇ║ Navigation Verification ΓÇ║ Settings Navigation ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:3000/
+    Call log:
+    [2m  - navigating to "http://127.0.0.1:3000/", waiting until "load"[22m
+
+
+      69 |
+      70 |     test('Settings Navigation', async ({ page }) => {
+    > 71 |         await page.goto(baseURL);
+         |                    ^
+      72 |         await page.getByRole('button', { name: 'Settings' }).click();
+      73 |         await page.waitForTimeout(500);
+      74 |         await page.getByRole('link', { name: 'Branches' }).click();
+        at D:\project\Hagzy\e2e\navigation.spec.ts:71:20
+
+  8 failed
+    e2e\navigation.spec.ts:8:9 ΓÇ║ Navigation Verification ΓÇ║ Dashboard loads ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+    e2e\navigation.spec.ts:15:9 ΓÇ║ Navigation Verification ΓÇ║ Sales Packages ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+    e2e\navigation.spec.ts:24:9 ΓÇ║ Navigation Verification ΓÇ║ Transactions Navigation ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+    e2e\navigation.spec.ts:34:9 ΓÇ║ Navigation Verification ΓÇ║ Returns Navigation ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+    e2e\navigation.spec.ts:43:9 ΓÇ║ Navigation Verification ΓÇ║ Customers Navigation ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+    e2e\navigation.spec.ts:52:9 ΓÇ║ Navigation Verification ΓÇ║ Employees Navigation ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+    e2e\navigation.spec.ts:61:9 ΓÇ║ Navigation Verification ΓÇ║ Marketing Navigation ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+    e2e\navigation.spec.ts:70:9 ΓÇ║ Navigation Verification ΓÇ║ Settings Navigation ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ

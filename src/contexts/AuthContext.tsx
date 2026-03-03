@@ -43,9 +43,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Hydrate from localStorage
         const storedUser = localStorage.getItem('hagzy_user');
         if (storedUser) {
-            setUser(JSON.parse(storedUser));
+            Promise.resolve().then(() => setUser(JSON.parse(storedUser)));
         }
-        setLoading(false);
+        Promise.resolve().then(() => setLoading(false));
     }, []);
 
     useEffect(() => {

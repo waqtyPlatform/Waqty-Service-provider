@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { RotateCcw, Search, ChevronRight } from 'lucide-react';
+import { Search, ChevronRight } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const tabs = [
     { label: 'Returns List', href: '/returns' },
@@ -49,22 +50,30 @@ const s: Record<string, React.CSSProperties> = {
 };
 
 export default function CashRefundPage() {
+    const { t, lang } = useTranslation();
     const [step, setStep] = useState(0);
     const [selected, setSelected] = useState<number | null>(null);
     const [search, setSearch] = useState('');
 
-    const filtered = transactions.filter(t => t.client.toLowerCase().includes(search.toLowerCase()) || t.id.toLowerCase().includes(search.toLowerCase()));
+    const filtered = transactions.filter(txn => txn.client.toLowerCase().includes(search.toLowerCase()) || txn.id.toLowerCase().includes(search.toLowerCase()));
+
+    const translatedTabs = [
+        { label: t('rtn.tabList'), href: '/returns' },
+        { label: t('rtn.tabCash'), href: '/returns/cash-refund' },
+        { label: t('rtn.tabPetty'), href: '/returns/petty-cash-refund' },
+        { label: t('rtn.tabCancelAdvance'), href: '/returns/cancel-down-payment' },
+    ];
 
     return (
-        <div style={s.page}>
+        <div style={{ ...s.page, direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
             <div style={s.tabBar}>
-                {tabs.map(t => <Link key={t.href} href={t.href} style={{ ...s.tab, ...(t.href === '/returns/cash-refund' ? s.tabActive : {}) }}>{t.label}</Link>)}
+                {translatedTabs.map(tab => <Link key={tab.href} href={tab.href} style={{ ...s.tab, ...(tab.href === '/returns/cash-refund' ? s.tabActive : {}) }}>{tab.label}</Link>)}
             </div>
 
-            <div><div style={s.title}>Process Cash Refund</div><div style={s.desc}>Select the original transaction and choose items to refund.</div></div>
+            <div><div style={s.title}>{t('rtn.cashTitle')}</div><div style={s.desc}>{t('rtn.cashDesc')}</div></div>
 
             <div style={s.steps}>
-                {['Select Transaction', 'Choose Items', 'Confirm Refund'].map((label, i) => (
+                {[t('rtn.step1'), t('rtn.step2'), t('rtn.step3')].map((label, i) => (
                     <React.Fragment key={i}>
                         {i > 0 && <div style={{ ...s.connector, background: i <= step ? 'var(--color-success)' : 'var(--border-color)' }} />}
                         <div style={s.step}>
@@ -78,8 +87,8 @@ export default function CashRefundPage() {
             {step === 0 && (
                 <>
                     <div style={s.searchBox as React.CSSProperties}>
-                        <Search size={16} style={s.searchIcon as React.CSSProperties} />
-                        <input style={s.searchInput} placeholder="Search by transaction ID or client name..." value={search} onChange={e => setSearch(e.target.value)} />
+                        <Search size={16} style={{ ...s.searchIcon as React.CSSProperties, left: lang === 'ar' ? 'auto' : 12, right: lang === 'ar' ? 12 : 'auto' }} />
+                        <input style={{ ...s.searchInput, paddingLeft: lang === 'ar' ? 12 : 40, paddingRight: lang === 'ar' ? 40 : 12 }} placeholder={t('rtn.searchTxnClient')} value={search} onChange={e => setSearch(e.target.value)} />
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
                         {filtered.map((txn, i) => (
@@ -87,52 +96,52 @@ export default function CashRefundPage() {
                                 <div style={s.cardLeft as React.CSSProperties}>
                                     <div style={s.cardId}>{txn.id}</div>
                                     <div style={s.cardClient}>{txn.client}</div>
-                                    <div style={s.cardMeta}>{txn.date} · {txn.method} · {txn.items.length} items</div>
+                                    <div style={s.cardMeta}>{txn.date} · {txn.method} · {txn.items.length} {t('rtn.itemsCount')}</div>
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                                    <div style={s.cardAmount}>{txn.total} EGP</div>
-                                    <ChevronRight size={18} style={{ color: 'var(--text-tertiary)' }} />
+                                    <div style={s.cardAmount} dir="ltr">{txn.total} EGP</div>
+                                    <ChevronRight size={18} style={{ color: 'var(--text-tertiary)', transform: lang === 'ar' ? 'scaleX(-1)' : 'none' }} />
                                 </div>
                             </div>
                         ))}
                     </div>
-                    {selected !== null && <button style={s.submitBtn} onClick={() => setStep(1)}>Continue →</button>}
+                    {selected !== null && <button style={s.submitBtn} onClick={() => setStep(1)}>{t('rtn.btnContinue')} {lang === 'ar' ? '←' : '→'}</button>}
                 </>
             )}
 
             {step === 1 && selected !== null && (
                 <div style={s.form}>
-                    <div style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-4)' }}>Select items to refund from {transactions[selected].id}</div>
+                    <div style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-4)' }}>{t('rtn.selectItemsFrom')} {transactions[selected].id}</div>
                     {transactions[selected].items.map((item, i) => (
                         <label key={i} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', padding: 'var(--space-3) 0', borderBottom: '1px solid var(--border-color)', cursor: 'pointer' }}>
                             <input type="checkbox" defaultChecked style={{ width: 18, height: 18, accentColor: 'var(--color-primary-500)' }} /> {item}
                         </label>
                     ))}
                     <div style={{ display: 'flex', gap: 'var(--space-3)', marginTop: 'var(--space-5)' }}>
-                        <button style={{ ...s.submitBtn, background: 'var(--bg-tertiary)', color: 'var(--text-primary)' }} onClick={() => setStep(0)}>← Back</button>
-                        <button style={s.submitBtn} onClick={() => setStep(2)}>Continue →</button>
+                        <button style={{ ...s.submitBtn, background: 'var(--bg-tertiary)', color: 'var(--text-primary)' }} onClick={() => setStep(0)}>{lang === 'ar' ? '→' : '←'} {t('rtn.btnBack')}</button>
+                        <button style={s.submitBtn} onClick={() => setStep(2)}>{t('rtn.btnContinue')} {lang === 'ar' ? '←' : '→'}</button>
                     </div>
                 </div>
             )}
 
             {step === 2 && selected !== null && (
                 <div style={s.form}>
-                    <div style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-4)' }}>Confirm Refund Details</div>
+                    <div style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-4)' }}>{t('rtn.confirmDetails')}</div>
                     <div style={{ marginBottom: 'var(--space-4)' }}>
-                        <label style={s.label}>Reason for Refund</label>
+                        <label style={s.label}>{t('rtn.lblReasonRefund')}</label>
                         <select style={s.select}><option>Client Request</option><option>Service Issue</option><option>Double Charge</option><option>Other</option></select>
                     </div>
                     <div style={{ marginBottom: 'var(--space-4)' }}>
-                        <label style={s.label}>Notes</label>
-                        <textarea style={s.textarea as React.CSSProperties} placeholder="Additional notes..." />
+                        <label style={s.label}>{t('rtn.lblNotes')}</label>
+                        <textarea style={s.textarea as React.CSSProperties} placeholder={t('rtn.phNotes')} />
                     </div>
                     <div style={{ padding: 'var(--space-4)', background: 'var(--color-error-light)', borderRadius: 'var(--radius-lg)', marginBottom: 'var(--space-4)' }}>
-                        <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>Refund Amount</div>
-                        <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)', color: 'var(--color-error)' }}>-{transactions[selected].total} EGP</div>
+                        <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>{t('rtn.lblRefundAmount')}</div>
+                        <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)', color: 'var(--color-error)', textAlign: lang === 'ar' ? 'right' : 'left' }} dir="ltr">-{transactions[selected].total} EGP</div>
                     </div>
                     <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-                        <button style={{ ...s.submitBtn, background: 'var(--bg-tertiary)', color: 'var(--text-primary)' }} onClick={() => setStep(1)}>← Back</button>
-                        <button style={s.submitBtn}>Process Refund</button>
+                        <button style={{ ...s.submitBtn, background: 'var(--bg-tertiary)', color: 'var(--text-primary)' }} onClick={() => setStep(1)}>{lang === 'ar' ? '→' : '←'} {t('rtn.btnBack')}</button>
+                        <button style={s.submitBtn}>{t('rtn.btnProcessRefund')}</button>
                     </div>
                 </div>
             )}

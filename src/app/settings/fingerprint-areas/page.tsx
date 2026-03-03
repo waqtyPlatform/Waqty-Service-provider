@@ -5,13 +5,11 @@ import {
     Plus,
     Edit,
     Trash2,
-    MapPin,
-    Users
+    MapPin
 } from 'lucide-react';
 import {
     Button,
-    Badge,
-    EmptyState
+    Badge
 } from '@/components/ui';
 import styles from './page.module.css';
 

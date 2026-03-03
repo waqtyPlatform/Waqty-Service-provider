@@ -3,13 +3,14 @@
 import React, { useState } from 'react';
 import {
     Plus, Edit, Trash2, Lock, DollarSign,
-    Vault, MapPin, TrendingUp, ArrowUpDown,
+    Vault, MapPin,
 } from 'lucide-react';
 import {
     Button, Badge, useToast, Modal, Input, Select, SlideOver
 } from '@/components/ui';
 import styles from './page.module.css';
 import SettingsTabs from '@/components/SettingsTabs';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const initialSafes = [
     { id: 1, name: 'Main Reception Safe', branch: 'Downtown', balance: 12450, lastActivity: 'Today, 3:20 PM', status: 'Active', color: '#3B82F6' },
@@ -21,6 +22,7 @@ const initialSafes = [
 
 export default function SafesPage() {
     const { addToast } = useToast();
+    const { t } = useTranslation();
     const [safesList, setSafesList] = useState(initialSafes);
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
@@ -65,11 +67,11 @@ export default function SafesPage() {
 
             <div className={styles.header}>
                 <div className={styles.titleGroup}>
-                    <h1><Lock size={24} /> Safes & Cash Drawers</h1>
-                    <div className={styles.subtitle}>Manage physical cash storage locations across all branches.</div>
+                    <h1><Lock size={24} /> {t('settings.safes.title')}</h1>
+                    <div className={styles.subtitle}>{t('settings.safes.desc')}</div>
                 </div>
                 <div className={styles.actions}>
-                    <Button onClick={() => setIsAddOpen(true)}><Plus size={16} /> New Safe</Button>
+                    <Button onClick={() => setIsAddOpen(true)}><Plus size={16} /> {t('settings.safes.newSafe')}</Button>
                 </div>
             </div>
 
@@ -81,7 +83,7 @@ export default function SafesPage() {
                     </div>
                     <div className={styles.kpiContent}>
                         <span className={styles.kpiValue}>{fmt(totalBalance)} EGP</span>
-                        <span className={styles.kpiLabel}>Total Balance</span>
+                        <span className={styles.kpiLabel}>{t('settings.safes.totalBalance')}</span>
                     </div>
                 </div>
                 <div className={styles.kpiCard}>
@@ -90,7 +92,7 @@ export default function SafesPage() {
                     </div>
                     <div className={styles.kpiContent}>
                         <span className={styles.kpiValue}>{activeSafes} / {safesList.length}</span>
-                        <span className={styles.kpiLabel}>Active Safes</span>
+                        <span className={styles.kpiLabel}>{t('settings.safes.activeSafes')}</span>
                     </div>
                 </div>
                 <div className={styles.kpiCard}>
@@ -99,7 +101,7 @@ export default function SafesPage() {
                     </div>
                     <div className={styles.kpiContent}>
                         <span className={styles.kpiValue}>{new Set(safesList.map(s => s.branch)).size}</span>
-                        <span className={styles.kpiLabel}>Branches Covered</span>
+                        <span className={styles.kpiLabel}>{t('settings.safes.branchesCovered')}</span>
                     </div>
                 </div>
             </div>
@@ -107,17 +109,17 @@ export default function SafesPage() {
             {/* Table */}
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
-                    <span className={styles.cardTitle}><Lock size={16} /> All Safes</span>
-                    <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{safesList.length} safes total</span>
+                    <span className={styles.cardTitle}><Lock size={16} /> {t('settings.safes.allSafes')}</span>
+                    <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{safesList.length} {t('settings.safes.safesTotal')}</span>
                 </div>
                 <table className={styles.dataTable}>
                     <thead>
                         <tr>
-                            <th>Safe</th>
-                            <th>Balance</th>
-                            <th>Last Activity</th>
-                            <th>Status</th>
-                            <th style={{ textAlign: 'right' }}>Actions</th>
+                            <th>{t('settings.safes.colSafe')}</th>
+                            <th>{t('settings.safes.colBalance')}</th>
+                            <th>{t('settings.safes.colLastActivity')}</th>
+                            <th>{t('settings.safes.colStatus')}</th>
+                            <th style={{ textAlign: 'right' }}>{t('settings.safes.colActions')}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -141,7 +143,7 @@ export default function SafesPage() {
                                     {safe.lastActivity}
                                 </td>
                                 <td>
-                                    <Badge color={safe.status === 'Active' ? 'success' : 'neutral'}>{safe.status}</Badge>
+                                    <Badge color={safe.status === 'Active' ? 'success' : 'neutral'}>{safe.status === 'Active' ? t('settings.safes.active') : t('settings.safes.inactive')}</Badge>
                                 </td>
                                 <td>
                                     <div className={styles.actions} style={{ justifyContent: 'flex-end' }}>
@@ -159,28 +161,28 @@ export default function SafesPage() {
             <SlideOver
                 open={isAddOpen}
                 onClose={() => setIsAddOpen(false)}
-                title="Create New Safe"
+                title={t('settings.safes.createTitle')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button>
-                        <Button onClick={handleAddSafe}>Create Safe</Button>
+                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>{t('settings.safes.cancel')}</Button>
+                        <Button onClick={handleAddSafe}>{t('settings.safes.createSafe')}</Button>
                     </div>
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label="Safe Name" placeholder="e.g. Front Desk Safe" value={newSafe.name} onChange={e => setNewSafe({ ...newSafe, name: e.target.value })} />
+                    <Input label={t('settings.safes.safeName')} placeholder="e.g. Front Desk Safe" value={newSafe.name} onChange={e => setNewSafe({ ...newSafe, name: e.target.value })} />
                     <Select
-                        label="Branch"
+                        label={t('settings.safes.branch')}
                         value={newSafe.branch}
                         onChange={e => setNewSafe({ ...newSafe, branch: e.target.value })}
                         options={[{ label: 'Downtown', value: 'downtown' }, { label: 'Mall of Arabia', value: 'mall' }, { label: 'New Cairo', value: 'newcairo' }]}
                     />
-                    <Input label="Initial Balance (EGP)" type="number" placeholder="0.00" value={newSafe.balance} onChange={e => setNewSafe({ ...newSafe, balance: e.target.value })} />
+                    <Input label={t('settings.safes.initialBalance')} type="number" placeholder="0.00" value={newSafe.balance} onChange={e => setNewSafe({ ...newSafe, balance: e.target.value })} />
                     <Select
-                        label="Status"
+                        label={t('settings.safes.status')}
                         value={newSafe.status}
                         onChange={e => setNewSafe({ ...newSafe, status: e.target.value })}
-                        options={[{ label: 'Active', value: 'active' }, { label: 'Inactive', value: 'inactive' }]}
+                        options={[{ label: t('settings.safes.active'), value: 'active' }, { label: t('settings.safes.inactive'), value: 'inactive' }]}
                     />
                 </div>
             </SlideOver>
@@ -189,20 +191,20 @@ export default function SafesPage() {
             <SlideOver
                 open={isEditOpen}
                 onClose={() => { setIsEditOpen(false); setSelectedSafe(null); }}
-                title="Edit Safe"
+                title={t('settings.safes.editTitle')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>Cancel</Button>
-                        <Button onClick={() => { setIsEditOpen(false); addToast('success', 'Safe updated successfully'); }}>Save Changes</Button>
+                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>{t('settings.safes.cancel')}</Button>
+                        <Button onClick={() => { setIsEditOpen(false); addToast('success', 'Safe updated successfully'); }}>{t('settings.safes.saveChanges')}</Button>
                     </div>
                 }
             >
                 {selectedSafe && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                        <Input label="Safe Name" defaultValue={selectedSafe.name} />
-                        <Select label="Branch" defaultValue="downtown" options={[{ label: 'Downtown', value: 'downtown' }, { label: 'Mall of Arabia', value: 'mall' }, { label: 'New Cairo', value: 'newcairo' }]} />
-                        <Input label="Current Balance (EGP)" type="number" defaultValue={selectedSafe.balance} />
-                        <Select label="Status" defaultValue={selectedSafe.status.toLowerCase()} options={[{ label: 'Active', value: 'active' }, { label: 'Inactive', value: 'inactive' }]} />
+                        <Input label={t('settings.safes.safeName')} defaultValue={selectedSafe.name} />
+                        <Select label={t('settings.safes.branch')} defaultValue="downtown" options={[{ label: 'Downtown', value: 'downtown' }, { label: 'Mall of Arabia', value: 'mall' }, { label: 'New Cairo', value: 'newcairo' }]} />
+                        <Input label={t('settings.safes.currentBalance')} type="number" defaultValue={selectedSafe.balance} />
+                        <Select label={t('settings.safes.status')} defaultValue={selectedSafe.status.toLowerCase()} options={[{ label: t('settings.safes.active'), value: 'active' }, { label: t('settings.safes.inactive'), value: 'inactive' }]} />
                     </div>
                 )}
             </SlideOver>
@@ -211,17 +213,17 @@ export default function SafesPage() {
             <Modal
                 open={isDeleteOpen}
                 onClose={() => { setIsDeleteOpen(false); setSelectedSafe(null); }}
-                title="Delete Safe"
+                title={t('settings.safes.deleteTitle')}
                 footer={
                     <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
-                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
-                        <Button variant="destructive" onClick={handleDeleteSafe}>Confirm Delete</Button>
+                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>{t('settings.safes.cancel')}</Button>
+                        <Button variant="destructive" onClick={handleDeleteSafe}>{t('settings.safes.confirmDelete')}</Button>
                     </div>
                 }
             >
                 <div>
                     <p style={{ color: 'var(--text-secondary)' }}>
-                        Are you sure you want to delete the <strong>{selectedSafe?.name}</strong> safe? This action cannot be undone and will require re-allocation of any existing balances.
+                        {t('settings.safes.deleteWarning')}
                     </p>
                 </div>
             </Modal>

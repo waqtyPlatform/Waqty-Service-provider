@@ -2,14 +2,9 @@
 
 import React, { useState } from 'react';
 import { DropdownMenu, useToast } from '@/components/ui';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
-    CalendarDays,
     List,
-    DoorOpen,
-    Plus,
-    Printer,
     Search,
     MoreVertical,
     ChevronLeft,
@@ -20,22 +15,23 @@ import {
 } from 'lucide-react';
 import styles from '../bookings.module.css';
 import BookingsTabs from '../BookingsTabs';
+import { useTranslation } from '@/hooks/useTranslation';
 
-const statusConfig: Record<string, { class: string; label: string }> = {
-    confirmed: { class: styles.statusConfirmed, label: 'Confirmed' },
-    completed: { class: styles.statusCompleted, label: 'Completed' },
-    arrived: { class: styles.statusArrived, label: 'Arrived' },
-    unconfirmed: { class: styles.statusUnconfirmed, label: 'Unconfirmed' },
-    cancelled: { class: styles.statusCancelled, label: 'Cancelled' },
-    workDone: { class: styles.statusWorkDone, label: 'Work Done' },
-    waitingPay: { class: styles.statusWaitingPay, label: 'Waiting Pay' },
-    noShow: { class: styles.statusNoShow, label: 'No Show' },
+const statusConfig: Record<string, { class: string; labelKey: string }> = {
+    confirmed: { class: styles.statusConfirmed, labelKey: 'bk.stConfirmed' },
+    completed: { class: styles.statusCompleted, labelKey: 'bk.stCompleted' },
+    arrived: { class: styles.statusArrived, labelKey: 'bk.stArrived' },
+    unconfirmed: { class: styles.statusUnconfirmed, labelKey: 'bk.stUnconfirmed' },
+    cancelled: { class: styles.statusCancelled, labelKey: 'bk.stCancelled' },
+    workDone: { class: styles.statusWorkDone, labelKey: 'bk.stWorkDone' },
+    waitingPay: { class: styles.statusWaitingPay, labelKey: 'bk.stWaitingPay' },
+    noShow: { class: styles.statusNoShow, labelKey: 'bk.stNoShow' },
 };
 
-const paymentConfig: Record<string, { class: string; label: string }> = {
-    paid: { class: styles.paymentPaid, label: 'Paid' },
-    partial: { class: styles.paymentPartial, label: 'Partial' },
-    unpaid: { class: styles.paymentUnpaid, label: 'Unpaid' },
+const paymentConfig: Record<string, { class: string; labelKey: string }> = {
+    paid: { class: styles.paymentPaid, labelKey: 'bk.payPaid' },
+    partial: { class: styles.paymentPartial, labelKey: 'bk.payPartial' },
+    unpaid: { class: styles.paymentUnpaid, labelKey: 'bk.payUnpaid' },
 };
 
 const bookings = [
@@ -52,6 +48,7 @@ const bookings = [
 ];
 
 export default function BookingListPage() {
+    const { t, lang } = useTranslation();
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [paymentFilter, setPaymentFilter] = useState('all');
@@ -79,17 +76,18 @@ export default function BookingListPage() {
     }, [search, statusFilter, paymentFilter]);
 
     return (
-        <div className={styles.bookingsPage}>
+        <div className={styles.bookingsPage} style={{ direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
             {/* Tabs */}
             <BookingsTabs />
 
             {/* Controls */}
             <div className={styles.listControls}>
                 <div className={styles.searchWrapper}>
-                    <Search size={16} className={styles.searchIcon} />
+                    <Search size={16} className={styles.searchIcon} style={{ left: lang === 'ar' ? 'auto' : 12, right: lang === 'ar' ? 12 : 'auto' }} />
                     <input
                         className={styles.searchInput}
-                        placeholder="Search booking #, client, service..."
+                        style={{ paddingLeft: lang === 'ar' ? 12 : 36, paddingRight: lang === 'ar' ? 36 : 12 }}
+                        placeholder={t('bk.searchPlaceholder')}
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
@@ -99,28 +97,28 @@ export default function BookingListPage() {
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
                 >
-                    <option value="all">All Statuses</option>
-                    <option value="confirmed">Confirmed</option>
-                    <option value="completed">Completed</option>
-                    <option value="arrived">Arrived</option>
-                    <option value="unconfirmed">Unconfirmed</option>
-                    <option value="cancelled">Cancelled</option>
-                    <option value="workDone">Work Done</option>
-                    <option value="waitingPay">Waiting Pay</option>
-                    <option value="noShow">No Show</option>
+                    <option value="all">{t('bk.allStatuses')}</option>
+                    <option value="confirmed">{t('bk.stConfirmed')}</option>
+                    <option value="completed">{t('bk.stCompleted')}</option>
+                    <option value="arrived">{t('bk.stArrived')}</option>
+                    <option value="unconfirmed">{t('bk.stUnconfirmed')}</option>
+                    <option value="cancelled">{t('bk.stCancelled')}</option>
+                    <option value="workDone">{t('bk.stWorkDone')}</option>
+                    <option value="waitingPay">{t('bk.stWaitingPay')}</option>
+                    <option value="noShow">{t('bk.stNoShow')}</option>
                 </select>
                 <select
                     className={styles.selectFilter}
                     value={paymentFilter}
                     onChange={(e) => setPaymentFilter(e.target.value)}
                 >
-                    <option value="all">All Payments</option>
-                    <option value="paid">Paid</option>
-                    <option value="partial">Partial</option>
-                    <option value="unpaid">Unpaid</option>
+                    <option value="all">{t('bk.allPayments')}</option>
+                    <option value="paid">{t('bk.payPaid')}</option>
+                    <option value="partial">{t('bk.payPartial')}</option>
+                    <option value="unpaid">{t('bk.payUnpaid')}</option>
                 </select>
                 <button className={styles.filterBtn}>
-                    <Download size={16} /> Export
+                    <Download size={16} /> {t('bk.btnExport')}
                 </button>
             </div>
 
@@ -129,16 +127,16 @@ export default function BookingListPage() {
                 <table className={styles.dataTable}>
                     <thead>
                         <tr>
-                            <th>Booking #</th>
-                            <th>Branch</th>
-                            <th>Client</th>
-                            <th>Mobile</th>
-                            <th>Date & Time</th>
-                            <th>Service</th>
-                            <th>Employee</th>
-                            <th>Value</th>
-                            <th>Status</th>
-                            <th>Payment</th>
+                            <th>{t('bk.thBkNum')}</th>
+                            <th>{t('bk.thBranch')}</th>
+                            <th>{t('bk.thClient')}</th>
+                            <th>{t('bk.thMobile')}</th>
+                            <th>{t('bk.thDateTime')}</th>
+                            <th>{t('bk.thService')}</th>
+                            <th>{t('bk.thEmployee')}</th>
+                            <th>{t('bk.thValue')}</th>
+                            <th>{t('bk.thStatus')}</th>
+                            <th>{t('bk.thPayment')}</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -158,23 +156,23 @@ export default function BookingListPage() {
                                 <td style={{ fontWeight: 'var(--font-semibold)' }}>{b.value} EGP</td>
                                 <td>
                                     <span className={`${styles.statusBadge} ${statusConfig[b.status]?.class}`}>
-                                        {statusConfig[b.status]?.label}
+                                        {statusConfig[b.status] ? t(statusConfig[b.status].labelKey) : b.status}
                                     </span>
                                 </td>
                                 <td>
                                     <span className={`${styles.paymentBadge} ${paymentConfig[b.payment]?.class}`}>
                                         {b.payment === 'paid' && <Check size={12} />}
                                         {b.payment === 'unpaid' && <X size={12} />}
-                                        {paymentConfig[b.payment]?.label}
+                                        {paymentConfig[b.payment] ? t(paymentConfig[b.payment].labelKey) : b.payment}
                                     </span>
                                 </td>
                                 <td>
                                     <DropdownMenu
                                         trigger={<button className={styles.actionBtn}><MoreVertical size={16} /></button>}
                                         items={[
-                                            { label: 'View Details', icon: <Search size={14} />, onClick: () => router.push(`/bookings/${b.id}`) },
-                                            { label: 'Edit Booking', icon: <List size={14} />, onClick: () => addToast('info', `Edit mode for ${b.id}`) },
-                                            { label: 'Cancel Booking', icon: <X size={14} />, onClick: () => addToast('error', `Booking ${b.id} cancelled`), destructive: true },
+                                            { label: t('bk.actionView'), icon: <Search size={14} />, onClick: () => router.push(`/bookings/${b.id}`) },
+                                            { label: t('bk.actionEdit'), icon: <List size={14} />, onClick: () => addToast('info', `Edit mode for ${b.id}`) },
+                                            { label: t('bk.actionCancel'), icon: <X size={14} />, onClick: () => addToast('error', `Booking ${b.id} cancelled`), destructive: true },
                                         ]}
                                     />
                                 </td>
@@ -184,7 +182,10 @@ export default function BookingListPage() {
                 </table>
                 <div className={styles.pagination}>
                     <span className={styles.pageInfo}>
-                        Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filtered.length)} of {filtered.length} bookings
+                        {t('bk.showingInfo')
+                            .replace('{start}', String((currentPage - 1) * itemsPerPage + 1))
+                            .replace('{end}', String(Math.min(currentPage * itemsPerPage, filtered.length)))
+                            .replace('{total}', String(filtered.length))}
                     </span>
                     <div className={styles.pageButtons}>
                         <button
@@ -192,7 +193,7 @@ export default function BookingListPage() {
                             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                             disabled={currentPage === 1}
                         >
-                            <ChevronLeft size={16} />
+                            <ChevronLeft size={16} style={{ transform: lang === 'ar' ? 'scaleX(-1)' : 'none' }} />
                         </button>
 
                         {Array.from({ length: totalPages }).map((_, i) => (
@@ -210,7 +211,7 @@ export default function BookingListPage() {
                             onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                             disabled={currentPage === totalPages}
                         >
-                            <ChevronRight size={16} />
+                            <ChevronRight size={16} style={{ transform: lang === 'ar' ? 'scaleX(-1)' : 'none' }} />
                         </button>
                     </div>
                 </div>

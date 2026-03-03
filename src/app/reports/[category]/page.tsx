@@ -16,11 +16,8 @@ import {
     Calendar,
     Package,
     FileText,
-    ShoppingCart,
     AlertTriangle,
     Layers,
-    BarChart3,
-    Sliders,
 } from 'lucide-react';
 import {
     ResponsiveContainer,
@@ -33,7 +30,8 @@ import {
     Bar,
     Tooltip,
 } from 'recharts';
-import { Button, Select } from '@/components/ui';
+import { Select } from '@/components/ui';
+import { useTranslation } from '@/hooks/useTranslation';
 
 // --- Real Data for All Categories ---
 
@@ -195,6 +193,7 @@ import styles from '../reports.module.css';
 
 export default function ReportCategoryPage({ params }: { params: Promise<{ category: string }> }) {
     const { category } = React.use(params);
+    const { t, lang } = useTranslation();
     const [dateRange, setDateRange] = useState('30d');
 
     let data;
@@ -209,10 +208,10 @@ export default function ReportCategoryPage({ params }: { params: Promise<{ categ
         default: data = getServicesData();
     }
 
-    const dateLabel = dateRange === '7d' ? 'Last 7 Days' : dateRange === '30d' ? 'Last 30 Days' : 'Last Quarter';
+    const dateLabel = dateRange === '7d' ? t('reports.last7Days') : dateRange === '30d' ? t('reports.last30Days') : t('reports.lastQuarter');
 
     return (
-        <div className={styles.categoryPage}>
+        <div className={styles.categoryPage} style={{ direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
             {/* Filters */}
             <div className={styles.categoryHeader}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
@@ -221,9 +220,9 @@ export default function ReportCategoryPage({ params }: { params: Promise<{ categ
                         value={dateRange}
                         onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setDateRange(e.target.value)}
                         options={[
-                            { value: '7d', label: 'Last 7 Days' },
-                            { value: '30d', label: 'Last 30 Days' },
-                            { value: '90d', label: 'Last Quarter' },
+                            { value: '7d', label: t('reports.last7Days') },
+                            { value: '30d', label: t('reports.last30Days') },
+                            { value: '90d', label: t('reports.lastQuarter') },
                         ]}
                         style={{ width: 150 }}
                     />
@@ -232,10 +231,10 @@ export default function ReportCategoryPage({ params }: { params: Promise<{ categ
                     <Filter size={16} color="var(--text-tertiary)" />
                     <Select
                         options={[
-                            { value: 'all', label: 'All Branches' },
-                            { value: 'downtown', label: 'Downtown' },
-                            { value: 'mall', label: 'Mall of Arabia' },
-                            { value: 'newcairo', label: 'New Cairo' },
+                            { value: 'all', label: t('reports.allBranches') },
+                            { value: 'downtown', label: t('reports.downtown') },
+                            { value: 'mall', label: t('reports.mall') },
+                            { value: 'newcairo', label: t('reports.newCairo') },
                         ]}
                         style={{ width: 160 }}
                     />
@@ -258,15 +257,15 @@ export default function ReportCategoryPage({ params }: { params: Promise<{ categ
                         </div>
                         <div>
                             <div className={styles.kpiLabel}>{kpi.label}</div>
-                            <div className={styles.kpiValue}>{kpi.value}</div>
+                            <div className={styles.kpiValue} dir="ltr" style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{kpi.value}</div>
                             {kpi.change && (
                                 <div className={`${styles.kpiTrendWrapper} ${kpi.trend === 'up' ? styles.kpiTrendUp :
                                     kpi.trend === 'down' ? styles.kpiTrendDown :
                                         styles.kpiTrendNeutral
-                                    }`}>
+                                    }`} dir="ltr" style={{ flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}>
                                     {kpi.trend === 'up' && <ArrowUpRight size={12} />}
                                     {kpi.trend === 'down' && <ArrowDownRight size={12} />}
-                                    {kpi.change} from last period
+                                    {kpi.change} {t('reports.fromLastPeriod')}
                                 </div>
                             )}
                         </div>
@@ -283,7 +282,7 @@ export default function ReportCategoryPage({ params }: { params: Promise<{ categ
                             <BarChart data={data.chart.data}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                                 <XAxis dataKey="name" stroke="var(--text-tertiary)" fontSize={12} tickLine={false} axisLine={false} dy={10} />
-                                <YAxis stroke="var(--text-tertiary)" fontSize={12} tickLine={false} axisLine={false} />
+                                <YAxis stroke="var(--text-tertiary)" fontSize={12} tickLine={false} axisLine={false} orientation={lang === 'ar' ? 'right' : 'left'} />
                                 <Tooltip cursor={{ fill: 'var(--bg-secondary)' }} contentStyle={{ borderRadius: 8, border: 'none', boxShadow: 'var(--shadow-lg)' }} />
                                 <Bar dataKey="value" fill="var(--color-primary-500)" radius={[4, 4, 0, 0]} barSize={40} />
                             </BarChart>
@@ -291,7 +290,7 @@ export default function ReportCategoryPage({ params }: { params: Promise<{ categ
                             <AreaChart data={data.chart.data}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                                 <XAxis dataKey="name" stroke="var(--text-tertiary)" fontSize={12} tickLine={false} axisLine={false} dy={10} />
-                                <YAxis stroke="var(--text-tertiary)" fontSize={12} tickLine={false} axisLine={false} />
+                                <YAxis stroke="var(--text-tertiary)" fontSize={12} tickLine={false} axisLine={false} orientation={lang === 'ar' ? 'right' : 'left'} />
                                 <Tooltip contentStyle={{ borderRadius: 8, border: 'none', boxShadow: 'var(--shadow-lg)' }} />
                                 <Area type="monotone" dataKey="value" stroke="var(--color-primary-500)" fill="var(--color-primary-100)" strokeWidth={3} />
                             </AreaChart>
@@ -302,13 +301,13 @@ export default function ReportCategoryPage({ params }: { params: Promise<{ categ
 
             {/* Detailed Reports Grid */}
             <div>
-                <h3 className={styles.chartTitle} style={{ marginBottom: 'var(--space-4)' }}>Detailed Reports</h3>
+                <h3 className={styles.chartTitle} style={{ marginBottom: 'var(--space-4)' }}>{t('reports.detailedReports')}</h3>
                 <div className={styles.reportsGrid}>
                     {data.reports.map((report, i) => (
                         <Link key={i} href={report.href} className={styles.reportCard}>
                             <div className={styles.reportCardHeader}>
                                 <div className={styles.reportCardTitle}>{report.title}</div>
-                                <ArrowUpRight size={16} color="var(--text-tertiary)" />
+                                <ArrowUpRight size={16} color="var(--text-tertiary)" style={{ transform: lang === 'ar' ? 'scaleX(-1)' : 'none' }} />
                             </div>
                             <div className={styles.reportCardDesc}>{report.desc}</div>
                         </Link>

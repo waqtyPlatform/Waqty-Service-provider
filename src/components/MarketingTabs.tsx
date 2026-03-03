@@ -5,17 +5,20 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Tag, Package, Bell, MessageSquare, Layers, Percent } from 'lucide-react';
 
-const tabs = [
-    { label: 'Offers', href: '/marketing/offers', icon: <Tag size={16} /> },
-    { label: 'Campaigns', href: '/marketing/packages', icon: <Package size={16} /> },
-    { label: 'Notifications', href: '/marketing/notifications', icon: <Bell size={16} /> },
-    { label: 'Promo Codes', href: '/marketing/promo-codes', icon: <Percent size={16} /> },
-    { label: 'Messages', href: '/marketing/messages', icon: <MessageSquare size={16} /> },
-    { label: 'Service Groups', href: '/marketing/service-groups', icon: <Layers size={16} /> },
-];
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function MarketingTabs() {
     const pathname = usePathname();
+    const { t } = useTranslation();
+
+    const tabs = [
+        { label: t('mkt.lblOffers'), href: '/marketing/offers', icon: <Tag size={16} /> },
+        { label: t('mkt.lblCampaigns'), href: '/marketing/packages', icon: <Package size={16} /> },
+        { label: t('mkt.lblNotifications'), href: '/marketing/notifications', icon: <Bell size={16} /> },
+        { label: t('mkt.lblPromoCodes'), href: '/marketing/promo-codes', icon: <Percent size={16} /> },
+        { label: t('mkt.lblMessages'), href: '/marketing/messages', icon: <MessageSquare size={16} /> },
+        { label: t('mkt.lblServiceGroups'), href: '/marketing/service-groups', icon: <Layers size={16} /> },
+    ];
 
     return (
         <div style={{ display: 'flex', gap: 'var(--space-1)', borderBottom: '2px solid var(--border-color)', overflowX: 'auto', marginBottom: 'var(--space-6)' }}>

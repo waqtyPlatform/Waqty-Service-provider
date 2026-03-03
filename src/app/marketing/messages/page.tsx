@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState, useRef, useMemo } from 'react';
-import { Plus, Send, Search, MessageSquare, Users, Edit, Trash2, Eye, Copy, Smartphone, Mail, Bell, Check, X, ChevronDown, Filter } from 'lucide-react';
+import { Plus, Send, Search, MessageSquare, Users, Edit, Trash2, Smartphone, Mail, Bell, Check, X, ChevronDown } from 'lucide-react';
 import { useToast, SlideOver, Modal, Input, Button, Select, Badge } from '@/components/ui';
 
 import MarketingTabs from '@/components/MarketingTabs';
+import { useTranslation } from '@/hooks/useTranslation';
 
-const placeholders = [
+const initialPlaceholders = [
     { key: '{name}', label: 'Client Name', description: 'Full name of the client' },
     { key: '{first_name}', label: 'First Name', description: 'Client first name only' },
     { key: '{date}', label: 'Date', description: 'Appointment or event date' },
@@ -90,6 +91,20 @@ export default function MessagesPage() {
     const [historySearch, setHistorySearch] = useState('');
     const [historyStatusFilter, setHistoryStatusFilter] = useState<'all' | 'delivered' | 'read' | 'failed'>('all');
 
+    const { t } = useTranslation();
+
+    const placeholders = [
+        { key: '{name}', label: t('custProfile.lblClientName') || 'Client Name', description: t('custProfile.lblFullNameDesc') || 'Full name of the client' },
+        { key: '{first_name}', label: t('custProfile.lblFirstName') || 'First Name', description: t('custProfile.lblFirstNameDesc') || 'Client first name only' },
+        { key: '{date}', label: t('mkt.lblDate') || 'Date', description: 'Appointment or event date' },
+        { key: '{time}', label: t('mkt.lblTime') || 'Time', description: 'Appointment time' },
+        { key: '{service}', label: t('mkt.lblService') || 'Service', description: 'Booked service name' },
+        { key: '{discount}', label: t('mkt.lblDiscount') || 'Discount', description: 'Discount percentage or amount' },
+        { key: '{amount}', label: t('mkt.lblAmount') || 'Amount', description: 'Balance or order amount' },
+        { key: '{branch}', label: t('mkt.lblBranch') || 'Branch', description: 'Branch name or location' },
+        { key: '{link}', label: t('mkt.lblLink') || 'Link', description: 'Booking or review link' },
+    ];
+
     // Template CRUD
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
@@ -172,14 +187,14 @@ export default function MessagesPage() {
         };
         setHistory(prev => [newEntry, ...prev]);
         setIsComposeOpen(false);
-        addToast('success', `Message sent to ${selectedRecipients.length} recipient(s)`);
+        addToast('success', `${t('mkt.lblMessages')} ${selectedRecipients.length}`);
     };
 
     const handleAddTemplate = () => {
         if (!formName.trim()) { addToast('error', 'Template name is required'); return; }
         setTemplates(prev => [...prev, { id: Date.now(), name: formName, channel: formChannel, body: formBody, lastUsed: 'Never', usageCount: 0 }]);
         setIsAddOpen(false);
-        addToast('success', 'Template created');
+        addToast('success', t('mkt.btnSaveTemplate'));
     };
 
     const handleEditTemplate = () => {
@@ -187,14 +202,14 @@ export default function MessagesPage() {
         setTemplates(prev => prev.map(t => t.id === selectedTemplate.id ? { ...t, name: formName, channel: formChannel, body: formBody } : t));
         setIsEditOpen(false);
         setSelectedTemplate(null);
-        addToast('success', 'Template updated');
+        addToast('success', t('mkt.btnSaveTemplate'));
     };
 
     const handleDeleteTemplate = () => {
         setTemplates(prev => prev.filter(t => t.id !== selectedTemplate?.id));
         setIsDeleteOpen(false);
         setSelectedTemplate(null);
-        addToast('success', 'Template deleted');
+        addToast('success', t('mkt.lblDeleteTemplate'));
     };
 
     const filteredHistory = useMemo(() => {
@@ -233,7 +248,7 @@ export default function MessagesPage() {
                 style={{ ...s.smallBtn, marginBottom: 'var(--space-2)' }}
                 onClick={() => setShowPlaceholders(!showPlaceholders)}
             >
-                <ChevronDown size={12} /> Insert Placeholder
+                <ChevronDown size={12} /> {t('mkt.btnInsertPlaceholder')}
             </button>
             {showPlaceholders && (
                 <div style={s.phDropdown as React.CSSProperties}>
@@ -260,13 +275,13 @@ export default function MessagesPage() {
     const renderBodyEditor = () => (
         <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
-                <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)' }}>Message Body</label>
+                <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)' }}>{t('mkt.lblMessageBody')}</label>
                 {renderPlaceholderDropdown()}
             </div>
             <textarea
                 ref={textareaRef}
                 style={{ width: '100%', minHeight: 120, padding: 'var(--space-3)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', fontSize: 'var(--text-sm)', background: 'var(--bg-primary)', color: 'var(--text-primary)', lineHeight: 1.6 }}
-                placeholder="Type your message here. Use the placeholder button above to insert dynamic fields..."
+                placeholder={t('mkt.phTypeMessage')}
                 value={formBody}
                 onChange={e => setFormBody(e.target.value)}
             />
@@ -281,25 +296,25 @@ export default function MessagesPage() {
             <div>
                 <div style={{ ...s.sectionHeader, marginBottom: 'var(--space-3)' }}>
                     <div>
-                        <div style={s.section}>Message Templates</div>
-                        <div style={s.sectionDesc}>Create reusable templates, then click &quot;Use&quot; to compose and send.</div>
+                        <div style={s.section}>{t('mkt.lblMessageTemplates')}</div>
+                        <div style={s.sectionDesc}>{t('mkt.msgTemplatesDesc')}</div>
                     </div>
-                    <Button onClick={openAdd}><Plus size={16} /> New Template</Button>
+                    <Button onClick={openAdd}><Plus size={16} /> {t('mkt.btnNewTemplate')}</Button>
                 </div>
                 <div style={s.grid}>
-                    {templates.map(t => (
-                        <div key={t.id} style={s.card}>
+                    {templates.map(tmpl => (
+                        <div key={tmpl.id} style={s.card}>
                             <div style={s.cardTitle}>
-                                <span>{t.name}</span>
-                                <Badge color={channelBadge[t.channel]} size="sm">{channelIcons[t.channel]} {t.channel}</Badge>
+                                <span>{tmpl.name}</span>
+                                <Badge color={channelBadge[tmpl.channel]} size="sm">{channelIcons[tmpl.channel]} {tmpl.channel}</Badge>
                             </div>
-                            <div style={s.cardBody}>{t.body}</div>
+                            <div style={s.cardBody}>{tmpl.body}</div>
                             <div style={s.cardFooter}>
-                                <span>Used {t.usageCount} times · Last: {t.lastUsed}</span>
+                                <span>{t('mkt.lblUsedTimes').replace('{count}', String(tmpl.usageCount))} · {t('mkt.lblLast')} {tmpl.lastUsed}</span>
                                 <div style={s.btnGroup}>
-                                    <button style={s.smallBtn} onClick={() => openEdit(t)}><Edit size={12} /></button>
-                                    <button style={{ ...s.smallBtn, color: 'var(--color-error)', borderColor: 'var(--color-error-light)' }} onClick={() => { setSelectedTemplate(t); setIsDeleteOpen(true); }}><Trash2 size={12} /></button>
-                                    <button style={s.sendBtn} onClick={() => openCompose(t)}><Send size={12} /> Use</button>
+                                    <button style={s.smallBtn} onClick={() => openEdit(tmpl)}><Edit size={12} /></button>
+                                    <button style={{ ...s.smallBtn, color: 'var(--color-error)', borderColor: 'var(--color-error-light)' }} onClick={() => { setSelectedTemplate(tmpl); setIsDeleteOpen(true); }}><Trash2 size={12} /></button>
+                                    <button style={s.sendBtn} onClick={() => openCompose(tmpl)}><Send size={12} /> {t('mkt.btnUse')}</button>
                                 </div>
                             </div>
                         </div>
@@ -311,27 +326,27 @@ export default function MessagesPage() {
             <div>
                 <div style={{ ...s.sectionHeader, marginBottom: 'var(--space-3)' }}>
                     <div>
-                        <div style={s.section}>Message History</div>
-                        <div style={s.sectionDesc}>{history.length} messages sent</div>
+                        <div style={s.section}>{t('mkt.lblMessageHistory')}</div>
+                        <div style={s.sectionDesc}>{t('mkt.msgMessagesSent').replace('{count}', String(history.length))}</div>
                     </div>
                 </div>
 
                 {/* KPIs */}
                 <div style={{ ...s.kpis as React.CSSProperties, marginBottom: 'var(--space-4)' }}>
-                    <div style={s.kpi}><div style={s.kpiVal}>{stats.total}</div><div style={s.kpiLbl}>Total</div></div>
-                    <div style={s.kpi}><div style={{ ...s.kpiVal, color: 'var(--color-success)' }}>{stats.delivered}</div><div style={s.kpiLbl}>Delivered</div></div>
-                    <div style={s.kpi}><div style={{ ...s.kpiVal, color: 'var(--color-info)' }}>{stats.read}</div><div style={s.kpiLbl}>Read</div></div>
-                    <div style={s.kpi}><div style={{ ...s.kpiVal, color: 'var(--color-error)' }}>{stats.failed}</div><div style={s.kpiLbl}>Failed</div></div>
+                    <div style={s.kpi}><div style={s.kpiVal}>{stats.total}</div><div style={s.kpiLbl}>{t('mkt.lblTotal')}</div></div>
+                    <div style={s.kpi}><div style={{ ...s.kpiVal, color: 'var(--color-success)' }}>{stats.delivered}</div><div style={s.kpiLbl}>{t('mkt.lblDelivered')}</div></div>
+                    <div style={s.kpi}><div style={{ ...s.kpiVal, color: 'var(--color-info)' }}>{stats.read}</div><div style={s.kpiLbl}>{t('mkt.lblRead')}</div></div>
+                    <div style={s.kpi}><div style={{ ...s.kpiVal, color: 'var(--color-error)' }}>{stats.failed}</div><div style={s.kpiLbl}>{t('mkt.lblFailed')}</div></div>
                 </div>
 
                 {/* Filters */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)', gap: 'var(--space-3)' }}>
                     <div style={s.filterBar as React.CSSProperties}>
                         {[
-                            { key: 'all' as const, label: 'All' },
-                            { key: 'delivered' as const, label: 'Delivered' },
-                            { key: 'read' as const, label: 'Read' },
-                            { key: 'failed' as const, label: 'Failed' },
+                            { key: 'all' as const, label: t('mkt.lblAll') },
+                            { key: 'delivered' as const, label: t('mkt.lblDelivered') },
+                            { key: 'read' as const, label: t('mkt.lblRead') },
+                            { key: 'failed' as const, label: t('mkt.lblFailed') },
                         ].map(f => (
                             <button key={f.key} style={{ ...s.filterBtn, ...(historyStatusFilter === f.key ? s.filterBtnActive : {}) }} onClick={() => setHistoryStatusFilter(f.key)}>
                                 {f.label}
@@ -342,7 +357,7 @@ export default function MessagesPage() {
                         <Search size={14} style={{ position: 'absolute' as const, left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }} />
                         <input
                             style={{ width: '100%', height: 36, paddingLeft: 32, border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}
-                            placeholder="Search messages..."
+                            placeholder={t('mkt.phSearchMessages')}
                             value={historySearch}
                             onChange={e => setHistorySearch(e.target.value)}
                         />
@@ -350,10 +365,10 @@ export default function MessagesPage() {
                 </div>
 
                 <table style={s.table}>
-                    <thead><tr>{['Template', 'Recipients', 'Channel', 'Date', 'Status'].map(h => <th key={h} style={s.th as React.CSSProperties}>{h}</th>)}</tr></thead>
+                    <thead><tr>{[t('mkt.lblTemplate'), t('mkt.lblRecipients'), t('mkt.lblChannel'), t('mkt.lblDate'), t('mkt.lblStatus')].map(h => <th key={h} style={s.th as React.CSSProperties}>{h}</th>)}</tr></thead>
                     <tbody>
                         {filteredHistory.length === 0 ? (
-                            <tr><td colSpan={5} style={{ ...s.td, textAlign: 'center', color: 'var(--text-tertiary)', padding: 'var(--space-5)' }}>No messages match your filters</td></tr>
+                            <tr><td colSpan={5} style={{ ...s.td, textAlign: 'center', color: 'var(--text-tertiary)', padding: 'var(--space-5)' }}>{t('mkt.msgNoMessagesMatch')}</td></tr>
                         ) : (
                             filteredHistory.map(m => (
                                 <tr key={m.id} className="hoverRow" style={{ cursor: 'pointer' }} onClick={() => openMessageDetail(m)}>
@@ -366,7 +381,7 @@ export default function MessagesPage() {
                                     </td>
                                     <td style={s.td}><Badge color={channelBadge[m.channel]} size="sm">{m.channel}</Badge></td>
                                     <td style={s.td}>{m.date}</td>
-                                    <td style={s.td}><Badge color={statusBadge[m.status]} size="sm">{m.status}</Badge></td>
+                                    <td style={s.td}><Badge color={statusBadge[m.status]} size="sm">{t(`mkt.lbl${m.status.charAt(0).toUpperCase() + m.status.slice(1)}`)}</Badge></td>
                                 </tr>
                             ))
                         )}
@@ -375,11 +390,11 @@ export default function MessagesPage() {
             </div>
 
             {/* ─── Message Detail SlideOver ─── */}
-            <SlideOver open={isMessageDetailOpen} onClose={() => { setIsMessageDetailOpen(false); setSelectedMessage(null); }} title="Message Details"
+            <SlideOver open={isMessageDetailOpen} onClose={() => { setIsMessageDetailOpen(false); setSelectedMessage(null); }} title={t('mkt.lblMessageDetails')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => { setIsMessageDetailOpen(false); setSelectedMessage(null); }}>Close</Button>
-                        <Button onClick={() => { addToast('success', 'Message resent'); setIsMessageDetailOpen(false); }}><Send size={14} /> Resend</Button>
+                        <Button variant="ghost" onClick={() => { setIsMessageDetailOpen(false); setSelectedMessage(null); }}>{t('rtn.btnBack')}</Button>
+                        <Button onClick={() => { addToast('success', 'Message resent'); setIsMessageDetailOpen(false); }}><Send size={14} /> {t('mkt.btnResend')}</Button>
                     </div>
                 }
             >
@@ -389,19 +404,19 @@ export default function MessagesPage() {
                             <div style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--font-bold)', marginBottom: 'var(--space-2)' }}>{selectedMessage.template}</div>
                             <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                                 <Badge color={channelBadge[selectedMessage.channel]} size="sm">{channelIcons[selectedMessage.channel]} {selectedMessage.channel}</Badge>
-                                <Badge color={statusBadge[selectedMessage.status]} size="sm">{selectedMessage.status}</Badge>
+                                <Badge color={statusBadge[selectedMessage.status]} size="sm">{t(`mkt.lbl${selectedMessage.status.charAt(0).toUpperCase() + selectedMessage.status.slice(1)}`)}</Badge>
                             </div>
                         </div>
 
                         <div style={{ background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-4)' }}>
-                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-1)' }}>Sent At</div>
+                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-1)' }}>{t('mkt.lblSentAt')}</div>
                             <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)' }}>{selectedMessage.date}</div>
                         </div>
 
                         {/* Recipients List */}
                         <div>
                             <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-3)' }}>
-                                Recipients ({selectedMessage.recipients.length})
+                                {t('mkt.lblRecipients')} ({selectedMessage.recipients.length})
                             </div>
                             <div style={{ border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', overflow: 'hidden', maxHeight: 200, overflowY: 'auto' }}>
                                 {selectedMessage.recipients.map((name: string, i: number) => (
@@ -421,7 +436,7 @@ export default function MessagesPage() {
                         </div>
 
                         <div>
-                            <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-3)' }}>Message Content</div>
+                            <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-3)' }}>{t('mkt.lblMessageContent')}</div>
                             <div style={{ padding: 'var(--space-4)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
                                 {selectedMessage.message || 'No message content available.'}
                             </div>
@@ -431,13 +446,13 @@ export default function MessagesPage() {
             </SlideOver>
 
             {/* ─── Compose SlideOver ─── */}
-            <SlideOver open={isComposeOpen} onClose={() => setIsComposeOpen(false)} title="Compose & Send"
+            <SlideOver open={isComposeOpen} onClose={() => setIsComposeOpen(false)} title={t('mkt.lblComposeSend')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)' }}>{selectedRecipients.length} selected</span>
+                        <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)' }}>{selectedRecipients.length} {t('mkt.lblSelected')}</span>
                         <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-                            <Button variant="ghost" onClick={() => setIsComposeOpen(false)}>Cancel</Button>
-                            <Button onClick={handleSend} disabled={selectedRecipients.length === 0}><Send size={14} /> Send Now</Button>
+                            <Button variant="ghost" onClick={() => setIsComposeOpen(false)}>{t('rtn.btnBack')}</Button>
+                            <Button onClick={handleSend} disabled={selectedRecipients.length === 0}><Send size={14} /> {t('mkt.btnSendNow')}</Button>
                         </div>
                     </div>
                 }
@@ -445,7 +460,7 @@ export default function MessagesPage() {
                 {composeTemplate && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
                         <div>
-                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-2)' }}>Template</div>
+                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-2)' }}>{t('mkt.lblTemplate')}</div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                                 <span style={{ fontWeight: 'var(--font-semibold)' }}>{composeTemplate.name}</span>
                                 <Badge color={channelBadge[composeTemplate.channel]} size="sm">{composeTemplate.channel}</Badge>
@@ -453,13 +468,13 @@ export default function MessagesPage() {
                         </div>
 
                         <div>
-                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-2)' }}>Message Preview</div>
+                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-2)' }}>{t('mkt.lblMessagePreview')}</div>
                             <div style={s.composePreview as React.CSSProperties}>{composeTemplate.body}</div>
                         </div>
 
                         {/* Select Recipients */}
                         <div>
-                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-2)' }}>Select Recipients</div>
+                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-2)' }}>{t('mkt.lblSelectRecipients')}</div>
 
                             {selectedRecipients.length > 0 && (
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 'var(--space-3)' }}>
@@ -476,7 +491,7 @@ export default function MessagesPage() {
                                 <Search size={14} style={{ position: 'absolute' as const, left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }} />
                                 <input
                                     style={{ width: '100%', height: 36, paddingLeft: 32, border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}
-                                    placeholder="Search recipients..."
+                                    placeholder={t('mkt.phSearchRecipients')}
                                     value={recipientSearch}
                                     onChange={e => setRecipientSearch(e.target.value)}
                                 />
@@ -492,7 +507,7 @@ export default function MessagesPage() {
                                             setSelectedRecipients(prev => [...new Set([...prev, ...visible])]);
                                         }
                                     }}>
-                                        {filteredRecipients.every(r => selectedRecipients.includes(r.name)) ? 'Deselect All' : 'Select All'}
+                                        {filteredRecipients.every(r => selectedRecipients.includes(r.name)) ? t('mkt.btnDeselectAll') : t('mkt.btnSelectAll')}
                                     </button>
                                 </div>
                                 {filteredRecipients.map(r => {
@@ -519,32 +534,32 @@ export default function MessagesPage() {
             </SlideOver>
 
             {/* Add Template Modal */}
-            <Modal open={isAddOpen} onClose={() => { setIsAddOpen(false); setShowPlaceholders(false); }} title="Create New Template"
-                footer={<div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}><Button variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button><Button onClick={handleAddTemplate}>Save Template</Button></div>}
+            <Modal open={isAddOpen} onClose={() => { setIsAddOpen(false); setShowPlaceholders(false); }} title={t('mkt.lblCreateNewTemplate')}
+                footer={<div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}><Button variant="ghost" onClick={() => setIsAddOpen(false)}>{t('rtn.btnBack')}</Button><Button onClick={handleAddTemplate}>{t('mkt.btnSaveTemplate')}</Button></div>}
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label="Template Name" placeholder="e.g. Birthday Greeting" value={formName} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormName(e.target.value)} />
-                    <Select label="Channel" value={formChannel} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFormChannel(e.target.value)} options={[{ label: 'SMS', value: 'SMS' }, { label: 'WhatsApp', value: 'WhatsApp' }, { label: 'Email', value: 'Email' }]} />
+                    <Input label={t('mkt.lblTemplateName')} placeholder="e.g. Birthday Greeting" value={formName} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormName(e.target.value)} />
+                    <Select label={t('mkt.lblChannel')} value={formChannel} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFormChannel(e.target.value)} options={[{ label: 'SMS', value: 'SMS' }, { label: 'WhatsApp', value: 'WhatsApp' }, { label: 'Email', value: 'Email' }]} />
                     {renderBodyEditor()}
                 </div>
             </Modal>
 
             {/* Edit Template Modal */}
-            <Modal open={isEditOpen} onClose={() => { setIsEditOpen(false); setSelectedTemplate(null); setShowPlaceholders(false); }} title="Edit Template"
-                footer={<div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}><Button variant="ghost" onClick={() => setIsEditOpen(false)}>Cancel</Button><Button onClick={handleEditTemplate}>Save Changes</Button></div>}
+            <Modal open={isEditOpen} onClose={() => { setIsEditOpen(false); setSelectedTemplate(null); setShowPlaceholders(false); }} title={t('mkt.lblEditTemplate')}
+                footer={<div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}><Button variant="ghost" onClick={() => setIsEditOpen(false)}>{t('rtn.btnBack')}</Button><Button onClick={handleEditTemplate}>{t('settings.saveChanges')}</Button></div>}
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label="Template Name" value={formName} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormName(e.target.value)} />
-                    <Select label="Channel" value={formChannel} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFormChannel(e.target.value)} options={[{ label: 'SMS', value: 'SMS' }, { label: 'WhatsApp', value: 'WhatsApp' }, { label: 'Email', value: 'Email' }]} />
+                    <Input label={t('mkt.lblTemplateName')} value={formName} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormName(e.target.value)} />
+                    <Select label={t('mkt.lblChannel')} value={formChannel} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFormChannel(e.target.value)} options={[{ label: 'SMS', value: 'SMS' }, { label: 'WhatsApp', value: 'WhatsApp' }, { label: 'Email', value: 'Email' }]} />
                     {renderBodyEditor()}
                 </div>
             </Modal>
 
             {/* Delete Confirmation Modal */}
-            <Modal open={isDeleteOpen} onClose={() => { setIsDeleteOpen(false); setSelectedTemplate(null); }} title="Delete Template"
-                footer={<div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}><Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>Cancel</Button><Button variant="destructive" onClick={handleDeleteTemplate}>Confirm Delete</Button></div>}
+            <Modal open={isDeleteOpen} onClose={() => { setIsDeleteOpen(false); setSelectedTemplate(null); }} title={t('mkt.lblDeleteTemplate')}
+                footer={<div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}><Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>{t('rtn.btnBack')}</Button><Button variant="destructive" onClick={handleDeleteTemplate}>{t('mkt.lblDeleteTemplate')}</Button></div>}
             >
-                <p style={{ color: 'var(--text-secondary)' }}>Are you sure you want to delete the <strong>{selectedTemplate?.name}</strong> template?</p>
+                <p style={{ color: 'var(--text-secondary)' }}>{t('mkt.msgDeleteTemplateConfirm')} <strong>{selectedTemplate?.name}</strong></p>
             </Modal>
 
             <style>{`.hoverRow:hover { background-color: var(--bg-secondary); }`}</style>

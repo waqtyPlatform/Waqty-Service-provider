@@ -3,14 +3,7 @@
 import React, { useState } from 'react';
 import { Save, Plus, Edit, Trash2, Check, X, Settings2, Target, PieChart, FlaskConical } from 'lucide-react';
 import { Button, Input, Select, Modal, useToast, Badge } from '@/components/ui';
-
-// ─── Tab Definitions ────────────────────────────────────────────────
-const tabs = [
-    { key: 'service', label: 'By Service', icon: <Settings2 size={15} /> },
-    { key: 'target', label: 'By Target', icon: <Target size={15} /> },
-    { key: 'segment', label: 'By Segment', icon: <PieChart size={15} /> },
-    { key: 'extraction', label: 'Extraction', icon: <FlaskConical size={15} /> },
-];
+import { useTranslation } from '@/hooks/useTranslation';
 
 // ─── Mock Data ──────────────────────────────────────────────────────
 const initialServiceRates = [
@@ -57,7 +50,7 @@ const s: Record<string, React.CSSProperties> = {
     card: { background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-xl)', overflow: 'hidden' },
     cardHeader: { padding: 'var(--space-4) var(--space-5)', fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-base)', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
     table: { width: '100%', borderCollapse: 'collapse' },
-    th: { padding: 'var(--space-3) var(--space-4)', textAlign: 'left', fontSize: 'var(--text-xs)', fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)' },
+    th: { padding: 'var(--space-3) var(--space-4)', fontSize: 'var(--text-xs)', fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)' },
     td: { padding: 'var(--space-3) var(--space-4)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)', borderBottom: '1px solid var(--border-color)' },
     actions: { display: 'flex', gap: 'var(--space-2)' },
     btnIcon: { display: 'flex', alignItems: 'center', justifyContent: 'center', width: 30, height: 30, borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', cursor: 'pointer', color: 'var(--text-secondary)', transition: 'all 0.15s' },
@@ -68,7 +61,17 @@ const s: Record<string, React.CSSProperties> = {
 // ─── Component ──────────────────────────────────────────────────────
 export default function CommissionSettingsPage() {
     const { addToast } = useToast();
+    const { t, lang } = useTranslation();
+    const isRtl = lang === 'ar';
+
     const [activeTab, setActiveTab] = useState('service');
+
+    const tabs = [
+        { key: 'service', label: t('commSettings.tabService'), icon: <Settings2 size={15} /> },
+        { key: 'target', label: t('commSettings.tabTarget'), icon: <Target size={15} /> },
+        { key: 'segment', label: t('commSettings.tabSegment'), icon: <PieChart size={15} /> },
+        { key: 'extraction', label: t('commSettings.tabExtraction'), icon: <FlaskConical size={15} /> },
+    ];
 
     // State for each tab
     const [serviceRates, setServiceRates] = useState(initialServiceRates);
@@ -105,7 +108,7 @@ export default function CommissionSettingsPage() {
         if (activeTab === 'target') setTargetRules(prev => prev.filter(r => r.id !== id));
         if (activeTab === 'segment') setSegmentRates(prev => prev.filter(r => r.id !== id));
         if (activeTab === 'extraction') setExtractionRules(prev => prev.filter(r => r.id !== id));
-        addToast('success', 'Rule deleted successfully.');
+        addToast('success', t('commSettings.toastDel'));
     };
 
     const handleSaveModal = () => {
@@ -133,69 +136,69 @@ export default function CommissionSettingsPage() {
         }
 
         setModalOpen(false);
-        addToast('success', `Rule ${modalMode === 'add' ? 'added' : 'updated'} successfully.`);
+        addToast('success', modalMode === 'add' ? t('commSettings.toastAdded') : t('commSettings.toastUpdated'));
     };
 
     const handleSaveAll = () => {
-        addToast('success', 'All commission settings saved.');
+        addToast('success', t('commSettings.toastSavedAll'));
     };
 
     const updateForm = (key: string, value: string) => setForm(prev => ({ ...prev, [key]: value }));
 
     // ─── Tab Labels ─────────────────
     const tabLabels: Record<string, string> = {
-        service: 'Commission Rates by Service',
-        target: 'Target-Based Bonus Rules',
-        segment: 'Commission Rates by Segment',
-        extraction: 'Material Extraction Costs',
+        service: t('commSettings.lblService'),
+        target: t('commSettings.lblTarget'),
+        segment: t('commSettings.lblSegment'),
+        extraction: t('commSettings.lblExtraction'),
     };
 
     // ─── Modal Fields per Tab ───────
     const renderModalFields = () => {
         if (activeTab === 'service') return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                <Input label="Service Name" value={form.service || ''} onChange={e => updateForm('service', e.target.value)} placeholder="e.g. Hair Coloring" />
-                <Select label="Category" value={form.category || ''} onChange={e => updateForm('category', e.target.value)} options={[
-                    { label: 'Select category', value: '' },
+                <Input label={t('commSettings.fldServiceName')} value={form.service || ''} onChange={e => updateForm('service', e.target.value)} placeholder={t('commSettings.phService')} />
+                <Select label={t('commSettings.fldCategory')} value={form.category || ''} onChange={e => updateForm('category', e.target.value)} options={[
+                    { label: t('commSettings.selCategory'), value: '' },
                     { label: 'Hair Care', value: 'Hair Care' },
                     { label: 'Skincare', value: 'Skincare' },
                     { label: 'Spa', value: 'Spa' },
                     { label: 'Nail Care', value: 'Nail Care' },
                 ]} />
-                <Input label="Commission Rate %" type="number" value={form.rate || ''} onChange={e => updateForm('rate', e.target.value)} placeholder="e.g. 10" />
+                <Input label={t('commSettings.fldRate')} type="number" value={form.rate || ''} onChange={e => updateForm('rate', e.target.value)} placeholder={t('commSettings.phRate')} />
             </div>
         );
         if (activeTab === 'target') return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                <Select label="Employee" value={form.employee || ''} onChange={e => updateForm('employee', e.target.value)} options={[
-                    { label: 'Select employee', value: '' },
+                <Select label={t('commSettings.fldEmployee')} value={form.employee || ''} onChange={e => updateForm('employee', e.target.value)} options={[
+                    { label: t('commSettings.selEmployee'), value: '' },
                     { label: 'Sara Ahmed', value: 'Sara Ahmed' },
                     { label: 'Nora Ali', value: 'Nora Ali' },
                     { label: 'Layla Hassan', value: 'Layla Hassan' },
                     { label: 'Hana Youssef', value: 'Hana Youssef' },
                     { label: 'Reem Mohamed', value: 'Reem Mohamed' },
                 ]} />
-                <Input label="Target Revenue (EGP)" type="number" value={form.targetRev || ''} onChange={e => updateForm('targetRev', e.target.value)} placeholder="e.g. 10000" />
-                <Input label="Base Bonus (EGP)" type="number" value={form.baseBonus || ''} onChange={e => updateForm('baseBonus', e.target.value)} placeholder="e.g. 1000" />
+                <Input label={`${t('commSettings.fldTargetRev')} (${t('payroll.egp').trim()})`} type="number" value={form.targetRev || ''} onChange={e => updateForm('targetRev', e.target.value)} placeholder={t('commSettings.phTargetRev')} />
+                <Input label={`${t('commSettings.fldBaseBonus')} (${t('payroll.egp').trim()})`} type="number" value={form.baseBonus || ''} onChange={e => updateForm('baseBonus', e.target.value)} placeholder={t('commSettings.phBaseBonus')} />
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
-                    <Input label="120%+ Multiplier" type="number" value={form.mult120 || ''} onChange={e => updateForm('mult120', e.target.value)} placeholder="1.5" hint="Bonus × this when ≥120%" />
-                    <Input label="150%+ Multiplier" type="number" value={form.mult150 || ''} onChange={e => updateForm('mult150', e.target.value)} placeholder="2.0" hint="Bonus × this when ≥150%" />
+                    <Input label={t('commSettings.fldMult120')} type="number" value={form.mult120 || ''} onChange={e => updateForm('mult120', e.target.value)} placeholder="1.5" hint={t('commSettings.hintMult120')} />
+                    <Input label={t('commSettings.fldMult150')} type="number" value={form.mult150 || ''} onChange={e => updateForm('mult150', e.target.value)} placeholder="2.0" hint={t('commSettings.hintMult150')} />
                 </div>
             </div>
         );
         if (activeTab === 'segment') return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                <Input label="Segment Name" value={form.segment || ''} onChange={e => updateForm('segment', e.target.value)} placeholder="e.g. Hair Care" />
-                <Input label="Commission Rate %" type="number" value={form.rate || ''} onChange={e => updateForm('rate', e.target.value)} placeholder="e.g. 10" />
-                <Input label="Description" value={form.description || ''} onChange={e => updateForm('description', e.target.value)} placeholder="Optional notes about this segment" />
+                <Input label={t('commSettings.fldSegName')} value={form.segment || ''} onChange={e => updateForm('segment', e.target.value)} placeholder={t('commSettings.phSegName')} />
+                <Input label={t('commSettings.fldRate')} type="number" value={form.rate || ''} onChange={e => updateForm('rate', e.target.value)} placeholder={t('commSettings.phRate')} />
+                <Input label={t('commSettings.fldDesc')} value={form.description || ''} onChange={e => updateForm('description', e.target.value)} placeholder={t('commSettings.phDesc')} />
             </div>
         );
         if (activeTab === 'extraction') return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                <Input label="Service Name" value={form.service || ''} onChange={e => updateForm('service', e.target.value)} placeholder="e.g. Hair Coloring" />
-                <Input label="Extraction Rate %" type="number" value={form.extractionRate || ''} onChange={e => updateForm('extractionRate', e.target.value)} placeholder="e.g. 15" hint="Material cost deducted before commission" />
-                <Select label="Apply To" value={form.applyTo || 'All Employees'} onChange={e => updateForm('applyTo', e.target.value)} options={[
-                    { label: 'All Employees', value: 'All Employees' },
+                <Input label={t('commSettings.fldServiceName')} value={form.service || ''} onChange={e => updateForm('service', e.target.value)} placeholder={t('commSettings.phService')} />
+                <Input label={t('commSettings.fldExtRate')} type="number" value={form.extractionRate || ''} onChange={e => updateForm('extractionRate', e.target.value)} placeholder="15" hint={t('commSettings.hintExtRate')} />
+                <Select label={t('commSettings.fldApplyTo')} value={form.applyTo || 'All Employees'} onChange={e => updateForm('applyTo', e.target.value)} options={[
+                    { label: t('commissions.allEmp'), value: 'All Employees' },
                     { label: 'Sara Ahmed', value: 'Sara Ahmed' },
                     { label: 'Nora Ali', value: 'Nora Ali' },
                     { label: 'Layla Hassan', value: 'Layla Hassan' },
@@ -210,14 +213,14 @@ export default function CommissionSettingsPage() {
     // ─── Table Renderers ────────────
     const renderServiceTable = () => (
         <table style={s.table}>
-            <thead><tr>{['Service', 'Category', 'Rate %', 'Actions'].map(h => <th key={h} style={s.th as React.CSSProperties}>{h}</th>)}</tr></thead>
+            <thead><tr>{[t('commSettings.fldServiceName'), t('commSettings.fldCategory'), t('commSettings.fldRate'), t('commSettings.colActions')].map(h => <th key={h} style={{ ...s.th, textAlign: isRtl ? 'right' : 'left' } as React.CSSProperties}>{h}</th>)}</tr></thead>
             <tbody>
                 {serviceRates.length === 0 ? (
-                    <tr><td colSpan={4} style={s.emptyRow as React.CSSProperties}>No service rates configured. Click &quot;Add Rule&quot; to get started.</td></tr>
+                    <tr><td colSpan={4} style={s.emptyRow as React.CSSProperties}>{t('commSettings.emptyService')}</td></tr>
                 ) : serviceRates.map(r => (
                     <tr key={r.id} className="hoverRow">
                         <td style={{ ...s.td, fontWeight: 'var(--font-medium)' }}>{r.service}</td>
-                        <td style={s.td}><Badge color="neutral" size="sm">{r.category}</Badge></td>
+                        <td style={s.td}><Badge color="neutral" size="sm">{t(`commSettings.cat${r.category.replace(/\s+/g, '')}`) || r.category}</Badge></td>
                         <td style={{ ...s.td, fontWeight: 'var(--font-semibold)', color: 'var(--color-primary-600)' }}>{r.rate}%</td>
                         <td style={s.td}>
                             <div style={s.actions}>
@@ -233,15 +236,15 @@ export default function CommissionSettingsPage() {
 
     const renderTargetTable = () => (
         <table style={s.table}>
-            <thead><tr>{['Employee', 'Target Revenue', 'Base Bonus', '120%+ Mult.', '150%+ Mult.', 'Actions'].map(h => <th key={h} style={s.th as React.CSSProperties}>{h}</th>)}</tr></thead>
+            <thead><tr>{[t('commSettings.fldEmployee'), t('commSettings.fldTargetRev'), t('commSettings.fldBaseBonus'), t('commSettings.fldMult120'), t('commSettings.fldMult150'), t('commSettings.colActions')].map(h => <th key={h} style={{ ...s.th, textAlign: isRtl ? 'right' : 'left' } as React.CSSProperties}>{h}</th>)}</tr></thead>
             <tbody>
                 {targetRules.length === 0 ? (
-                    <tr><td colSpan={6} style={s.emptyRow as React.CSSProperties}>No target rules configured. Click &quot;Add Rule&quot; to get started.</td></tr>
+                    <tr><td colSpan={6} style={s.emptyRow as React.CSSProperties}>{t('commSettings.emptyTarget')}</td></tr>
                 ) : targetRules.map(r => (
                     <tr key={r.id} className="hoverRow">
                         <td style={{ ...s.td, fontWeight: 'var(--font-medium)' }}>{r.employee}</td>
-                        <td style={s.td}>{r.targetRev.toLocaleString()} EGP</td>
-                        <td style={{ ...s.td, fontWeight: 'var(--font-semibold)', color: 'var(--color-primary-600)' }}>{r.baseBonus.toLocaleString()} EGP</td>
+                        <td style={s.td}>{r.targetRev.toLocaleString()}{t('payroll.egp')}</td>
+                        <td style={{ ...s.td, fontWeight: 'var(--font-semibold)', color: 'var(--color-primary-600)' }}>{r.baseBonus.toLocaleString()}{t('payroll.egp')}</td>
                         <td style={s.td}><Badge color="info" size="sm">×{r.mult120}</Badge></td>
                         <td style={s.td}><Badge color="success" size="sm">×{r.mult150}</Badge></td>
                         <td style={s.td}>
@@ -258,10 +261,10 @@ export default function CommissionSettingsPage() {
 
     const renderSegmentTable = () => (
         <table style={s.table}>
-            <thead><tr>{['Segment', 'Rate %', 'Description', 'Actions'].map(h => <th key={h} style={s.th as React.CSSProperties}>{h}</th>)}</tr></thead>
+            <thead><tr>{[t('commSettings.fldSegName'), t('commSettings.fldRate'), t('commSettings.fldDesc'), t('commSettings.colActions')].map(h => <th key={h} style={{ ...s.th, textAlign: isRtl ? 'right' : 'left' } as React.CSSProperties}>{h}</th>)}</tr></thead>
             <tbody>
                 {segmentRates.length === 0 ? (
-                    <tr><td colSpan={4} style={s.emptyRow as React.CSSProperties}>No segment rates configured. Click &quot;Add Rule&quot; to get started.</td></tr>
+                    <tr><td colSpan={4} style={s.emptyRow as React.CSSProperties}>{t('commSettings.emptySegment')}</td></tr>
                 ) : segmentRates.map(r => (
                     <tr key={r.id} className="hoverRow">
                         <td style={{ ...s.td, fontWeight: 'var(--font-medium)' }}>{r.segment}</td>
@@ -281,15 +284,15 @@ export default function CommissionSettingsPage() {
 
     const renderExtractionTable = () => (
         <table style={s.table}>
-            <thead><tr>{['Service', 'Extraction Rate %', 'Apply To', 'Actions'].map(h => <th key={h} style={s.th as React.CSSProperties}>{h}</th>)}</tr></thead>
+            <thead><tr>{[t('commSettings.fldServiceName'), t('commSettings.fldExtRate'), t('commSettings.fldApplyTo'), t('commSettings.colActions')].map(h => <th key={h} style={{ ...s.th, textAlign: isRtl ? 'right' : 'left' } as React.CSSProperties}>{h}</th>)}</tr></thead>
             <tbody>
                 {extractionRules.length === 0 ? (
-                    <tr><td colSpan={4} style={s.emptyRow as React.CSSProperties}>No extraction rules configured. Click &quot;Add Rule&quot; to get started.</td></tr>
+                    <tr><td colSpan={4} style={s.emptyRow as React.CSSProperties}>{t('commSettings.emptyExtraction')}</td></tr>
                 ) : extractionRules.map(r => (
                     <tr key={r.id} className="hoverRow">
                         <td style={{ ...s.td, fontWeight: 'var(--font-medium)' }}>{r.service}</td>
                         <td style={{ ...s.td, fontWeight: 'var(--font-semibold)', color: '#ef4444' }}>{r.extractionRate}%</td>
-                        <td style={s.td}><Badge color="neutral" size="sm">{r.applyTo}</Badge></td>
+                        <td style={s.td}><Badge color="neutral" size="sm">{r.applyTo === 'All Employees' ? t('commissions.allEmp') : r.applyTo}</Badge></td>
                         <td style={s.td}>
                             <div style={s.actions}>
                                 <button style={s.btnIcon} onClick={() => openEdit(r.id, r)}><Edit size={14} /></button>
@@ -311,23 +314,23 @@ export default function CommissionSettingsPage() {
     };
 
     return (
-        <div style={s.page}>
+        <div style={{ ...s.page, direction: isRtl ? 'rtl' : 'ltr' }}>
             <div style={s.header}>
                 <div>
-                    <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' }}>Commission Settings</div>
-                    <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginTop: 'var(--space-1)' }}>Configure commission rules for each calculation type.</div>
+                    <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' }}>{t('commSettings.title')}</div>
+                    <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginTop: 'var(--space-1)' }}>{t('commSettings.desc')}</div>
                 </div>
-                <Button onClick={handleSaveAll}><Save size={16} /> Save All Settings</Button>
+                <Button onClick={handleSaveAll}><Save size={16} className={isRtl ? 'ml-2' : 'mr-2'} /> {t('commSettings.saveAll')}</Button>
             </div>
 
             <div style={s.tabBar}>
-                {tabs.map(t => (
+                {tabs.map(tTab => (
                     <button
-                        key={t.key}
-                        style={{ ...s.tab, ...(t.key === activeTab ? s.tabActive : {}) }}
-                        onClick={() => setActiveTab(t.key)}
+                        key={tTab.key}
+                        style={{ ...s.tab, ...(tTab.key === activeTab ? s.tabActive : {}) }}
+                        onClick={() => setActiveTab(tTab.key)}
                     >
-                        {t.icon} {t.label}
+                        {tTab.icon} {tTab.label}
                     </button>
                 ))}
             </div>
@@ -335,7 +338,7 @@ export default function CommissionSettingsPage() {
             <div style={s.card}>
                 <div style={s.cardHeader}>
                     <span>{tabLabels[activeTab]}</span>
-                    <Button size="sm" onClick={openAdd}><Plus size={14} /> Add Rule</Button>
+                    <Button size="sm" onClick={openAdd}><Plus size={14} className={isRtl ? 'ml-2' : 'mr-2'} /> {t('commSettings.addRule')}</Button>
                 </div>
                 <div style={{ overflowX: 'auto' }}>
                     {renderActiveTable()}
@@ -343,18 +346,18 @@ export default function CommissionSettingsPage() {
             </div>
 
             <div style={s.footer}>
-                <Button onClick={handleSaveAll}><Save size={16} /> Save All Settings</Button>
+                <Button onClick={handleSaveAll}><Save size={16} className={isRtl ? 'ml-2' : 'mr-2'} /> {t('commSettings.saveAll')}</Button>
             </div>
 
             {/* Add / Edit Modal */}
             <Modal
                 open={modalOpen}
                 onClose={() => setModalOpen(false)}
-                title={`${modalMode === 'add' ? 'Add' : 'Edit'} ${tabLabels[activeTab]} Rule`}
+                title={modalMode === 'add' ? t('commSettings.addRule') : t('commSettings.editRule')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setModalOpen(false)}><X size={14} /> Cancel</Button>
-                        <Button onClick={handleSaveModal}><Check size={14} /> {modalMode === 'add' ? 'Add Rule' : 'Save Changes'}</Button>
+                        <Button variant="ghost" onClick={() => setModalOpen(false)}><X size={14} className={isRtl ? 'ml-2' : 'mr-2'} /> {t('commSettings.cancel')}</Button>
+                        <Button onClick={handleSaveModal}><Check size={14} className={isRtl ? 'ml-2' : 'mr-2'} /> {modalMode === 'add' ? t('commSettings.addRule') : t('commSettings.saveChanges')}</Button>
                     </div>
                 }
             >

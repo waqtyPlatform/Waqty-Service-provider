@@ -4,10 +4,11 @@ import React, { useState, useMemo } from 'react';
 import {
     Wallet, DollarSign, Award, Gift, MinusCircle, CheckCircle, Clock,
     Search, Filter, Calendar, Download, CreditCard, Banknote,
-    FileText, Eye, X, User, Building, Hash, ChevronRight,
+    FileText, Eye,
     Plus, Edit, Trash2, Star, Smartphone,
 } from 'lucide-react';
-import { Button, Select, Input, Badge, Modal, useToast, SlideOver } from '@/components/ui';
+import { Button, Select, Badge, Modal, useToast, SlideOver } from '@/components/ui';
+import { useTranslation } from '@/hooks/useTranslation';
 
 /* ─── Mock Data ──────────────────────────────────────────────────── */
 
@@ -75,9 +76,15 @@ const s: Record<string, React.CSSProperties> = {
     slipTotal: { display: 'flex', justifyContent: 'space-between', padding: 'var(--space-3) 0', fontSize: 'var(--text-lg)', fontWeight: 'var(--font-bold)', borderTop: '2px solid var(--text-primary)', marginTop: 'var(--space-3)' },
 };
 
+let nextIdCounter = 1;
+const generateId = () => {
+    return `${Date.now()}-${nextIdCounter++}`;
+};
+
 /* ─── Component ──────────────────────────────────────────────────── */
 
 export default function PayrollPage() {
+    const { t, lang } = useTranslation();
     const { addToast } = useToast();
     const [activeTab, setActiveTab] = useState<'summary' | 'history' | 'slips'>('summary');
 
@@ -109,11 +116,11 @@ export default function PayrollPage() {
     };
 
     const handleAddPm = (empId: string) => {
-        const newPm: PaymentMethod = { id: `pm-${Date.now()}`, type: pmForm.type, label: pmForm.label || pmForm.type, details: pmForm.details, isDefault: !(paymentMethods[empId]?.length) };
+        const newPm: PaymentMethod = { id: `pm-${generateId()}`, type: pmForm.type, label: pmForm.label || pmForm.type, details: pmForm.details, isDefault: !(paymentMethods[empId]?.length) };
         setPaymentMethods(prev => ({ ...prev, [empId]: [...(prev[empId] || []), newPm] }));
         setPmForm({ type: 'Bank Transfer', label: '', details: '' });
         setPmShowForm(false);
-        addToast('success', 'Payment method added');
+        addToast('success', t('payroll.toastPmAdded'));
     };
 
     const handleEditPm = (empId: string) => {
@@ -122,7 +129,7 @@ export default function PayrollPage() {
         setPmEditing(null);
         setPmShowForm(false);
         setPmForm({ type: 'Bank Transfer', label: '', details: '' });
-        addToast('success', 'Payment method updated');
+        addToast('success', t('payroll.toastPmUpdated'));
     };
 
     const handleDeletePm = (empId: string, pmId: string) => {
@@ -131,18 +138,19 @@ export default function PayrollPage() {
             if (remaining.length > 0 && !remaining.some(m => m.isDefault)) remaining[0].isDefault = true;
             return { ...prev, [empId]: remaining };
         });
-        addToast('success', 'Payment method removed');
+        addToast('success', t('payroll.toastPmRemoved'));
     };
 
     const handleSetDefaultPm = (empId: string, pmId: string) => {
         setPaymentMethods(prev => ({ ...prev, [empId]: (prev[empId] || []).map(m => ({ ...m, isDefault: m.id === pmId })) }));
-        addToast('success', 'Default payment method updated');
+        addToast('success', t('payroll.toastPmDefault'));
     };
 
     const pmTypeIcon = (type: string) => {
-        if (type === 'Bank Transfer') return <Banknote size={14} />;
-        if (type === 'Mobile Wallet') return <Smartphone size={14} />;
-        if (type === 'Check') return <FileText size={14} />;
+        const translatedType = type === t('payroll.typeBankTrans') ? 'Bank Transfer' : type === t('payroll.typeCashVal') ? 'Cash' : type === t('payroll.typeWalletVal') ? 'Mobile Wallet' : type === t('payroll.typeCheckVal') ? 'Check' : type;
+        if (translatedType === 'Bank Transfer' || type === 'Bank Transfer') return <Banknote size={14} />;
+        if (translatedType === 'Mobile Wallet' || type === 'Mobile Wallet') return <Smartphone size={14} />;
+        if (translatedType === 'Check' || type === 'Check') return <FileText size={14} />;
         return <DollarSign size={14} />;
     };
 
@@ -175,7 +183,7 @@ export default function PayrollPage() {
         const pm = getDefaultPm(empId);
         setPayrollStatus(prev => ({ ...prev, [empId]: 'Paid' }));
         const newPayout = {
-            id: `PO-${Date.now()}`,
+            id: `PO-${generateId()}`,
             date: new Date().toISOString().slice(0, 10),
             employee: emp.name,
             type: 'Salary + Commission',
@@ -186,19 +194,19 @@ export default function PayrollPage() {
         };
         setPayoutHistory(prev => [newPayout, ...prev]);
         setConfirmPay(null);
-        addToast('success', `${emp.name} paid ${net.toLocaleString()} EGP`);
+        addToast('success', `${emp.name}${t('payroll.toastPaid')}${net.toLocaleString()}${t('payroll.egp')}`);
     };
 
     const handleProcessAll = () => {
         const pending = employees.filter(e => payrollStatus[e.id] === 'Pending');
-        if (pending.length === 0) { addToast('info', 'All employees already paid'); return; }
+        if (pending.length === 0) { addToast('info', t('payroll.toastAllPaid')); return; }
         const updates: Record<string, 'Paid'> = {};
         const newPayouts: typeof initialPayoutHistory = [];
         pending.forEach(emp => {
             updates[emp.id] = 'Paid';
             const net = emp.baseSalary + emp.commission + emp.bonus - emp.deductions;
             newPayouts.push({
-                id: `PO-${Date.now()}-${emp.id}`,
+                id: `PO-${generateId()}-${emp.id}`,
                 date: new Date().toISOString().slice(0, 10),
                 employee: emp.name,
                 type: 'Salary + Commission',
@@ -210,7 +218,7 @@ export default function PayrollPage() {
         });
         setPayrollStatus(prev => ({ ...prev, ...updates }));
         setPayoutHistory(prev => [...newPayouts, ...prev]);
-        addToast('success', `Processed payroll for ${pending.length} employees`);
+        addToast('success', `${t('payroll.toastProcessed')}${pending.length}${t('payroll.toastProcessedSuffix')}`);
     };
 
     /* ─── History Logic ──────────────────────────────────────── */
@@ -228,8 +236,9 @@ export default function PayrollPage() {
     /* ─── Month label ────────────────────────────────────────── */
     const monthLabel = (() => {
         const [y, m] = month.split('-');
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        return `${months[parseInt(m) - 1]} ${y}`;
+        const monthKeys = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+        const translatedMonth = t(`payroll.months.${monthKeys[parseInt(m) - 1]}` as any);
+        return lang === 'ar' ? `${translatedMonth} ${y}` : `${translatedMonth} ${y}`;
     })();
 
     /* ─── Render ─────────────────────────────────────────────── */
@@ -249,9 +258,9 @@ export default function PayrollPage() {
                             boxShadow: activeTab === tab ? 'var(--shadow-sm)' : 'none',
                         }}
                     >
-                        {tab === 'summary' && <><Wallet size={14} style={{ marginRight: 6, verticalAlign: -2 }} />Payroll Summary</>}
-                        {tab === 'history' && <><Clock size={14} style={{ marginRight: 6, verticalAlign: -2 }} />Payout History</>}
-                        {tab === 'slips' && <><FileText size={14} style={{ marginRight: 6, verticalAlign: -2 }} />Pay Slips</>}
+                        {tab === 'summary' && <><Wallet size={14} className={lang === 'ar' ? 'ml-1.5 align-middle' : 'mr-1.5 align-middle'} />{t('payroll.tabSummary')}</>}
+                        {tab === 'history' && <><Clock size={14} className={lang === 'ar' ? 'ml-1.5 align-middle' : 'mr-1.5 align-middle'} />{t('payroll.tabHistory')}</>}
+                        {tab === 'slips' && <><FileText size={14} className={lang === 'ar' ? 'ml-1.5 align-middle' : 'mr-1.5 align-middle'} />{t('payroll.tabSlips')}</>}
                     </button>
                 ))}
             </div>
@@ -261,80 +270,80 @@ export default function PayrollPage() {
                 <>
                     {/* KPIs */}
                     <div style={s.kpiGrid}>
-                        <div style={s.kpiCard}><div style={{ ...s.kpiIcon, background: 'var(--color-primary-50)', color: 'var(--color-primary-600)' }}><DollarSign size={22} /></div><div><div style={s.kpiVal}>{totals.payroll.toLocaleString()} EGP</div><div style={s.kpiLbl}>Total Payroll</div></div></div>
-                        <div style={s.kpiCard}><div style={{ ...s.kpiIcon, background: '#DBEAFE', color: '#2563EB' }}><Award size={22} /></div><div><div style={s.kpiVal}>{totals.commissions.toLocaleString()} EGP</div><div style={s.kpiLbl}>Commissions</div></div></div>
-                        <div style={s.kpiCard}><div style={{ ...s.kpiIcon, background: '#FEF3C7', color: '#B45309' }}><Gift size={22} /></div><div><div style={s.kpiVal}>{totals.bonuses.toLocaleString()} EGP</div><div style={s.kpiLbl}>Bonuses</div></div></div>
-                        <div style={s.kpiCard}><div style={{ ...s.kpiIcon, background: '#FEE2E2', color: '#DC2626' }}><MinusCircle size={22} /></div><div><div style={s.kpiVal}>{totals.deductions.toLocaleString()} EGP</div><div style={s.kpiLbl}>Deductions</div></div></div>
+                        <div style={{ ...s.kpiCard as React.CSSProperties, flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}><div style={{ ...s.kpiIcon, background: 'var(--color-primary-50)', color: 'var(--color-primary-600)' }}><DollarSign size={22} /></div><div style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}><div style={s.kpiVal}>{totals.payroll.toLocaleString()} {t('payroll.egp')}</div><div style={s.kpiLbl}>{t('payroll.totalPayroll')}</div></div></div>
+                        <div style={{ ...s.kpiCard as React.CSSProperties, flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}><div style={{ ...s.kpiIcon, background: '#DBEAFE', color: '#2563EB' }}><Award size={22} /></div><div style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}><div style={s.kpiVal}>{totals.commissions.toLocaleString()} {t('payroll.egp')}</div><div style={s.kpiLbl}>{t('payroll.commissions')}</div></div></div>
+                        <div style={{ ...s.kpiCard as React.CSSProperties, flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}><div style={{ ...s.kpiIcon, background: '#FEF3C7', color: '#B45309' }}><Gift size={22} /></div><div style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}><div style={s.kpiVal}>{totals.bonuses.toLocaleString()} {t('payroll.egp')}</div><div style={s.kpiLbl}>{t('payroll.bonuses')}</div></div></div>
+                        <div style={{ ...s.kpiCard as React.CSSProperties, flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}><div style={{ ...s.kpiIcon, background: '#FEE2E2', color: '#DC2626' }}><MinusCircle size={22} /></div><div style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}><div style={s.kpiVal}>{totals.deductions.toLocaleString()} {t('payroll.egp')}</div><div style={s.kpiLbl}>{t('payroll.deductions')}</div></div></div>
                     </div>
 
                     {/* Toolbar */}
-                    <div style={s.toolbar}>
+                    <div style={{ ...s.toolbar as React.CSSProperties, flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                             <Calendar size={16} color="var(--text-tertiary)" />
-                            <Select value={month} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setMonth(e.target.value)} options={[{ value: '2026-02', label: 'February 2026' }, { value: '2026-01', label: 'January 2026' }, { value: '2025-12', label: 'December 2025' }]} style={{ width: 170 }} />
+                            <Select value={month} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setMonth(e.target.value)} options={[{ value: '2026-02', label: `${t('payroll.months.feb')} 2026` }, { value: '2026-01', label: `${t('payroll.months.jan')} 2026` }, { value: '2025-12', label: `${t('payroll.months.dec')} 2025` }]} style={{ width: 170 }} />
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                             <Filter size={16} color="var(--text-tertiary)" />
-                            <Select value={statusFilter} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setStatusFilter(e.target.value)} options={[{ value: 'all', label: 'All Status' }, { value: 'pending', label: 'Pending' }, { value: 'paid', label: 'Paid' }]} style={{ width: 140 }} />
+                            <Select value={statusFilter} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setStatusFilter(e.target.value)} options={[{ value: 'all', label: t('payroll.filterAllStatus') }, { value: 'pending', label: t('payroll.filterPending') }, { value: 'paid', label: t('payroll.filterPaid') }]} style={{ width: 140 }} />
                         </div>
-                        <div style={{ position: 'relative', marginLeft: 'auto' }}>
-                            <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }} />
-                            <input placeholder="Search employee..." value={searchSummary} onChange={e => setSearchSummary(e.target.value)}
-                                style={{ paddingLeft: 32, height: 38, width: 200, border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }} />
+                        <div style={{ position: 'relative', marginLeft: lang === 'ar' ? 0 : 'auto', marginRight: lang === 'ar' ? 'auto' : 0 }}>
+                            <Search size={14} style={{ position: 'absolute', ...(lang === 'ar' ? { right: 10 } : { left: 10 }), top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }} />
+                            <input placeholder={t('payroll.searchEmp')} value={searchSummary} onChange={e => setSearchSummary(e.target.value)}
+                                style={{ ...(lang === 'ar' ? { paddingRight: 32 } : { paddingLeft: 32 }), height: 38, width: 200, border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)', textAlign: lang === 'ar' ? 'right' : 'left' }} />
                         </div>
-                        <Button variant="primary" onClick={handleProcessAll} style={{ marginLeft: 'var(--space-2)' }}><CheckCircle size={16} /> Process All</Button>
+                        <Button variant="primary" onClick={handleProcessAll} className={lang === 'ar' ? 'mr-2' : 'ml-2'}><CheckCircle size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('payroll.processAll')}</Button>
                     </div>
 
                     {/* Table */}
                     <div style={s.tableWrapper}>
                         <div style={{ overflowX: 'auto' }}>
                             <table style={s.table}>
-                                <thead><tr>
-                                    <th style={s.th as React.CSSProperties}>Employee</th>
-                                    <th style={s.th as React.CSSProperties}>Base Salary</th>
-                                    <th style={s.th as React.CSSProperties}>Commission</th>
-                                    <th style={s.th as React.CSSProperties}>Bonus</th>
-                                    <th style={s.th as React.CSSProperties}>Deductions</th>
-                                    <th style={s.th as React.CSSProperties}>Net Pay</th>
-                                    <th style={s.th as React.CSSProperties}>Payment Method</th>
-                                    <th style={s.th as React.CSSProperties}>Status</th>
-                                    <th style={s.th as React.CSSProperties}>Action</th>
+                                <thead><tr style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                    <th style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('payroll.colEmp')}</th>
+                                    <th style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('payroll.colBase')}</th>
+                                    <th style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('payroll.colCommission')}</th>
+                                    <th style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('payroll.colBonus')}</th>
+                                    <th style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('payroll.colDeductions')}</th>
+                                    <th style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('payroll.colNetPay')}</th>
+                                    <th style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('payroll.colMethod')}</th>
+                                    <th style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('payroll.colStatus')}</th>
+                                    <th style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('payroll.colAction')}</th>
                                 </tr></thead>
                                 <tbody>
                                     {summaryData.map(emp => (
-                                        <tr key={emp.id} style={{ cursor: 'pointer' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-secondary)'} onMouseLeave={e => e.currentTarget.style.background = ''}>
+                                        <tr key={emp.id} style={{ cursor: 'pointer', textAlign: lang === 'ar' ? 'right' : 'left' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-secondary)'} onMouseLeave={e => e.currentTarget.style.background = ''}>
                                             <td style={{ ...s.td, fontWeight: 'var(--font-medium)' }}>
                                                 <div>{emp.name}</div>
                                                 <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{emp.dept} · {emp.id}</div>
                                             </td>
-                                            <td style={s.td}>{emp.baseSalary.toLocaleString()} EGP</td>
-                                            <td style={s.td}>{emp.commission > 0 ? `${emp.commission.toLocaleString()} EGP` : '—'}</td>
-                                            <td style={s.td}>{emp.bonus > 0 ? `${emp.bonus.toLocaleString()} EGP` : '—'}</td>
-                                            <td style={{ ...s.td, color: 'var(--color-error)' }}>-{emp.deductions.toLocaleString()} EGP</td>
-                                            <td style={{ ...s.td, fontWeight: 'var(--font-bold)' }}>{emp.netPay.toLocaleString()} EGP</td>
+                                            <td style={s.td}>{emp.baseSalary.toLocaleString()} {t('payroll.egp')}</td>
+                                            <td style={s.td}>{emp.commission > 0 ? `${emp.commission.toLocaleString()} ${t('payroll.egp')}` : '—'}</td>
+                                            <td style={s.td}>{emp.bonus > 0 ? `${emp.bonus.toLocaleString()} ${t('payroll.egp')}` : '—'}</td>
+                                            <td style={{ ...s.td, color: 'var(--color-error)' }}>-{emp.deductions.toLocaleString()} {t('payroll.egp')}</td>
+                                            <td style={{ ...s.td, fontWeight: 'var(--font-bold)' }}>{emp.netPay.toLocaleString()} {t('payroll.egp')}</td>
                                             <td style={s.td}>
                                                 {(() => {
                                                     const pm = getDefaultPm(emp.id); return pm ? (
-                                                        <button onClick={() => { setPmEmpId(emp.id); setPmShowForm(false); setPmEditing(null); }} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', padding: '4px 10px', fontSize: 'var(--text-xs)', cursor: 'pointer', color: 'var(--text-primary)' }}>
-                                                            {pmTypeIcon(pm.type)} {pm.label} <Edit size={10} style={{ marginLeft: 4, color: 'var(--text-tertiary)' }} />
+                                                        <button onClick={() => { setPmEmpId(emp.id); setPmShowForm(false); setPmEditing(null); }} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', padding: '4px 10px', fontSize: 'var(--text-xs)', cursor: 'pointer', color: 'var(--text-primary)', flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}>
+                                                            {pmTypeIcon(pm.type)} {pm.label} <Edit size={10} className={lang === 'ar' ? 'mr-1 text-tertiary' : 'ml-1 text-tertiary'} style={{ color: 'var(--text-tertiary)' }} />
                                                         </button>
                                                     ) : (
-                                                        <Button variant="ghost" size="sm" onClick={() => { setPmEmpId(emp.id); setPmShowForm(true); setPmEditing(null); setPmForm({ type: 'Bank Transfer', label: '', details: '' }); }}><Plus size={14} /> Add</Button>
+                                                        <Button variant="ghost" size="sm" onClick={() => { setPmEmpId(emp.id); setPmShowForm(true); setPmEditing(null); setPmForm({ type: 'Bank Transfer', label: '', details: '' }); }}><Plus size={14} className={lang === 'ar' ? 'ml-1' : 'mr-1'} /> {t('payroll.btnAdd')}</Button>
                                                     );
                                                 })()}
                                             </td>
-                                            <td style={s.td}><Badge color={emp.status === 'Paid' ? 'success' : 'warning'} size="sm">{emp.status}</Badge></td>
+                                            <td style={s.td}><Badge color={emp.status === 'Paid' ? 'success' : 'warning'} size="sm">{emp.status === 'Paid' ? t('payroll.filterPaid') : t('payroll.filterPending')}</Badge></td>
                                             <td style={s.td}>
                                                 {emp.status === 'Pending' ? (
-                                                    <Button variant="primary" size="sm" onClick={() => setConfirmPay(emp.id)}><CreditCard size={14} /> Pay</Button>
+                                                    <Button variant="primary" size="sm" onClick={() => setConfirmPay(emp.id)}><CreditCard size={14} className={lang === 'ar' ? 'ml-1' : 'mr-1'} /> {t('payroll.btnPay')}</Button>
                                                 ) : (
-                                                    <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>✓ Processed</span>
+                                                    <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>✓ {t('payroll.processed')}</span>
                                                 )}
                                             </td>
                                         </tr>
                                     ))}
                                     {summaryData.length === 0 && (
-                                        <tr><td colSpan={9} style={{ ...s.td, textAlign: 'center', padding: 'var(--space-8)', color: 'var(--text-tertiary)' }}>No employees match filters</td></tr>
+                                        <tr><td colSpan={9} style={{ ...s.td, textAlign: 'center', padding: 'var(--space-8)', color: 'var(--text-tertiary)' }}>{t('payroll.emptySummary')}</td></tr>
                                     )}
                                 </tbody>
                             </table>
@@ -346,49 +355,49 @@ export default function PayrollPage() {
             {/* ═══ TAB 2: PAYOUT HISTORY ═══ */}
             {activeTab === 'history' && (
                 <>
-                    <div style={s.toolbar}>
+                    <div style={{ ...s.toolbar as React.CSSProperties, flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                             <Filter size={16} color="var(--text-tertiary)" />
-                            <Select value={historyType} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setHistoryType(e.target.value)} options={[{ value: 'all', label: 'All Types' }, { value: 'salary', label: 'Salary' }, { value: 'commission', label: 'Commission' }, { value: 'bonus', label: 'Bonus' }]} style={{ width: 150 }} />
+                            <Select value={historyType} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setHistoryType(e.target.value)} options={[{ value: 'all', label: t('payroll.typeAll') }, { value: 'salary', label: t('payroll.typeSalary') }, { value: 'commission', label: t('payroll.typeCommission') }, { value: 'bonus', label: t('payroll.typeBonus') }]} style={{ width: 150 }} />
                         </div>
-                        <div style={{ position: 'relative', marginLeft: 'auto' }}>
-                            <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }} />
-                            <input placeholder="Search by name or ref..." value={historySearch} onChange={e => setHistorySearch(e.target.value)}
-                                style={{ paddingLeft: 32, height: 38, width: 220, border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }} />
+                        <div style={{ position: 'relative', marginLeft: lang === 'ar' ? 0 : 'auto', marginRight: lang === 'ar' ? 'auto' : 0 }}>
+                            <Search size={14} style={{ position: 'absolute', ...(lang === 'ar' ? { right: 10 } : { left: 10 }), top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }} />
+                            <input placeholder={t('payroll.searchHistory')} value={historySearch} onChange={e => setHistorySearch(e.target.value)}
+                                style={{ ...(lang === 'ar' ? { paddingRight: 32 } : { paddingLeft: 32 }), height: 38, width: 220, border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)', textAlign: lang === 'ar' ? 'right' : 'left' }} />
                         </div>
                     </div>
 
                     <div style={s.tableWrapper}>
                         <div style={{ overflowX: 'auto' }}>
                             <table style={s.table}>
-                                <thead><tr>
-                                    <th style={s.th as React.CSSProperties}>Date</th>
-                                    <th style={s.th as React.CSSProperties}>Employee</th>
-                                    <th style={s.th as React.CSSProperties}>Type</th>
-                                    <th style={s.th as React.CSSProperties}>Amount</th>
-                                    <th style={s.th as React.CSSProperties}>Method</th>
-                                    <th style={s.th as React.CSSProperties}>Reference</th>
-                                    <th style={s.th as React.CSSProperties}>Status</th>
+                                <thead><tr style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                    <th style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('payroll.colDate')}</th>
+                                    <th style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('payroll.colEmp')}</th>
+                                    <th style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('payroll.colType')}</th>
+                                    <th style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('payroll.colAmount')}</th>
+                                    <th style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('payroll.colMethod')}</th>
+                                    <th style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('payroll.colRef')}</th>
+                                    <th style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('payroll.colStatus')}</th>
                                 </tr></thead>
                                 <tbody>
                                     {filteredHistory.map(row => (
-                                        <tr key={row.id} onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-secondary)'} onMouseLeave={e => e.currentTarget.style.background = ''}>
+                                        <tr key={row.id} onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-secondary)'} onMouseLeave={e => e.currentTarget.style.background = ''} style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
                                             <td style={s.td}>{row.date}</td>
                                             <td style={{ ...s.td, fontWeight: 'var(--font-medium)' }}>{row.employee}</td>
-                                            <td style={s.td}><Badge color={row.type.includes('Salary') ? 'primary' : row.type.includes('Commission') ? 'info' : 'warning'} size="sm">{row.type}</Badge></td>
-                                            <td style={{ ...s.td, fontWeight: 'var(--font-semibold)' }}>{row.amount.toLocaleString()} EGP</td>
+                                            <td style={s.td}><Badge color={row.type.includes('Salary') ? 'primary' : row.type.includes('Commission') ? 'info' : 'warning'} size="sm">{row.type.includes('Salary') ? t('payroll.typeSalary') : row.type.includes('Commission') ? t('payroll.typeCommission') : t('payroll.typeBonus')}</Badge></td>
+                                            <td style={{ ...s.td, fontWeight: 'var(--font-semibold)' }}>{row.amount.toLocaleString()} {t('payroll.egp')}</td>
                                             <td style={s.td}>
-                                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                                                    {row.method === 'Bank Transfer' ? <Banknote size={14} /> : <CreditCard size={14} />}
-                                                    {row.method}
+                                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}>
+                                                    {row.method === 'Bank Transfer' ? <Banknote size={14} className={lang === 'ar' ? 'ml-1' : 'mr-1'} /> : <CreditCard size={14} className={lang === 'ar' ? 'ml-1' : 'mr-1'} />}
+                                                    {row.method === 'Bank Transfer' ? t('payroll.typeBankTrans') : row.method === 'Cash' ? t('payroll.typeCashVal') : row.method === 'Mobile Wallet' ? t('payroll.typeWalletVal') : row.method === 'Check' ? t('payroll.typeCheckVal') : row.method}
                                                 </span>
                                             </td>
                                             <td style={{ ...s.td, fontFamily: 'monospace', fontSize: 'var(--text-xs)' }}>{row.ref}</td>
-                                            <td style={s.td}><Badge color="success" size="sm">{row.status}</Badge></td>
+                                            <td style={s.td}><Badge color="success" size="sm">{t('payroll.processed')}</Badge></td>
                                         </tr>
                                     ))}
                                     {filteredHistory.length === 0 && (
-                                        <tr><td colSpan={7} style={{ ...s.td, textAlign: 'center', padding: 'var(--space-8)', color: 'var(--text-tertiary)' }}>No payouts match filters</td></tr>
+                                        <tr><td colSpan={7} style={{ ...s.td, textAlign: 'center', padding: 'var(--space-8)', color: 'var(--text-tertiary)' }}>{t('payroll.emptyHistory')}</td></tr>
                                     )}
                                 </tbody>
                             </table>
@@ -400,31 +409,31 @@ export default function PayrollPage() {
             {/* ═══ TAB 3: PAY SLIPS ═══ */}
             {activeTab === 'slips' && (
                 <>
-                    <div style={s.toolbar}>
+                    <div style={{ ...s.toolbar as React.CSSProperties, flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                             <Calendar size={16} color="var(--text-tertiary)" />
-                            <Select options={[{ value: '2026-02', label: 'February 2026' }, { value: '2026-01', label: 'January 2026' }]} style={{ width: 170 }} />
+                            <Select options={[{ value: '2026-02', label: `${t('payroll.months.feb')} 2026` }, { value: '2026-01', label: `${t('payroll.months.jan')} 2026` }]} style={{ width: 170 }} />
                         </div>
                     </div>
 
                     <div style={s.tableWrapper}>
                         <div style={{ overflowX: 'auto' }}>
                             <table style={s.table}>
-                                <thead><tr>
-                                    <th style={s.th as React.CSSProperties}>Employee</th>
-                                    <th style={s.th as React.CSSProperties}>Month</th>
-                                    <th style={s.th as React.CSSProperties}>Base</th>
-                                    <th style={s.th as React.CSSProperties}>Commission</th>
-                                    <th style={s.th as React.CSSProperties}>Bonus</th>
-                                    <th style={s.th as React.CSSProperties}>Deductions</th>
-                                    <th style={s.th as React.CSSProperties}>Net Pay</th>
-                                    <th style={s.th as React.CSSProperties}>Actions</th>
+                                <thead><tr style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                    <th style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('payroll.colEmp')}</th>
+                                    <th style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('payroll.colMonth')}</th>
+                                    <th style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('payroll.colBase')}</th>
+                                    <th style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('payroll.colCommission')}</th>
+                                    <th style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('payroll.colBonus')}</th>
+                                    <th style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('payroll.colDeductions')}</th>
+                                    <th style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('payroll.colNetPay')}</th>
+                                    <th style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('payroll.colAction')}</th>
                                 </tr></thead>
                                 <tbody>
                                     {employees.map(emp => {
                                         const net = emp.baseSalary + emp.commission + emp.bonus - emp.deductions;
                                         return (
-                                            <tr key={emp.id} onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-secondary)'} onMouseLeave={e => e.currentTarget.style.background = ''}>
+                                            <tr key={emp.id} onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-secondary)'} onMouseLeave={e => e.currentTarget.style.background = ''} style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
                                                 <td style={{ ...s.td, fontWeight: 'var(--font-medium)' }}>
                                                     <div>{emp.name}</div>
                                                     <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{emp.id}</div>
@@ -434,10 +443,10 @@ export default function PayrollPage() {
                                                 <td style={s.td}>{emp.commission > 0 ? emp.commission.toLocaleString() : '—'}</td>
                                                 <td style={s.td}>{emp.bonus > 0 ? emp.bonus.toLocaleString() : '—'}</td>
                                                 <td style={{ ...s.td, color: 'var(--color-error)' }}>-{emp.deductions.toLocaleString()}</td>
-                                                <td style={{ ...s.td, fontWeight: 'var(--font-bold)' }}>{net.toLocaleString()} EGP</td>
+                                                <td style={{ ...s.td, fontWeight: 'var(--font-bold)' }}>{net.toLocaleString()} {t('payroll.egp')}</td>
                                                 <td style={s.td}>
-                                                    <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-                                                        <Button variant="ghost" size="sm" onClick={() => setSelectedSlip(emp)}><Eye size={14} /> View</Button>
+                                                    <div style={{ display: 'flex', gap: 'var(--space-2)', flexDirection: lang === 'ar' ? 'row-reverse' : 'row', justifyContent: lang === 'ar' ? 'flex-end' : 'flex-start' }}>
+                                                        <Button variant="ghost" size="sm" onClick={() => setSelectedSlip(emp)}><Eye size={14} className={lang === 'ar' ? 'ml-1' : 'mr-1'} /> {t('payroll.btnView')}</Button>
                                                         <Button variant="ghost" size="sm"><Download size={14} /></Button>
                                                     </div>
                                                 </td>
@@ -456,23 +465,23 @@ export default function PayrollPage() {
                 const emp = employees.find(e => e.id === confirmPay)!;
                 const net = emp.baseSalary + emp.commission + emp.bonus - emp.deductions;
                 return (
-                    <Modal open onClose={() => setConfirmPay(null)} title="Confirm Payout">
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                            <div style={{ background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-4)' }}>
+                    <Modal open onClose={() => setConfirmPay(null)} title={t('payroll.confirmPayout')}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
+                            <div style={{ background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-4)', textAlign: lang === 'ar' ? 'right' : 'left' }}>
                                 <div style={{ fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-2)' }}>{emp.name}</div>
                                 <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>{emp.dept} · {emp.position}</div>
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', fontSize: 'var(--text-sm)' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Base Salary</span><span>{emp.baseSalary.toLocaleString()} EGP</span></div>
-                                {emp.commission > 0 && <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Commission</span><span>{emp.commission.toLocaleString()} EGP</span></div>}
-                                {emp.bonus > 0 && <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Bonus</span><span>{emp.bonus.toLocaleString()} EGP</span></div>}
-                                <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-error)' }}><span>Deductions</span><span>-{emp.deductions.toLocaleString()} EGP</span></div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'var(--font-bold)', borderTop: '1px solid var(--border-color)', paddingTop: 'var(--space-2)', marginTop: 'var(--space-1)' }}><span>Net Pay</span><span>{net.toLocaleString()} EGP</span></div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>{t('payroll.colBase')}</span><span>{emp.baseSalary.toLocaleString()} {t('payroll.egp')}</span></div>
+                                {emp.commission > 0 && <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>{t('payroll.colCommission')}</span><span>{emp.commission.toLocaleString()} {t('payroll.egp')}</span></div>}
+                                {emp.bonus > 0 && <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>{t('payroll.colBonus')}</span><span>{emp.bonus.toLocaleString()} {t('payroll.egp')}</span></div>}
+                                <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-error)' }}><span>{t('payroll.colDeductions')}</span><span>-{emp.deductions.toLocaleString()} {t('payroll.egp')}</span></div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'var(--font-bold)', borderTop: '1px solid var(--border-color)', paddingTop: 'var(--space-2)', marginTop: 'var(--space-1)' }}><span>{t('payroll.colNetPay')}</span><span>{net.toLocaleString()} {t('payroll.egp')}</span></div>
                             </div>
-                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>Payment to: {(() => { const pm = getDefaultPm(confirmPay); return pm ? `${pm.type} — ${pm.label} ${pm.details}` : 'No payment method set'; })()}</div>
-                            <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
-                                <Button variant="outline" onClick={() => setConfirmPay(null)}>Cancel</Button>
-                                <Button variant="primary" onClick={() => handlePay(confirmPay)}><CheckCircle size={16} /> Confirm & Pay</Button>
+                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('payroll.paymentTo')} {(() => { const pm = getDefaultPm(confirmPay); return pm ? `${pm.type === 'Bank Transfer' ? t('payroll.typeBankTrans') : pm.type === 'Cash' ? t('payroll.typeCashVal') : pm.type === 'Mobile Wallet' ? t('payroll.typeWalletVal') : pm.type === 'Check' ? t('payroll.typeCheckVal') : pm.type} — ${pm.label} ${pm.details}` : t('payroll.noMethodSet'); })()}</div>
+                            <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: lang === 'ar' ? 'flex-start' : 'flex-end', flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}>
+                                <Button variant="outline" onClick={() => setConfirmPay(null)}>{t('payroll.btnCancel')}</Button>
+                                <Button variant="primary" onClick={() => handlePay(confirmPay)}><CheckCircle size={16} className={lang === 'ar' ? 'ml-1' : 'mr-1'} /> {t('payroll.btnConfirmPay')}</Button>
                             </div>
                         </div>
                     </Modal>
@@ -484,63 +493,63 @@ export default function PayrollPage() {
                 const emp = selectedSlip;
                 const net = emp.baseSalary + emp.commission + emp.bonus - emp.deductions;
                 return (
-                    <SlideOver open onClose={() => setSelectedSlip(null)} title="Pay Slip">
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+                    <SlideOver open onClose={() => setSelectedSlip(null)} title={t('payroll.slipTitle')}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
                             {/* Header */}
                             <div style={{ textAlign: 'center', paddingBottom: 'var(--space-4)', borderBottom: '2px solid var(--color-primary-500)' }}>
                                 <div style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--font-bold)', color: 'var(--color-primary-600)' }}>HAGZY</div>
-                                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: 'var(--space-1)' }}>Pay Slip — {monthLabel}</div>
+                                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: 'var(--space-1)' }}>{t('payroll.slipHeader')}{monthLabel}</div>
                             </div>
 
                             {/* Employee Info */}
                             <div style={s.slipSection}>
-                                <div style={s.slipLabel}>Employee Details</div>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)', fontSize: 'var(--text-sm)' }}>
-                                    <div><span style={{ color: 'var(--text-tertiary)' }}>Name:</span> {emp.name}</div>
-                                    <div><span style={{ color: 'var(--text-tertiary)' }}>ID:</span> {emp.id}</div>
-                                    <div><span style={{ color: 'var(--text-tertiary)' }}>Department:</span> {emp.dept}</div>
-                                    <div><span style={{ color: 'var(--text-tertiary)' }}>Position:</span> {emp.position}</div>
+                                <div style={{ ...s.slipLabel as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('payroll.slipEmpDetails')}</div>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)', fontSize: 'var(--text-sm)', textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                    <div><span style={{ color: 'var(--text-tertiary)' }}>{t('payroll.slipName')}</span> {emp.name}</div>
+                                    <div><span style={{ color: 'var(--text-tertiary)' }}>{t('payroll.slipId')}</span> {emp.id}</div>
+                                    <div><span style={{ color: 'var(--text-tertiary)' }}>{t('payroll.slipDept')}</span> {emp.dept}</div>
+                                    <div><span style={{ color: 'var(--text-tertiary)' }}>{t('payroll.slipPos')}</span> {emp.position}</div>
                                 </div>
                             </div>
 
                             {/* Earnings */}
                             <div style={s.slipSection}>
-                                <div style={s.slipLabel}>Earnings</div>
-                                <div style={s.slipRow}><span>Basic Salary</span><span style={{ fontWeight: 'var(--font-semibold)' }}>{emp.baseSalary.toLocaleString()} EGP</span></div>
-                                {emp.commission > 0 && <div style={s.slipRow}><span>Commission (Feb 2026)</span><span style={{ fontWeight: 'var(--font-semibold)' }}>{emp.commission.toLocaleString()} EGP</span></div>}
-                                {emp.bonus > 0 && <div style={s.slipRow}><span>Performance Bonus</span><span style={{ fontWeight: 'var(--font-semibold)' }}>{emp.bonus.toLocaleString()} EGP</span></div>}
-                                <div style={{ ...s.slipRow, fontWeight: 'var(--font-semibold)', color: 'var(--color-success)' }}>
-                                    <span>Total Earnings</span><span>{(emp.baseSalary + emp.commission + emp.bonus).toLocaleString()} EGP</span>
+                                <div style={{ ...s.slipLabel as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('payroll.slipEarnings')}</div>
+                                <div style={{ ...s.slipRow as React.CSSProperties, flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}><span>{t('payroll.slipBasic')}</span><span style={{ fontWeight: 'var(--font-semibold)' }}>{emp.baseSalary.toLocaleString()} {t('payroll.egp')}</span></div>
+                                {emp.commission > 0 && <div style={{ ...s.slipRow as React.CSSProperties, flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}><span>{t('payroll.slipCommFeb')}</span><span style={{ fontWeight: 'var(--font-semibold)' }}>{emp.commission.toLocaleString()} {t('payroll.egp')}</span></div>}
+                                {emp.bonus > 0 && <div style={{ ...s.slipRow as React.CSSProperties, flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}><span>{t('payroll.slipPerfBonus')}</span><span style={{ fontWeight: 'var(--font-semibold)' }}>{emp.bonus.toLocaleString()} {t('payroll.egp')}</span></div>}
+                                <div style={{ ...s.slipRow, fontWeight: 'var(--font-semibold)', color: 'var(--color-success)', flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}>
+                                    <span>{t('payroll.slipTotalEarnings')}</span><span>{(emp.baseSalary + emp.commission + emp.bonus).toLocaleString()} {t('payroll.egp')}</span>
                                 </div>
                             </div>
 
                             {/* Deductions */}
                             <div style={s.slipSection}>
-                                <div style={s.slipLabel}>Deductions</div>
-                                <div style={s.slipRow}><span>Social Insurance</span><span style={{ color: 'var(--color-error)' }}>-{Math.round(emp.deductions * 0.6).toLocaleString()} EGP</span></div>
-                                <div style={s.slipRow}><span>Tax</span><span style={{ color: 'var(--color-error)' }}>-{Math.round(emp.deductions * 0.3).toLocaleString()} EGP</span></div>
-                                <div style={s.slipRow}><span>Other</span><span style={{ color: 'var(--color-error)' }}>-{Math.round(emp.deductions * 0.1).toLocaleString()} EGP</span></div>
-                                <div style={{ ...s.slipRow, fontWeight: 'var(--font-semibold)', color: 'var(--color-error)' }}>
-                                    <span>Total Deductions</span><span>-{emp.deductions.toLocaleString()} EGP</span>
+                                <div style={{ ...s.slipLabel as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('payroll.slipDeductions')}</div>
+                                <div style={{ ...s.slipRow as React.CSSProperties, flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}><span>{t('payroll.slipSocial')}</span><span style={{ color: 'var(--color-error)' }}>-{Math.round(emp.deductions * 0.6).toLocaleString()} {t('payroll.egp')}</span></div>
+                                <div style={{ ...s.slipRow as React.CSSProperties, flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}><span>{t('payroll.slipTax')}</span><span style={{ color: 'var(--color-error)' }}>-{Math.round(emp.deductions * 0.3).toLocaleString()} {t('payroll.egp')}</span></div>
+                                <div style={{ ...s.slipRow as React.CSSProperties, flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}><span>{t('payroll.slipOther')}</span><span style={{ color: 'var(--color-error)' }}>-{Math.round(emp.deductions * 0.1).toLocaleString()} {t('payroll.egp')}</span></div>
+                                <div style={{ ...s.slipRow, fontWeight: 'var(--font-semibold)', color: 'var(--color-error)', flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}>
+                                    <span>{t('payroll.slipTotalDeduct')}</span><span>-{emp.deductions.toLocaleString()} {t('payroll.egp')}</span>
                                 </div>
                             </div>
 
                             {/* Net Pay */}
-                            <div style={s.slipTotal}>
-                                <span>NET PAY</span>
-                                <span style={{ color: 'var(--color-primary-600)' }}>{net.toLocaleString()} EGP</span>
+                            <div style={{ ...s.slipTotal as React.CSSProperties, flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}>
+                                <span>{t('payroll.slipNetPay')}</span>
+                                <span style={{ color: 'var(--color-primary-600)' }}>{net.toLocaleString()} {t('payroll.egp')}</span>
                             </div>
 
                             {/* Bank */}
-                            <div style={{ background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-4)', fontSize: 'var(--text-sm)' }}>
-                                <div style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)', marginBottom: 'var(--space-1)' }}>Payment Method</div>
-                                <div style={{ fontWeight: 'var(--font-medium)' }}>{(() => { const pm = getDefaultPm(emp.id); return pm ? `${pm.type} — ${pm.label} ${pm.details}` : 'No method set'; })()}</div>
+                            <div style={{ background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-4)', fontSize: 'var(--text-sm)', textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                <div style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)', marginBottom: 'var(--space-1)' }}>{t('payroll.slipMethod')}</div>
+                                <div style={{ fontWeight: 'var(--font-medium)' }}>{(() => { const pm = getDefaultPm(emp.id); return pm ? `${pm.type === 'Bank Transfer' ? t('payroll.typeBankTrans') : pm.type === 'Cash' ? t('payroll.typeCashVal') : pm.type === 'Mobile Wallet' ? t('payroll.typeWalletVal') : pm.type === 'Check' ? t('payroll.typeCheckVal') : pm.type} — ${pm.label} ${pm.details}` : t('payroll.noMethodSet'); })()}</div>
                             </div>
 
                             {/* Actions */}
-                            <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-                                <Button variant="outline" style={{ flex: 1 }}><Download size={16} /> Download PDF</Button>
-                                <Button variant="outline" style={{ flex: 1 }} onClick={() => setSelectedSlip(null)}>Close</Button>
+                            <div style={{ display: 'flex', gap: 'var(--space-3)', flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}>
+                                <Button variant="outline" style={{ flex: 1 }}><Download size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('payroll.btnDownload')}</Button>
+                                <Button variant="outline" style={{ flex: 1 }} onClick={() => setSelectedSlip(null)}>{t('payroll.btnClose')}</Button>
                             </div>
                         </div>
                     </SlideOver>
@@ -552,56 +561,56 @@ export default function PayrollPage() {
                 const emp = employees.find(e => e.id === pmEmpId)!;
                 const methods = paymentMethods[pmEmpId] || [];
                 return (
-                    <SlideOver open onClose={() => { setPmEmpId(null); setPmShowForm(false); setPmEditing(null); }} title={`Payment Methods — ${emp.name}`}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    <SlideOver open onClose={() => { setPmEmpId(null); setPmShowForm(false); setPmEditing(null); }} title={`${t('payroll.pmTitle')}${emp.name}`}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
                             {/* Existing Methods */}
-                            {methods.length === 0 && <div style={{ padding: 'var(--space-6)', textAlign: 'center', color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)' }}>No payment methods yet</div>}
+                            {methods.length === 0 && <div style={{ padding: 'var(--space-6)', textAlign: 'center', color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)' }}>{t('payroll.pmEmpty')}</div>}
                             {methods.map(m => (
-                                <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', padding: 'var(--space-3)', background: m.isDefault ? 'var(--color-primary-50)' : 'var(--bg-secondary)', border: `1px solid ${m.isDefault ? 'var(--color-primary-200)' : 'var(--border-color)'}`, borderRadius: 'var(--radius-lg)' }}>
+                                <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', padding: 'var(--space-3)', background: m.isDefault ? 'var(--color-primary-50)' : 'var(--bg-secondary)', border: `1px solid ${m.isDefault ? 'var(--color-primary-200)' : 'var(--border-color)'}`, borderRadius: 'var(--radius-lg)', textAlign: lang === 'ar' ? 'right' : 'left' }}>
                                     <div style={{ width: 36, height: 36, borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>{pmTypeIcon(m.type)}</div>
                                     <div style={{ flex: 1 }}>
                                         <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                                             {m.label}
-                                            {m.isDefault && <Badge color="primary" size="sm">Default</Badge>}
+                                            {m.isDefault && <Badge color="primary" size="sm">{t('payroll.pmDefault')}</Badge>}
                                         </div>
-                                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{m.type} · {m.details}</div>
+                                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{m.type === 'Bank Transfer' ? t('payroll.typeBankTrans') : m.type === 'Cash' ? t('payroll.typeCashVal') : m.type === 'Mobile Wallet' ? t('payroll.typeWalletVal') : m.type === 'Check' ? t('payroll.typeCheckVal') : m.type} · {m.details}</div>
                                     </div>
                                     <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
-                                        {!m.isDefault && <button onClick={() => handleSetDefaultPm(pmEmpId, m.id)} title="Set as default" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--text-tertiary)' }}><Star size={14} /></button>}
-                                        <button onClick={() => { setPmEditing(m); setPmForm({ type: m.type, label: m.label, details: m.details }); setPmShowForm(true); }} title="Edit" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--text-tertiary)' }}><Edit size={14} /></button>
-                                        <button onClick={() => handleDeletePm(pmEmpId, m.id)} title="Remove" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--color-error)' }}><Trash2 size={14} /></button>
+                                        {!m.isDefault && <button onClick={() => handleSetDefaultPm(pmEmpId, m.id)} title={t('payroll.pmDefault')} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--text-tertiary)' }}><Star size={14} /></button>}
+                                        <button onClick={() => { setPmEditing(m); setPmForm({ type: m.type, label: m.label, details: m.details }); setPmShowForm(true); }} title={t('payroll.pmEdit')} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--text-tertiary)' }}><Edit size={14} /></button>
+                                        <button onClick={() => handleDeletePm(pmEmpId, m.id)} title={t('payroll.toastPmRemoved')} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--color-error)' }}><Trash2 size={14} /></button>
                                     </div>
                                 </div>
                             ))}
 
                             {/* Add / Edit Form */}
                             {pmShowForm ? (
-                                <div style={{ border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-4)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-                                    <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)' }}>{pmEditing ? 'Edit Payment Method' : 'Add Payment Method'}</div>
+                                <div style={{ border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-4)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                    <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)' }}>{pmEditing ? t('payroll.pmEdit') : t('payroll.pmAdd')}</div>
                                     <div>
-                                        <label style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', display: 'block', marginBottom: 4 }}>Type</label>
-                                        <select value={pmForm.type} onChange={e => setPmForm(p => ({ ...p, type: e.target.value as PaymentMethod['type'] }))} style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}>
-                                            <option value="Bank Transfer">Bank Transfer</option>
-                                            <option value="Cash">Cash</option>
-                                            <option value="Mobile Wallet">Mobile Wallet</option>
-                                            <option value="Check">Check</option>
+                                        <label style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', display: 'block', marginBottom: 4 }}>{t('payroll.pmType')}</label>
+                                        <select value={pmForm.type} onChange={e => setPmForm(p => ({ ...p, type: e.target.value as PaymentMethod['type'] }))} style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)', textAlign: lang === 'ar' ? 'right' : 'left', direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
+                                            <option value="Bank Transfer">{t('payroll.typeBankTrans')}</option>
+                                            <option value="Cash">{t('payroll.typeCashVal')}</option>
+                                            <option value="Mobile Wallet">{t('payroll.typeWalletVal')}</option>
+                                            <option value="Check">{t('payroll.typeCheckVal')}</option>
                                         </select>
                                     </div>
                                     <div>
-                                        <label style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', display: 'block', marginBottom: 4 }}>Label</label>
-                                        <input value={pmForm.label} onChange={e => setPmForm(p => ({ ...p, label: e.target.value }))} placeholder={pmForm.type === 'Bank Transfer' ? 'e.g. CIB Savings' : pmForm.type === 'Mobile Wallet' ? 'e.g. Vodafone Cash' : 'Name'} style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }} />
+                                        <label style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', display: 'block', marginBottom: 4 }}>{t('payroll.pmLabel')}</label>
+                                        <input value={pmForm.label} onChange={e => setPmForm(p => ({ ...p, label: e.target.value }))} placeholder={pmForm.type === 'Bank Transfer' ? t('payroll.pmPlaceholderBank') : pmForm.type === 'Mobile Wallet' ? t('payroll.pmPlaceholderWallet') : t('payroll.pmPlaceholderName')} style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)', textAlign: lang === 'ar' ? 'right' : 'left' }} />
                                     </div>
                                     <div>
-                                        <label style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', display: 'block', marginBottom: 4 }}>Details</label>
-                                        <input value={pmForm.details} onChange={e => setPmForm(p => ({ ...p, details: e.target.value }))} placeholder={pmForm.type === 'Bank Transfer' ? 'Account number' : pmForm.type === 'Mobile Wallet' ? 'Phone number' : 'Details'} style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }} />
+                                        <label style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', display: 'block', marginBottom: 4 }}>{t('payroll.pmDetails')}</label>
+                                        <input value={pmForm.details} onChange={e => setPmForm(p => ({ ...p, details: e.target.value }))} placeholder={pmForm.type === 'Bank Transfer' ? t('payroll.pmPlaceholderAcc') : pmForm.type === 'Mobile Wallet' ? t('payroll.pmPlaceholderPhone') : t('payroll.pmPlaceholderDetails')} style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)', textAlign: lang === 'ar' ? 'right' : 'left' }} />
                                     </div>
-                                    <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end' }}>
-                                        <Button variant="outline" size="sm" onClick={() => { setPmShowForm(false); setPmEditing(null); setPmForm({ type: 'Bank Transfer', label: '', details: '' }); }}>Cancel</Button>
-                                        <Button variant="primary" size="sm" onClick={() => pmEditing ? handleEditPm(pmEmpId) : handleAddPm(pmEmpId)}>{pmEditing ? 'Save Changes' : 'Add Method'}</Button>
+                                    <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: lang === 'ar' ? 'flex-start' : 'flex-end', flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}>
+                                        <Button variant="outline" size="sm" onClick={() => { setPmShowForm(false); setPmEditing(null); setPmForm({ type: 'Bank Transfer', label: '', details: '' }); }}>{t('payroll.btnCancel')}</Button>
+                                        <Button variant="primary" size="sm" onClick={() => pmEditing ? handleEditPm(pmEmpId) : handleAddPm(pmEmpId)}>{pmEditing ? t('payroll.btnSaveChanges') : t('payroll.btnAddMethod')}</Button>
                                     </div>
                                 </div>
                             ) : (
-                                <Button variant="outline" onClick={() => { setPmShowForm(true); setPmEditing(null); setPmForm({ type: 'Bank Transfer', label: '', details: '' }); }} style={{ width: '100%' }}><Plus size={16} /> Add Payment Method</Button>
+                                <Button variant="outline" onClick={() => { setPmShowForm(true); setPmEditing(null); setPmForm({ type: 'Bank Transfer', label: '', details: '' }); }} style={{ width: '100%' }}><Plus size={16} className={lang === 'ar' ? 'ml-1' : 'mr-1'} /> {t('payroll.pmAdd')}</Button>
                             )}
                         </div>
                     </SlideOver>

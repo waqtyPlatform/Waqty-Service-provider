@@ -19,8 +19,9 @@ import {
     X,
     ShoppingCart,
 } from 'lucide-react';
-import { EmptyState, SlideOver, Input, Select, Button, useToast } from '@/components/ui';
+import { EmptyState, SlideOver, Select, Button, useToast } from '@/components/ui';
 import styles from './sales.module.css';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface Service {
     id: string;
@@ -144,6 +145,7 @@ export default function SalesPage() {
 
     const router = useRouter();
     const { addToast } = useToast();
+    const { t } = useTranslation();
 
     // Quick Sale state
     const [isQuickSaleOpen, setIsQuickSaleOpen] = useState(false);
@@ -171,15 +173,15 @@ export default function SalesPage() {
             {/* Header */}
             <div className={styles.header}>
                 <div className={styles.headerLeft}>
-                    <h1>Sales</h1>
-                    <p>Browse services and packages to start a booking or quick sale.</p>
+                    <h1>{t('sales.title')}</h1>
+                    <p>{t('sales.subtitle')}</p>
                 </div>
                 <div className={styles.headerActions}>
                     <button className={styles.btnSecondary} onClick={() => { setCartItem(null); setIsQuickSaleOpen(true); }}>
-                        <ShoppingCart size={16} /> Quick Sale
+                        <ShoppingCart size={16} /> {t('sales.quickSale')}
                     </button>
                     <Link href="/bookings/new" className={styles.btnPrimary}>
-                        <Plus size={16} /> New Booking
+                        <Plus size={16} /> {t('sales.newBooking')}
                     </Link>
                 </div>
             </div>
@@ -190,13 +192,13 @@ export default function SalesPage() {
                     className={`${styles.tab} ${activeTab === 'services' ? styles.tabActive : ''}`}
                     onClick={() => setActiveTab('services')}
                 >
-                    Services
+                    {t('sales.services')}
                 </button>
                 <button
                     className={`${styles.tab} ${activeTab === 'packages' ? styles.tabActive : ''}`}
                     onClick={() => setActiveTab('packages')}
                 >
-                    Packages
+                    {t('sales.packages')}
                 </button>
             </div>
 
@@ -206,7 +208,7 @@ export default function SalesPage() {
                     <Search size={16} className={styles.searchIconInline} />
                     <input
                         className={styles.searchInput}
-                        placeholder={activeTab === 'services' ? 'Search services...' : 'Search packages...'}
+                        placeholder={activeTab === 'services' ? t('sales.searchServices') : t('sales.searchPackages')}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -256,7 +258,7 @@ export default function SalesPage() {
                                                     className={`${styles.serviceBadge} ${service.active ? styles.badgeActive : styles.badgeInactive
                                                         }`}
                                                 >
-                                                    {service.active ? 'Active' : 'Inactive'}
+                                                    {service.active ? t('sales.active') : t('sales.inactive')}
                                                 </span>
                                             </div>
                                             <div className={styles.serviceName}>{service.name}</div>
@@ -276,13 +278,13 @@ export default function SalesPage() {
                                                     className={`${styles.serviceActionBtn} ${styles.bookBtn}`}
                                                     onClick={() => { setCartItem({ name: service.name, price: service.price }); setIsQuickSaleOpen(true); }}
                                                 >
-                                                    Quick Sale
+                                                    {t('sales.quickSale')}
                                                 </button>
                                                 <button
                                                     className={`${styles.serviceActionBtn} ${styles.detailBtn}`}
                                                     onClick={() => router.push('/bookings/new')}
                                                 >
-                                                    Book Now
+                                                    {t('sales.bookNow')}
                                                 </button>
                                             </div>
                                         </div>
@@ -294,8 +296,8 @@ export default function SalesPage() {
                         <div style={{ padding: 'var(--space-12) 0' }}>
                             <EmptyState
                                 icon={<Search size={32} color="var(--text-tertiary)" />}
-                                title="No services found"
-                                description="We couldn't find any services matching your search."
+                                title={t('sales.noServicesFound')}
+                                description={t('sales.noServicesDesc')}
                             />
                         </div>
                     )}
@@ -337,8 +339,8 @@ export default function SalesPage() {
                         <div style={{ gridColumn: '1 / -1', padding: 'var(--space-12) 0' }}>
                             <EmptyState
                                 icon={<Search size={32} color="var(--text-tertiary)" />}
-                                title="No packages found"
-                                description="We couldn't find any packages matching your search."
+                                title={t('sales.noPackagesFound')}
+                                description={t('sales.noPackagesDesc')}
                             />
                         </div>
                     )}
@@ -349,26 +351,26 @@ export default function SalesPage() {
             <SlideOver
                 open={isQuickSaleOpen}
                 onClose={() => setIsQuickSaleOpen(false)}
-                title="Quick Sale (POS)"
+                title={t('sales.quickSalePos')}
                 footer={
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                         {cartItem && (
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'var(--font-bold)', fontSize: 'var(--text-lg)' }}>
-                                <span>Total:</span>
+                                <span>{t('sales.total')}</span>
                                 <span>{cartItem.price.toLocaleString()} EGP</span>
                             </div>
                         )}
-                        <Button style={{ width: '100%' }} onClick={() => { setIsQuickSaleOpen(false); addToast('success', 'Sale processed successfully!'); }}>Checkout via Cash</Button>
-                        <Button variant="ghost" style={{ width: '100%', border: '1px solid var(--border-color)' }} onClick={() => { setIsQuickSaleOpen(false); addToast('success', 'Card payment processed successfully!'); }}>Checkout via Card</Button>
+                        <Button style={{ width: '100%' }} onClick={() => { setIsQuickSaleOpen(false); addToast('success', t('sales.successCash')); }}>{t('sales.checkoutCash')}</Button>
+                        <Button variant="ghost" style={{ width: '100%', border: '1px solid var(--border-color)' }} onClick={() => { setIsQuickSaleOpen(false); addToast('success', t('sales.successCard')); }}>{t('sales.checkoutCard')}</Button>
                     </div>
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Select label="Select Client (Optional)" options={[{ label: 'Walk-in Client', value: 'walkin' }, { label: 'Fatima Al-Rashid', value: 'C001' }, { label: 'Aisha Mohammed', value: 'C002' }]} />
-                    <Select label="Select Employee" options={[{ label: 'Sara Ahmed', value: 'E001' }, { label: 'Nora Ali', value: 'E002' }]} />
+                    <Select label={t('sales.selectClient')} options={[{ label: t('sales.walkInClient'), value: 'walkin' }, { label: 'Fatima Al-Rashid', value: 'C001' }, { label: 'Aisha Mohammed', value: 'C002' }]} />
+                    <Select label={t('sales.selectEmployee')} options={[{ label: 'Sara Ahmed', value: 'E001' }, { label: 'Nora Ali', value: 'E002' }]} />
 
                     <div style={{ borderTop: '1px solid var(--border-color)', margin: 'var(--space-4) 0', paddingTop: 'var(--space-4)' }}>
-                        <div style={{ fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-3)' }}>Cart Items</div>
+                        <div style={{ fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-3)' }}>{t('sales.cartItems')}</div>
                         {cartItem ? (
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--space-3)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)' }}>
                                 <div>
@@ -380,7 +382,7 @@ export default function SalesPage() {
                         ) : (
                             <div style={{ padding: 'var(--space-6)', textAlign: 'center', color: 'var(--text-tertiary)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', border: '1px dashed var(--border-color)' }}>
                                 <ShoppingCart size={24} style={{ opacity: 0.5, margin: '0 auto var(--space-2)' }} />
-                                <div style={{ fontSize: 'var(--text-sm)' }}>Cart is empty.<br />Browse services to add.</div>
+                                <div style={{ fontSize: 'var(--text-sm)' }}>{t('sales.cartEmpty')}</div>
                             </div>
                         )}
                     </div>

@@ -2,8 +2,9 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Users, Plus, Search, Edit, Trash2, Percent } from 'lucide-react';
+import { Users, Plus, Search, Edit, Trash2 } from 'lucide-react';
 import { useToast, Modal, Input, Button, Select } from '@/components/ui';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const groups = [
     { id: 1, name: 'VIP Clients', members: 24, discount: 15, color: '#F59E0B', description: 'High-value repeat clients with priority booking', status: 'active' },
@@ -40,6 +41,7 @@ const s: Record<string, React.CSSProperties> = {
 
 export default function CustomerGroupsPage() {
     const { addToast } = useToast();
+    const { t, lang } = useTranslation();
     const [search, setSearch] = useState('');
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
@@ -49,45 +51,45 @@ export default function CustomerGroupsPage() {
     const filtered = groups.filter(g => g.name.toLowerCase().includes(search.toLowerCase()));
 
     return (
-        <div style={s.page}>
-            <div style={s.tabs}>
-                <Link href="/customers" style={s.tab}>Clients</Link>
-                <Link href="/customers/groups" style={{ ...s.tab, ...s.tabActive }}>Groups</Link>
-                <Link href="/customers/statements" style={s.tab}>Statements</Link>
-                <Link href="/customers/last-visits" style={s.tab}>Last Visits</Link>
+        <div style={{ ...s.page, direction: lang === 'ar' ? 'rtl' : 'ltr' } as React.CSSProperties}>
+            <div style={s.tabs as React.CSSProperties}>
+                <Link href="/customers" style={s.tab as React.CSSProperties}>{t('custGroups.tabClients')}</Link>
+                <Link href="/customers/groups" style={{ ...s.tab, ...s.tabActive } as React.CSSProperties}>{t('custGroups.tabGroups')}</Link>
+                <Link href="/customers/statements" style={s.tab as React.CSSProperties}>{t('custGroups.tabStatements')}</Link>
+                <Link href="/customers/last-visits" style={s.tab as React.CSSProperties}>{t('custGroups.tabLastVisits')}</Link>
             </div>
 
-            <div style={s.toolbar}>
+            <div style={s.toolbar as React.CSSProperties}>
                 <div style={s.searchBox as React.CSSProperties}>
-                    <Search size={16} style={s.searchIcon as React.CSSProperties} />
-                    <input style={s.searchInput} placeholder="Search groups..." value={search} onChange={e => setSearch(e.target.value)} />
+                    <Search size={16} style={{ ...s.searchIcon, ...(lang === 'ar' ? { right: 12, left: 'auto' } : { left: 12, right: 'auto' }) } as React.CSSProperties} />
+                    <input style={{ ...s.searchInput, ...(lang === 'ar' ? { paddingRight: 40, paddingLeft: 12 } : { paddingLeft: 40, paddingRight: 12 }) } as React.CSSProperties} placeholder={t('custGroups.searchPlaceholder')} value={search} onChange={e => setSearch(e.target.value)} />
                 </div>
-                <button style={s.addBtn} onClick={() => setIsAddOpen(true)}><Plus size={16} /> New Group</button>
+                <button style={s.addBtn as React.CSSProperties} onClick={() => setIsAddOpen(true)}><Plus size={16} /> {t('custGroups.newGroup')}</button>
             </div>
 
-            <div style={s.grid}>
+            <div style={s.grid as React.CSSProperties}>
                 {filtered.map(g => (
-                    <div key={g.id} style={s.card}>
-                        <div style={s.cardHead}>
-                            <div style={{ ...s.icon, background: g.color }}><Users size={20} /></div>
+                    <div key={g.id} style={s.card as React.CSSProperties}>
+                        <div style={s.cardHead as React.CSSProperties}>
+                            <div style={{ ...s.icon, background: g.color } as React.CSSProperties}><Users size={20} /></div>
                             <div>
-                                <div style={s.cardTitle}>{g.name}</div>
-                                <div style={s.cardDesc}>{g.description}</div>
+                                <div style={s.cardTitle as React.CSSProperties}>{g.name}</div>
+                                <div style={s.cardDesc as React.CSSProperties}>{g.description}</div>
                             </div>
                         </div>
                         <div style={s.cardBody as React.CSSProperties}>
                             <div style={s.stat as React.CSSProperties}>
-                                <div style={s.statVal}>{g.members}</div>
-                                <div style={s.statLbl}>Members</div>
+                                <div style={s.statVal as React.CSSProperties}>{g.members}</div>
+                                <div style={s.statLbl as React.CSSProperties}>{t('custGroups.members')}</div>
                             </div>
                             <div style={s.stat as React.CSSProperties}>
-                                <div style={{ ...s.statVal, color: 'var(--color-primary-600)' }}>{g.discount}%</div>
-                                <div style={s.statLbl}>Discount</div>
+                                <div style={{ ...s.statVal, color: 'var(--color-primary-600)' } as React.CSSProperties}>{g.discount}%</div>
+                                <div style={s.statLbl as React.CSSProperties}>{t('custGroups.discount')}</div>
                             </div>
                         </div>
-                        <div style={s.cardFooter}>
-                            <button style={s.btnIcon} onClick={() => { setSelectedGroup(g); setIsEditOpen(true); }}><Edit size={14} /></button>
-                            <button style={{ ...s.btnIcon, color: 'var(--color-error)' }} onClick={() => { setSelectedGroup(g); setIsDeleteOpen(true); }}><Trash2 size={14} /></button>
+                        <div style={s.cardFooter as React.CSSProperties}>
+                            <button style={s.btnIcon as React.CSSProperties} onClick={() => { setSelectedGroup(g); setIsEditOpen(true); }}><Edit size={14} /></button>
+                            <button style={{ ...s.btnIcon, color: 'var(--color-error)' } as React.CSSProperties} onClick={() => { setSelectedGroup(g); setIsDeleteOpen(true); }}><Trash2 size={14} /></button>
                         </div>
                     </div>
                 ))}
@@ -97,19 +99,19 @@ export default function CustomerGroupsPage() {
             <Modal
                 open={isAddOpen}
                 onClose={() => setIsAddOpen(false)}
-                title="Create New Group"
+                title={t('custGroups.createGroup')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button>
-                        <Button onClick={() => { setIsAddOpen(false); addToast('success', 'Group created successfully'); }}>Save Group</Button>
+                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>{t('custGroups.cancel')}</Button>
+                        <Button onClick={() => { setIsAddOpen(false); addToast('success', t('custGroups.msgCreated')); }}>{t('custGroups.saveGroup')}</Button>
                     </div>
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label="Group Name" placeholder="e.g. VIP Clients" />
-                    <Input label="Description" placeholder="Short description of this group..." />
-                    <Input label="Discount Percentage (%)" type="number" defaultValue={0} />
-                    <Select label="Status" options={[{ label: 'Active', value: 'active' }, { label: 'Draft', value: 'draft' }]} />
+                    <Input label={t('custGroups.groupName')} placeholder="e.g. VIP Clients" />
+                    <Input label={t('custGroups.description')} placeholder="Short description of this group..." />
+                    <Input label={t('custGroups.discountPercent')} type="number" defaultValue={0} />
+                    <Select label={t('custGroups.status')} options={[{ label: t('custGroups.active'), value: 'active' }, { label: t('custGroups.draft'), value: 'draft' }]} />
                 </div>
             </Modal>
 
@@ -117,20 +119,20 @@ export default function CustomerGroupsPage() {
             <Modal
                 open={isEditOpen}
                 onClose={() => { setIsEditOpen(false); setSelectedGroup(null); }}
-                title="Edit Group"
+                title={t('custGroups.editGroup')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>Cancel</Button>
-                        <Button onClick={() => { setIsEditOpen(false); addToast('success', 'Group updated successfully'); }}>Save Changes</Button>
+                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>{t('custGroups.cancel')}</Button>
+                        <Button onClick={() => { setIsEditOpen(false); addToast('success', t('custGroups.msgUpdated')); }}>{t('custGroups.saveChanges')}</Button>
                     </div>
                 }
             >
                 {selectedGroup && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                        <Input label="Group Name" defaultValue={selectedGroup.name} />
-                        <Input label="Description" defaultValue={selectedGroup.description} />
-                        <Input label="Discount Percentage (%)" type="number" defaultValue={selectedGroup.discount} />
-                        <Select label="Status" defaultValue={selectedGroup.status} options={[{ label: 'Active', value: 'active' }, { label: 'Draft', value: 'draft' }]} />
+                        <Input label={t('custGroups.groupName')} defaultValue={selectedGroup.name} />
+                        <Input label={t('custGroups.description')} defaultValue={selectedGroup.description} />
+                        <Input label={t('custGroups.discountPercent')} type="number" defaultValue={selectedGroup.discount} />
+                        <Select label={t('custGroups.status')} defaultValue={selectedGroup.status} options={[{ label: t('custGroups.active'), value: 'active' }, { label: t('custGroups.draft'), value: 'draft' }]} />
                     </div>
                 )}
             </Modal>
@@ -139,17 +141,17 @@ export default function CustomerGroupsPage() {
             <Modal
                 open={isDeleteOpen}
                 onClose={() => { setIsDeleteOpen(false); setSelectedGroup(null); }}
-                title="Delete Group"
+                title={t('custGroups.deleteGroup')}
                 footer={
                     <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
-                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
-                        <Button variant="destructive" onClick={() => { setIsDeleteOpen(false); addToast('error', 'Group deleted permanently'); }}>Confirm Delete</Button>
+                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>{t('custGroups.cancel')}</Button>
+                        <Button variant="destructive" onClick={() => { setIsDeleteOpen(false); addToast('error', t('custGroups.msgDeleted')); }}>{t('custGroups.confirmDelete')}</Button>
                     </div>
                 }
             >
                 <div>
                     <p style={{ color: 'var(--text-secondary)' }}>
-                        Are you sure you want to delete the <strong>{selectedGroup?.name}</strong> group?
+                        {t('custGroups.deleteConfirm')} <strong>{selectedGroup?.name}</strong> {t('custGroups.groupQuestion')}
                     </p>
                 </div>
             </Modal>

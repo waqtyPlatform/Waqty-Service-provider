@@ -11,8 +11,6 @@ import {
     Edit,
     XCircle,
     CheckCircle,
-    AlertTriangle,
-    MapPin,
     Phone,
     Mail
 } from 'lucide-react';
@@ -20,10 +18,10 @@ import {
     Button,
     Badge,
     Stepper,
-    EmptyState,
     useToast
 } from '@/components/ui';
 import styles from './page.module.css';
+import { useTranslation } from '@/hooks/useTranslation';
 
 // Mock Data
 const booking = {
@@ -62,8 +60,9 @@ const currentStep = 1; // Confirmed
 export default function BookingDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = React.use(params);
     const { addToast } = useToast();
+    const { t, lang } = useTranslation();
     return (
-        <div className={styles.page}>
+        <div className={styles.page} style={{ direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
             {/* Header */}
             <div className={styles.header}>
                 <div className={styles.titleGroup}>
@@ -77,16 +76,16 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                 </div>
                 <div className={styles.actions}>
                     <Button variant="outline" onClick={() => addToast('info', 'Printing booking receipt...')}>
-                        <Printer size={16} /> Print
+                        <Printer size={16} /> {t('bk.btnPrint')}
                     </Button>
                     <Button variant="outline" onClick={() => addToast('info', 'Edit mode enabled')}>
-                        <Edit size={16} /> Edit
+                        <Edit size={16} /> {t('bk.btnEdit')}
                     </Button>
                     <Button variant="destructive" onClick={() => addToast('error', 'Booking cancelled successfully')}>
-                        <XCircle size={16} /> Cancel
+                        <XCircle size={16} /> {t('bk.btnCancel2')}
                     </Button>
                     <Button onClick={() => addToast('success', 'Client checked in successfully')}>
-                        <CheckCircle size={16} /> Check In
+                        <CheckCircle size={16} /> {t('bk.btnCheckIn')}
                     </Button>
                 </div>
             </div>
@@ -94,7 +93,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
             {/* Status Bar */}
             <div className={styles.statusBar}>
                 <div className={styles.statusSteps}>
-                    <Stepper steps={steps} current={currentStep} />
+                    <Stepper steps={[t('bk.stepDraft'), t('bk.stepConfirmed'), t('bk.stepArrived'), t('bk.stepInService'), t('bk.stepCompleted')]} current={currentStep} />
                 </div>
             </div>
 
@@ -105,16 +104,16 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                     {/* Services & Items */}
                     <div className={styles.card}>
                         <div className={styles.cardHeader}>
-                            <span className={styles.cardTitle}><Scissors size={18} /> Services & Items</span>
-                            <Button variant="ghost" size="sm" onClick={() => addToast('info', 'Add item dialog opened')}>Add Item</Button>
+                            <span className={styles.cardTitle}><Scissors size={18} /> {t('bk.cardSvcItems')}</span>
+                            <Button variant="ghost" size="sm" onClick={() => addToast('info', 'Add item dialog opened')}>{t('bk.btnAddItem')}</Button>
                         </div>
                         <div className="table-wrapper">
                             <table className="data-table">
                                 <thead>
                                     <tr>
-                                        <th>Item</th>
-                                        <th>Staff / Info</th>
-                                        <th style={{ textAlign: 'right' }}>Price</th>
+                                        <th>{t('bk.thItem2')}</th>
+                                        <th>{t('bk.thStaffInfo')}</th>
+                                        <th style={{ textAlign: lang === 'ar' ? 'left' : 'right' }}>{t('bk.thPrice2')}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -125,7 +124,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                                 {item.duration && <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{item.duration}</div>}
                                             </td>
                                             <td>{item.employee || 'Staff'}</td>
-                                            <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)' }}>{item.price}</td>
+                                            <td style={{ textAlign: lang === 'ar' ? 'left' : 'right', fontFamily: 'var(--font-mono)' }} dir="ltr">{item.price}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -136,40 +135,40 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                     {/* Financial Summary */}
                     <div className={styles.card}>
                         <div className={styles.cardHeader}>
-                            <span className={styles.cardTitle}><CreditCard size={18} /> Payment Summary</span>
+                            <span className={styles.cardTitle}><CreditCard size={18} /> {t('bk.cardPaySummary')}</span>
                             <Badge color={booking.financials.due > 0 ? 'warning' : 'success'}>
-                                {booking.financials.due > 0 ? 'Payment Due' : 'Paid in Full'}
+                                {booking.financials.due > 0 ? t('bk.lblPayDue') : t('bk.lblPaidInFull')}
                             </Badge>
                         </div>
                         <div className={styles.cardBody}>
                             <div className={styles.summaryRow}>
-                                <span>Subtotal</span>
-                                <span>{booking.financials.subtotal.toLocaleString()} EGP</span>
+                                <span>{t('bk.lblSubtotal')}</span>
+                                <span dir="ltr">{booking.financials.subtotal.toLocaleString()} EGP</span>
                             </div>
                             <div className={styles.summaryRow}>
-                                <span style={{ color: 'var(--color-success-600)' }}>Discount ({booking.financials.discountLabel})</span>
-                                <span style={{ color: 'var(--color-success-600)' }}>-{booking.financials.discount.toLocaleString()} EGP</span>
+                                <span style={{ color: 'var(--color-success-600)' }}>{t('bk.lblDiscount')} ({booking.financials.discountLabel})</span>
+                                <span style={{ color: 'var(--color-success-600)' }} dir="ltr">-{booking.financials.discount.toLocaleString()} EGP</span>
                             </div>
                             <div className={styles.summaryRow}>
-                                <span>Tax (14%)</span>
-                                <span>{booking.financials.tax.toLocaleString()} EGP</span>
+                                <span>{t('bk.lblTax')} (14%)</span>
+                                <span dir="ltr">{booking.financials.tax.toLocaleString()} EGP</span>
                             </div>
                             <div className={styles.summaryTotal}>
-                                <span>Total</span>
-                                <span>{booking.financials.total.toLocaleString()} EGP</span>
+                                <span>{t('bk.lblTotal')}</span>
+                                <span dir="ltr">{booking.financials.total.toLocaleString()} EGP</span>
                             </div>
                             <div className={styles.summaryRow} style={{ marginTop: 'var(--space-2)' }}>
-                                <span>Paid (Deposit)</span>
-                                <span>-{booking.financials.paid.toLocaleString()} EGP</span>
+                                <span>{t('bk.lblPaidDeposit')}</span>
+                                <span dir="ltr">-{booking.financials.paid.toLocaleString()} EGP</span>
                             </div>
                             <div className={styles.summaryTotal} style={{ color: 'var(--color-destructive-600)' }}>
-                                <span>Balance Due</span>
-                                <span>{booking.financials.due.toLocaleString()} EGP</span>
+                                <span>{t('bk.lblBalanceDue')}</span>
+                                <span dir="ltr">{booking.financials.due.toLocaleString()} EGP</span>
                             </div>
 
                             <div style={{ marginTop: 'var(--space-5)', display: 'flex', gap: 'var(--space-3)' }}>
                                 <Button fullWidth onClick={() => addToast('success', `Payment of ${booking.financials.due} EGP processed`)}>
-                                    Process Payment ({booking.financials.due})
+                                    {t('bk.btnProcessPayment')} ({booking.financials.due})
                                 </Button>
                             </div>
                         </div>
@@ -181,7 +180,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                     {/* Client Card */}
                     <div className={styles.card}>
                         <div className={styles.cardHeader}>
-                            <span className={styles.cardTitle}><User size={18} /> Client Details</span>
+                            <span className={styles.cardTitle}><User size={18} /> {t('bk.cardClientDetails')}</span>
                             <Button variant="ghost" size="sm" iconOnly onClick={() => addToast('info', 'Edit client profile clicked')}>
                                 <Edit size={14} />
                             </Button>
@@ -191,20 +190,20 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                 <div className={styles.clientAvatar}>{booking.client.avatar}</div>
                                 <div>
                                     <div style={{ fontWeight: 'var(--font-bold)', fontSize: 'var(--text-lg)' }}>{booking.client.name}</div>
-                                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>ID: #{booking.client.id}</div>
+                                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }} dir="ltr">#{booking.client.id} :ID</div>
                                 </div>
                             </div>
 
                             {booking.client.vip && (
                                 <div style={{ marginBottom: 'var(--space-4)' }}>
-                                    <Badge color="amber">VIP Client</Badge>
+                                    <Badge color="amber">{t('bk.lblVipClient')}</Badge>
                                 </div>
                             )}
 
                             <div className={styles.infoRow}>
                                 <Phone size={14} className={styles.infoIcon} />
                                 <div className={styles.infoContent}>
-                                    <span className={styles.infoValue}>{booking.client.phone}</span>
+                                    <span className={styles.infoValue} dir="ltr" style={{ textAlign: lang === 'ar' ? 'right' : 'left', display: 'block' }}>{booking.client.phone}</span>
                                 </div>
                             </div>
                             <div className={styles.infoRow}>
@@ -216,7 +215,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
 
                             {booking.client.notes && (
                                 <div style={{ marginTop: 'var(--space-4)', padding: 'var(--space-3)', background: 'var(--color-warning-light)', borderRadius: 'var(--radius-md)', fontSize: 'var(--text-sm)' }}>
-                                    <strong style={{ color: 'var(--color-warning-dark)' }}>Note:</strong> {booking.client.notes}
+                                    <strong style={{ color: 'var(--color-warning-dark)' }}>{t('bk.lblNote')}:</strong> {booking.client.notes}
                                 </div>
                             )}
                         </div>
@@ -225,7 +224,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                     {/* Timeline Log */}
                     <div className={styles.card}>
                         <div className={styles.cardHeader}>
-                            <span className={styles.cardTitle}><Clock size={16} /> Activity Log</span>
+                            <span className={styles.cardTitle}><Clock size={16} /> {t('bk.cardActivityLog')}</span>
                         </div>
                         <div className={styles.cardBody}>
                             <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>

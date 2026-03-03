@@ -9,24 +9,21 @@ import {
     Calendar,
     CreditCard,
     FileText,
-    Clock,
-    Scissors,
     AlertCircle,
     Star,
     Upload,
     MoreHorizontal,
     Edit,
-    Plus,
-    CheckCircle
+    Plus
 } from 'lucide-react';
 import {
     Tabs,
     Button,
     Badge,
-    KPICard,
     Timeline,
     EmptyState
 } from '@/components/ui';
+import { useTranslation } from '@/hooks/useTranslation';
 import styles from './page.module.css';
 
 // Mock Data
@@ -69,6 +66,7 @@ const sales = [
 
 export default function CustomerProfilePage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = React.use(params);
+    const { t, lang } = useTranslation();
     const [activeTab, setActiveTab] = useState('overview');
 
     const renderOverview = () => (
@@ -76,7 +74,7 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
             <div className={styles.mainPanel}>
                 <div className={styles.card}>
                     <div className={styles.cardHeader}>
-                        <span className={styles.cardTitle}><Calendar size={18} /> Recent Timeline</span>
+                        <span className={styles.cardTitle}><Calendar size={18} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('custProfile.recentTimeline')}</span>
                     </div>
                     <div className={styles.cardBody}>
                         <Timeline events={timelineEvents} />
@@ -85,13 +83,13 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
 
                 <div className={styles.card}>
                     <div className={styles.cardHeader}>
-                        <span className={styles.cardTitle}><AlertCircle size={18} /> Medical & Notes</span>
+                        <span className={styles.cardTitle}><AlertCircle size={18} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('custProfile.medicalNotes')}</span>
                         <Button variant="ghost" size="sm" iconOnly><Edit size={14} /></Button>
                     </div>
                     <div className={styles.cardBody}>
                         <div style={{ padding: 'var(--space-3)', background: 'var(--color-warning-light)', color: 'var(--color-warning-dark)', borderRadius: 'var(--radius-md)', display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-4)' }}>
                             <AlertCircle size={16} style={{ flexShrink: 0, marginTop: 2 }} />
-                            <span style={{ fontSize: 'var(--text-sm)' }}><strong>Allergy Alert:</strong> Latex sensitivity reported on Jan 20, 2024.</span>
+                            <span style={{ fontSize: 'var(--text-sm)' }}><strong>{t('custProfile.allergyAlert')}</strong> Latex sensitivity reported on Jan 20, 2024.</span>
                         </div>
                         <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                             Client prefers evening appointments. Usually requests tea with no sugar.
@@ -104,24 +102,24 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
             <div className={styles.sidePanel}>
                 <div className={styles.card}>
                     <div className={styles.cardHeader}>
-                        <span className={styles.cardTitle}>Contact Info</span>
+                        <span className={styles.cardTitle}>{t('custProfile.contactInfo')}</span>
                     </div>
                     <div className={styles.cardBody}>
                         <div className={styles.infoGrid} style={{ gridTemplateColumns: '1fr', gap: 'var(--space-4)' }}>
                             <div className={styles.infoItem}>
-                                <span className={styles.infoLabel}>Phone</span>
+                                <span className={styles.infoLabel}>{t('custProfile.lblPhone')}</span>
                                 <span className={styles.infoValue} style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Phone size={14} /> {client.phone}</span>
                             </div>
                             <div className={styles.infoItem}>
-                                <span className={styles.infoLabel}>Email</span>
+                                <span className={styles.infoLabel}>{t('custProfile.lblEmail')}</span>
                                 <span className={styles.infoValue} style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Mail size={14} /> {client.email}</span>
                             </div>
                             <div className={styles.infoItem}>
-                                <span className={styles.infoLabel}>Address</span>
+                                <span className={styles.infoLabel}>{t('custProfile.lblAddress')}</span>
                                 <span className={styles.infoValue} style={{ display: 'flex', alignItems: 'center', gap: 4 }}><MapPin size={14} /> {client.address}</span>
                             </div>
                             <div className={styles.infoItem}>
-                                <span className={styles.infoLabel}>Date of Birth</span>
+                                <span className={styles.infoLabel}>{t('custProfile.lblDob')}</span>
                                 <span className={styles.infoValue}>{client.dob}</span>
                             </div>
                         </div>
@@ -130,7 +128,7 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
 
                 <div className={styles.card}>
                     <div className={styles.cardHeader}>
-                        <span className={styles.cardTitle}>Tags</span>
+                        <span className={styles.cardTitle}>{t('custProfile.tags')}</span>
                         <Button variant="ghost" size="sm" iconOnly><Plus size={14} /></Button>
                     </div>
                     <div className={styles.cardBody}>
@@ -150,19 +148,19 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
         <div className={styles.mainPanel}>
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
-                    <span className={styles.cardTitle}>Booking History</span>
-                    <Button size="sm"><Plus size={16} /> New Booking</Button>
+                    <span className={styles.cardTitle}>{t('custProfile.bookingHist')}</span>
+                    <Button size="sm"><Plus size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('custProfile.newBooking')}</Button>
                 </div>
                 <div className="table-wrapper">
                     <table className="data-table">
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>Date</th>
-                                <th>Service</th>
-                                <th>Employee</th>
-                                <th>Price</th>
-                                <th>Status</th>
+                                <th>{t('custProfile.colId')}</th>
+                                <th>{t('custProfile.colDate')}</th>
+                                <th>{t('custProfile.colService')}</th>
+                                <th>{t('custProfile.colEmp')}</th>
+                                <th>{t('custProfile.colPrice')}</th>
+                                <th>{t('custProfile.colStatus')}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -194,17 +192,17 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
         <div className={styles.mainPanel}>
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
-                    <span className={styles.cardTitle}>Purchase History</span>
+                    <span className={styles.cardTitle}>{t('custProfile.purchaseHist')}</span>
                 </div>
                 <div className="table-wrapper">
                     <table className="data-table">
                         <thead>
                             <tr>
-                                <th>Invoice</th>
-                                <th>Date</th>
-                                <th>Items</th>
-                                <th>Total</th>
-                                <th>Status</th>
+                                <th>{t('custProfile.colInvoice')}</th>
+                                <th>{t('custProfile.colDate')}</th>
+                                <th>{t('custProfile.colItems')}</th>
+                                <th>{t('custProfile.colTotal')}</th>
+                                <th>{t('custProfile.colStatus')}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -225,7 +223,7 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
     );
 
     return (
-        <div className={styles.page}>
+        <div className={styles.page} style={{ direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
             {/* Header */}
             <div className={styles.header}>
                 <div className={styles.headerTop}>
@@ -234,38 +232,38 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                         <div className={styles.details}>
                             <h1>
                                 {client.name}
-                                {client.vip && <Star size={20} fill="var(--color-warning)" color="var(--color-warning)" />}
+                                {client.vip && <Star size={20} fill="var(--color-warning)" color="var(--color-warning)" className={lang === 'ar' ? 'mr-2' : 'ml-2'} />}
                             </h1>
                             <div className={styles.meta}>
-                                <span className={styles.metaItem}><User size={14} /> Client #{client.id}</span>
-                                <span className={styles.metaItem}><Calendar size={14} /> Joined {client.joined}</span>
-                                <Badge color="success">Active</Badge>
+                                <span className={styles.metaItem}><User size={14} className={lang === 'ar' ? 'ml-1' : 'mr-1'} /> {t('custProfile.clientNum')}{client.id}</span>
+                                <span className={styles.metaItem}><Calendar size={14} className={lang === 'ar' ? 'ml-1' : 'mr-1'} /> {t('custProfile.joined')} {client.joined}</span>
+                                <Badge color="success">{t('custProfile.activeBadge')}</Badge>
                             </div>
                         </div>
                     </div>
                     <div className={styles.actions}>
                         <Button variant="outline" iconOnly><MoreHorizontal size={20} /></Button>
-                        <Button variant="outline"><Edit size={16} /> Edit Profile</Button>
-                        <Button><Plus size={16} /> New Booking</Button>
+                        <Button variant="outline"><Edit size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('custProfile.editProfile')}</Button>
+                        <Button><Plus size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('custProfile.newBooking')}</Button>
                     </div>
                 </div>
 
                 <div className={styles.headerStats}>
                     <div className={styles.statItem}>
                         <span className={styles.statValue}>{client.stats.visits}</span>
-                        <span className={styles.statLabel}>Visits</span>
+                        <span className={styles.statLabel}>{t('custProfile.statVisits')}</span>
                     </div>
                     <div className={styles.statItem}>
                         <span className={styles.statValue}>{client.stats.spend} EGP</span>
-                        <span className={styles.statLabel}>Total Spend</span>
+                        <span className={styles.statLabel}>{t('custProfile.statSpend')}</span>
                     </div>
                     <div className={styles.statItem}>
                         <span className={styles.statValue}>{client.stats.points}</span>
-                        <span className={styles.statLabel}>Loyalty Pts</span>
+                        <span className={styles.statLabel}>{t('custProfile.statPoints')}</span>
                     </div>
                     <div className={styles.statItem}>
                         <span className={styles.statValue}>{client.stats.lastVisit}</span>
-                        <span className={styles.statLabel}>Last Visit</span>
+                        <span className={styles.statLabel}>{t('custProfile.statLastVisit')}</span>
                     </div>
                 </div>
             </div>
@@ -275,10 +273,10 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                 active={activeTab}
                 onChange={setActiveTab}
                 items={[
-                    { key: 'overview', label: 'Overview', icon: <User size={16} /> },
-                    { key: 'bookings', label: 'Bookings', icon: <Calendar size={16} /> },
-                    { key: 'sales', label: 'Sales', icon: <CreditCard size={16} /> },
-                    { key: 'files', label: 'Files', icon: <FileText size={16} /> },
+                    { key: 'overview', label: t('custProfile.tabOverview'), icon: <User size={16} /> },
+                    { key: 'bookings', label: t('custProfile.tabBookings'), icon: <Calendar size={16} /> },
+                    { key: 'sales', label: t('custProfile.tabSales'), icon: <CreditCard size={16} /> },
+                    { key: 'files', label: t('custProfile.tabFiles'), icon: <FileText size={16} /> },
                 ]}
             />
 
@@ -289,9 +287,9 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
             {activeTab === 'files' && (
                 <EmptyState
                     icon={<Upload size={48} />}
-                    title="No files uploaded"
-                    description="Upload contracts, consent forms, or before/after photos here."
-                    action={<Button variant="outline">Upload File</Button>}
+                    title={t('custProfile.emptyFilesTitle')}
+                    description={t('custProfile.emptyFilesDesc')}
+                    action={<Button variant="outline">{t('custProfile.btnUpload')}</Button>}
                 />
             )}
         </div>

@@ -3,16 +3,12 @@
 import React, { useState } from 'react';
 import {
     Save,
-    MapPin,
-    Phone,
     Clock,
-    CreditCard,
     LayoutGrid,
     Plus,
     Trash2,
     Settings,
-    Building2,
-    CheckCircle
+    Building2
 } from 'lucide-react';
 import {
     Tabs,
@@ -20,8 +16,7 @@ import {
     Input,
     Select,
     Checkbox,
-    Badge,
-    EmptyState
+    Badge
 } from '@/components/ui';
 import styles from './page.module.css';
 

@@ -112,7 +112,7 @@
 
 .searchIcon {
     position: absolute;
-    left: var(--space-3);
+    inset-inline-start: var(--space-3);
     top: 50%;
     transform: translateY(-50%);
     color: var(--text-tertiary);
@@ -479,7 +479,7 @@
     font-size: 10px;
     font-weight: var(--font-semibold);
     margin-top: var(--space-2);
-    margin-right: var(--space-1);
+    margin-inline-end: var(--space-1);
 }
 
 .channelSMS {

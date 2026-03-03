@@ -1,0 +1,407 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - generic [ref=e12]:
+    - complementary [ref=e13]:
+      - generic [ref=e14]:
+        - link "H Hagzy" [ref=e15] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e16]: H
+          - generic [ref=e17]: Hagzy
+        - button "Toggle sidebar" [ref=e18] [cursor=pointer]:
+          - img [ref=e19]
+      - navigation [ref=e21]:
+        - list [ref=e22]:
+          - listitem [ref=e23]:
+            - link "Dashboard" [ref=e24] [cursor=pointer]:
+              - /url: /
+              - img [ref=e26]
+              - generic [ref=e31]: Dashboard
+          - listitem [ref=e32]:
+            - button "Sales (POS)" [ref=e33] [cursor=pointer]:
+              - img [ref=e35]
+              - generic [ref=e38]: Sales (POS)
+              - img [ref=e40]
+          - listitem [ref=e42]:
+            - button "Bookings" [ref=e43] [cursor=pointer]:
+              - img [ref=e45]
+              - generic [ref=e47]: Bookings
+              - img [ref=e49]
+          - listitem [ref=e51]:
+            - button "sidebar.transactions" [ref=e52] [cursor=pointer]:
+              - img [ref=e54]
+              - generic [ref=e57]: sidebar.transactions
+              - img [ref=e59]
+          - listitem [ref=e61]:
+            - button "Returns" [ref=e62] [cursor=pointer]:
+              - img [ref=e64]
+              - generic [ref=e67]: Returns
+              - img [ref=e69]
+          - listitem [ref=e71]:
+            - button "Clients" [ref=e72] [cursor=pointer]:
+              - img [ref=e74]
+              - generic [ref=e79]: Clients
+              - img [ref=e81]
+          - listitem [ref=e83]:
+            - button "Stylists" [ref=e84] [cursor=pointer]:
+              - img [ref=e86]
+              - generic [ref=e98]: Stylists
+              - img [ref=e100]
+          - listitem [ref=e102]:
+            - button "Marketing" [ref=e103] [cursor=pointer]:
+              - img [ref=e105]
+              - generic [ref=e108]: Marketing
+              - img [ref=e110]
+          - listitem [ref=e112]:
+            - link "Reports" [ref=e113] [cursor=pointer]:
+              - /url: /reports
+              - img [ref=e115]
+              - generic [ref=e117]: Reports
+          - listitem [ref=e118]:
+            - button "Settings" [ref=e119] [cursor=pointer]:
+              - img [ref=e121]
+              - generic [ref=e124]: Settings
+              - img [ref=e126]
+    - banner [ref=e128]:
+      - button "Main Branch" [ref=e130] [cursor=pointer]:
+        - img [ref=e131]
+        - generic [ref=e135]: Main Branch
+        - img [ref=e136]
+      - generic [ref=e138]:
+        - img
+        - textbox "Search anything..." [ref=e139]
+        - generic: Ctrl+K
+      - generic [ref=e140]:
+        - button "Toggle theme" [ref=e141] [cursor=pointer]:
+          - img [ref=e142]
+        - button "Toggle language" [ref=e144] [cursor=pointer]:
+          - img [ref=e145]
+          - generic [ref=e149]: ع
+        - button "Notifications" [ref=e150] [cursor=pointer]:
+          - img [ref=e151]
+          - generic [ref=e154]: "3"
+        - button "S Salon Admin admin" [ref=e156] [cursor=pointer]:
+          - generic [ref=e157]: S
+          - generic [ref=e158]:
+            - generic [ref=e159]: Salon Admin
+            - generic [ref=e160]: admin
+          - img [ref=e161]
+    - main [ref=e163]:
+      - generic [ref=e165]:
+        - generic [ref=e166]:
+          - generic [ref=e167]:
+            - heading "Dashboard" [level=1] [ref=e168]
+            - paragraph [ref=e169]: Welcome back! Here's what's happening today.
+          - generic [ref=e170]:
+            - generic [ref=e171]:
+              - button "Today" [ref=e172] [cursor=pointer]
+              - button "This Week" [ref=e173] [cursor=pointer]
+              - button "This Month" [ref=e174] [cursor=pointer]
+              - button "This Quarter" [ref=e175] [cursor=pointer]
+              - button "Custom" [ref=e176] [cursor=pointer]
+            - button "New Booking" [ref=e177] [cursor=pointer]:
+              - img [ref=e178]
+              - text: New Booking
+            - button "Quick Sale" [ref=e181] [cursor=pointer]:
+              - img [ref=e182]
+              - text: Quick Sale
+        - generic [ref=e184]:
+          - generic [ref=e185]:
+            - generic [ref=e186]:
+              - img [ref=e188]
+              - generic [ref=e190]:
+                - img [ref=e191]
+                - text: +12.5%
+            - generic [ref=e194]:
+              - generic [ref=e195]: 12,450EGP
+              - generic [ref=e196]: Total Revenue
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - application
+          - generic [ref=e197]:
+            - generic [ref=e198]:
+              - img [ref=e200]
+              - generic [ref=e202]:
+                - img [ref=e203]
+                - text: +8.2%
+            - generic [ref=e206]:
+              - text: "47"
+              - generic [ref=e207]: Bookings
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - application
+          - generic [ref=e208]:
+            - generic [ref=e209]:
+              - img [ref=e211]
+              - generic [ref=e214]:
+                - img [ref=e215]
+                - text: +25%
+            - generic [ref=e218]:
+              - text: "12"
+              - generic [ref=e219]: New Clients
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - application
+          - generic [ref=e220]:
+            - generic [ref=e221]:
+              - img [ref=e223]
+              - generic [ref=e226]:
+                - img [ref=e227]
+                - text: "-3.1%"
+            - generic [ref=e230]:
+              - text: "38"
+              - generic [ref=e231]: Invoices
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - application
+          - generic [ref=e232]:
+            - generic [ref=e233]:
+              - img [ref=e235]
+              - generic [ref=e238]:
+                - img [ref=e239]
+                - text: "-40%"
+            - generic [ref=e242]:
+              - text: "3"
+              - generic [ref=e243]: Returns
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - application
+        - generic [ref=e244]:
+          - generic [ref=e245]:
+            - generic [ref=e246]:
+              - generic [ref=e247]: Stylists Occupancy
+              - link "View All" [ref=e248] [cursor=pointer]:
+                - /url: /employees
+            - table [ref=e249]:
+              - rowgroup [ref=e250]:
+                - row "Stylist Booked Occupancy Rate" [ref=e251]:
+                  - columnheader "Stylist" [ref=e252]
+                  - columnheader "Booked" [ref=e253]
+                  - columnheader "Occupancy" [ref=e254]
+                  - columnheader "Rate" [ref=e255]
+              - rowgroup [ref=e256]:
+                - row "Sara Ahmed 7 / 9 76%" [ref=e257]:
+                  - cell "Sara Ahmed" [ref=e258]
+                  - cell "7 / 9" [ref=e259]
+                  - cell [ref=e260]
+                  - cell "76%" [ref=e263]:
+                    - generic [ref=e264]: 76%
+                - row "Nora Ali 6 / 9 69%" [ref=e265]:
+                  - cell "Nora Ali" [ref=e266]
+                  - cell "6 / 9" [ref=e267]
+                  - cell [ref=e268]
+                  - cell "69%" [ref=e271]:
+                    - generic [ref=e272]: 69%
+                - row "Layla Hassan 8 / 9 85%" [ref=e273]:
+                  - cell "Layla Hassan" [ref=e274]
+                  - cell "8 / 9" [ref=e275]
+                  - cell [ref=e276]
+                  - cell "85%" [ref=e279]:
+                    - generic [ref=e280]: 85%
+                - row "Reem Mohamed 5 / 9 56%" [ref=e281]:
+                  - cell "Reem Mohamed" [ref=e282]
+                  - cell "5 / 9" [ref=e283]
+                  - cell [ref=e284]
+                  - cell "56%" [ref=e287]:
+                    - generic [ref=e288]: 56%
+                - row "Hana Youssef 4 / 9 39%" [ref=e289]:
+                  - cell "Hana Youssef" [ref=e290]
+                  - cell "4 / 9" [ref=e291]
+                  - cell [ref=e292]
+                  - cell "39%" [ref=e295]:
+                    - generic [ref=e296]: 39%
+          - generic [ref=e297]:
+            - generic [ref=e298]:
+              - generic [ref=e299]: Booking Status
+              - link "Details" [ref=e300] [cursor=pointer]:
+                - /url: /bookings
+            - generic [ref=e301]:
+              - application [ref=e304]
+              - generic [ref=e320]:
+                - generic [ref=e321]: "47"
+                - generic [ref=e322]: Total
+            - generic [ref=e323]:
+              - generic [ref=e324]:
+                - generic [ref=e326]: Confirmed
+                - generic [ref=e327]: "18"
+              - generic [ref=e328]:
+                - generic [ref=e330]: Completed
+                - generic [ref=e331]: "12"
+              - generic [ref=e332]:
+                - generic [ref=e334]: Arrived
+                - generic [ref=e335]: "7"
+              - generic [ref=e336]:
+                - generic [ref=e338]: Unconfirmed
+                - generic [ref=e339]: "5"
+              - generic [ref=e340]:
+                - generic [ref=e342]: Cancelled
+                - generic [ref=e343]: "3"
+              - generic [ref=e344]:
+                - generic [ref=e346]: No-Show
+                - generic [ref=e347]: "2"
+        - generic [ref=e348]:
+          - generic [ref=e349]:
+            - generic [ref=e350]:
+              - generic [ref=e351]: Top Clients
+              - link "View All" [ref=e352] [cursor=pointer]:
+                - /url: /customers
+            - table [ref=e353]:
+              - rowgroup [ref=e354]:
+                - row "# Client Visits Spend" [ref=e355]:
+                  - columnheader "#" [ref=e356]
+                  - columnheader "Client" [ref=e357]
+                  - columnheader "Visits" [ref=e358]
+                  - columnheader "Spend" [ref=e359]
+              - rowgroup [ref=e360]:
+                - row "1 Fatima Al-Rashid 24 8,400 EGP" [ref=e361] [cursor=pointer]:
+                  - cell "1" [ref=e362]:
+                    - generic [ref=e363]: "1"
+                  - cell "Fatima Al-Rashid" [ref=e364]
+                  - cell "24" [ref=e365]
+                  - cell "8,400 EGP" [ref=e366]
+                - row "2 Aisha Mohammed 19 6,250 EGP" [ref=e367] [cursor=pointer]:
+                  - cell "2" [ref=e368]:
+                    - generic [ref=e369]: "2"
+                  - cell "Aisha Mohammed" [ref=e370]
+                  - cell "19" [ref=e371]
+                  - cell "6,250 EGP" [ref=e372]
+                - row "3 Maryam Ibrahim 17 5,800 EGP" [ref=e373] [cursor=pointer]:
+                  - cell "3" [ref=e374]:
+                    - generic [ref=e375]: "3"
+                  - cell "Maryam Ibrahim" [ref=e376]
+                  - cell "17" [ref=e377]
+                  - cell "5,800 EGP" [ref=e378]
+                - row "4 Huda Saleh 15 4,900 EGP" [ref=e379] [cursor=pointer]:
+                  - cell "4" [ref=e380]:
+                    - generic [ref=e381]: "4"
+                  - cell "Huda Saleh" [ref=e382]
+                  - cell "15" [ref=e383]
+                  - cell "4,900 EGP" [ref=e384]
+                - row "5 Noura Ahmed 12 3,600 EGP" [ref=e385] [cursor=pointer]:
+                  - cell "5" [ref=e386]:
+                    - generic [ref=e387]: "5"
+                  - cell "Noura Ahmed" [ref=e388]
+                  - cell "12" [ref=e389]
+                  - cell "3,600 EGP" [ref=e390]
+          - generic [ref=e391]:
+            - generic [ref=e392]:
+              - generic [ref=e393]: Top Stylists
+              - link "View All" [ref=e394] [cursor=pointer]:
+                - /url: /employees
+            - table [ref=e395]:
+              - rowgroup [ref=e396]:
+                - row "# Stylist Bookings Revenue" [ref=e397]:
+                  - columnheader "#" [ref=e398]
+                  - columnheader "Stylist" [ref=e399]
+                  - columnheader "Bookings" [ref=e400]
+                  - columnheader "Revenue" [ref=e401]
+              - rowgroup [ref=e402]:
+                - row "1 Layla Hassan 42 14,200 EGP" [ref=e403] [cursor=pointer]:
+                  - cell "1" [ref=e404]:
+                    - generic [ref=e405]: "1"
+                  - cell "Layla Hassan" [ref=e406]
+                  - cell "42" [ref=e407]
+                  - cell "14,200 EGP" [ref=e408]
+                - row "2 Sara Ahmed 38 12,800 EGP" [ref=e409] [cursor=pointer]:
+                  - cell "2" [ref=e410]:
+                    - generic [ref=e411]: "2"
+                  - cell "Sara Ahmed" [ref=e412]
+                  - cell "38" [ref=e413]
+                  - cell "12,800 EGP" [ref=e414]
+                - row "3 Nora Ali 35 11,500 EGP" [ref=e415] [cursor=pointer]:
+                  - cell "3" [ref=e416]:
+                    - generic [ref=e417]: "3"
+                  - cell "Nora Ali" [ref=e418]
+                  - cell "35" [ref=e419]
+                  - cell "11,500 EGP" [ref=e420]
+                - row "4 Reem Mohamed 30 9,800 EGP" [ref=e421] [cursor=pointer]:
+                  - cell "4" [ref=e422]:
+                    - generic [ref=e423]: "4"
+                  - cell "Reem Mohamed" [ref=e424]
+                  - cell "30" [ref=e425]
+                  - cell "9,800 EGP" [ref=e426]
+                - row "5 Hana Youssef 25 8,100 EGP" [ref=e427] [cursor=pointer]:
+                  - cell "5" [ref=e428]:
+                    - generic [ref=e429]: "5"
+                  - cell "Hana Youssef" [ref=e430]
+                  - cell "25" [ref=e431]
+                  - cell "8,100 EGP" [ref=e432]
+          - generic [ref=e433]:
+            - generic [ref=e434]:
+              - generic [ref=e435]: Top Services
+              - link "View All" [ref=e436] [cursor=pointer]:
+                - /url: /sales
+            - table [ref=e437]:
+              - rowgroup [ref=e438]:
+                - row "# Service Count Revenue" [ref=e439]:
+                  - columnheader "#" [ref=e440]
+                  - columnheader "Service" [ref=e441]
+                  - columnheader "Count" [ref=e442]
+                  - columnheader "Revenue" [ref=e443]
+              - rowgroup [ref=e444]:
+                - row "1 Hair Coloring 58 23,200 EGP" [ref=e445]:
+                  - cell "1" [ref=e446]:
+                    - generic [ref=e447]: "1"
+                  - cell "Hair Coloring" [ref=e448]
+                  - cell "58" [ref=e449]
+                  - cell "23,200 EGP" [ref=e450]
+                - row "2 Keratin Treatment 42 21,000 EGP" [ref=e451]:
+                  - cell "2" [ref=e452]:
+                    - generic [ref=e453]: "2"
+                  - cell "Keratin Treatment" [ref=e454]
+                  - cell "42" [ref=e455]
+                  - cell "21,000 EGP" [ref=e456]
+                - row "3 Facial Treatment 55 16,500 EGP" [ref=e457]:
+                  - cell "3" [ref=e458]:
+                    - generic [ref=e459]: "3"
+                  - cell "Facial Treatment" [ref=e460]
+                  - cell "55" [ref=e461]
+                  - cell "16,500 EGP" [ref=e462]
+                - row "4 Manicure & Pedicure 67 13,400 EGP" [ref=e463]:
+                  - cell "4" [ref=e464]:
+                    - generic [ref=e465]: "4"
+                  - cell "Manicure & Pedicure" [ref=e466]
+                  - cell "67" [ref=e467]
+                  - cell "13,400 EGP" [ref=e468]
+                - row "5 Haircut & Styling 72 10,800 EGP" [ref=e469]:
+                  - cell "5" [ref=e470]:
+                    - generic [ref=e471]: "5"
+                  - cell "Haircut & Styling" [ref=e472]
+                  - cell "72" [ref=e473]
+                  - cell "10,800 EGP" [ref=e474]
+        - generic [ref=e475]:
+          - generic [ref=e476]:
+            - img [ref=e478]
+            - generic [ref=e481]:
+              - heading "47" [level=3] [ref=e482]
+              - paragraph [ref=e483]: Bookings Today
+          - generic [ref=e484]:
+            - img [ref=e486]
+            - generic [ref=e491]:
+              - heading "18" [level=3] [ref=e492]
+              - paragraph [ref=e493]: New Clients
+          - generic [ref=e494]:
+            - img [ref=e496]
+            - generic [ref=e499]:
+              - heading "42,500" [level=3] [ref=e500]
+              - paragraph [ref=e501]: Cash Drawer
+          - generic [ref=e502]:
+            - img [ref=e504]
+            - generic [ref=e506]:
+              - heading "Fatima A." [level=3] [ref=e507]
+              - paragraph [ref=e508]: 🌟 Client of the Month
+```

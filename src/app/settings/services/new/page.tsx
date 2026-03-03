@@ -5,11 +5,6 @@ import {
     ArrowRight,
     ArrowLeft,
     Check,
-    Upload,
-    DollarSign,
-    Clock,
-    Users,
-    FileText,
     Image as ImageIcon
 } from 'lucide-react';
 import {

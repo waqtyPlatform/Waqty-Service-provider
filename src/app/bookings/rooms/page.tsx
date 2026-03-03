@@ -1,19 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
-import Link from 'next/link';
+import React from 'react';
 import {
-    CalendarDays,
-    List,
-    DoorOpen,
-    Plus,
-    Printer,
     ChevronLeft,
     ChevronRight,
     Filter,
 } from 'lucide-react';
 import styles from '../bookings.module.css';
 import BookingsTabs from '../BookingsTabs';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const rooms = [
     { id: 'R1', name: 'Room 1 – VIP', color: '#8B5CF6' },
@@ -59,25 +54,27 @@ const statusColors: Record<string, { bg: string; border: string }> = {
 };
 
 export default function RoomCalendarPage() {
+    const { t, lang } = useTranslation();
+
     return (
-        <div className={styles.bookingsPage}>
+        <div className={styles.bookingsPage} style={{ direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
             {/* Tabs */}
             <BookingsTabs />
 
             {/* Calendar Header */}
             <div className={styles.calendarHeader}>
                 <div className={styles.calendarNav}>
-                    <button className={styles.navBtn}><ChevronLeft size={16} /></button>
+                    <button className={styles.navBtn}><ChevronLeft size={16} style={{ transform: lang === 'ar' ? 'scaleX(-1)' : 'none' }} /></button>
                     <h2 className={styles.calendarDate}>Tuesday, February 17, 2026</h2>
-                    <button className={styles.navBtn}><ChevronRight size={16} /></button>
-                    <button className={styles.todayBtn}>Today</button>
+                    <button className={styles.navBtn}><ChevronRight size={16} style={{ transform: lang === 'ar' ? 'scaleX(-1)' : 'none' }} /></button>
+                    <button className={styles.todayBtn}>{t('bk.tbToday')}</button>
                 </div>
                 <div className={styles.calendarActions}>
                     <div className={styles.viewToggle}>
-                        <button className={`${styles.viewBtn} ${styles.viewBtnActive}`}>Day</button>
-                        <button className={styles.viewBtn}>Week</button>
+                        <button className={`${styles.viewBtn} ${styles.viewBtnActive}`}>{t('bk.tbDay')}</button>
+                        <button className={styles.viewBtn}>{t('bk.tbWeek')}</button>
                     </div>
-                    <button className={styles.filterBtn}><Filter size={14} /> Filters</button>
+                    <button className={styles.filterBtn}><Filter size={14} /> {t('bk.tbFilters')}</button>
                 </div>
             </div>
 
@@ -91,12 +88,13 @@ export default function RoomCalendarPage() {
                     background: 'var(--bg-secondary)',
                 }}>
                     <div style={{ padding: 'var(--space-3) var(--space-4)', fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-xs)', textTransform: 'uppercase', color: 'var(--text-tertiary)' }}>
-                        Time
+                        {t('bk.tbTime')}
                     </div>
                     {rooms.map((room) => (
                         <div key={room.id} style={{
                             padding: 'var(--space-3) var(--space-4)',
-                            borderLeft: '1px solid var(--border-color)',
+                            borderLeft: lang === 'ar' ? 'none' : '1px solid var(--border-color)',
+                            borderRight: lang === 'ar' ? '1px solid var(--border-color)' : 'none',
                             display: 'flex',
                             alignItems: 'center',
                             gap: 'var(--space-2)',
@@ -124,7 +122,8 @@ export default function RoomCalendarPage() {
                                 fontSize: 'var(--text-xs)',
                                 color: 'var(--text-tertiary)',
                                 fontWeight: 'var(--font-medium)',
-                                borderRight: '1px solid var(--border-color)',
+                                borderRight: lang === 'ar' ? 'none' : '1px solid var(--border-color)',
+                                borderLeft: lang === 'ar' ? '1px solid var(--border-color)' : 'none',
                             }}>
                                 {time}
                             </div>
@@ -134,7 +133,8 @@ export default function RoomCalendarPage() {
                                 return (
                                     <div key={room.id} style={{
                                         position: 'relative',
-                                        borderLeft: '1px solid var(--border-color)',
+                                        borderLeft: lang === 'ar' ? 'none' : '1px solid var(--border-color)',
+                                        borderRight: lang === 'ar' ? '1px solid var(--border-color)' : 'none',
                                         padding: '2px',
                                     }}>
                                         {booking && (() => {
@@ -147,7 +147,8 @@ export default function RoomCalendarPage() {
                                                     right: 2,
                                                     height: `calc(${booking.span * 48}px - 4px)`,
                                                     background: sc.bg,
-                                                    borderLeft: `3px solid ${sc.border}`,
+                                                    borderLeft: lang === 'ar' ? 'none' : `3px solid ${sc.border}`,
+                                                    borderRight: lang === 'ar' ? `3px solid ${sc.border}` : 'none',
                                                     borderRadius: 'var(--radius-md)',
                                                     padding: 'var(--space-1) var(--space-2)',
                                                     fontSize: 'var(--text-xs)',

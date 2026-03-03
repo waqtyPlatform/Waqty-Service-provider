@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import {
     TrendingUp,
     Users,
@@ -24,6 +24,7 @@ import {
     Cell,
 } from 'recharts';
 import { Select } from '@/components/ui';
+import { useTranslation } from '@/hooks/useTranslation';
 
 import styles from './reports.module.css';
 
@@ -79,16 +80,17 @@ const s: Record<string, React.CSSProperties> = {
 };
 
 export default function ReportsPage() {
+    const { t, lang } = useTranslation();
     const [dateRange, setDateRange] = useState('6m');
     const [branch, setBranch] = useState('all');
 
     const kpiData = branchData[branch] || branchData.all;
     const revenueData = allRevenueData[dateRange] || allRevenueData['6m'];
 
-    const dateLabel = dateRange === '1m' ? 'This Month' : dateRange === '3m' ? 'Last 3 Months' : 'Last 6 Months';
+    const dateLabel = dateRange === '1m' ? t('reports.thisMonth') : dateRange === '3m' ? t('reports.last3Months') : t('reports.last6Months');
 
     return (
-        <div className={styles.categoryPage}>
+        <div className={styles.categoryPage} style={{ direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
             {/* Filters */}
             <div style={s.filterBar}>
                 <div style={s.filterItem}>
@@ -97,9 +99,9 @@ export default function ReportsPage() {
                         value={dateRange}
                         onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setDateRange(e.target.value)}
                         options={[
-                            { value: '1m', label: 'This Month' },
-                            { value: '3m', label: 'Last 3 Months' },
-                            { value: '6m', label: 'Last 6 Months' },
+                            { value: '1m', label: t('reports.thisMonth') },
+                            { value: '3m', label: t('reports.last3Months') },
+                            { value: '6m', label: t('reports.last6Months') },
                         ]}
                         style={{ width: 160 }}
                     />
@@ -110,10 +112,10 @@ export default function ReportsPage() {
                         value={branch}
                         onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setBranch(e.target.value)}
                         options={[
-                            { value: 'all', label: 'All Branches' },
-                            { value: 'downtown', label: 'Downtown' },
-                            { value: 'mall', label: 'Mall of Arabia' },
-                            { value: 'newcairo', label: 'New Cairo' },
+                            { value: 'all', label: t('reports.allBranches') },
+                            { value: 'downtown', label: t('reports.downtown') },
+                            { value: 'mall', label: t('reports.mall') },
+                            { value: 'newcairo', label: t('reports.newCairo') },
                         ]}
                         style={{ width: 170 }}
                     />
@@ -124,33 +126,33 @@ export default function ReportsPage() {
             <div className={styles.kpiGrid}>
                 <div className={styles.kpiCard}>
                     <div className={styles.kpiIconWrapper} style={{ background: 'var(--color-primary-50)', color: 'var(--color-primary-600)' }}><DollarSign size={22} /></div>
-                    <div><div className={styles.kpiValue}>{kpiData.revenue.toLocaleString()} EGP</div><div className={styles.kpiLabel}>Revenue ({dateLabel})</div></div>
+                    <div><div className={styles.kpiValue} dir="ltr" style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{kpiData.revenue.toLocaleString()} EGP</div><div className={styles.kpiLabel}>{t('reports.kpiRevenue')} ({dateLabel})</div></div>
                 </div>
                 <div className={styles.kpiCard}>
                     <div className={styles.kpiIconWrapper} style={{ background: 'var(--color-info-light)', color: 'var(--color-info)' }}><CalendarDays size={22} /></div>
-                    <div><div className={styles.kpiValue}>{kpiData.bookings}</div><div className={styles.kpiLabel}>Bookings</div></div>
+                    <div><div className={styles.kpiValue}>{kpiData.bookings}</div><div className={styles.kpiLabel}>{t('reports.kpiBookings')}</div></div>
                 </div>
                 <div className={styles.kpiCard}>
                     <div className={styles.kpiIconWrapper} style={{ background: '#EDE9FE', color: '#7C3AED' }}><Users size={22} /></div>
-                    <div><div className={styles.kpiValue}>{kpiData.clients}</div><div className={styles.kpiLabel}>Active Clients</div></div>
+                    <div><div className={styles.kpiValue}>{kpiData.clients}</div><div className={styles.kpiLabel}>{t('reports.kpiActiveClients')}</div></div>
                 </div>
                 <div className={styles.kpiCard}>
                     <div className={styles.kpiIconWrapper} style={{ background: '#FEF3C7', color: '#B45309' }}><TrendingUp size={22} /></div>
-                    <div><div className={styles.kpiValue} style={{ color: 'var(--color-success)' }}>{kpiData.growth}</div><div className={styles.kpiLabel}>Growth MoM</div></div>
+                    <div><div className={styles.kpiValue} style={{ color: 'var(--color-success)', direction: 'ltr', textAlign: lang === 'ar' ? 'right' : 'left' }}>{kpiData.growth}</div><div className={styles.kpiLabel}>{t('reports.kpiGrowth')}</div></div>
                 </div>
             </div>
 
             {/* Charts Row 1 */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: 'var(--space-4)' }}>
                 <div className={styles.chartCard} style={{ display: 'flex', flexDirection: 'column' }}>
-                    <div className={styles.chartTitle}>Revenue vs Expenses ({dateLabel})</div>
+                    <div className={styles.chartTitle}>{t('reports.chartRevVsExp')} ({dateLabel})</div>
                     <div className={styles.chartContainer}>
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={revenueData}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
-                                <XAxis dataKey="month" stroke="var(--text-tertiary)" fontSize={12} tickLine={false} axisLine={false} dy={10} />
-                                <YAxis stroke="var(--text-tertiary)" fontSize={12} tickFormatter={(v: number) => `${v / 1000}K`} tickLine={false} axisLine={false} />
-                                <Tooltip contentStyle={{ borderRadius: 8, border: 'none', boxShadow: 'var(--shadow-lg)' }} />
+                                <XAxis dataKey="month" stroke="var(--text-tertiary)" fontSize={12} tickLine={false} axisLine={false} dy={10} tickFormatter={(v) => t(`reports.${v}`) || v} />
+                                <YAxis stroke="var(--text-tertiary)" fontSize={12} tickFormatter={(v: number) => `${v / 1000}K`} tickLine={false} axisLine={false} orientation={lang === 'ar' ? 'right' : 'left'} />
+                                <Tooltip contentStyle={{ borderRadius: 8, border: 'none', boxShadow: 'var(--shadow-lg)' }} formatter={(value: any, name: any) => [value, t(name === 'Revenue' ? 'reports.revenue' : 'reports.expenses')]} labelFormatter={(label) => t(`reports.${label}`) || label} />
                                 <Area type="monotone" dataKey="revenue" stroke="var(--color-primary-500)" fill="var(--color-primary-100)" strokeWidth={3} name="Revenue" />
                                 <Area type="monotone" dataKey="expenses" stroke="var(--color-error)" fill="var(--color-error-light)" strokeWidth={3} name="Expenses" />
                             </AreaChart>
@@ -159,7 +161,7 @@ export default function ReportsPage() {
                 </div>
 
                 <div className={styles.chartCard}>
-                    <div className={styles.chartTitle}>Revenue by Service</div>
+                    <div className={styles.chartTitle}>{t('reports.chartRevByService')}</div>
                     <div style={{ height: 200, position: 'relative' }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <RPieChart>
@@ -168,7 +170,7 @@ export default function ReportsPage() {
                                         <Cell key={i} fill={entry.color} />
                                     ))}
                                 </Pie>
-                                <Tooltip contentStyle={{ borderRadius: 8, border: 'none', boxShadow: 'var(--shadow-lg)' }} />
+                                <Tooltip contentStyle={{ borderRadius: 8, border: 'none', boxShadow: 'var(--shadow-lg)' }} formatter={(value: any, name: any) => [`${value}%`, t(`reports.srv${name}`) || name]} />
                             </RPieChart>
                         </ResponsiveContainer>
                     </div>
@@ -176,7 +178,7 @@ export default function ReportsPage() {
                         {serviceBreakdown.map((sv) => (
                             <div key={sv.name} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
                                 <span style={{ width: 10, height: 10, borderRadius: '50%', background: sv.color }} />
-                                {sv.name} ({sv.value}%)
+                                {t(`reports.srv${sv.name}`) || sv.name} ({sv.value}%)
                             </div>
                         ))}
                     </div>
@@ -185,14 +187,14 @@ export default function ReportsPage() {
 
             {/* Charts Row 2 */}
             <div className={styles.chartCard}>
-                <div className={styles.chartTitle}>Bookings by Day of Week</div>
+                <div className={styles.chartTitle}>{t('reports.chartBookingsByDay')}</div>
                 <div style={{ height: 260 }}>
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={weeklyBookings}>
                             <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
-                            <XAxis dataKey="day" stroke="var(--text-tertiary)" fontSize={12} tickLine={false} axisLine={false} dy={10} />
-                            <YAxis stroke="var(--text-tertiary)" fontSize={12} tickLine={false} axisLine={false} />
-                            <Tooltip cursor={{ fill: 'var(--bg-secondary)' }} contentStyle={{ borderRadius: 8, border: 'none', boxShadow: 'var(--shadow-lg)' }} />
+                            <XAxis dataKey="day" stroke="var(--text-tertiary)" fontSize={12} tickLine={false} axisLine={false} dy={10} tickFormatter={(v) => t(`reports.day${v}`) || v} />
+                            <YAxis stroke="var(--text-tertiary)" fontSize={12} tickLine={false} axisLine={false} orientation={lang === 'ar' ? 'right' : 'left'} />
+                            <Tooltip cursor={{ fill: 'var(--bg-secondary)' }} contentStyle={{ borderRadius: 8, border: 'none', boxShadow: 'var(--shadow-lg)' }} formatter={(value: any) => [value, t('reports.kpiBookings')]} labelFormatter={(label) => t(`reports.day${label}`) || label} />
                             <Bar dataKey="bookings" fill="var(--color-primary-500)" radius={[4, 4, 0, 0]} barSize={40} name="Bookings" />
                         </BarChart>
                     </ResponsiveContainer>

@@ -18,10 +18,10 @@ import {
     Settings,
     ChevronLeft,
     ChevronDown,
-    ChevronRight,
     X,
 } from 'lucide-react';
 import styles from './Sidebar.module.css';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface NavSubItem {
     label: string;
@@ -35,65 +35,54 @@ interface NavItem {
     children?: NavSubItem[];
 }
 
-const getNavigation = (businessType: 'clinic' | 'salon' | 'barber' = 'salon', role: 'admin' | 'manager' | 'staff' = 'admin'): NavItem[] => {
+const getNavigation = (
+    t: (key: string) => string,
+    businessType: 'clinic' | 'salon' | 'barber' = 'salon',
+    role: 'admin' | 'manager' | 'staff' = 'admin'
+): NavItem[] => {
     const isClinic = businessType === 'clinic';
     const isBarber = businessType === 'barber';
 
-    const bookingsLabel = isClinic || isBarber ? 'Appointments' : 'Bookings';
-    const customersLabel = isClinic ? 'Patients' : 'Clients';
-    const employeesLabel = isClinic ? 'Doctors & Staff' : isBarber ? 'Barbers' : 'Stylists';
+    const bookingsLabel = isClinic || isBarber ? t('sidebar.appointments') : t('sidebar.bookings');
+    const customersLabel = isClinic ? t('sidebar.patients') : t('sidebar.clients');
+    const employeesLabel = isClinic ? t('sidebar.doctors') : isBarber ? t('sidebar.barbers') : t('sidebar.stylists');
 
     const fullNav: NavItem[] = [
         {
-            label: 'Dashboard',
+            label: t('sidebar.dashboard'),
             icon: <LayoutDashboard size={20} />,
             href: '/',
         },
         {
-            label: 'Sales',
+            label: t('sidebar.sales'),
             icon: <ShoppingBag size={20} />,
             children: [
-                { label: 'Services', href: '/sales' },
-                { label: 'Packages', href: '/sales/packages' },
+                { label: t('sidebar.services'), href: '/sales' },
+                { label: t('sidebar.packages'), href: '/sales/packages' },
             ],
         },
         {
             label: bookingsLabel,
             icon: <CalendarDays size={20} />,
             children: [
-                { label: 'Calendar', href: '/bookings' },
-                { label: 'Booking List', href: '/bookings/list' },
-                { label: 'Room Calendar', href: '/bookings/rooms' },
-                { label: 'New Booking', href: '/bookings/new' },
-                { label: 'Print Schedule', href: '/bookings/print' },
+                { label: t('sidebar.calendar'), href: '/bookings' },
+                { label: t('sidebar.bookingList'), href: '/bookings/list' },
+                { label: t('sidebar.newBooking'), href: '/bookings/new' },
             ],
         },
         {
-            label: 'Transactions',
+            label: t('sidebar.transactions'),
             icon: <Receipt size={20} />,
             children: [
-                { label: 'Log', href: '/transactions' },
-                { label: 'Cash Sales', href: '/transactions/cash-sales' },
-                { label: 'Advance Payments', href: '/transactions/advance-payments' },
-                { label: 'Petty Cash', href: '/transactions/petty-cash' },
-                { label: 'Cashier Transfers', href: '/transactions/transfers' },
-                { label: 'Safe Balances', href: '/transactions/safe-balances' },
-                { label: 'Shifts', href: '/transactions/shifts' },
-                { label: 'Dailies', href: '/transactions/dailies' },
-                { label: 'Best Sales', href: '/transactions/best-sales' },
-                { label: 'Client Sales', href: '/transactions/client-sales' },
-                { label: 'Package Sales', href: '/transactions/package-sales' },
-                { label: 'Expenses', href: '/expenses' },
+                { label: t('sidebar.log'), href: '/transactions' },
+                { label: t('sidebar.expenses'), href: '/expenses' },
             ],
         },
         {
-            label: 'Returns',
+            label: t('sidebar.returns'),
             icon: <RotateCcw size={20} />,
             children: [
-                { label: 'Returns List', href: '/returns' },
-                { label: 'Cash Refund', href: '/returns/cash-refund' },
-                { label: 'Petty Cash Refund', href: '/returns/petty-cash-refund' },
-                { label: 'Cancel Down Payment', href: '/returns/cancel-down-payment' },
+                { label: t('sidebar.returns'), href: '/returns' },
             ],
         },
         {
@@ -101,63 +90,39 @@ const getNavigation = (businessType: 'clinic' | 'salon' | 'barber' = 'salon', ro
             icon: <Users size={20} />,
             children: [
                 { label: customersLabel, href: '/customers' },
-                { label: 'Groups', href: '/customers/groups' },
-                { label: 'Statements', href: '/customers/statements' },
-                { label: 'Last Visits', href: '/customers/last-visits' },
+                { label: t('sidebar.groups'), href: '/customers/groups' },
             ],
         },
         {
             label: employeesLabel,
             icon: <UserCog size={20} />,
             children: [
-                { label: `${employeesLabel} List`, href: '/employees' },
-                { label: 'Departments', href: '/employees/departments' },
-                { label: 'Positions', href: '/employees/positions' },
-                { label: 'Branch Management', href: '/employees/branch-management' },
-                { label: 'Transfer Log', href: '/employees/transfers' },
-                { label: 'Fingerprints', href: '/employees/fingerprints' },
-                { label: 'Attend Methods', href: '/employees/attend-methods' },
-                { label: 'Attendance Log', href: '/employees/attendance' },
-                { label: 'Attendance Settings', href: '/employees/attendance-settings' },
-                { label: 'Commissions', href: '/employees/commissions' },
-                { label: 'Commission Settings', href: '/employees/commission-settings' },
-                { label: 'Payroll', href: '/employees/payroll' },
+                { label: employeesLabel, href: '/employees' },
+                { label: t('sidebar.departments'), href: '/employees/departments' },
+                { label: t('sidebar.attendance'), href: '/employees/attendance' },
+                { label: t('sidebar.payroll'), href: '/employees/payroll' },
             ],
         },
         {
-            label: 'Marketing',
+            label: t('sidebar.marketing'),
             icon: <Megaphone size={20} />,
             children: [
-                { label: 'Offers', href: '/marketing/offers' },
-                { label: 'Campaigns', href: '/marketing/packages' },
-                { label: 'Notifications', href: '/marketing/notifications' },
-                { label: 'Promo Codes', href: '/marketing/promo-codes' },
-                { label: 'Message Settings', href: '/marketing/messages' },
-                { label: 'Service Groups', href: '/marketing/service-groups' },
+                { label: t('sidebar.offers'), href: '/marketing/offers' },
+                { label: t('sidebar.campaigns'), href: '/marketing/packages' },
             ],
         },
         {
-            label: 'Reports',
+            label: t('sidebar.reports'),
             icon: <BarChart3 size={20} />,
             href: '/reports',
         },
         {
-            label: 'Settings',
+            label: t('sidebar.settings'),
             icon: <Settings size={20} />,
             children: [
-                { label: 'General', href: '/settings' },
-                { label: 'Branches', href: '/settings/branches' },
-                { label: 'Working Hours', href: '/settings/hours' },
-                { label: 'Services', href: '/settings/services' },
-                { label: 'Invoice', href: '/settings/invoice' },
-                { label: 'Payment Methods', href: '/settings/payment-methods' },
-                { label: 'Safes', href: '/settings/safes' },
-                { label: 'Roles & Permissions', href: '/settings/roles' },
-                { label: 'Appearance', href: '/settings/appearance' },
-                { label: 'Devices', href: '/settings/devices' },
-                { label: 'Integrations', href: '/settings/integrations' },
-                { label: 'Audit Log', href: '/settings/audit-log' },
-                { label: 'Subscription', href: '/settings/subscription' },
+                { label: t('sidebar.general'), href: '/settings' },
+                { label: t('sidebar.branches'), href: '/settings/branches' },
+                { label: t('sidebar.roles'), href: '/settings/roles' },
             ],
         },
     ];
@@ -176,8 +141,9 @@ export default function Sidebar() {
     const { collapsed, toggleSidebar, mobileOpen, setMobileOpen } = useSidebar();
     const { user } = useAuth();
     const pathname = usePathname();
+    const { t } = useTranslation();
 
-    const navigation = getNavigation(user?.businessType, user?.role);
+    const navigation = getNavigation(t, user?.businessType, user?.role);
 
     const [expandedItems, setExpandedItems] = useState<string[]>(() => {
         // Auto-expand the section that matches current path

@@ -6,6 +6,7 @@ import { Button, Input, Textarea } from '@/components/ui';
 import { Save, Check } from 'lucide-react';
 import { useSettings } from '@/contexts/SettingsContext';
 import styles from './settings.module.css';
+import { useTranslation } from '@/hooks/useTranslation';
 
 // Simple Toggle Component (since we don't have a reusable Switch component in ui/index yet, or maybe we do? 
 // Based on previous logs, I saw Button, Input, Select, Textarea in imports. 
@@ -19,6 +20,7 @@ export default function SettingsPage() {
     const { settings, updateSettings } = useSettings();
     const [localSettings, setLocalSettings] = useState(settings);
     const [saved, setSaved] = useState(false);
+    const { t } = useTranslation();
 
     // Sync local state when context settings load/change
     useEffect(() => {
@@ -39,63 +41,63 @@ export default function SettingsPage() {
     return (
         <div className={styles.page}>
             <div className={styles.header}>
-                <h1 className={styles.title}>Settings</h1>
-                <p className={styles.description}>Configure your business, preferences, and integrations.</p>
+                <h1 className={styles.title}>{t('settings.title')}</h1>
+                <p className={styles.description}>{t('settings.desc')}</p>
             </div>
 
             <SettingsTabs />
 
             {/* Business Info Card */}
             <div className={styles.card}>
-                <div className={styles.cardTitle}>Business Information</div>
-                <div className={styles.cardDesc}>Basic details about your salon or spa.</div>
+                <div className={styles.cardTitle}>{t('settings.bizInfo')}</div>
+                <div className={styles.cardDesc}>{t('settings.bizDesc')}</div>
 
                 <div className={styles.formGrid}>
                     <div className={styles.field}>
                         <Input
-                            label="Business Name"
+                            label={t('settings.bizName')}
                             value={localSettings.businessName}
                             onChange={(e) => handleChange('businessName', e.target.value)}
                         />
                     </div>
                     <div className={styles.field}>
                         <Input
-                            label="Legal Name"
+                            label={t('settings.legalName')}
                             value={localSettings.legalName}
                             onChange={(e) => handleChange('legalName', e.target.value)}
                         />
                     </div>
                     <div className={styles.field}>
                         <Input
-                            label="Commercial Registration"
+                            label={t('settings.crNumber')}
                             value={localSettings.crNumber}
                             onChange={(e) => handleChange('crNumber', e.target.value)}
                         />
                     </div>
                     <div className={styles.field}>
                         <Input
-                            label="Tax ID / VAT Number"
+                            label={t('settings.vatNumber')}
                             value={localSettings.vatNumber}
                             onChange={(e) => handleChange('vatNumber', e.target.value)}
                         />
                     </div>
                     <div className={styles.field}>
                         <Textarea
-                            label="Address"
+                            label={t('settings.address')}
                             value={localSettings.address}
                             onChange={(e) => handleChange('address', e.target.value)}
                         />
                     </div>
                     <div className={styles.field}>
                         <Input
-                            label="Phone"
+                            label={t('settings.phone')}
                             value={localSettings.phone}
                             onChange={(e) => handleChange('phone', e.target.value)}
                         />
                     </div>
                     <div className={styles.field}>
                         <Input
-                            label="Email"
+                            label={t('settings.email')}
                             type="email"
                             value={localSettings.email}
                             onChange={(e) => handleChange('email', e.target.value)}
@@ -189,8 +191,8 @@ export default function SettingsPage() {
             </div>
 
             <div className={styles.actions}>
-                <Button onClick={handleSave} className={styles.saveBtn}>
-                    {saved ? <><Check size={16} /> Saved!</> : <><Save size={16} /> Save Changes</>}
+                <Button onClick={handleSave} style={{ width: '100%', maxWidth: '200px' }}>
+                    {saved ? <><Check size={16} /> {t('settings.saved')}</> : <><Save size={16} /> {t('settings.saveChanges')}</>}
                 </Button>
             </div>
         </div>

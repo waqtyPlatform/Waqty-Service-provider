@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Search, Download } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const data = [
     { id: 1, client: 'Fatima Ali', group: 'VIP', opening: 0, credits: 2500, debits: 2180, closing: 320, lastTxn: '2026-02-17' },
@@ -35,42 +36,46 @@ const s: Record<string, React.CSSProperties> = {
 };
 
 export default function StatementsPage() {
+    const { t, lang } = useTranslation();
     const [search, setSearch] = useState('');
     const filtered = data.filter(d => d.client.toLowerCase().includes(search.toLowerCase()));
     const totalClosing = data.reduce((a, d) => a + d.closing, 0);
 
     return (
-        <div style={s.page}>
-            <div style={s.tabs}>
-                <Link href="/customers" style={s.tab}>Clients</Link>
-                <Link href="/customers/groups" style={s.tab}>Groups</Link>
-                <Link href="/customers/statements" style={{ ...s.tab, ...s.tabActive }}>Statements</Link>
-                <Link href="/customers/last-visits" style={s.tab}>Last Visits</Link>
+        <div style={{ ...s.page, direction: lang === 'ar' ? 'rtl' : 'ltr' } as React.CSSProperties}>
+            <div style={s.tabs as React.CSSProperties}>
+                <Link href="/customers" style={s.tab as React.CSSProperties}>{t('custGroups.tabClients')}</Link>
+                <Link href="/customers/groups" style={s.tab as React.CSSProperties}>{t('custGroups.tabGroups')}</Link>
+                <Link href="/customers/statements" style={{ ...s.tab, ...s.tabActive } as React.CSSProperties}>{t('custGroups.tabStatements')}</Link>
+                <Link href="/customers/last-visits" style={s.tab as React.CSSProperties}>{t('custGroups.tabLastVisits')}</Link>
             </div>
 
-            <div style={s.kpis}>
-                <div style={s.kpi}><div style={s.kpiVal}>{totalClosing.toLocaleString()} EGP</div><div style={s.kpiLbl}>Total Outstanding</div></div>
-                <div style={s.kpi}><div style={s.kpiVal}>{data.filter(d => d.closing > 0).length}</div><div style={s.kpiLbl}>Clients with Balance</div></div>
-                <div style={s.kpi}><div style={s.kpiVal}>{data.reduce((a, d) => a + d.credits, 0).toLocaleString()} EGP</div><div style={s.kpiLbl}>Total Credits</div></div>
+            <div style={s.kpis as React.CSSProperties}>
+                <div style={s.kpi as React.CSSProperties}><div style={s.kpiVal as React.CSSProperties}>{totalClosing.toLocaleString()} EGP</div><div style={s.kpiLbl as React.CSSProperties}>{t('custStmts.totalOut')}</div></div>
+                <div style={s.kpi as React.CSSProperties}><div style={s.kpiVal as React.CSSProperties}>{data.filter(d => d.closing > 0).length}</div><div style={s.kpiLbl as React.CSSProperties}>{t('custStmts.clientsBal')}</div></div>
+                <div style={s.kpi as React.CSSProperties}><div style={s.kpiVal as React.CSSProperties}>{data.reduce((a, d) => a + d.credits, 0).toLocaleString()} EGP</div><div style={s.kpiLbl as React.CSSProperties}>{t('custStmts.totalCredits')}</div></div>
             </div>
 
-            <div style={s.toolbar}>
-                <div style={s.searchBox as React.CSSProperties}><Search size={16} style={s.searchIcon as React.CSSProperties} /><input style={s.searchInput} placeholder="Search clients..." value={search} onChange={e => setSearch(e.target.value)} /></div>
-                <button style={s.exportBtn}><Download size={16} /> Export</button>
+            <div style={s.toolbar as React.CSSProperties}>
+                <div style={s.searchBox as React.CSSProperties}>
+                    <Search size={16} style={{ ...s.searchIcon, ...(lang === 'ar' ? { right: 12, left: 'auto' } : { left: 12, right: 'auto' }) } as React.CSSProperties} />
+                    <input style={{ ...s.searchInput, ...(lang === 'ar' ? { paddingRight: 40, paddingLeft: 12 } : { paddingLeft: 40, paddingRight: 12 }) } as React.CSSProperties} placeholder={t('custStmts.searchPlaceholder')} value={search} onChange={e => setSearch(e.target.value)} />
+                </div>
+                <button style={s.exportBtn as React.CSSProperties}><Download size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('custStmts.export')}</button>
             </div>
 
-            <table style={s.table}>
-                <thead><tr>{['Client', 'Group', 'Opening', 'Credits', 'Debits', 'Closing', 'Last Transaction'].map(h => <th key={h} style={s.th as React.CSSProperties}>{h}</th>)}</tr></thead>
+            <table style={s.table as React.CSSProperties}>
+                <thead><tr>{[t('custStmts.colClient'), t('custStmts.colGroup'), t('custStmts.colOpening'), t('custStmts.colCredits'), t('custStmts.colDebits'), t('custStmts.colClosing'), t('custStmts.colLastTxn')].map(h => <th key={h} style={{ ...s.th, textAlign: lang === 'ar' ? 'right' : 'left' } as React.CSSProperties}>{h}</th>)}</tr></thead>
                 <tbody>
                     {filtered.map(row => (
                         <tr key={row.id}>
-                            <td style={{ ...s.td, fontWeight: 'var(--font-medium)' }}>{row.client}</td>
-                            <td style={s.td}>{row.group}</td>
-                            <td style={s.td}>{row.opening} EGP</td>
-                            <td style={{ ...s.td, color: 'var(--color-success)' }}>+{row.credits} EGP</td>
-                            <td style={{ ...s.td, color: 'var(--color-error)' }}>-{row.debits} EGP</td>
-                            <td style={{ ...s.td, fontWeight: 'var(--font-bold)', color: row.closing > 0 ? 'var(--color-warning)' : 'var(--color-success)' }}>{row.closing} EGP</td>
-                            <td style={s.td}>{row.lastTxn}</td>
+                            <td style={{ ...s.td, fontWeight: 'var(--font-medium)' } as React.CSSProperties}>{row.client}</td>
+                            <td style={s.td as React.CSSProperties}>{row.group}</td>
+                            <td style={s.td as React.CSSProperties}>{row.opening} EGP</td>
+                            <td style={{ ...s.td, color: 'var(--color-success)' } as React.CSSProperties} dir="ltr">+{row.credits} EGP</td>
+                            <td style={{ ...s.td, color: 'var(--color-error)' } as React.CSSProperties} dir="ltr">-{row.debits} EGP</td>
+                            <td style={{ ...s.td, fontWeight: 'var(--font-bold)', color: row.closing > 0 ? 'var(--color-warning)' : 'var(--color-success)' } as React.CSSProperties} dir="ltr">{row.closing} EGP</td>
+                            <td style={s.td as React.CSSProperties}>{row.lastTxn}</td>
                         </tr>
                     ))}
                 </tbody>

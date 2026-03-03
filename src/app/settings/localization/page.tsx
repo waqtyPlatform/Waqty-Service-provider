@@ -3,6 +3,7 @@
 import React from 'react';
 import SettingsTabs from '@/components/SettingsTabs';
 import { Select, Button } from '@/components/ui';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const cs: Record<string, React.CSSProperties> = {
     page: { display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' },
@@ -13,21 +14,22 @@ const cs: Record<string, React.CSSProperties> = {
 };
 
 export default function LocalizationSettingsPage() {
+    const { t } = useTranslation();
     return (
         <div style={cs.page}>
             <SettingsTabs />
             <div style={cs.card}>
-                <div style={cs.cardTitle}>Localization</div>
-                <div style={cs.cardDesc}>Manage region, currency, and time settings.</div>
+                <div style={cs.cardTitle}>{t('settings.localization.title')}</div>
+                <div style={cs.cardDesc}>{t('settings.localization.desc')}</div>
 
                 <div style={cs.field}>
                     <Select
-                        label="Timezone"
+                        label={t('settings.localization.timezone')}
                         options={[
-                            { value: 'Africa/Cairo', label: '(GMT+02:00) Cairo' },
-                            { value: 'Asia/Riyadh', label: '(GMT+03:00) Riyadh' },
-                            { value: 'Asia/Dubai', label: '(GMT+04:00) Dubai' },
-                            { value: 'UTC', label: 'UTC' }
+                            { value: 'Africa/Cairo', label: t('settings.localization.cairo') },
+                            { value: 'Asia/Riyadh', label: t('settings.localization.riyadh') },
+                            { value: 'Asia/Dubai', label: t('settings.localization.dubai') },
+                            { value: 'UTC', label: t('settings.localization.utc') }
                         ]}
                         defaultValue="Africa/Cairo"
                         style={{ maxWidth: 400 }}
@@ -36,12 +38,12 @@ export default function LocalizationSettingsPage() {
 
                 <div style={cs.field}>
                     <Select
-                        label="Currency"
+                        label={t('settings.localization.currency')}
                         options={[
-                            { value: 'EGP', label: 'Egyptian Pound (EGP)' },
-                            { value: 'SAR', label: 'Saudi Riyal (SAR)' },
-                            { value: 'AED', label: 'UAE Dirham (AED)' },
-                            { value: 'USD', label: 'US Dollar (USD)' }
+                            { value: 'EGP', label: t('settings.localization.egp') },
+                            { value: 'SAR', label: t('settings.localization.sar') },
+                            { value: 'AED', label: t('settings.localization.aed') },
+                            { value: 'USD', label: t('settings.localization.usd') }
                         ]}
                         defaultValue="EGP"
                         style={{ maxWidth: 400 }}
@@ -50,7 +52,7 @@ export default function LocalizationSettingsPage() {
 
                 <div style={cs.field}>
                     <Select
-                        label="Date Format"
+                        label={t('settings.localization.dateFormat')}
                         options={[
                             { value: 'DD/MM/YYYY', label: 'DD/MM/YYYY (31/12/2026)' },
                             { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY (12/31/2026)' },
@@ -62,7 +64,7 @@ export default function LocalizationSettingsPage() {
                 </div>
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <Button>Save Changes</Button>
+                <Button>{t('settings.localization.saveChanges')}</Button>
             </div>
         </div>
     );

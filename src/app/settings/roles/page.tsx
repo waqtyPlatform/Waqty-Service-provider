@@ -1,15 +1,34 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Shield, Edit, Plus, Check, X, MoreVertical, Trash2 } from 'lucide-react';
+import { Edit, Plus, MoreVertical, Trash2 } from 'lucide-react';
 import { useToast, Modal, Input, Button, DropdownMenu } from '@/components/ui';
 import SettingsTabs from '@/components/SettingsTabs';
+import { useTranslation } from '@/hooks/useTranslation';
 
-const defaultPerms = { view: false, create: false, edit: false, delete: false };
-const fullPerms = { view: true, create: true, edit: true, delete: true };
-const viewOnly = { view: true, create: false, edit: false, delete: false };
+interface Permissions {
+    view: boolean;
+    create: boolean;
+    edit: boolean;
+    delete: boolean;
+}
 
-const roles = [
+interface RolePermissions {
+    [module: string]: Permissions;
+}
+
+interface Role {
+    name: string;
+    members: number;
+    color: string;
+    permissions: RolePermissions;
+}
+
+const defaultPerms: Permissions = { view: false, create: false, edit: false, delete: false };
+const fullPerms: Permissions = { view: true, create: true, edit: true, delete: true };
+const viewOnly: Permissions = { view: true, create: false, edit: false, delete: false };
+
+const roles: Role[] = [
     { name: 'Owner', members: 1, color: '#EF4444', permissions: { dashboard: fullPerms, sales: fullPerms, transactions: fullPerms, returns: fullPerms, customers: fullPerms, employees: fullPerms, marketing: fullPerms, reports: fullPerms, settings: fullPerms } },
     { name: 'Branch Manager', members: 3, color: '#F59E0B', permissions: { dashboard: fullPerms, sales: fullPerms, transactions: fullPerms, returns: fullPerms, customers: fullPerms, employees: fullPerms, marketing: defaultPerms, reports: fullPerms, settings: viewOnly } },
     { name: 'Cashier', members: 2, color: '#3B82F6', permissions: { dashboard: viewOnly, sales: fullPerms, transactions: viewOnly, returns: fullPerms, customers: viewOnly, employees: defaultPerms, marketing: defaultPerms, reports: defaultPerms, settings: defaultPerms } },
@@ -18,13 +37,13 @@ const roles = [
 
 const modules = ['dashboard', 'sales', 'transactions', 'returns', 'customers', 'employees', 'marketing', 'reports', 'settings'];
 
-const getAccessLevel = (perms: any) => {
-    if (!perms) return { label: 'None', color: 'var(--color-gray-300)' };
+const getAccessLevel = (perms: Permissions | undefined, t: (key: string) => string) => {
+    if (!perms) return { label: t('settings.roles.levelNone'), color: 'var(--color-gray-300)' };
     const { view, create, edit, delete: del } = perms;
-    if (view && create && edit && del) return { label: 'Full', color: 'var(--color-success)' };
-    if (view && !create && !edit && !del) return { label: 'View', color: 'var(--color-info)' };
-    if (!view && !create && !edit && !del) return { label: 'None', color: 'var(--color-gray-300)' };
-    return { label: 'Custom', color: 'var(--color-warning)' };
+    if (view && create && edit && del) return { label: t('settings.roles.levelFull'), color: 'var(--color-success)' };
+    if (view && !create && !edit && !del) return { label: t('settings.roles.levelView'), color: 'var(--color-info)' };
+    if (!view && !create && !edit && !del) return { label: t('settings.roles.levelNone'), color: 'var(--color-gray-300)' };
+    return { label: t('settings.roles.levelCustom'), color: 'var(--color-warning)' };
 };
 
 const s: Record<string, React.CSSProperties> = {
@@ -40,31 +59,39 @@ const s: Record<string, React.CSSProperties> = {
 
 export default function RolesPage() {
     const { addToast } = useToast();
+    const { t, lang } = useTranslation();
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-    const [selectedRole, setSelectedRole] = useState<any>(null);
+    const [selectedRole, setSelectedRole] = useState<Role | null>(null);
+
+    // Module translation mapping
+    const getModuleTranslation = (m: string) => {
+        const key = `sidebar.${m}`;
+        // Add a fallback just in case some keys don't exactly match the sidebar translations
+        return t(key) !== key ? t(key) : m.charAt(0).toUpperCase() + m.slice(1);
+    };
 
     return (
         <div style={s.page}>
             <SettingsTabs />
-            <div style={s.toolbar}><Button onClick={() => setIsAddOpen(true)}><Plus size={16} style={{ marginRight: 8 }} /> New Role</Button></div>
+            <div style={s.toolbar}><Button onClick={() => setIsAddOpen(true)}><Plus size={16} className={lang === 'ar' ? "ml-2" : "mr-2"} /> {t('settings.roles.newRole')}</Button></div>
             <table style={s.table}>
                 <thead>
                     <tr>
-                        <th style={{ ...s.th, textAlign: 'left' }}>Role</th>
-                        <th style={s.th}>Members</th>
-                        {modules.map(m => <th key={m} style={s.th}>{m.charAt(0).toUpperCase() + m.slice(1)}</th>)}
+                        <th style={{ ...s.th, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('settings.roles.colRole')}</th>
+                        <th style={s.th}>{t('settings.roles.colMembers')}</th>
+                        {modules.map(m => <th key={m} style={s.th}>{getModuleTranslation(m)}</th>)}
                         <th style={{ ...s.th, width: 60 }}></th>
                     </tr>
                 </thead>
                 <tbody>
                     {roles.map(role => (
                         <tr key={role.name}>
-                            <td style={{ ...s.td, textAlign: 'left' }}><div style={s.roleCell as React.CSSProperties}><div style={{ ...s.dot, background: role.color }} />{role.name}</div></td>
+                            <td style={{ ...s.td, textAlign: lang === 'ar' ? 'right' : 'left' }}><div style={s.roleCell as React.CSSProperties}><div style={{ ...s.dot, background: role.color }} />{role.name}</div></td>
                             <td style={s.td}>{role.members}</td>
                             {modules.map(m => {
-                                const level = getAccessLevel((role.permissions as any)[m]);
+                                const level = getAccessLevel(role.permissions[m], t);
                                 return (
                                     <td key={m} style={s.td}>
                                         <span style={{
@@ -84,8 +111,8 @@ export default function RolesPage() {
                                 <DropdownMenu
                                     trigger={<button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)' }}><MoreVertical size={16} /></button>}
                                     items={[
-                                        { label: 'Edit Permissions', icon: <Edit size={14} />, onClick: () => { setSelectedRole(role); setIsEditOpen(true); } },
-                                        { label: 'Delete Role', destructive: true, icon: <Trash2 size={14} />, onClick: () => { setSelectedRole(role); setIsDeleteOpen(true); } }
+                                        { label: t('settings.roles.editPerms'), icon: <Edit size={14} />, onClick: () => { setSelectedRole(role); setIsEditOpen(true); } },
+                                        { label: t('settings.roles.deleteRole'), destructive: true, icon: <Trash2 size={14} />, onClick: () => { setSelectedRole(role); setIsDeleteOpen(true); } }
                                     ]}
                                 />
                             </td>
@@ -98,33 +125,33 @@ export default function RolesPage() {
             <Modal
                 open={isAddOpen}
                 onClose={() => setIsAddOpen(false)}
-                title="Create New Role"
+                title={t('settings.roles.createTitle')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button>
-                        <Button onClick={() => { setIsAddOpen(false); addToast('success', 'Role created successfully'); }}>Save Role</Button>
+                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>{t('settings.roles.cancel')}</Button>
+                        <Button onClick={() => { setIsAddOpen(false); addToast('success', 'Role created successfully'); }}>{t('settings.roles.saveRole')}</Button>
                     </div>
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label="Role Name" placeholder="e.g. Assistant Manager" />
+                    <Input label={t('settings.roles.roleName')} placeholder="e.g. Assistant Manager" />
                     <div>
-                        <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', display: 'block', marginBottom: 'var(--space-2)' }}>Granular Permissions</label>
+                        <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', display: 'block', marginBottom: 'var(--space-2)' }}>{t('settings.roles.granularPerms')}</label>
                         <div style={{ border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
                             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                                 <thead style={{ background: 'var(--bg-secondary)' }}>
                                     <tr>
-                                        <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'left', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>Module</th>
-                                        <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>View</th>
-                                        <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>Create</th>
-                                        <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>Edit</th>
-                                        <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>Delete</th>
+                                        <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: lang === 'ar' ? 'right' : 'left', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>{t('settings.roles.module')}</th>
+                                        <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>{t('settings.roles.view')}</th>
+                                        <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>{t('settings.roles.create')}</th>
+                                        <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>{t('settings.roles.edit')}</th>
+                                        <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>{t('settings.roles.delete')}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {modules.map(m => (
                                         <tr key={m}>
-                                            <td style={{ padding: 'var(--space-2) var(--space-3)', fontSize: 13, borderBottom: '1px solid var(--border-color)' }}>{m.charAt(0).toUpperCase() + m.slice(1)}</td>
+                                            <td style={{ padding: 'var(--space-2) var(--space-3)', fontSize: 13, borderBottom: '1px solid var(--border-color)' }}>{getModuleTranslation(m)}</td>
                                             <td style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', borderBottom: '1px solid var(--border-color)' }}><input type="checkbox" defaultChecked={false} /></td>
                                             <td style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', borderBottom: '1px solid var(--border-color)' }}><input type="checkbox" defaultChecked={false} /></td>
                                             <td style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', borderBottom: '1px solid var(--border-color)' }}><input type="checkbox" defaultChecked={false} /></td>
@@ -142,36 +169,36 @@ export default function RolesPage() {
             <Modal
                 open={isEditOpen}
                 onClose={() => { setIsEditOpen(false); setSelectedRole(null); }}
-                title="Edit Role Permissions"
+                title={t('settings.roles.editTitle')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>Cancel</Button>
-                        <Button onClick={() => { setIsEditOpen(false); addToast('success', 'Role permissions updated'); }}>Save Changes</Button>
+                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>{t('settings.roles.cancel')}</Button>
+                        <Button onClick={() => { setIsEditOpen(false); addToast('success', 'Role permissions updated'); }}>{t('settings.roles.saveChanges')}</Button>
                     </div>
                 }
             >
                 {selectedRole && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                        <Input label="Role Name" defaultValue={selectedRole.name} />
+                        <Input label={t('settings.roles.roleName')} defaultValue={selectedRole.name} />
                         <div>
-                            <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', display: 'block', marginBottom: 'var(--space-2)' }}>Granular Permissions</label>
+                            <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', display: 'block', marginBottom: 'var(--space-2)' }}>{t('settings.roles.granularPerms')}</label>
                             <div style={{ border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
                                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                                     <thead style={{ background: 'var(--bg-secondary)' }}>
                                         <tr>
-                                            <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'left', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>Module</th>
-                                            <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>View</th>
-                                            <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>Create</th>
-                                            <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>Edit</th>
-                                            <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>Delete</th>
+                                            <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: lang === 'ar' ? 'right' : 'left', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>{t('settings.roles.module')}</th>
+                                            <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>{t('settings.roles.view')}</th>
+                                            <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>{t('settings.roles.create')}</th>
+                                            <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>{t('settings.roles.edit')}</th>
+                                            <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>{t('settings.roles.delete')}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {modules.map(m => {
-                                            const p = (selectedRole.permissions as any)[m] || defaultPerms;
+                                            const p = selectedRole.permissions[m] || defaultPerms;
                                             return (
                                                 <tr key={m}>
-                                                    <td style={{ padding: 'var(--space-2) var(--space-3)', fontSize: 13, borderBottom: '1px solid var(--border-color)' }}>{m.charAt(0).toUpperCase() + m.slice(1)}</td>
+                                                    <td style={{ padding: 'var(--space-2) var(--space-3)', fontSize: 13, borderBottom: '1px solid var(--border-color)' }}>{getModuleTranslation(m)}</td>
                                                     <td style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', borderBottom: '1px solid var(--border-color)' }}><input type="checkbox" defaultChecked={p.view} /></td>
                                                     <td style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', borderBottom: '1px solid var(--border-color)' }}><input type="checkbox" defaultChecked={p.create} /></td>
                                                     <td style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', borderBottom: '1px solid var(--border-color)' }}><input type="checkbox" defaultChecked={p.edit} /></td>
@@ -191,17 +218,17 @@ export default function RolesPage() {
             <Modal
                 open={isDeleteOpen}
                 onClose={() => { setIsDeleteOpen(false); setSelectedRole(null); }}
-                title="Delete Role"
+                title={t('settings.roles.deleteConfirmTitle')}
                 footer={
                     <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
-                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
-                        <Button variant="destructive" onClick={() => { setIsDeleteOpen(false); addToast('error', 'Role deleted successfully'); }}>Confirm Delete</Button>
+                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>{t('settings.roles.cancel')}</Button>
+                        <Button variant="destructive" onClick={() => { setIsDeleteOpen(false); addToast('error', 'Role deleted successfully'); }}>{t('settings.roles.confirmDelete')}</Button>
                     </div>
                 }
             >
                 <div>
                     <p style={{ color: 'var(--text-secondary)' }}>
-                        Are you sure you want to delete the <strong>{selectedRole?.name}</strong> role? Expanding members need to be reassigned to a different role first.
+                        {t('settings.roles.deleteWarning')}
                     </p>
                 </div>
             </Modal>

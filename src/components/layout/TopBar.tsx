@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSidebar } from './SidebarContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSettings } from '@/contexts/SettingsContext';
 import {
     Search,
     Bell,
@@ -14,23 +15,31 @@ import {
     LogOut,
     Settings,
     Building2,
+    Languages,
 } from 'lucide-react';
 import styles from './TopBar.module.css';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function TopBar() {
     const { setMobileOpen } = useSidebar();
     const { user, logout } = useAuth();
+    const { settings, updateSettings } = useSettings();
     const [theme, setTheme] = useState<'light' | 'dark'>('light');
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const [branchMenuOpen, setBranchMenuOpen] = useState(false);
     const [searchFocused, setSearchFocused] = useState(false);
     const userMenuRef = useRef<HTMLDivElement>(null);
     const branchMenuRef = useRef<HTMLDivElement>(null);
+    const { t } = useTranslation();
 
     const toggleTheme = () => {
         const newTheme = theme === 'light' ? 'dark' : 'light';
         setTheme(newTheme);
         document.documentElement.setAttribute('data-theme', newTheme);
+    };
+
+    const toggleLanguage = () => {
+        updateSettings({ language: settings.language === 'en' ? 'ar' : 'en' });
     };
 
     // Close menus on outside click
@@ -77,22 +86,22 @@ export default function TopBar() {
                     onClick={() => setBranchMenuOpen(!branchMenuOpen)}
                 >
                     <Building2 size={16} />
-                    <span>Main Branch</span>
+                    <span>{t('branch.main')}</span>
                     <ChevronDown size={14} />
                 </button>
                 {branchMenuOpen && (
                     <div className={styles.branchDropdown}>
                         <div className={`${styles.branchItem} ${styles.branchActive}`}>
                             <Building2 size={16} />
-                            <span>Main Branch</span>
+                            <span>{t('branch.main')}</span>
                         </div>
                         <div className={styles.branchItem}>
                             <Building2 size={16} />
-                            <span>Downtown Branch</span>
+                            <span>{t('branch.downtown')}</span>
                         </div>
                         <div className={styles.branchItem}>
                             <Building2 size={16} />
-                            <span>Mall Branch</span>
+                            <span>{t('branch.mall')}</span>
                         </div>
                     </div>
                 )}
@@ -103,7 +112,7 @@ export default function TopBar() {
                 <Search size={16} className={styles.searchIcon} />
                 <input
                     className={styles.searchInput}
-                    placeholder="Search anything..."
+                    placeholder={t('search.placeholder')}
                     onFocus={() => setSearchFocused(true)}
                     onBlur={() => setSearchFocused(false)}
                 />
@@ -119,6 +128,17 @@ export default function TopBar() {
                     aria-label="Toggle theme"
                 >
                     {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+                </button>
+
+                {/* Language Toggle */}
+                <button
+                    className={styles.iconBtn}
+                    onClick={toggleLanguage}
+                    aria-label="Toggle language"
+                    title={settings.language === 'en' ? 'Switch to Arabic' : 'Switch to English'}
+                >
+                    <Languages size={20} />
+                    <span style={{ fontSize: '12px', fontWeight: 'bold' }}>{settings.language === 'en' ? 'ع' : 'EN'}</span>
                 </button>
 
                 {/* Notifications */}
@@ -144,16 +164,16 @@ export default function TopBar() {
                         <div className={styles.userDropdown}>
                             <button className={styles.dropdownItem}>
                                 <User size={16} />
-                                <span>Profile</span>
+                                <span>{t('user.profile')}</span>
                             </button>
                             <button className={styles.dropdownItem}>
                                 <Settings size={16} />
-                                <span>Settings</span>
+                                <span>{t('user.settings')}</span>
                             </button>
                             <div className={styles.dropdownDivider} />
                             <button className={`${styles.dropdownItem} ${styles.dropdownDanger}`} onClick={logout}>
                                 <LogOut size={16} />
-                                <span>Log Out</span>
+                                <span>{t('user.logout')}</span>
                             </button>
                         </div>
                     )}

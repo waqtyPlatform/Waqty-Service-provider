@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
 import { Plus, Search, Edit, Trash2, Clock } from 'lucide-react';
 import { useToast, Modal, Input, Select, Button } from '@/components/ui';
 import SettingsTabs from '@/components/SettingsTabs';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const services = [
     { id: 1, name: 'Hair Cut', category: 'Hair', duration: 45, price: 120, tax: true, status: 'active' },
@@ -35,6 +35,7 @@ const s: Record<string, React.CSSProperties> = {
 export default function ServicesSettingsPage() {
     const [search, setSearch] = useState('');
     const { addToast } = useToast();
+    const { t } = useTranslation();
 
     // CRUD state
     const [isAddOpen, setIsAddOpen] = useState(false);
@@ -48,11 +49,11 @@ export default function ServicesSettingsPage() {
         <div style={s.page}>
             <SettingsTabs />
             <div style={s.toolbar}>
-                <div style={s.searchBox as React.CSSProperties}><Search size={16} style={s.searchIcon as React.CSSProperties} /><input style={s.searchInput} placeholder="Search services..." value={search} onChange={e => setSearch(e.target.value)} /></div>
-                <button style={s.addBtn} onClick={() => setIsAddOpen(true)}><Plus size={16} /> Add Service</button>
+                <div style={s.searchBox as React.CSSProperties}><Search size={16} style={s.searchIcon as React.CSSProperties} /><input style={s.searchInput} placeholder={t('settings.services.search')} value={search} onChange={e => setSearch(e.target.value)} /></div>
+                <button style={s.addBtn} onClick={() => setIsAddOpen(true)}><Plus size={16} /> {t('settings.services.addService')}</button>
             </div>
             <table style={s.table}>
-                <thead><tr>{['Service', 'Category', 'Duration', 'Price', 'Tax', 'Status', 'Actions'].map(h => <th key={h} style={s.th as React.CSSProperties}>{h}</th>)}</tr></thead>
+                <thead><tr>{[t('settings.services.colService'), t('settings.services.colCategory'), t('settings.services.colDuration'), t('settings.services.colPrice'), t('settings.services.colTax'), t('settings.services.colStatus'), t('settings.services.colActions')].map(h => <th key={h} style={s.th as React.CSSProperties}>{h}</th>)}</tr></thead>
                 <tbody>
                     {filtered.map(svc => (
                         <tr key={svc.id}>
@@ -61,7 +62,7 @@ export default function ServicesSettingsPage() {
                             <td style={s.td}><div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Clock size={12} /> {svc.duration} min</div></td>
                             <td style={{ ...s.td, fontWeight: 'var(--font-semibold)' }}>{svc.price} EGP</td>
                             <td style={s.td}>{svc.tax ? '✓' : '—'}</td>
-                            <td style={s.td}><span style={{ display: 'inline-flex', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontSize: 11, fontWeight: 'var(--font-semibold)', background: 'var(--color-success-light)', color: 'var(--color-success)' }}>Active</span></td>
+                            <td style={s.td}><span style={{ display: 'inline-flex', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontSize: 11, fontWeight: 'var(--font-semibold)', background: 'var(--color-success-light)', color: 'var(--color-success)' }}>{t('settings.services.active')}</span></td>
                             <td style={s.td}>
                                 <div style={s.actions}>
                                     <button style={s.btnIcon} onClick={() => { setSelectedService(svc); setIsEditOpen(true); }}><Edit size={14} /></button>
@@ -77,25 +78,25 @@ export default function ServicesSettingsPage() {
             <Modal
                 open={isAddOpen}
                 onClose={() => setIsAddOpen(false)}
-                title="Create New Service"
+                title={t('settings.services.createTitle')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button>
-                        <Button onClick={() => { setIsAddOpen(false); addToast('success', 'Service added successfully'); }}>Save Service</Button>
+                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>{t('settings.services.cancel')}</Button>
+                        <Button onClick={() => { setIsAddOpen(false); addToast('success', 'Service added successfully'); }}>{t('settings.services.saveService')}</Button>
                     </div>
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label="Service Name" placeholder="e.g. Balayage" />
-                    <Select label="Category" options={[
-                        { label: 'Hair', value: 'Hair' },
-                        { label: 'Skin', value: 'Skin' },
-                        { label: 'Body', value: 'Body' },
-                        { label: 'Nails', value: 'Nails' }
+                    <Input label={t('settings.services.serviceName')} placeholder="e.g. Balayage" />
+                    <Select label={t('settings.services.category')} options={[
+                        { label: t('settings.services.hair'), value: 'Hair' },
+                        { label: t('settings.services.skin'), value: 'Skin' },
+                        { label: t('settings.services.body'), value: 'Body' },
+                        { label: t('settings.services.nails'), value: 'Nails' }
                     ]} />
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
-                        <Input label="Duration (mins)" type="number" defaultValue={60} />
-                        <Input label="Price (EGP)" type="number" defaultValue={200} />
+                        <Input label={t('settings.services.duration')} type="number" defaultValue={60} />
+                        <Input label={t('settings.services.price')} type="number" defaultValue={200} />
                     </div>
                 </div>
             </Modal>
@@ -104,26 +105,26 @@ export default function ServicesSettingsPage() {
             <Modal
                 open={isEditOpen}
                 onClose={() => { setIsEditOpen(false); setSelectedService(null); }}
-                title="Edit Service"
+                title={t('settings.services.edit')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>Cancel</Button>
-                        <Button onClick={() => { setIsEditOpen(false); addToast('success', 'Service updated successfully'); }}>Save Changes</Button>
+                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>{t('settings.services.cancel')}</Button>
+                        <Button onClick={() => { setIsEditOpen(false); addToast('success', 'Service updated successfully'); }}>{t('settings.services.saveChanges')}</Button>
                     </div>
                 }
             >
                 {selectedService && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                        <Input label="Service Name" defaultValue={selectedService.name} />
-                        <Select label="Category" defaultValue={selectedService.category} options={[
-                            { label: 'Hair', value: 'Hair' },
-                            { label: 'Skin', value: 'Skin' },
-                            { label: 'Body', value: 'Body' },
-                            { label: 'Nails', value: 'Nails' }
+                        <Input label={t('settings.services.serviceName')} defaultValue={selectedService.name} />
+                        <Select label={t('settings.services.category')} defaultValue={selectedService.category} options={[
+                            { label: t('settings.services.hair'), value: 'Hair' },
+                            { label: t('settings.services.skin'), value: 'Skin' },
+                            { label: t('settings.services.body'), value: 'Body' },
+                            { label: t('settings.services.nails'), value: 'Nails' }
                         ]} />
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
-                            <Input label="Duration (mins)" type="number" defaultValue={selectedService.duration} />
-                            <Input label="Price (EGP)" type="number" defaultValue={selectedService.price} />
+                            <Input label={t('settings.services.duration')} type="number" defaultValue={selectedService.duration} />
+                            <Input label={t('settings.services.price')} type="number" defaultValue={selectedService.price} />
                         </div>
                     </div>
                 )}
@@ -133,17 +134,17 @@ export default function ServicesSettingsPage() {
             <Modal
                 open={isDeleteOpen}
                 onClose={() => { setIsDeleteOpen(false); setSelectedService(null); }}
-                title="Delete Service"
+                title={t('settings.services.delete')}
                 footer={
                     <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
-                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
-                        <Button variant="destructive" onClick={() => { setIsDeleteOpen(false); addToast('error', 'Service permanently removed'); }}>Confirm Delete</Button>
+                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>{t('settings.services.cancel')}</Button>
+                        <Button variant="destructive" onClick={() => { setIsDeleteOpen(false); addToast('error', 'Service permanently removed'); }}>{t('settings.services.confirmDelete')}</Button>
                     </div>
                 }
             >
                 <div>
                     <p style={{ color: 'var(--text-secondary)' }}>
-                        Are you sure you want to remove <strong>{selectedService?.name}</strong>? This action cannot be undone.
+                        {t('settings.services.deleteWarning')}
                     </p>
                 </div>
             </Modal>

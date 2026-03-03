@@ -205,11 +205,11 @@
 }
 
 .toggleDotOff {
-    left: 3px;
+    inset-inline-start: 3px;
 }
 
 .toggleDotOn {
-    left: 25px;
+    inset-inline-start: 25px;
 }
 
 /* ─── Input ───────────────────────────────────────────── */
@@ -411,7 +411,7 @@
 .slideOver {
     position: fixed;
     top: 0;
-    right: 0;
+    inset-inline-end: 0;
     bottom: 0;
     width: 480px;
     max-width: 90vw;
@@ -516,7 +516,7 @@
 .toastContainer {
     position: fixed;
     bottom: var(--space-6);
-    right: var(--space-6);
+    inset-inline-end: var(--space-6);
     z-index: 2000;
     display: flex;
     flex-direction: column;
@@ -539,23 +539,23 @@
 }
 
 .toastSuccess {
-    border-left: 3px solid var(--color-success);
+    border-inline-start: 3px solid var(--color-success);
 }
 
 .toastError {
-    border-left: 3px solid var(--color-error);
+    border-inline-start: 3px solid var(--color-error);
 }
 
 .toastWarning {
-    border-left: 3px solid var(--color-warning);
+    border-inline-start: 3px solid var(--color-warning);
 }
 
 .toastInfo {
-    border-left: 3px solid var(--color-info);
+    border-inline-start: 3px solid var(--color-info);
 }
 
 .toastUndo {
-    margin-left: auto;
+    margin-inline-start: auto;
     font-weight: var(--font-semibold);
     color: var(--color-primary-500);
     cursor: pointer;
@@ -703,7 +703,7 @@
 .fab {
     position: fixed;
     bottom: var(--space-6);
-    right: var(--space-6);
+    inset-inline-end: var(--space-6);
     width: 56px;
     height: 56px;
     border-radius: 50%;
@@ -731,7 +731,7 @@
 .fabMenu {
     position: fixed;
     bottom: 80px;
-    right: var(--space-6);
+    inset-inline-end: var(--space-6);
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
@@ -766,7 +766,7 @@
     display: flex;
     flex-direction: column;
     position: relative;
-    padding-left: 28px;
+    padding-inline-start: 28px;
 }
 
 .timelineItem {
@@ -780,7 +780,7 @@
 
 .timelineDot {
     position: absolute;
-    left: -28px;
+    inset-inline-start: -28px;
     top: 4px;
     width: 12px;
     height: 12px;
@@ -792,7 +792,7 @@
 
 .timelineLine {
     position: absolute;
-    left: -23px;
+    inset-inline-start: -23px;
     top: 16px;
     bottom: 0;
     width: 2px;
@@ -897,7 +897,7 @@
 
 .searchBarIcon {
     position: absolute;
-    left: var(--space-3);
+    inset-inline-start: var(--space-3);
     top: 50%;
     transform: translateY(-50%);
     color: var(--text-tertiary);
@@ -924,7 +924,7 @@
 
 .searchShortcut {
     position: absolute;
-    right: var(--space-3);
+    inset-inline-end: var(--space-3);
     top: 50%;
     transform: translateY(-50%);
     padding: 2px 6px;
@@ -1001,11 +1001,11 @@
 }
 
 .dropdownRight {
-    right: 0;
+    inset-inline-end: 0;
 }
 
 .dropdownLeft {
-    left: 0;
+    inset-inline-start: 0;
 }
 
 .dropdownItem {

@@ -6,13 +6,11 @@ import {
     Edit,
     Trash2,
     CreditCard,
-    DollarSign,
     Move
 } from 'lucide-react';
 import {
     Button,
     Badge,
-    EmptyState,
     Modal,
     Input,
     Select,
@@ -20,6 +18,7 @@ import {
 } from '@/components/ui';
 import SettingsTabs from '@/components/SettingsTabs';
 import styles from './page.module.css';
+import { useTranslation } from '@/hooks/useTranslation';
 
 // Mock Data
 const methods = [
@@ -31,6 +30,7 @@ const methods = [
 
 export default function PaymentMethodsPage() {
     const { addToast } = useToast();
+    const { t } = useTranslation();
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -40,11 +40,11 @@ export default function PaymentMethodsPage() {
         <div className={styles.page}>
             <div className={styles.header}>
                 <div className={styles.titleGroup}>
-                    <h1>Payment Methods</h1>
-                    <div className={styles.subtitle}>Configure accepted payment types and fees.</div>
+                    <h1>{t('settings.paymentMethods.title')}</h1>
+                    <div className={styles.subtitle}>{t('settings.paymentMethods.desc')}</div>
                 </div>
                 <div className={styles.actions}>
-                    <Button onClick={() => setIsAddOpen(true)}><Plus size={16} /> Add Method</Button>
+                    <Button onClick={() => setIsAddOpen(true)}><Plus size={16} /> {t('settings.paymentMethods.addMethod')}</Button>
                 </div>
             </div>
 
@@ -52,18 +52,18 @@ export default function PaymentMethodsPage() {
 
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
-                    <span className={styles.cardTitle}><CreditCard size={18} /> Methods List</span>
+                    <span className={styles.cardTitle}><CreditCard size={18} /> {t('settings.paymentMethods.listTitle')}</span>
                 </div>
                 <div className={styles.tableWrapper}>
                     <table className={styles.dataTable}>
                         <thead>
                             <tr>
                                 <th style={{ width: 50 }}></th>
-                                <th>Name</th>
-                                <th>Type</th>
-                                <th>Transaction Fee</th>
-                                <th>Status</th>
-                                <th>Actions</th>
+                                <th>{t('settings.paymentMethods.colName')}</th>
+                                <th>{t('settings.paymentMethods.colType')}</th>
+                                <th>{t('settings.paymentMethods.colFee')}</th>
+                                <th>{t('settings.paymentMethods.colStatus')}</th>
+                                <th>{t('settings.paymentMethods.colActions')}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -74,7 +74,7 @@ export default function PaymentMethodsPage() {
                                     <td>{method.type}</td>
                                     <td>{method.fee}</td>
                                     <td>
-                                        <Badge color={method.status === 'Active' ? 'success' : 'neutral'}>{method.status}</Badge>
+                                        <Badge color={method.status === 'Active' ? 'success' : 'neutral'}>{method.status === 'Active' ? t('settings.safes.active') : t('settings.safes.inactive')}</Badge>
                                     </td>
                                     <td>
                                         <div style={{ display: 'flex', gap: 8 }}>
@@ -93,24 +93,24 @@ export default function PaymentMethodsPage() {
             <Modal
                 open={isAddOpen}
                 onClose={() => setIsAddOpen(false)}
-                title="Add Payment Method"
+                title={t('settings.paymentMethods.createTitle')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button>
-                        <Button onClick={() => { setIsAddOpen(false); addToast('success', 'Payment method added'); }}>Save Method</Button>
+                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>{t('settings.paymentMethods.cancel')}</Button>
+                        <Button onClick={() => { setIsAddOpen(false); addToast('success', 'Payment method added'); }}>{t('settings.paymentMethods.saveMethod')}</Button>
                     </div>
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label="Method Name" placeholder="e.g. Credit Card (Visa/Master)" />
-                    <Select label="Type" options={[
-                        { label: 'Cash', value: 'Cash' },
-                        { label: 'Card', value: 'Card' },
-                        { label: 'Bank Transfer', value: 'Bank' },
-                        { label: 'Mobile Wallet', value: 'Mobile Wallet' }
+                    <Input label={t('settings.paymentMethods.methodName')} placeholder="e.g. Credit Card (Visa/Master)" />
+                    <Select label={t('settings.paymentMethods.methodType')} options={[
+                        { label: t('settings.paymentMethods.types.cash'), value: 'Cash' },
+                        { label: t('settings.paymentMethods.types.card'), value: 'Card' },
+                        { label: t('settings.paymentMethods.types.bank'), value: 'Bank Transfer' },
+                        { label: t('settings.paymentMethods.types.wallet'), value: 'Mobile Wallet' }
                     ]} />
-                    <Input label="Transaction Fee (%)" type="number" defaultValue={0} />
-                    <Select label="Status" options={[{ label: 'Active', value: 'Active' }, { label: 'Inactive', value: 'Inactive' }]} />
+                    <Input label={t('settings.paymentMethods.transactionFee')} type="number" defaultValue={0} />
+                    <Select label={t('settings.paymentMethods.colStatus')} options={[{ label: t('settings.safes.active'), value: 'Active' }, { label: t('settings.safes.inactive'), value: 'Inactive' }]} />
                 </div>
             </Modal>
 
@@ -118,25 +118,25 @@ export default function PaymentMethodsPage() {
             <Modal
                 open={isEditOpen}
                 onClose={() => { setIsEditOpen(false); setSelectedMethod(null); }}
-                title="Edit Payment Method"
+                title={t('settings.paymentMethods.editTitle')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>Cancel</Button>
-                        <Button onClick={() => { setIsEditOpen(false); addToast('success', 'Payment method updated'); }}>Save Changes</Button>
+                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>{t('settings.paymentMethods.cancel')}</Button>
+                        <Button onClick={() => { setIsEditOpen(false); addToast('success', 'Payment method updated'); }}>{t('settings.paymentMethods.saveChanges')}</Button>
                     </div>
                 }
             >
                 {selectedMethod && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                        <Input label="Method Name" defaultValue={selectedMethod.name} />
-                        <Select label="Type" defaultValue={selectedMethod.type} options={[
-                            { label: 'Cash', value: 'Cash' },
-                            { label: 'Card', value: 'Card' },
-                            { label: 'Bank Transfer', value: 'Bank' },
-                            { label: 'Mobile Wallet', value: 'Mobile Wallet' }
+                        <Input label={t('settings.paymentMethods.methodName')} defaultValue={selectedMethod.name} />
+                        <Select label={t('settings.paymentMethods.methodType')} defaultValue={selectedMethod.type} options={[
+                            { label: t('settings.paymentMethods.types.cash'), value: 'Cash' },
+                            { label: t('settings.paymentMethods.types.card'), value: 'Card' },
+                            { label: t('settings.paymentMethods.types.bank'), value: 'Bank' },
+                            { label: t('settings.paymentMethods.types.wallet'), value: 'Mobile Wallet' }
                         ]} />
-                        <Input label="Transaction Fee (%)" type="number" defaultValue={parseFloat(selectedMethod.fee)} />
-                        <Select label="Status" defaultValue={selectedMethod.status} options={[{ label: 'Active', value: 'Active' }, { label: 'Inactive', value: 'Inactive' }]} />
+                        <Input label={t('settings.paymentMethods.transactionFee')} type="number" defaultValue={parseFloat(selectedMethod.fee)} />
+                        <Select label={t('settings.paymentMethods.colStatus')} defaultValue={selectedMethod.status} options={[{ label: t('settings.safes.active'), value: 'Active' }, { label: t('settings.safes.inactive'), value: 'Inactive' }]} />
                     </div>
                 )}
             </Modal>
@@ -145,17 +145,17 @@ export default function PaymentMethodsPage() {
             <Modal
                 open={isDeleteOpen}
                 onClose={() => { setIsDeleteOpen(false); setSelectedMethod(null); }}
-                title="Delete Payment Method"
+                title={t('settings.paymentMethods.deleteTitle')}
                 footer={
                     <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
-                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
-                        <Button variant="destructive" onClick={() => { setIsDeleteOpen(false); addToast('error', 'Payment method deleted'); }}>Confirm Delete</Button>
+                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>{t('settings.paymentMethods.cancel')}</Button>
+                        <Button variant="destructive" onClick={() => { setIsDeleteOpen(false); addToast('error', 'Payment method deleted'); }}>{t('settings.paymentMethods.confirmDelete')}</Button>
                     </div>
                 }
             >
                 <div>
                     <p style={{ color: 'var(--text-secondary)' }}>
-                        Are you sure you want to delete the <strong>{selectedMethod?.name}</strong> payment method?
+                        {t('settings.paymentMethods.deleteWarning')}
                     </p>
                 </div>
             </Modal>

@@ -1,8 +1,9 @@
 ﻿'use client';
 
 import React, { useState } from 'react';
-import { ArrowRightLeft, Search, Edit, Trash2, Plus, Filter } from 'lucide-react';
-import { SlideOver, Modal, Input, Select, Button, useToast, DropdownMenu, EmptyState } from '@/components/ui';
+import { ArrowRightLeft, Search, Edit, Trash2, Plus } from 'lucide-react';
+import { SlideOver, Modal, Input, Select, Button, useToast, EmptyState } from '@/components/ui';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const initialData = [
     { id: 'TR-001', date: '2026-02-15', employee: 'Maya Adel', from: 'Mall of Arabia', to: 'Downtown Branch', type: 'Permanent', status: 'completed', until: '' },
@@ -40,6 +41,7 @@ const s: Record<string, React.CSSProperties> = {
 };
 
 export default function TransfersPage() {
+    const { t, lang } = useTranslation();
     const [transfers, setTransfers] = useState(initialData);
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('All');
@@ -66,8 +68,8 @@ export default function TransfersPage() {
     });
 
     const handleSaveAdd = () => {
-        if (!formData.employee) return addToast('error', 'Employee name is required.');
-        if (!formData.date) return addToast('error', 'Transfer date is required.');
+        if (!formData.employee) return addToast('error', t('transfers.toastReqEmp'));
+        if (!formData.date) return addToast('error', t('transfers.toastReqDate'));
 
         const newTransfer = {
             id: `TR-${Date.now().toString().slice(-4)}`,
@@ -82,11 +84,11 @@ export default function TransfersPage() {
         setTransfers([newTransfer, ...transfers]);
         setIsAddOpen(false);
         setFormData({ employee: '', date: '', from: 'Downtown Branch', to: 'Mall of Arabia', type: 'Permanent', status: 'pending', until: '' });
-        addToast('success', 'Transfer request created successfully');
+        addToast('success', t('transfers.toastAddSec'));
     };
 
     const handleSaveEdit = () => {
-        if (!formData.employee) return addToast('error', 'Employee name is required.');
+        if (!formData.employee) return addToast('error', t('transfers.toastReqEmp'));
         setTransfers(transfers.map(t => t.id === selectedTransfer.id ? {
             ...t,
             employee: formData.employee,
@@ -99,14 +101,14 @@ export default function TransfersPage() {
         } : t));
         setIsEditOpen(false);
         setSelectedTransfer(null);
-        addToast('success', 'Transfer updated successfully');
+        addToast('success', t('transfers.toastUpdSec'));
     };
 
     const handleDelete = () => {
         setTransfers(transfers.filter(t => t.id !== selectedTransfer.id));
         setIsDeleteOpen(false);
         setSelectedTransfer(null);
-        addToast('success', 'Transfer log deleted successfully');
+        addToast('success', t('transfers.toastDelSec'));
     };
 
     const openEdit = (t: any) => {
@@ -124,29 +126,29 @@ export default function TransfersPage() {
     };
 
     return (
-        <div style={s.page}>
-            <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' }}>Employee Transfers</div>
+        <div style={{ ...s.page, direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
+            <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' }}>{t('transfers.title')}</div>
 
             <div style={s.toolbar}>
                 <div style={s.filterGroup as React.CSSProperties}>
                     <div style={s.searchBox as React.CSSProperties}>
-                        <Search size={16} style={s.searchIcon as React.CSSProperties} />
-                        <input style={s.searchInput} placeholder="Search transfers..." value={search} onChange={e => setSearch(e.target.value)} />
+                        <Search size={16} style={{ ...s.searchIcon, ...(lang === 'ar' ? { right: 12, left: 'auto' } : {}) } as React.CSSProperties} />
+                        <input style={{ ...s.searchInput, ...(lang === 'ar' ? { paddingRight: 40, paddingLeft: 12 } : { paddingLeft: 40, paddingRight: 12 }) }} placeholder={t('transfers.search')} value={search} onChange={e => setSearch(e.target.value)} />
                     </div>
                     <Select
                         value={statusFilter}
                         onChange={e => setStatusFilter(e.target.value)}
                         options={[
-                            { label: 'All Statuses', value: 'All' },
-                            { label: 'Pending', value: 'pending' },
-                            { label: 'Active', value: 'active' },
-                            { label: 'Completed', value: 'completed' },
+                            { label: t('transfers.filterAll'), value: 'All' },
+                            { label: t('transfers.filterPending'), value: 'pending' },
+                            { label: t('transfers.filterActive'), value: 'active' },
+                            { label: t('transfers.filterCompleted'), value: 'completed' },
                         ]}
                         style={{ width: 160 }}
                     />
                 </div>
                 <Button onClick={() => setIsAddOpen(true)}>
-                    <Plus size={16} style={{ marginRight: 8 }} /> New Transfer
+                    <Plus size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('transfers.newBtn')}
                 </Button>
             </div>
 
@@ -154,8 +156,8 @@ export default function TransfersPage() {
                 <table style={s.table}>
                     <thead>
                         <tr>
-                            {['ID', 'Date', 'Employee', 'From Branch', '', 'To Branch', 'Type', 'Status', 'Actions'].map((h, i) =>
-                                <th key={i} style={s.th as React.CSSProperties}>{h}</th>
+                            {[{ label: t('transfers.colId'), key: 'id' }, { label: t('transfers.colDate'), key: 'date' }, { label: t('transfers.colEmployee'), key: 'employee' }, { label: t('transfers.colFrom'), key: 'from' }, { label: '', key: 'arrow' }, { label: t('transfers.colTo'), key: 'to' }, { label: t('transfers.colType'), key: 'type' }, { label: t('transfers.colStatus'), key: 'status' }, { label: t('transfers.colActions'), key: 'actions' }].map((h, i) =>
+                                <th key={i} style={{ ...(s.th as React.CSSProperties), textAlign: lang === 'ar' ? 'right' : 'left' }}>{h.label}</th>
                             )}
                         </tr>
                     </thead>
@@ -165,21 +167,21 @@ export default function TransfersPage() {
                                 <td style={s.td}>{row.id}</td>
                                 <td style={s.td}>{row.date}</td>
                                 <td style={{ ...s.td, fontWeight: 'var(--font-medium)' } as React.CSSProperties}>{row.employee}</td>
-                                <td style={s.td}>{row.from}</td>
-                                <td style={s.td}><ArrowRightLeft size={14} style={{ color: 'var(--text-tertiary)' }} /></td>
-                                <td style={s.td}>{row.to}</td>
+                                <td style={s.td}>{t(`branchMgt.${({ 'Downtown Branch': 'downtown', 'Mall of Arabia': 'mallOfArabia', 'New Cairo Branch': 'newCairo' } as any)[row.from] || 'downtown'}` as any)}</td>
+                                <td style={s.td}><ArrowRightLeft size={14} style={{ color: 'var(--text-tertiary)', ...(lang === 'ar' ? { transform: 'scaleX(-1)' } : {}) }} /></td>
+                                <td style={s.td}>{t(`branchMgt.${({ 'Downtown Branch': 'downtown', 'Mall of Arabia': 'mallOfArabia', 'New Cairo Branch': 'newCairo' } as any)[row.to] || 'downtown'}` as any)}</td>
                                 <td style={s.td}>
                                     <span style={{ ...s.badge, background: row.type === 'Permanent' ? 'var(--color-primary-50)' : 'var(--color-warning-light)', color: row.type === 'Permanent' ? 'var(--color-primary-600)' : 'var(--color-warning)' }}>
-                                        {row.type} {row.type === 'Temporary' && row.until && ` (Until ${row.until})`}
+                                        {t(`transfers.type${row.type}` as any)} {row.type === 'Temporary' && row.until && ` (${t('transfers.lblUntil')} ${row.until})`}
                                     </span>
                                 </td>
-                                <td style={s.td}><span style={{ ...s.badge, ...statusColors[row.status] }}>{row.status}</span></td>
+                                <td style={s.td}><span style={{ ...s.badge, ...statusColors[row.status] }}>{t(`transfers.filter${row.status.charAt(0).toUpperCase() + row.status.slice(1)}` as any)}</span></td>
                                 <td style={s.td}>
                                     <div style={s.actions}>
-                                        <button style={s.btnIcon} onClick={() => openEdit(row)} title="Edit Transfer">
+                                        <button style={s.btnIcon} onClick={() => openEdit(row)} title={t('transfers.btnEdit')}>
                                             <Edit size={14} />
                                         </button>
-                                        <button style={{ ...s.btnIcon, color: 'var(--color-error)' }} onClick={() => { setSelectedTransfer(row); setIsDeleteOpen(true); }} title="Delete Transfer">
+                                        <button style={{ ...s.btnIcon, color: 'var(--color-error)' }} onClick={() => { setSelectedTransfer(row); setIsDeleteOpen(true); }} title={t('transfers.btnDelete')}>
                                             <Trash2 size={14} />
                                         </button>
                                     </div>
@@ -189,7 +191,7 @@ export default function TransfersPage() {
                     </tbody>
                 </table>
             ) : (
-                <EmptyState icon={<ArrowRightLeft size={32} color="var(--text-tertiary)" />} title="No transfers found" description="Adjust your filters or search query to find what you're looking for." />
+                <EmptyState icon={<ArrowRightLeft size={32} color="var(--text-tertiary)" />} title={t('transfers.emptyTitle')} description={t('transfers.emptyDesc')} />
             )}
 
             <style>{`
@@ -201,48 +203,48 @@ export default function TransfersPage() {
             <SlideOver
                 open={isAddOpen}
                 onClose={() => setIsAddOpen(false)}
-                title="New Employee Transfer"
+                title={t('transfers.addTitle')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button>
-                        <Button onClick={handleSaveAdd}>Submit Transfer</Button>
+                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>{t('transfers.btnCancel')}</Button>
+                        <Button onClick={handleSaveAdd}>{t('transfers.btnSubmit')}</Button>
                     </div>
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
-                        <Select label="Origin Branch" value={formData.from} onChange={e => setFormData({ ...formData, from: e.target.value, employee: '' })} options={[
-                            { label: 'Downtown Branch', value: 'Downtown Branch' },
-                            { label: 'Mall of Arabia', value: 'Mall of Arabia' },
-                            { label: 'New Cairo Branch', value: 'New Cairo Branch' },
+                        <Select label={t('transfers.lblOrigin')} value={formData.from} onChange={e => setFormData({ ...formData, from: e.target.value, employee: '' })} options={[
+                            { label: t('branchMgt.downtown'), value: 'Downtown Branch' },
+                            { label: t('branchMgt.mallOfArabia'), value: 'Mall of Arabia' },
+                            { label: t('branchMgt.newCairo'), value: 'New Cairo Branch' },
                         ]} />
-                        <Select label="Destination Branch" value={formData.to} onChange={e => setFormData({ ...formData, to: e.target.value })} options={[
-                            { label: 'Downtown Branch', value: 'Downtown Branch' },
-                            { label: 'Mall of Arabia', value: 'Mall of Arabia' },
-                            { label: 'New Cairo Branch', value: 'New Cairo Branch' },
+                        <Select label={t('transfers.lblDest')} value={formData.to} onChange={e => setFormData({ ...formData, to: e.target.value })} options={[
+                            { label: t('branchMgt.downtown'), value: 'Downtown Branch' },
+                            { label: t('branchMgt.mallOfArabia'), value: 'Mall of Arabia' },
+                            { label: t('branchMgt.newCairo'), value: 'New Cairo Branch' },
                         ]} />
                     </div>
                     <Select
-                        label="Employee Name"
+                        label={t('transfers.lblEmpName')}
                         value={formData.employee}
                         onChange={e => setFormData({ ...formData, employee: e.target.value })}
                         options={formData.from && employeesByBranch[formData.from]
-                            ? [{ label: 'Select employee...', value: '' }, ...employeesByBranch[formData.from].map(emp => ({ label: emp, value: emp }))]
-                            : [{ label: 'Select Origin Branch first', value: '' }]
+                            ? [{ label: t('transfers.optSelEmp'), value: '' }, ...employeesByBranch[formData.from].map(emp => ({ label: emp, value: emp }))]
+                            : [{ label: t('transfers.optSelOrigin'), value: '' }]
                         }
                     />
-                    <Input type="date" label="Transfer Date" value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} />
-                    <Select label="Transfer Type" value={formData.type} onChange={e => setFormData({ ...formData, type: e.target.value })} options={[
-                        { label: 'Permanent', value: 'Permanent' },
-                        { label: 'Temporary', value: 'Temporary' }
+                    <Input type="date" label={t('transfers.lblDate')} value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} />
+                    <Select label={t('transfers.lblType')} value={formData.type} onChange={e => setFormData({ ...formData, type: e.target.value })} options={[
+                        { label: t('transfers.typePermanent'), value: 'Permanent' },
+                        { label: t('transfers.typeTemporary'), value: 'Temporary' }
                     ]} />
                     {formData.type === 'Temporary' && (
-                        <Input type="date" label="Return Date (Until)" value={formData.until} onChange={e => setFormData({ ...formData, until: e.target.value })} />
+                        <Input type="date" label={t('transfers.lblRetDate')} value={formData.until} onChange={e => setFormData({ ...formData, until: e.target.value })} />
                     )}
-                    <Select label="Status" value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value })} options={[
-                        { label: 'Pending', value: 'pending' },
-                        { label: 'Active', value: 'active' },
-                        { label: 'Completed', value: 'completed' },
+                    <Select label={t('transfers.lblStatus')} value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value })} options={[
+                        { label: t('transfers.filterPending'), value: 'pending' },
+                        { label: t('transfers.filterActive'), value: 'active' },
+                        { label: t('transfers.filterCompleted'), value: 'completed' },
                     ]} />
                 </div>
             </SlideOver>
@@ -251,48 +253,48 @@ export default function TransfersPage() {
             <SlideOver
                 open={isEditOpen}
                 onClose={() => { setIsEditOpen(false); setSelectedTransfer(null); }}
-                title="Edit Transfer Request"
+                title={t('transfers.editTitle')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>Cancel</Button>
-                        <Button onClick={handleSaveEdit}>Save Changes</Button>
+                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>{t('transfers.btnCancel')}</Button>
+                        <Button onClick={handleSaveEdit}>{t('transfers.btnSave')}</Button>
                     </div>
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
-                        <Select label="Origin Branch" value={formData.from} onChange={e => setFormData({ ...formData, from: e.target.value, employee: '' })} options={[
-                            { label: 'Downtown Branch', value: 'Downtown Branch' },
-                            { label: 'Mall of Arabia', value: 'Mall of Arabia' },
-                            { label: 'New Cairo Branch', value: 'New Cairo Branch' },
+                        <Select label={t('transfers.lblOrigin')} value={formData.from} onChange={e => setFormData({ ...formData, from: e.target.value, employee: '' })} options={[
+                            { label: t('branchMgt.downtown'), value: 'Downtown Branch' },
+                            { label: t('branchMgt.mallOfArabia'), value: 'Mall of Arabia' },
+                            { label: t('branchMgt.newCairo'), value: 'New Cairo Branch' },
                         ]} />
-                        <Select label="Destination Branch" value={formData.to} onChange={e => setFormData({ ...formData, to: e.target.value })} options={[
-                            { label: 'Downtown Branch', value: 'Downtown Branch' },
-                            { label: 'Mall of Arabia', value: 'Mall of Arabia' },
-                            { label: 'New Cairo Branch', value: 'New Cairo Branch' },
+                        <Select label={t('transfers.lblDest')} value={formData.to} onChange={e => setFormData({ ...formData, to: e.target.value })} options={[
+                            { label: t('branchMgt.downtown'), value: 'Downtown Branch' },
+                            { label: t('branchMgt.mallOfArabia'), value: 'Mall of Arabia' },
+                            { label: t('branchMgt.newCairo'), value: 'New Cairo Branch' },
                         ]} />
                     </div>
                     <Select
-                        label="Employee Name"
+                        label={t('transfers.lblEmpName')}
                         value={formData.employee}
                         onChange={e => setFormData({ ...formData, employee: e.target.value })}
                         options={formData.from && employeesByBranch[formData.from]
-                            ? [{ label: 'Select employee...', value: '' }, ...employeesByBranch[formData.from].map(emp => ({ label: emp, value: emp }))]
-                            : [{ label: 'Select Origin Branch first', value: '' }]
+                            ? [{ label: t('transfers.optSelEmp'), value: '' }, ...employeesByBranch[formData.from].map(emp => ({ label: emp, value: emp }))]
+                            : [{ label: t('transfers.optSelOrigin'), value: '' }]
                         }
                     />
-                    <Input type="date" label="Transfer Date" value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} />
-                    <Select label="Transfer Type" value={formData.type} onChange={e => setFormData({ ...formData, type: e.target.value })} options={[
-                        { label: 'Permanent', value: 'Permanent' },
-                        { label: 'Temporary', value: 'Temporary' }
+                    <Input type="date" label={t('transfers.lblDate')} value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} />
+                    <Select label={t('transfers.lblType')} value={formData.type} onChange={e => setFormData({ ...formData, type: e.target.value })} options={[
+                        { label: t('transfers.typePermanent'), value: 'Permanent' },
+                        { label: t('transfers.typeTemporary'), value: 'Temporary' }
                     ]} />
                     {formData.type === 'Temporary' && (
-                        <Input type="date" label="Return Date (Until)" value={formData.until} onChange={e => setFormData({ ...formData, until: e.target.value })} />
+                        <Input type="date" label={t('transfers.lblRetDate')} value={formData.until} onChange={e => setFormData({ ...formData, until: e.target.value })} />
                     )}
-                    <Select label="Status" value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value })} options={[
-                        { label: 'Pending', value: 'pending' },
-                        { label: 'Active', value: 'active' },
-                        { label: 'Completed', value: 'completed' },
+                    <Select label={t('transfers.lblStatus')} value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value })} options={[
+                        { label: t('transfers.filterPending'), value: 'pending' },
+                        { label: t('transfers.filterActive'), value: 'active' },
+                        { label: t('transfers.filterCompleted'), value: 'completed' },
                     ]} />
                 </div>
             </SlideOver>
@@ -301,16 +303,16 @@ export default function TransfersPage() {
             <Modal
                 open={isDeleteOpen}
                 onClose={() => { setIsDeleteOpen(false); setSelectedTransfer(null); }}
-                title="Delete Transfer Record"
+                title={t('transfers.delTitle')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
-                        <Button variant="destructive" onClick={handleDelete}>Delete Permanently</Button>
+                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>{t('transfers.btnCancel')}</Button>
+                        <Button variant="destructive" onClick={handleDelete}>{t('transfers.btnDelPerm')}</Button>
                     </div>
                 }
             >
                 <p style={{ color: 'var(--text-secondary)' }}>
-                    Are you sure you want to delete the transfer record for <strong>{selectedTransfer?.employee}</strong> ({selectedTransfer?.id})? This action cannot be undone.
+                    {t('transfers.delConfirm1')}<strong>{selectedTransfer?.employee}</strong> ({selectedTransfer?.id}){t('transfers.delConfirm2')}
                 </p>
             </Modal>
         </div>

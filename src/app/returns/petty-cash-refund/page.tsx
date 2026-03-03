@@ -3,13 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Search, ChevronRight } from 'lucide-react';
-
-const tabs = [
-    { label: 'Returns List', href: '/returns' },
-    { label: 'Cash Refund', href: '/returns/cash-refund' },
-    { label: 'Petty Cash Refund', href: '/returns/petty-cash-refund' },
-    { label: 'Cancel Down Payment', href: '/returns/cancel-down-payment' },
-];
+import { useTranslation } from '@/hooks/useTranslation';
 
 const entries = [
     { id: 'PC-001', date: '2026-02-17', category: 'Cleaning Supplies', description: 'Towels & Disinfectant', vendor: 'CleanCo', amount: 180 },
@@ -37,23 +31,31 @@ const s: Record<string, React.CSSProperties> = {
 };
 
 export default function PettyCashRefundPage() {
+    const { t, lang } = useTranslation();
     const [selected, setSelected] = useState<number | null>(null);
     const [search, setSearch] = useState('');
     const filtered = entries.filter(e => e.description.toLowerCase().includes(search.toLowerCase()) || e.id.toLowerCase().includes(search.toLowerCase()));
 
+    const translatedTabs = [
+        { label: t('rtn.tabList'), href: '/returns' },
+        { label: t('rtn.tabCash'), href: '/returns/cash-refund' },
+        { label: t('rtn.tabPetty'), href: '/returns/petty-cash-refund' },
+        { label: t('rtn.tabCancelAdvance'), href: '/returns/cancel-down-payment' },
+    ];
+
     return (
-        <div style={s.page}>
+        <div style={{ ...s.page, direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
             <div style={s.tabBar}>
-                {tabs.map(t => <Link key={t.href} href={t.href} style={{ ...s.tab, ...(t.href === '/returns/petty-cash-refund' ? s.tabActive : {}) }}>{t.label}</Link>)}
+                {translatedTabs.map(tab => <Link key={tab.href} href={tab.href} style={{ ...s.tab, ...(tab.href === '/returns/petty-cash-refund' ? s.tabActive : {}) }}>{tab.label}</Link>)}
             </div>
 
-            <div><div style={s.title}>Petty Cash Refund</div><div style={s.desc}>Search for a petty cash entry to process a refund.</div></div>
+            <div><div style={s.title}>{t('rtn.pettyTitle')}</div><div style={s.desc}>{t('rtn.pettyDesc')}</div></div>
 
             {selected === null ? (
                 <>
                     <div style={s.searchBox as React.CSSProperties}>
-                        <Search size={16} style={s.searchIcon as React.CSSProperties} />
-                        <input style={s.searchInput} placeholder="Search by ID or description..." value={search} onChange={e => setSearch(e.target.value)} />
+                        <Search size={16} style={{ ...s.searchIcon as React.CSSProperties, left: lang === 'ar' ? 'auto' : 12, right: lang === 'ar' ? 12 : 'auto' }} />
+                        <input style={{ ...s.searchInput, paddingLeft: lang === 'ar' ? 12 : 40, paddingRight: lang === 'ar' ? 40 : 12 }} placeholder={t('rtn.searchIdDesc')} value={search} onChange={e => setSearch(e.target.value)} />
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
                         {filtered.map((entry, i) => (
@@ -64,8 +66,8 @@ export default function PettyCashRefundPage() {
                                     <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{entry.date} · {entry.category} · {entry.vendor}</div>
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                                    <div style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-bold)' }}>{entry.amount} EGP</div>
-                                    <ChevronRight size={18} style={{ color: 'var(--text-tertiary)' }} />
+                                    <div style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-bold)' }} dir="ltr">{entry.amount} EGP</div>
+                                    <ChevronRight size={18} style={{ color: 'var(--text-tertiary)', transform: lang === 'ar' ? 'scaleX(-1)' : 'none' }} />
                                 </div>
                             </div>
                         ))}
@@ -73,24 +75,24 @@ export default function PettyCashRefundPage() {
                 </>
             ) : (
                 <div style={s.form}>
-                    <div style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-4)' }}>Refund: {entries[selected].description}</div>
+                    <div style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-4)' }}>{t('rtn.tabPetty')}: {entries[selected].description}</div>
                     <div style={{ padding: 'var(--space-3)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', marginBottom: 'var(--space-4)', fontSize: 'var(--text-sm)' }}>
                         <div><strong>ID:</strong> {entries[selected].id}</div>
-                        <div><strong>Category:</strong> {entries[selected].category}</div>
-                        <div><strong>Vendor:</strong> {entries[selected].vendor}</div>
-                        <div><strong>Amount:</strong> {entries[selected].amount} EGP</div>
+                        <div><strong>{t('rtn.lblCategory')}:</strong> {entries[selected].category}</div>
+                        <div><strong>{t('rtn.lblVendor')}:</strong> {entries[selected].vendor}</div>
+                        <div style={{ display: 'flex', gap: '4px' }}><strong>{t('rtn.thAmount')}:</strong> <span dir="ltr">{entries[selected].amount} EGP</span></div>
                     </div>
                     <div style={{ marginBottom: 'var(--space-4)' }}>
-                        <label style={s.label}>Reason for Refund</label>
+                        <label style={s.label}>{t('rtn.lblReasonRefund')}</label>
                         <select style={s.select}><option>Item Returned</option><option>Duplicate Entry</option><option>Wrong Amount</option><option>Other</option></select>
                     </div>
                     <div style={{ marginBottom: 'var(--space-4)' }}>
-                        <label style={s.label}>Notes</label>
-                        <textarea style={s.textarea as React.CSSProperties} placeholder="Additional notes..." />
+                        <label style={s.label}>{t('rtn.lblNotes')}</label>
+                        <textarea style={s.textarea as React.CSSProperties} placeholder={t('rtn.phNotes')} />
                     </div>
                     <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-                        <button style={{ ...s.submitBtn, background: 'var(--bg-tertiary)', color: 'var(--text-primary)' }} onClick={() => setSelected(null)}>← Back</button>
-                        <button style={s.submitBtn}>Process Refund</button>
+                        <button style={{ ...s.submitBtn, background: 'var(--bg-tertiary)', color: 'var(--text-primary)' }} onClick={() => setSelected(null)}>{lang === 'ar' ? '→' : '←'} {t('rtn.btnBack')}</button>
+                        <button style={s.submitBtn}>{t('rtn.btnProcessRefund')}</button>
                     </div>
                 </div>
             )}
