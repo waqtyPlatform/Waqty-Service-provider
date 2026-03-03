@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
     User,
     Calendar,
@@ -93,6 +94,7 @@ const modules = ['dashboard', 'sales', 'transactions', 'returns', 'customers', '
 export default function EmployeeProfilePage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = React.use(params);
     const { t, lang } = useTranslation();
+    const router = useRouter();
     const [activeTab, setActiveTab] = useState('performance');
     const { addToast } = useToast();
 
@@ -279,6 +281,11 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
         <div className={styles.page} style={{ direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
             {/* Header */}
             <div className={styles.header}>
+                <div style={{ marginBottom: 'var(--space-4)' }}>
+                    <Button variant="ghost" onClick={() => router.push('/employees')} size="sm">
+                        {"← Back to Employees"}
+                    </Button>
+                </div>
                 <div className={styles.headerTop}>
                     <div className={styles.profileInfo}>
                         <div className={styles.avatar}>{employee.avatar}</div>

@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
     User,
     Phone,
@@ -67,6 +69,7 @@ const sales = [
 export default function CustomerProfilePage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = React.use(params);
     const { t, lang } = useTranslation();
+    const router = useRouter();
     const [activeTab, setActiveTab] = useState('overview');
 
     const renderOverview = () => (
@@ -149,7 +152,9 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
                     <span className={styles.cardTitle}>{t('custProfile.bookingHist')}</span>
-                    <Button size="sm"><Plus size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('custProfile.newBooking')}</Button>
+                    <Button size="sm" onClick={() => router.push('/bookings/new')}>
+                        <Plus size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('custProfile.newBooking')}
+                    </Button>
                 </div>
                 <div className="table-wrapper">
                     <table className="data-table">
@@ -226,6 +231,11 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
         <div className={styles.page} style={{ direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
             {/* Header */}
             <div className={styles.header}>
+                <div style={{ marginBottom: 'var(--space-4)' }}>
+                    <Button variant="ghost" onClick={() => router.push('/customers')} size="sm">
+                        {"← Back to Customers"}
+                    </Button>
+                </div>
                 <div className={styles.headerTop}>
                     <div className={styles.profileInfo}>
                         <div className={styles.avatar}>{client.avatar}</div>
@@ -244,7 +254,9 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                     <div className={styles.actions}>
                         <Button variant="outline" iconOnly><MoreHorizontal size={20} /></Button>
                         <Button variant="outline"><Edit size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('custProfile.editProfile')}</Button>
-                        <Button><Plus size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('custProfile.newBooking')}</Button>
+                        <Button onClick={() => router.push('/bookings/new')}>
+                            <Plus size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('custProfile.newBooking')}
+                        </Button>
                     </div>
                 </div>
 

@@ -96,7 +96,15 @@ export default function NewBookingPage() {
             <BookingsTabs />
 
             <div style={cs.header}>
-                <h1 style={cs.h1}>{t('bookings.newBooking')}</h1>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+                    <button
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}
+                        onClick={() => router.push('/bookings')}
+                    >
+                        {"← Back"}
+                    </button>
+                    <h1 style={cs.h1}>{t('bookings.newBooking')}</h1>
+                </div>
             </div>
 
             <div style={cs.formGrid}>

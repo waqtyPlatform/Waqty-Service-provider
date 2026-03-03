@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
     Search,
     Plus,
@@ -146,10 +146,17 @@ export default function SalesPage() {
     const router = useRouter();
     const { addToast } = useToast();
     const { t } = useTranslation();
+    const searchParams = useSearchParams();
 
     // Quick Sale state
     const [isQuickSaleOpen, setIsQuickSaleOpen] = useState(false);
     const [cartItem, setCartItem] = useState<{ name: string, price: number } | null>(null);
+
+    useEffect(() => {
+        if (searchParams.get('quick') === 'true') {
+            setIsQuickSaleOpen(true);
+        }
+    }, [searchParams]);
 
     const filteredCategories = categories
         .map((cat) => ({
