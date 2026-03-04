@@ -16,19 +16,27 @@ import {
     Upload,
     MoreHorizontal,
     Edit,
-    Plus
+    Plus,
+    MessageSquare,
+    Flag
 } from 'lucide-react';
 import {
     Tabs,
     Button,
     Badge,
     Timeline,
-    EmptyState
+    EmptyState,
+    useToast
 } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
 import styles from './page.module.css';
 
 // Mock Data
+const clientReviews = [
+    { id: '1', author: 'Fatima Al-Rashid', target: 'Sara Ahmed', role: 'Employee', rating: 5, date: 'Feb 15, 2026', comment: 'Sara is amazing! Best hair coloring I ever had.', type: 'by_customer' },
+    { id: '2', author: 'Nora Ali', target: 'Fatima Al-Rashid', role: 'Customer', rating: 4, date: 'Feb 10, 2026', comment: 'Client was slightly late, but otherwise very pleasant.', type: 'about_customer' }
+];
+
 const client = {
     id: '1',
     name: 'Fatima Al-Rashid',
@@ -70,7 +78,13 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
     const { id } = React.use(params);
     const { t, lang } = useTranslation();
     const router = useRouter();
+    const { addToast } = useToast();
     const [activeTab, setActiveTab] = useState('overview');
+    const [reviewsFilter, setReviewsFilter] = useState<'all' | 'by_customer' | 'about_customer'>('all');
+
+    const handleReportReview = (reviewId: string) => {
+        addToast('success', t('custProfile.reviewReportedMsg'));
+    };
 
     const renderOverview = () => (
         <div className={styles.content}>
@@ -227,6 +241,79 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
         </div>
     );
 
+    const renderReviews = () => {
+        const filteredReviews = reviewsFilter === 'all'
+            ? clientReviews
+            : clientReviews.filter(r => r.type === reviewsFilter);
+
+        return (
+            <div className={styles.mainPanel}>
+                <div className={styles.card}>
+                    <div className={styles.cardHeader}>
+                        <span className={styles.cardTitle}>{t('custProfile.reviews')}</span>
+                        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                            <Button
+                                variant={reviewsFilter === 'all' ? 'primary' : 'outline'}
+                                size="sm"
+                                onClick={() => setReviewsFilter('all')}
+                            >
+                                {t('custProfile.allReviews')}
+                            </Button>
+                            <Button
+                                variant={reviewsFilter === 'by_customer' ? 'primary' : 'outline'}
+                                size="sm"
+                                onClick={() => setReviewsFilter('by_customer')}
+                            >
+                                {t('custProfile.reviewsByCustomer')}
+                            </Button>
+                            <Button
+                                variant={reviewsFilter === 'about_customer' ? 'primary' : 'outline'}
+                                size="sm"
+                                onClick={() => setReviewsFilter('about_customer')}
+                            >
+                                {t('custProfile.reviewsAboutCustomer')}
+                            </Button>
+                        </div>
+                    </div>
+                    {filteredReviews.length > 0 ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                            {filteredReviews.map(review => (
+                                <div key={review.id} style={{ padding: 'var(--space-4)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', background: 'var(--bg-secondary)' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-2)' }}>
+                                        <div>
+                                            <div style={{ fontWeight: 'var(--font-semibold)' }}>{review.author}</div>
+                                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
+                                                {review.type === 'by_customer' ? `Reviwed ${review.role}: ${review.target}` : `Reviewed by ${review.role}`} • {review.date}
+                                            </div>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '2px', color: 'var(--color-warning)' }}>
+                                                <Star size={14} fill="currentColor" />
+                                                <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-bold)', color: 'var(--text-primary)' }}>{review.rating}.0</span>
+                                            </div>
+                                            <Button variant="ghost" size="sm" onClick={() => handleReportReview(review.id)} style={{ color: 'var(--color-error)' }} iconOnly>
+                                                <Flag size={14} />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                    <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>{review.comment}</p>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div style={{ padding: 'var(--space-8) 0' }}>
+                            <EmptyState
+                                icon={<MessageSquare size={32} color="var(--text-tertiary)" />}
+                                title={t('custProfile.noReviewsTitle')}
+                                description={t('custProfile.noReviewsDesc')}
+                            />
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    };
+
     return (
         <div className={styles.page} style={{ direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
             {/* Header */}
@@ -288,6 +375,7 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                     { key: 'overview', label: t('custProfile.tabOverview'), icon: <User size={16} /> },
                     { key: 'bookings', label: t('custProfile.tabBookings'), icon: <Calendar size={16} /> },
                     { key: 'sales', label: t('custProfile.tabSales'), icon: <CreditCard size={16} /> },
+                    { key: 'reviews', label: t('custProfile.tabReviews'), icon: <MessageSquare size={16} /> },
                     { key: 'files', label: t('custProfile.tabFiles'), icon: <FileText size={16} /> },
                 ]}
             />
@@ -296,6 +384,7 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
             {activeTab === 'overview' && renderOverview()}
             {activeTab === 'bookings' && renderBookings()}
             {activeTab === 'sales' && renderSales()}
+            {activeTab === 'reviews' && renderReviews()}
             {activeTab === 'files' && (
                 <EmptyState
                     icon={<Upload size={48} />}

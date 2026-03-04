@@ -17,7 +17,10 @@ import {
     Shield,
     Activity,
     Trash2,
-    Plus
+    Plus,
+    MessageSquare,
+    Star,
+    Flag
 } from 'lucide-react';
 import {
     Tabs,
@@ -91,6 +94,12 @@ const recentActivity = [
 
 const modules = ['dashboard', 'sales', 'transactions', 'returns', 'customers', 'employees', 'marketing', 'reports', 'settings'];
 
+const employeeReviews = [
+    { id: '1', customer: 'Fatima Al-Rashid', rating: 5, date: 'Feb 15, 2026', comment: 'Sara is an amazing stylist! The best hair coloring I\'ve ever had.' },
+    { id: '2', customer: 'Aisha Mohammed', rating: 4, date: 'Feb 10, 2026', comment: 'Very professional. Took a bit longer than expected, but great results.' },
+    { id: '3', customer: 'Huda Saleh', rating: 5, date: 'Jan 28, 2026', comment: 'Always a pleasure getting my hair done here.' },
+];
+
 export default function EmployeeProfilePage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = React.use(params);
     const { t, lang } = useTranslation();
@@ -142,6 +151,10 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
         else if (action === 'Suspend Account') setIsSuspendOpen(true);
         else if (action === 'Delete Employee') setIsDeleteOpen(true);
         else addToast('info', `${action} ${t('empProfile.actionDev')}`);
+    };
+
+    const handleReportReview = (reviewId: string) => {
+        addToast('success', t('empProfile.reviewReportedMsg'));
     };
 
     const handleSaveEdit = () => {
@@ -277,6 +290,48 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
         </div>
     );
 
+    const renderReviews = () => (
+        <div className={styles.mainPanel}>
+            <div className={styles.card}>
+                <div className={styles.cardHeader}>
+                    <span className={styles.cardTitle}>{t('empProfile.reviews')}</span>
+                </div>
+                {employeeReviews.length > 0 ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                        {employeeReviews.map(review => (
+                            <div key={review.id} style={{ padding: 'var(--space-4)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', background: 'var(--bg-secondary)' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-2)' }}>
+                                    <div>
+                                        <div style={{ fontWeight: 'var(--font-semibold)' }}>{review.customer}</div>
+                                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{review.date}</div>
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '2px', color: 'var(--color-warning)' }}>
+                                            <Star size={14} fill="currentColor" />
+                                            <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-bold)', color: 'var(--text-primary)' }}>{review.rating}.0</span>
+                                        </div>
+                                        <Button variant="ghost" size="sm" onClick={() => handleReportReview(review.id)} style={{ color: 'var(--color-error)' }} iconOnly>
+                                            <Flag size={14} />
+                                        </Button>
+                                    </div>
+                                </div>
+                                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>{review.comment}</p>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div style={{ padding: 'var(--space-8) 0' }}>
+                        <EmptyState
+                            icon={<MessageSquare size={32} color="var(--text-tertiary)" />}
+                            title={t('empProfile.noReviewsTitle')}
+                            description={t('empProfile.noReviewsDesc')}
+                        />
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+
     return (
         <div className={styles.page} style={{ direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
             {/* Header */}
@@ -341,12 +396,14 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                     { key: 'performance', label: t('empProfile.tabPerformance'), icon: <TrendingUp size={16} /> },
                     { key: 'schedule', label: t('empProfile.tabSchedule'), icon: <Calendar size={16} /> },
                     { key: 'attendance', label: t('empProfile.tabAttendance'), icon: <Clock size={16} /> },
+                    { key: 'reviews', label: t('empProfile.tabReviews'), icon: <MessageSquare size={16} /> },
                 ]}
             />
 
             {/* Content */}
             {activeTab === 'performance' && renderPerformance()}
             {activeTab === 'schedule' && renderSchedule()}
+            {activeTab === 'reviews' && renderReviews()}
             {activeTab === 'attendance' && (
                 <EmptyState
                     icon={<Clock size={48} />}
