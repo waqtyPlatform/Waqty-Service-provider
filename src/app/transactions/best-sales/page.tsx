@@ -4,18 +4,20 @@ import React from 'react';
 import Link from 'next/link';
 import { Trophy, TrendingUp } from 'lucide-react';
 
+import { useTranslation } from '@/hooks/useTranslation';
+
 const tabs = [
-    { label: 'Transaction Log', href: '/transactions' },
-    { label: 'Cash Sales', href: '/transactions/cash-sales' },
-    { label: 'Advance Pay', href: '/transactions/advance-payments' },
-    { label: 'Petty Cash', href: '/transactions/petty-cash' },
-    { label: 'Transfers', href: '/transactions/transfers' },
-    { label: 'Safe Balances', href: '/transactions/safe-balances' },
-    { label: 'Shifts', href: '/transactions/shifts' },
-    { label: 'Dailies', href: '/transactions/dailies' },
-    { label: 'Best Sales', href: '/transactions/best-sales' },
-    { label: 'Client Sales', href: '/transactions/client-sales' },
-    { label: 'Package Sales', href: '/transactions/package-sales' },
+    { labelKey: 'txn.tabLog', href: '/transactions' },
+    { labelKey: 'txn.tabCashSales', href: '/transactions/cash-sales' },
+    { labelKey: 'txn.tabAdvance', href: '/transactions/advance-payments' },
+    { labelKey: 'txn.tabPettyCash', href: '/transactions/petty-cash' },
+    { labelKey: 'txn.tabTransfers', href: '/transactions/transfers' },
+    { labelKey: 'txn.tabSafeBalances', href: '/transactions/safe-balances' },
+    { labelKey: 'txn.tabShifts', href: '/transactions/shifts' },
+    { labelKey: 'txn.tabDailies', href: '/transactions/dailies' },
+    { labelKey: 'txn.tabBestSales', href: '/transactions/best-sales' },
+    { labelKey: 'txn.tabClientSales', href: '/transactions/client-sales' },
+    { labelKey: 'txn.tabPackageSales', href: '/transactions/package-sales' },
 ];
 
 const topServices = [
@@ -57,39 +59,41 @@ const s: Record<string, React.CSSProperties> = {
 const rankColors = ['#F59E0B', '#9CA3AF', '#CD7F32'];
 
 export default function BestSalesPage() {
+    const { t, lang } = useTranslation();
+
     return (
-        <div style={s.page}>
+        <div style={{ ...s.page, direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
             <div style={s.tabBar}>
-                {tabs.map(t => <Link key={t.href} href={t.href} style={{ ...s.tab, ...(t.href === '/transactions/best-sales' ? s.tabActive : {}) }}>{t.label}</Link>)}
+                {tabs.map(tab => <Link key={tab.href} href={tab.href} style={{ ...s.tab, ...(tab.href === '/transactions/best-sales' ? s.tabActive : {}) }}>{t(tab.labelKey)}</Link>)}
             </div>
 
             <div style={s.grid}>
                 <div style={s.card}>
-                    <div style={s.cardTitle}><Trophy size={18} style={{ color: '#F59E0B' }} /> Top Services by Revenue</div>
+                    <div style={s.cardTitle}><Trophy size={18} style={{ color: '#F59E0B' }} /> {t('txn.best.topServices')}</div>
                     {topServices.map(svc => (
                         <div key={svc.rank} style={s.row}>
                             <div style={{ ...s.rank, background: rankColors[svc.rank - 1] || 'var(--bg-tertiary)', color: svc.rank <= 3 ? 'white' : 'var(--text-secondary)' }}>{svc.rank}</div>
                             <div style={{ flex: '0 0 140px' }}>
                                 <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)' }}>{svc.name}</div>
-                                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{svc.category} · {svc.count} sales</div>
+                                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{svc.category} · {t('txn.best.salesCount').replace('{count}', svc.count.toString())}</div>
                             </div>
                             <div style={s.bar}><div style={{ ...s.barFill, width: `${svc.revenue / maxRev * 100}%` }} /></div>
-                            <div style={{ fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-sm)', whiteSpace: 'nowrap' }}>{svc.revenue.toLocaleString()} EGP</div>
+                            <div style={{ fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-sm)', whiteSpace: 'nowrap' }} dir="ltr">{svc.revenue.toLocaleString()} EGP</div>
                         </div>
                     ))}
                 </div>
 
                 <div style={s.card}>
-                    <div style={s.cardTitle}><TrendingUp size={18} style={{ color: 'var(--color-primary-500)' }} /> Top Employees by Revenue</div>
+                    <div style={s.cardTitle}><TrendingUp size={18} style={{ color: 'var(--color-primary-500)' }} /> {t('txn.best.topEmployees')}</div>
                     {topEmployees.map(emp => (
                         <div key={emp.rank} style={s.row}>
                             <div style={{ ...s.rank, background: rankColors[emp.rank - 1] || 'var(--bg-tertiary)', color: emp.rank <= 3 ? 'white' : 'var(--text-secondary)' }}>{emp.rank}</div>
                             <div style={{ ...s.avatar, background: emp.color }}>{emp.name.charAt(0)}</div>
                             <div style={{ flex: 1 }}>
                                 <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)' }}>{emp.name}</div>
-                                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{emp.role} · {emp.bookings} bookings</div>
+                                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{emp.role} · {t('txn.best.bookingsCount').replace('{count}', emp.bookings.toString())}</div>
                             </div>
-                            <div style={{ fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-sm)', color: 'var(--color-primary-600)' }}>{emp.revenue.toLocaleString()} EGP</div>
+                            <div style={{ fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-sm)', color: 'var(--color-primary-600)' }} dir="ltr">{emp.revenue.toLocaleString()} EGP</div>
                         </div>
                     ))}
                 </div>

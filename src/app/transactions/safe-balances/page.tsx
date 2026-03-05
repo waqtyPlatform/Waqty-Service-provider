@@ -4,18 +4,20 @@ import React from 'react';
 import Link from 'next/link';
 import { Vault, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
+import { useTranslation } from '@/hooks/useTranslation';
+
 const tabs = [
-    { label: 'Transaction Log', href: '/transactions' },
-    { label: 'Cash Sales', href: '/transactions/cash-sales' },
-    { label: 'Advance Pay', href: '/transactions/advance-payments' },
-    { label: 'Petty Cash', href: '/transactions/petty-cash' },
-    { label: 'Transfers', href: '/transactions/transfers' },
-    { label: 'Safe Balances', href: '/transactions/safe-balances' },
-    { label: 'Shifts', href: '/transactions/shifts' },
-    { label: 'Dailies', href: '/transactions/dailies' },
-    { label: 'Best Sales', href: '/transactions/best-sales' },
-    { label: 'Client Sales', href: '/transactions/client-sales' },
-    { label: 'Package Sales', href: '/transactions/package-sales' },
+    { labelKey: 'txn.tabLog', href: '/transactions' },
+    { labelKey: 'txn.tabCashSales', href: '/transactions/cash-sales' },
+    { labelKey: 'txn.tabAdvance', href: '/transactions/advance-payments' },
+    { labelKey: 'txn.tabPettyCash', href: '/transactions/petty-cash' },
+    { labelKey: 'txn.tabTransfers', href: '/transactions/transfers' },
+    { labelKey: 'txn.tabSafeBalances', href: '/transactions/safe-balances' },
+    { labelKey: 'txn.tabShifts', href: '/transactions/shifts' },
+    { labelKey: 'txn.tabDailies', href: '/transactions/dailies' },
+    { labelKey: 'txn.tabBestSales', href: '/transactions/best-sales' },
+    { labelKey: 'txn.tabClientSales', href: '/transactions/client-sales' },
+    { labelKey: 'txn.tabPackageSales', href: '/transactions/package-sales' },
 ];
 
 const safes = [
@@ -46,16 +48,17 @@ const s: Record<string, React.CSSProperties> = {
 };
 
 export default function SafeBalancesPage() {
+    const { t, lang } = useTranslation();
     const totalBalance = safes.reduce((a, s) => a + s.balance, 0);
     return (
-        <div style={s.page}>
+        <div style={{ ...s.page, direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
             <div style={s.tabBar}>
-                {tabs.map(t => <Link key={t.href} href={t.href} style={{ ...s.tab, ...(t.href === '/transactions/safe-balances' ? s.tabActive : {}) }}>{t.label}</Link>)}
+                {tabs.map(tab => <Link key={tab.href} href={tab.href} style={{ ...s.tab, ...(tab.href === '/transactions/safe-balances' ? s.tabActive : {}) }}>{t(tab.labelKey)}</Link>)}
             </div>
 
             <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-xl)', padding: 'var(--space-5)', textAlign: 'center' }}>
-                <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)' }}>Total Balance Across All Safes</div>
-                <div style={{ fontSize: 'var(--text-4xl)', fontWeight: 'var(--font-bold)', color: 'var(--color-primary-600)', marginTop: 4 }}>{totalBalance.toLocaleString()} EGP</div>
+                <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)' }}>{t('txn.safe.total')}</div>
+                <div style={{ fontSize: 'var(--text-4xl)', fontWeight: 'var(--font-bold)', color: 'var(--color-primary-600)', marginTop: 4 }} dir="ltr">{totalBalance.toLocaleString()} EGP</div>
             </div>
 
             <div style={s.grid}>
@@ -67,15 +70,15 @@ export default function SafeBalancesPage() {
                                 <div style={s.safeName}>{safe.name}</div>
                                 <div style={s.safeType}>{safe.type}</div>
                             </div>
-                            <div style={s.balance as React.CSSProperties}>
-                                <div style={s.balVal}>{safe.balance.toLocaleString()}</div>
-                                <div style={s.balLbl}>Current Balance</div>
+                            <div style={{ ...s.balance as React.CSSProperties, marginLeft: lang === 'ar' ? 0 : 'auto', marginRight: lang === 'ar' ? 'auto' : 0, textAlign: lang === 'ar' ? 'left' : 'right' }}>
+                                <div style={s.balVal} dir="ltr">{safe.balance.toLocaleString()}</div>
+                                <div style={s.balLbl}>{t('txn.safe.current')}</div>
                             </div>
                         </div>
                         <div style={s.rows}>
-                            <div style={s.row}><span style={s.rowLabel}><Minus size={14} /> Opening</span><span style={s.rowVal}>{safe.opening.toLocaleString()} EGP</span></div>
-                            <div style={s.row}><span style={{ ...s.rowLabel, color: 'var(--color-success)' }}><TrendingUp size={14} /> Deposits</span><span style={{ ...s.rowVal, color: 'var(--color-success)' }}>+{safe.deposits.toLocaleString()} EGP</span></div>
-                            <div style={{ ...s.row, borderBottom: 'none' }}><span style={{ ...s.rowLabel, color: 'var(--color-error)' }}><TrendingDown size={14} /> Withdrawals</span><span style={{ ...s.rowVal, color: 'var(--color-error)' }}>-{safe.withdrawals.toLocaleString()} EGP</span></div>
+                            <div style={s.row}><span style={s.rowLabel}><Minus size={14} /> {t('txn.safe.opening')}</span><span style={s.rowVal} dir="ltr">{safe.opening.toLocaleString()} EGP</span></div>
+                            <div style={s.row}><span style={{ ...s.rowLabel, color: 'var(--color-success)' }}><TrendingUp size={14} /> {t('txn.safe.deposits')}</span><span style={{ ...s.rowVal, color: 'var(--color-success)' }} dir="ltr">+{safe.deposits.toLocaleString()} EGP</span></div>
+                            <div style={{ ...s.row, borderBottom: 'none' }}><span style={{ ...s.rowLabel, color: 'var(--color-error)' }}><TrendingDown size={14} /> {t('txn.safe.withdrawals')}</span><span style={{ ...s.rowVal, color: 'var(--color-error)' }} dir="ltr">-{safe.withdrawals.toLocaleString()} EGP</span></div>
                         </div>
                     </div>
                 ))}

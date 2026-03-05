@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTranslation } from '@/hooks/useTranslation';
 import {
     Users,
     Star,
@@ -14,15 +15,16 @@ import {
 } from 'lucide-react';
 import styles from './customers.module.css';
 
-const tabItems = [
-    { label: 'Clients', href: '/customers', icon: <Users size={16} /> },
-    { label: 'Client Groups', href: '/customers/groups', icon: <Star size={16} /> },
-    { label: 'Account Statements', href: '/customers/statements', icon: <CreditCard size={16} /> },
-    { label: 'Last Visits', href: '/customers/last-visits', icon: <Clock size={16} /> },
-];
-
 export default function CustomersLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
+    const { t } = useTranslation();
+
+    const tabItems = [
+        { label: t('customers.tabClients'), href: '/customers', icon: <Users size={16} /> },
+        { label: t('customers.tabGroups'), href: '/customers/groups', icon: <Star size={16} /> },
+        { label: t('customers.tabStatements'), href: '/customers/statements', icon: <CreditCard size={16} /> },
+        { label: t('customers.tabVisits'), href: '/customers/last-visits', icon: <Clock size={16} /> },
+    ];
 
     return (
         <div className={styles.customersPage}>
@@ -30,20 +32,20 @@ export default function CustomersLayout({ children }: { children: React.ReactNod
             <div className={styles.stickyHeader}>
                 <div className={styles.headerContent}>
                     <div>
-                        <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' }}>Customers</h1>
+                        <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' }}>{t('sidebar.customers')}</h1>
                         <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginTop: 4 }}>
-                            Manage your client database and relationships.
+                            {t('customers.desc')}
                         </div>
                     </div>
                     <div className={styles.headerActions}>
                         <button className={styles.btnOutline}>
-                            <Upload size={16} /> Import
+                            <Upload size={16} /> {t('customers.import')}
                         </button>
                         <button className={styles.btnOutline}>
-                            <Download size={16} /> Export
+                            <Download size={16} /> {t('customers.export')}
                         </button>
                         <button className={styles.btnPrimary}>
-                            <Plus size={16} /> Add Client
+                            <Plus size={16} /> {t('customers.addClient')}
                         </button>
                     </div>
                 </div>

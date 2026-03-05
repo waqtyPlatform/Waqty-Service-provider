@@ -77,14 +77,19 @@ export default function PettyCashRefundPage() {
                 <div style={s.form}>
                     <div style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-4)' }}>{t('rtn.tabPetty')}: {entries[selected].description}</div>
                     <div style={{ padding: 'var(--space-3)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', marginBottom: 'var(--space-4)', fontSize: 'var(--text-sm)' }}>
-                        <div><strong>ID:</strong> {entries[selected].id}</div>
+                        <div><strong>{t('rtn.lblID')}:</strong> {entries[selected].id}</div>
                         <div><strong>{t('rtn.lblCategory')}:</strong> {entries[selected].category}</div>
                         <div><strong>{t('rtn.lblVendor')}:</strong> {entries[selected].vendor}</div>
                         <div style={{ display: 'flex', gap: '4px' }}><strong>{t('rtn.thAmount')}:</strong> <span dir="ltr">{entries[selected].amount} EGP</span></div>
                     </div>
                     <div style={{ marginBottom: 'var(--space-4)' }}>
                         <label style={s.label}>{t('rtn.lblReasonRefund')}</label>
-                        <select style={s.select}><option>Item Returned</option><option>Duplicate Entry</option><option>Wrong Amount</option><option>Other</option></select>
+                        <select style={s.select}>
+                            <option>{t('rtn.optItemReturned')}</option>
+                            <option>{t('rtn.optDupEntry')}</option>
+                            <option>{t('rtn.optWrongAmount')}</option>
+                            <option>{t('rtn.optOther')}</option>
+                        </select>
                     </div>
                     <div style={{ marginBottom: 'var(--space-4)' }}>
                         <label style={s.label}>{t('rtn.lblNotes')}</label>

@@ -3,18 +3,20 @@
 import React from 'react';
 import Link from 'next/link';
 
+import { useTranslation } from '@/hooks/useTranslation';
+
 const tabs = [
-    { label: 'Transaction Log', href: '/transactions' },
-    { label: 'Cash Sales', href: '/transactions/cash-sales' },
-    { label: 'Advance Pay', href: '/transactions/advance-payments' },
-    { label: 'Petty Cash', href: '/transactions/petty-cash' },
-    { label: 'Transfers', href: '/transactions/transfers' },
-    { label: 'Safe Balances', href: '/transactions/safe-balances' },
-    { label: 'Shifts', href: '/transactions/shifts' },
-    { label: 'Dailies', href: '/transactions/dailies' },
-    { label: 'Best Sales', href: '/transactions/best-sales' },
-    { label: 'Client Sales', href: '/transactions/client-sales' },
-    { label: 'Package Sales', href: '/transactions/package-sales' },
+    { labelKey: 'txn.tabLog', href: '/transactions' },
+    { labelKey: 'txn.tabCashSales', href: '/transactions/cash-sales' },
+    { labelKey: 'txn.tabAdvance', href: '/transactions/advance-payments' },
+    { labelKey: 'txn.tabPettyCash', href: '/transactions/petty-cash' },
+    { labelKey: 'txn.tabTransfers', href: '/transactions/transfers' },
+    { labelKey: 'txn.tabSafeBalances', href: '/transactions/safe-balances' },
+    { labelKey: 'txn.tabShifts', href: '/transactions/shifts' },
+    { labelKey: 'txn.tabDailies', href: '/transactions/dailies' },
+    { labelKey: 'txn.tabBestSales', href: '/transactions/best-sales' },
+    { labelKey: 'txn.tabClientSales', href: '/transactions/client-sales' },
+    { labelKey: 'txn.tabPackageSales', href: '/transactions/package-sales' },
 ];
 
 const data = [
@@ -50,35 +52,36 @@ const statusColors: Record<string, { bg: string; color: string }> = {
 };
 
 export default function PackageSalesPage() {
+    const { t, lang } = useTranslation();
     const totalRev = data.reduce((a, d) => a + d.price, 0);
     return (
-        <div style={s.page}>
+        <div style={{ ...s.page, direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
             <div style={s.tabBar}>
-                {tabs.map(t => <Link key={t.href} href={t.href} style={{ ...s.tab, ...(t.href === '/transactions/package-sales' ? s.tabActive : {}) }}>{t.label}</Link>)}
+                {tabs.map(tab => <Link key={tab.href} href={tab.href} style={{ ...s.tab, ...(tab.href === '/transactions/package-sales' ? s.tabActive : {}) }}>{t(tab.labelKey)}</Link>)}
             </div>
 
             <div style={s.kpis}>
-                <div style={s.kpi}><div style={s.kpiVal}>{totalRev.toLocaleString()} EGP</div><div style={s.kpiLbl}>Package Revenue</div></div>
-                <div style={s.kpi}><div style={s.kpiVal}>{data.length}</div><div style={s.kpiLbl}>Packages Sold</div></div>
-                <div style={s.kpi}><div style={s.kpiVal}>{data.filter(d => d.status === 'active').length}</div><div style={s.kpiLbl}>Active</div></div>
+                <div style={s.kpi}><div style={s.kpiVal} dir="ltr">{totalRev.toLocaleString()} EGP</div><div style={s.kpiLbl}>{t('txn.packages.revenue')}</div></div>
+                <div style={s.kpi}><div style={s.kpiVal} dir="ltr">{data.length}</div><div style={s.kpiLbl}>{t('txn.packages.sold')}</div></div>
+                <div style={s.kpi}><div style={s.kpiVal} dir="ltr">{data.filter(d => d.status === 'active').length}</div><div style={s.kpiLbl}>{t('txn.packages.active')}</div></div>
             </div>
 
             <table style={s.table}>
-                <thead><tr>{['ID', 'Date', 'Client', 'Package', 'Price', 'Sessions', 'Progress', 'Expires', 'Status'].map(h => <th key={h} style={s.th as React.CSSProperties}>{h}</th>)}</tr></thead>
+                <thead><tr>{['txn.petty.thID', 'txn.thDateTime', 'txn.thClient', 'txn.packages.thPackage', 'txn.packages.thPrice', 'txn.packages.thSessions', 'txn.packages.thProgress', 'txn.packages.thExpires', 'txn.thStatus'].map(h => <th key={h} style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t(h)}</th>)}</tr></thead>
                 <tbody>
                     {data.map(row => (
                         <tr key={row.id}>
-                            <td style={s.td}>{row.id}</td><td style={s.td}>{row.date}</td><td style={s.td}>{row.client}</td>
+                            <td style={s.td}>{row.id}</td><td style={s.td} dir="ltr">{row.date}</td><td style={s.td}>{row.client}</td>
                             <td style={{ ...s.td, fontWeight: 'var(--font-medium)' }}>{row.package}</td>
-                            <td style={{ ...s.td, fontWeight: 'var(--font-semibold)' }}>{row.price} EGP</td>
-                            <td style={s.td}>{row.sessionsUsed}/{row.sessionsTotal}</td>
+                            <td style={{ ...s.td, fontWeight: 'var(--font-semibold)' }} dir="ltr">{row.price.toLocaleString()} EGP</td>
+                            <td style={s.td} dir="ltr">{row.sessionsUsed}/{row.sessionsTotal}</td>
                             <td style={s.td}>
                                 <div style={s.progress}>
                                     <div style={{ ...s.progressFill, width: `${row.sessionsUsed / row.sessionsTotal * 100}%`, background: row.sessionsUsed === row.sessionsTotal ? 'var(--color-success)' : 'var(--color-primary-500)' }} />
                                 </div>
                             </td>
-                            <td style={s.td}>{row.expires}</td>
-                            <td style={s.td}><span style={{ ...s.badge, ...statusColors[row.status] }}>{row.status}</span></td>
+                            <td style={s.td} dir="ltr">{row.expires}</td>
+                            <td style={s.td}><span style={{ ...s.badge, ...statusColors[row.status] }}>{t(`txn.packages.st${row.status.charAt(0).toUpperCase() + row.status.slice(1)}` as never)}</span></td>
                         </tr>
                     ))}
                 </tbody>

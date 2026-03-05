@@ -3,18 +3,20 @@
 import React from 'react';
 import Link from 'next/link';
 
+import { useTranslation } from '@/hooks/useTranslation';
+
 const tabs = [
-    { label: 'Transaction Log', href: '/transactions' },
-    { label: 'Cash Sales', href: '/transactions/cash-sales' },
-    { label: 'Advance Pay', href: '/transactions/advance-payments' },
-    { label: 'Petty Cash', href: '/transactions/petty-cash' },
-    { label: 'Transfers', href: '/transactions/transfers' },
-    { label: 'Safe Balances', href: '/transactions/safe-balances' },
-    { label: 'Shifts', href: '/transactions/shifts' },
-    { label: 'Dailies', href: '/transactions/dailies' },
-    { label: 'Best Sales', href: '/transactions/best-sales' },
-    { label: 'Client Sales', href: '/transactions/client-sales' },
-    { label: 'Package Sales', href: '/transactions/package-sales' },
+    { labelKey: 'txn.tabLog', href: '/transactions' },
+    { labelKey: 'txn.tabCashSales', href: '/transactions/cash-sales' },
+    { labelKey: 'txn.tabAdvance', href: '/transactions/advance-payments' },
+    { labelKey: 'txn.tabPettyCash', href: '/transactions/petty-cash' },
+    { labelKey: 'txn.tabTransfers', href: '/transactions/transfers' },
+    { labelKey: 'txn.tabSafeBalances', href: '/transactions/safe-balances' },
+    { labelKey: 'txn.tabShifts', href: '/transactions/shifts' },
+    { labelKey: 'txn.tabDailies', href: '/transactions/dailies' },
+    { labelKey: 'txn.tabBestSales', href: '/transactions/best-sales' },
+    { labelKey: 'txn.tabClientSales', href: '/transactions/client-sales' },
+    { labelKey: 'txn.tabPackageSales', href: '/transactions/package-sales' },
 ];
 
 const data = [
@@ -38,28 +40,29 @@ const s: Record<string, React.CSSProperties> = {
 };
 
 export default function ShiftsPage() {
+    const { t, lang } = useTranslation();
     return (
-        <div style={s.page}>
+        <div style={{ ...s.page, direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
             <div style={s.tabBar}>
-                {tabs.map(t => <Link key={t.href} href={t.href} style={{ ...s.tab, ...(t.href === '/transactions/shifts' ? s.tabActive : {}) }}>{t.label}</Link>)}
+                {tabs.map(tab => <Link key={tab.href} href={tab.href} style={{ ...s.tab, ...(tab.href === '/transactions/shifts' ? s.tabActive : {}) }}>{t(tab.labelKey)}</Link>)}
             </div>
 
             <table style={s.table}>
-                <thead><tr>{['ID', 'Date', 'Cashier', 'Safe', 'Open', 'Close', 'Opening', 'Expected', 'Actual', 'Variance', 'Status'].map(h => <th key={h} style={s.th as React.CSSProperties}>{h}</th>)}</tr></thead>
+                <thead><tr>{['txn.petty.thID', 'txn.thDateTime', 'txn.shifts.thCashier', 'txn.shifts.thSafe', 'txn.shifts.thOpen', 'txn.shifts.thClose', 'txn.shifts.thOpening', 'txn.shifts.thExpected', 'txn.shifts.thActual', 'txn.shifts.thVariance', 'txn.thStatus'].map(h => <th key={h} style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t(h)}</th>)}</tr></thead>
                 <tbody>
                     {data.map(row => (
                         <tr key={row.id}>
-                            <td style={s.td}>{row.id}</td><td style={s.td}>{row.date}</td><td style={s.td}>{row.cashier}</td>
-                            <td style={s.td}>{row.safe}</td><td style={s.td}>{row.openTime}</td><td style={s.td}>{row.closeTime}</td>
-                            <td style={s.td}>{row.opening} EGP</td>
-                            <td style={{ ...s.td, fontWeight: 'var(--font-semibold)' }}>{row.expected.toLocaleString()} EGP</td>
-                            <td style={{ ...s.td, fontWeight: 'var(--font-semibold)' }}>{row.status === 'open' ? '-' : `${row.actual.toLocaleString()} EGP`}</td>
-                            <td style={{ ...s.td, fontWeight: 'var(--font-semibold)', color: row.variance < 0 ? 'var(--color-error)' : row.variance === 0 ? 'var(--color-success)' : 'var(--text-primary)' }}>
+                            <td style={s.td}>{row.id}</td><td style={s.td} dir="ltr">{row.date}</td><td style={s.td}>{row.cashier}</td>
+                            <td style={s.td}>{row.safe}</td><td style={s.td} dir="ltr">{row.openTime}</td><td style={s.td} dir="ltr">{row.closeTime}</td>
+                            <td style={s.td} dir="ltr">{row.opening} EGP</td>
+                            <td style={{ ...s.td, fontWeight: 'var(--font-semibold)' }} dir="ltr">{row.expected.toLocaleString()} EGP</td>
+                            <td style={{ ...s.td, fontWeight: 'var(--font-semibold)' }} dir="ltr">{row.status === 'open' ? '-' : `${row.actual.toLocaleString()} EGP`}</td>
+                            <td style={{ ...s.td, fontWeight: 'var(--font-semibold)', color: row.variance < 0 ? 'var(--color-error)' : row.variance === 0 ? 'var(--color-success)' : 'var(--text-primary)' }} dir="ltr">
                                 {row.status === 'open' ? '-' : `${row.variance} EGP`}
                             </td>
                             <td style={s.td}>
                                 <span style={{ ...s.badge, background: row.status === 'closed' ? 'var(--color-success-light)' : 'var(--color-info-light)', color: row.status === 'closed' ? 'var(--color-success)' : 'var(--color-info)' }}>
-                                    {row.status === 'closed' ? '✓ Closed' : '● Open'}
+                                    {row.status === 'closed' ? t('txn.shifts.statusClosed') : t('txn.shifts.statusOpen')}
                                 </span>
                             </td>
                         </tr>

@@ -4,18 +4,20 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Search, Download } from 'lucide-react';
 
+import { useTranslation } from '@/hooks/useTranslation';
+
 const tabs = [
-    { label: 'Transaction Log', href: '/transactions' },
-    { label: 'Cash Sales', href: '/transactions/cash-sales' },
-    { label: 'Advance Pay', href: '/transactions/advance-payments' },
-    { label: 'Petty Cash', href: '/transactions/petty-cash' },
-    { label: 'Transfers', href: '/transactions/transfers' },
-    { label: 'Safe Balances', href: '/transactions/safe-balances' },
-    { label: 'Shifts', href: '/transactions/shifts' },
-    { label: 'Dailies', href: '/transactions/dailies' },
-    { label: 'Best Sales', href: '/transactions/best-sales' },
-    { label: 'Client Sales', href: '/transactions/client-sales' },
-    { label: 'Package Sales', href: '/transactions/package-sales' },
+    { labelKey: 'txn.tabLog', href: '/transactions' },
+    { labelKey: 'txn.tabCashSales', href: '/transactions/cash-sales' },
+    { labelKey: 'txn.tabAdvance', href: '/transactions/advance-payments' },
+    { labelKey: 'txn.tabPettyCash', href: '/transactions/petty-cash' },
+    { labelKey: 'txn.tabTransfers', href: '/transactions/transfers' },
+    { labelKey: 'txn.tabSafeBalances', href: '/transactions/safe-balances' },
+    { labelKey: 'txn.tabShifts', href: '/transactions/shifts' },
+    { labelKey: 'txn.tabDailies', href: '/transactions/dailies' },
+    { labelKey: 'txn.tabBestSales', href: '/transactions/best-sales' },
+    { labelKey: 'txn.tabClientSales', href: '/transactions/client-sales' },
+    { labelKey: 'txn.tabPackageSales', href: '/transactions/package-sales' },
 ];
 
 const data = [
@@ -56,33 +58,34 @@ const groupColors: Record<string, { bg: string; color: string }> = {
 };
 
 export default function ClientSalesPage() {
+    const { t, lang } = useTranslation();
     const [search, setSearch] = useState('');
     const filtered = data.filter(d => d.name.toLowerCase().includes(search.toLowerCase()));
 
     return (
-        <div style={s.page}>
+        <div style={{ ...s.page, direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
             <div style={s.tabBar}>
-                {tabs.map(t => <Link key={t.href} href={t.href} style={{ ...s.tab, ...(t.href === '/transactions/client-sales' ? s.tabActive : {}) }}>{t.label}</Link>)}
+                {tabs.map(tab => <Link key={tab.href} href={tab.href} style={{ ...s.tab, ...(tab.href === '/transactions/client-sales' ? s.tabActive : {}) }}>{t(tab.labelKey)}</Link>)}
             </div>
 
             <div style={s.toolbar}>
-                <div style={s.searchBox as React.CSSProperties}><Search size={16} style={s.searchIcon as React.CSSProperties} /><input style={s.searchInput} placeholder="Search clients..." value={search} onChange={e => setSearch(e.target.value)} /></div>
-                <button style={s.exportBtn}><Download size={16} /> Export</button>
+                <div style={s.searchBox as React.CSSProperties}><Search size={16} style={{ ...s.searchIcon as React.CSSProperties, left: lang === 'ar' ? 'auto' : 12, right: lang === 'ar' ? 12 : 'auto' }} /><input style={{ ...s.searchInput, paddingLeft: lang === 'ar' ? 12 : 40, paddingRight: lang === 'ar' ? 40 : 12 }} placeholder={t('txn.client.search')} value={search} onChange={e => setSearch(e.target.value)} /></div>
+                <button style={s.exportBtn}><Download size={16} /> {t('txn.export')}</button>
             </div>
 
             <table style={s.table}>
-                <thead><tr>{['Client', 'Group', 'Visits', 'Total Spend', '', 'Avg Ticket', 'Top Service', 'Last Visit'].map((h, i) => <th key={i} style={s.th as React.CSSProperties}>{h}</th>)}</tr></thead>
+                <thead><tr>{['txn.thClient', 'txn.client.thGroup', 'txn.client.thVisits', 'txn.client.thTotalSpend', '', 'txn.client.thAvgTicket', 'txn.client.thTopService', 'txn.client.thLastVisit'].map((h, i) => <th key={i} style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{h ? t(h) : ''}</th>)}</tr></thead>
                 <tbody>
                     {filtered.map(row => (
                         <tr key={row.id}>
                             <td style={{ ...s.td, fontWeight: 'var(--font-medium)' }}>{row.name}</td>
                             <td style={s.td}><span style={{ ...s.badge, ...groupColors[row.group] }}>{row.group}</span></td>
-                            <td style={s.td}>{row.visits}</td>
-                            <td style={{ ...s.td, fontWeight: 'var(--font-bold)', color: 'var(--color-primary-600)' }}>{row.totalSpend.toLocaleString()} EGP</td>
-                            <td style={s.td}><div style={s.bar}><div style={{ ...s.barFill, width: `${row.totalSpend / maxSpend * 100}%` }} /></div></td>
-                            <td style={s.td}>{row.avgTicket} EGP</td>
+                            <td style={s.td} dir="ltr">{row.visits}</td>
+                            <td style={{ ...s.td, fontWeight: 'var(--font-bold)', color: 'var(--color-primary-600)' }} dir="ltr">{row.totalSpend.toLocaleString()} EGP</td>
+                            <td style={s.td}><div style={{ ...s.bar, transform: lang === 'ar' ? 'scaleX(-1)' : 'none' }}><div style={{ ...s.barFill, width: `${row.totalSpend / maxSpend * 100}%` }} /></div></td>
+                            <td style={s.td} dir="ltr">{row.avgTicket} EGP</td>
                             <td style={s.td}>{row.topService}</td>
-                            <td style={s.td}>{row.lastVisit}</td>
+                            <td style={s.td} dir="ltr">{row.lastVisit}</td>
                         </tr>
                     ))}
                 </tbody>

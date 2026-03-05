@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Fingerprint, Smartphone, Monitor } from 'lucide-react';
 import { Switch, useToast } from '@/components/ui';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const initialMethods = [
     { id: 1, name: 'Fingerprint Scanner', type: 'Biometric', device: 'BioStation A2', schedule: 'All Shifts', active: true, icon: 'fingerprint' },
@@ -27,18 +28,19 @@ const s: Record<string, React.CSSProperties> = {
 export default function AttendMethodsPage() {
     const [methodsList, setMethodsList] = useState(initialMethods);
     const { addToast } = useToast();
+    const { t, lang } = useTranslation();
 
     const handleToggle = (id: number, currentStatus: boolean, name: string) => {
         setMethodsList(methodsList.map(m => m.id === id ? { ...m, active: !currentStatus } : m));
         addToast(
             !currentStatus ? 'success' : 'warning',
-            `${name} has been ${!currentStatus ? 'enabled' : 'disabled'}.`
+            `${name} ${!currentStatus ? t('attendMethods.hasBeenEnabled') : t('attendMethods.hasBeenDisabled')}`
         );
     };
 
     return (
-        <div style={s.page}>
-            <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' }}>Attendance Methods</div>
+        <div style={{ ...s.page, direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
+            <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' }}>{t('attendMethods.title')}</div>
             <div style={s.grid}>
                 {methodsList.map(m => (
                     <div key={m.id} style={{ ...s.card, opacity: m.active ? 1 : 0.6, transition: 'opacity 0.2s' }}>
@@ -57,8 +59,8 @@ export default function AttendMethodsPage() {
                                 onChange={() => handleToggle(m.id, m.active, m.name)}
                             />
                         </div>
-                        <div style={s.row}><span style={s.label}>Device</span><span style={s.val}>{m.device}</span></div>
-                        <div style={s.row}><span style={s.label}>Schedule</span><span style={s.val}>{m.schedule}</span></div>
+                        <div style={s.row}><span style={s.label}>{t('attendMethods.device')}</span><span style={s.val}>{m.device}</span></div>
+                        <div style={s.row}><span style={s.label}>{t('attendMethods.schedule')}</span><span style={s.val}>{m.schedule}</span></div>
                     </div>
                 ))}
             </div>

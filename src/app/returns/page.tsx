@@ -152,9 +152,9 @@ export default function ReturnsPage() {
                                             <DropdownMenu
                                                 trigger={<button className={styles.actionBtn}><MoreVertical size={16} /></button>}
                                                 items={[
-                                                    { label: 'View Return', icon: <Search size={14} />, onClick: () => addToast('info', 'Viewing return details') },
-                                                    { label: 'Approve', icon: <CheckCircle2 size={14} />, onClick: () => addToast('success', 'Return approved') },
-                                                    { label: 'Reject', icon: <XCircle size={14} />, onClick: () => addToast('error', 'Return rejected'), destructive: true },
+                                                    { label: t('rtn.actionView'), icon: <Search size={14} />, onClick: () => addToast('info', 'Viewing return details') },
+                                                    { label: t('rtn.actionApprove'), icon: <CheckCircle2 size={14} />, onClick: () => addToast('success', 'Return approved') },
+                                                    { label: t('rtn.actionReject'), icon: <XCircle size={14} />, onClick: () => addToast('error', 'Return rejected'), destructive: true },
                                                 ]}
                                             />
                                         </td>
@@ -165,7 +165,9 @@ export default function ReturnsPage() {
                     </table>
                 </div>
                 <div className={styles.pag}>
-                    <span className={styles.pageInfo}>Showing {filteredReturns.length} of {returns.length}</span>
+                    <span className={styles.pageInfo}>
+                        {t('exp.showing').replace('{visible}', filteredReturns.length.toString()).replace('{total}', returns.length.toString())}
+                    </span>
                 </div>
             </div>
         </div>

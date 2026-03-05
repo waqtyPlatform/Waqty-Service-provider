@@ -19,6 +19,7 @@ import {
     Badge
 } from '@/components/ui';
 import styles from './page.module.css';
+import { useTranslation } from '@/hooks/useTranslation';
 
 // Mock Data
 const branch = {
@@ -50,22 +51,23 @@ const branch = {
 export default function BranchSettingsPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = React.use(params);
     const [activeTab, setActiveTab] = useState('general');
+    const { t, lang } = useTranslation();
 
     const renderGeneral = () => (
         <div className={styles.mainPanel}>
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
-                    <span className={styles.cardTitle}>Basic Information</span>
+                    <span className={styles.cardTitle}>{t('branchSettings.tabGeneral')}</span>
                 </div>
                 <div className={styles.cardBody}>
-                    <Input label="Branch Name" defaultValue={branch.name} />
-                    <Input label="Address" defaultValue={branch.address} />
+                    <Input label={t('branchSettings.branchName')} defaultValue={branch.name} />
+                    <Input label={t('branchSettings.address')} defaultValue={branch.address} />
                     <div className={styles.row}>
                         <div className={styles.col}>
-                            <Input label="Phone Number" defaultValue={branch.phone} />
+                            <Input label={t('branchSettings.phone')} defaultValue={branch.phone} />
                         </div>
                         <div className={styles.col}>
-                            <Input label="Manager Name" defaultValue={branch.manager} />
+                            <Input label={t('branchSettings.manager')} defaultValue={branch.manager} />
                         </div>
                     </div>
                 </div>
@@ -78,18 +80,18 @@ export default function BranchSettingsPage({ params }: { params: Promise<{ id: s
                 <div className={styles.cardBody}>
                     <div className={styles.row}>
                         <div className={styles.col}>
-                            <Input label="Tax ID / VAT Number" defaultValue={branch.taxId} />
+                            <Input label={t('branchSettings.taxId')} defaultValue={branch.taxId} />
                         </div>
                         <div className={styles.col}>
                             <Select
-                                label="Currency"
+                                label={t('branchSettings.currency')}
                                 options={[{ value: 'EGP', label: 'EGP - Egyptian Pound' }, { value: 'USD', label: 'USD - US Dollar' }]}
                                 defaultValue={branch.currency}
                             />
                         </div>
                     </div>
-                    <Checkbox label="Enable Tax Calculation" checked={true} />
-                    <Checkbox label="Print Tax ID on Receipts" checked={true} />
+                    <Checkbox label={t('branchSettings.enableTax')} checked={true} />
+                    <Checkbox label={t('branchSettings.printTaxId')} checked={true} />
                 </div>
             </div>
         </div>
@@ -99,8 +101,8 @@ export default function BranchSettingsPage({ params }: { params: Promise<{ id: s
         <div className={styles.mainPanel}>
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
-                    <span className={styles.cardTitle}>Opening Hours</span>
-                    <Button size="sm" variant="outline">Copy from other branch</Button>
+                    <span className={styles.cardTitle}>{t('branchSettings.tabHours')}</span>
+                    <Button size="sm" variant="outline">{t('branchSettings.tabHours')}</Button>
                 </div>
                 <div className={styles.cardBody}>
                     <div className={styles.hoursGrid}>
@@ -129,17 +131,17 @@ export default function BranchSettingsPage({ params }: { params: Promise<{ id: s
         <div className={styles.mainPanel}>
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
-                    <span className={styles.cardTitle}>Rooms & Resources</span>
-                    <Button size="sm"><Plus size={16} /> Add Room</Button>
+                    <span className={styles.cardTitle}>{t('branchSettings.tabRooms')}</span>
+                    <Button size="sm"><Plus size={16} /> {t('branchSettings.addRoom')}</Button>
                 </div>
                 <div className="table-wrapper">
                     <table className="data-table">
                         <thead>
                             <tr>
-                                <th>Name</th>
-                                <th>Type</th>
-                                <th>Capacity</th>
-                                <th>Actions</th>
+                                <th>{t('branchSettings.roomName')}</th>
+                                <th>{t('branchSettings.type')}</th>
+                                <th>{t('branchSettings.capacity')}</th>
+                                <th>{t('fpAreas.colActions')}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -164,11 +166,11 @@ export default function BranchSettingsPage({ params }: { params: Promise<{ id: s
     );
 
     return (
-        <div className={styles.page}>
+        <div className={styles.page} style={{ direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
             <div className={styles.header}>
                 <div className={styles.titleGroup}>
                     <div className={styles.subtitle}>
-                        <Building2 size={14} /> Branch Settings
+                        <Building2 size={14} /> {t('branchSettings.title')}
                     </div>
                     <h1>
                         {branch.name}
@@ -176,8 +178,8 @@ export default function BranchSettingsPage({ params }: { params: Promise<{ id: s
                     </h1>
                 </div>
                 <div className={styles.actions}>
-                    <Button variant="outline">Back to List</Button>
-                    <Button><Save size={16} /> Save Changes</Button>
+                    <Button variant="outline">{t('branchSettings.backToBranches')}</Button>
+                    <Button><Save size={16} /> {t('branchSettings.saveChanges')}</Button>
                 </div>
             </div>
 
@@ -185,9 +187,9 @@ export default function BranchSettingsPage({ params }: { params: Promise<{ id: s
                 active={activeTab}
                 onChange={setActiveTab}
                 items={[
-                    { key: 'general', label: 'General', icon: <Settings size={16} /> },
-                    { key: 'hours', label: 'Opening Hours', icon: <Clock size={16} /> },
-                    { key: 'rooms', label: 'Rooms & Resources', icon: <LayoutGrid size={16} /> },
+                    { key: 'general', label: t('branchSettings.tabGeneral'), icon: <Settings size={16} /> },
+                    { key: 'hours', label: t('branchSettings.tabHours'), icon: <Clock size={16} /> },
+                    { key: 'rooms', label: t('branchSettings.tabRooms'), icon: <LayoutGrid size={16} /> },
                 ]}
             />
 

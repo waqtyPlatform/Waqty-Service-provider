@@ -17,6 +17,7 @@ import {
     Badge
 } from '@/components/ui';
 import styles from './page.module.css';
+import { useTranslation } from '@/hooks/useTranslation';
 import {
     ResponsiveContainer,
     BarChart,
@@ -529,6 +530,7 @@ const tableStyles: Record<string, React.CSSProperties> = {
 export default function DynamicReportPage({ params }: { params: Promise<{ category: string; report: string }> }) {
     const { category, report } = React.use(params);
     const data = generateData(category, report);
+    const { t, lang } = useTranslation();
 
     const [search, setSearch] = useState('');
     const [sortCol, setSortCol] = useState<number | null>(null);
@@ -578,18 +580,18 @@ export default function DynamicReportPage({ params }: { params: Promise<{ catego
     const breadcrumb = `${category.charAt(0).toUpperCase() + category.slice(1)} › ${report.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`;
 
     return (
-        <div className={styles.page}>
+        <div className={styles.page} style={{ direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
             {/* Header — NO duplicate tabs */}
             <div className={styles.header}>
                 <div className={styles.titleGroup}>
                     <Link href={`/reports/${category}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)', color: 'var(--color-primary-600)', fontSize: 'var(--text-sm)', textDecoration: 'none', marginBottom: 'var(--space-1)' }}>
-                        <ChevronLeft size={16} /> Back to {category.charAt(0).toUpperCase() + category.slice(1)}
+                        <ChevronLeft size={16} /> {t('rptDynamic.backToReports')}
                     </Link>
                     <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' }}>{data.title}</h1>
                     <div className={styles.subtitle}>{breadcrumb}</div>
                 </div>
                 <div className={styles.actions}>
-                    <Button variant="outline"><Download size={16} /> Export PDF</Button>
+                    <Button variant="outline"><Download size={16} /> {t('rptDynamic.exportCsv')}</Button>
                 </div>
             </div>
 
@@ -615,7 +617,7 @@ export default function DynamicReportPage({ params }: { params: Promise<{ catego
                     <div style={{ position: 'relative' }}>
                         <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }} />
                         <input
-                            placeholder="Search table..."
+                            placeholder={t('rptDynamic.searchPlaceholder')}
                             value={search}
                             onChange={e => setSearch(e.target.value)}
                             style={{ paddingLeft: 32, height: 38, width: 200, border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}
@@ -674,7 +676,7 @@ export default function DynamicReportPage({ params }: { params: Promise<{ catego
                         </thead>
                         <tbody>
                             {filteredRows.length === 0 ? (
-                                <tr><td colSpan={data.columns.length + 1} style={{ ...tableStyles.td, textAlign: 'center', color: 'var(--text-tertiary)', padding: 'var(--space-6)' }}>No data matches your search</td></tr>
+                                <tr><td colSpan={data.columns.length + 1} style={{ ...tableStyles.td, textAlign: 'center', color: 'var(--text-tertiary)', padding: 'var(--space-6)' }}>{t('rptDynamic.noResults')}</td></tr>
                             ) : (
                                 filteredRows.map((row: ReportRow, i: number) => (
                                     <tr key={i} style={{ cursor: row.action ? 'pointer' : 'default' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-secondary)'} onMouseLeave={e => e.currentTarget.style.background = ''}>

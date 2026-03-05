@@ -3,18 +3,20 @@
 import React from 'react';
 import Link from 'next/link';
 
+import { useTranslation } from '@/hooks/useTranslation';
+
 const tabs = [
-    { label: 'Transaction Log', href: '/transactions' },
-    { label: 'Cash Sales', href: '/transactions/cash-sales' },
-    { label: 'Advance Pay', href: '/transactions/advance-payments' },
-    { label: 'Petty Cash', href: '/transactions/petty-cash' },
-    { label: 'Transfers', href: '/transactions/transfers' },
-    { label: 'Safe Balances', href: '/transactions/safe-balances' },
-    { label: 'Shifts', href: '/transactions/shifts' },
-    { label: 'Dailies', href: '/transactions/dailies' },
-    { label: 'Best Sales', href: '/transactions/best-sales' },
-    { label: 'Client Sales', href: '/transactions/client-sales' },
-    { label: 'Package Sales', href: '/transactions/package-sales' },
+    { labelKey: 'txn.tabLog', href: '/transactions' },
+    { labelKey: 'txn.tabCashSales', href: '/transactions/cash-sales' },
+    { labelKey: 'txn.tabAdvance', href: '/transactions/advance-payments' },
+    { labelKey: 'txn.tabPettyCash', href: '/transactions/petty-cash' },
+    { labelKey: 'txn.tabTransfers', href: '/transactions/transfers' },
+    { labelKey: 'txn.tabSafeBalances', href: '/transactions/safe-balances' },
+    { labelKey: 'txn.tabShifts', href: '/transactions/shifts' },
+    { labelKey: 'txn.tabDailies', href: '/transactions/dailies' },
+    { labelKey: 'txn.tabBestSales', href: '/transactions/best-sales' },
+    { labelKey: 'txn.tabClientSales', href: '/transactions/client-sales' },
+    { labelKey: 'txn.tabPackageSales', href: '/transactions/package-sales' },
 ];
 
 const data = [
@@ -44,42 +46,43 @@ const s: Record<string, React.CSSProperties> = {
 };
 
 export default function DailiesPage() {
+    const { t, lang } = useTranslation();
     const totalRev = data.reduce((a, d) => a + d.revenue, 0);
     return (
-        <div style={s.page}>
+        <div style={{ ...s.page, direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
             <div style={s.tabBar}>
-                {tabs.map(t => <Link key={t.href} href={t.href} style={{ ...s.tab, ...(t.href === '/transactions/dailies' ? s.tabActive : {}) }}>{t.label}</Link>)}
+                {tabs.map(tab => <Link key={tab.href} href={tab.href} style={{ ...s.tab, ...(tab.href === '/transactions/dailies' ? s.tabActive : {}) }}>{t(tab.labelKey)}</Link>)}
             </div>
 
             <div style={s.kpis}>
-                <div style={s.kpi}><div style={s.kpiVal}>{totalRev.toLocaleString()} EGP</div><div style={s.kpiLbl}>Weekly Revenue</div></div>
-                <div style={s.kpi}><div style={s.kpiVal}>{Math.round(totalRev / 7).toLocaleString()} EGP</div><div style={s.kpiLbl}>Daily Average</div></div>
-                <div style={s.kpi}><div style={s.kpiVal}>{data.filter(d => d.status === 'closed').length}/{data.length}</div><div style={s.kpiLbl}>Days Closed</div></div>
+                <div style={s.kpi}><div style={s.kpiVal} dir="ltr">{totalRev.toLocaleString()} EGP</div><div style={s.kpiLbl}>{t('txn.dailies.weekly')}</div></div>
+                <div style={s.kpi}><div style={s.kpiVal} dir="ltr">{Math.round(totalRev / 7).toLocaleString()} EGP</div><div style={s.kpiLbl}>{t('txn.dailies.avg')}</div></div>
+                <div style={s.kpi}><div style={s.kpiVal} dir="ltr">{data.filter(d => d.status === 'closed').length}/{data.length}</div><div style={s.kpiLbl}>{t('txn.dailies.closed')}</div></div>
             </div>
 
             <table style={s.table}>
-                <thead><tr>{['Date', 'Revenue', 'Cash / Card / Other', 'Shifts', 'Day Status'].map(h => <th key={h} style={s.th as React.CSSProperties}>{h}</th>)}</tr></thead>
+                <thead><tr>{['txn.dailies.thDate', 'txn.dailies.thRevenue', 'txn.dailies.thBreakdown', 'txn.dailies.thShifts', 'txn.dailies.thDayStatus'].map(h => <th key={h} style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t(h)}</th>)}</tr></thead>
                 <tbody>
                     {data.map(row => (
                         <tr key={row.date}>
-                            <td style={{ ...s.td, fontWeight: 'var(--font-medium)' }}>{row.date}</td>
-                            <td style={{ ...s.td, fontWeight: 'var(--font-bold)', color: 'var(--color-primary-600)' }}>{row.revenue.toLocaleString()} EGP</td>
+                            <td style={{ ...s.td, fontWeight: 'var(--font-medium)' }} dir="ltr"><span style={{ direction: 'ltr', display: 'inline-block' }}>{row.date}</span></td>
+                            <td style={{ ...s.td, fontWeight: 'var(--font-bold)', color: 'var(--color-primary-600)' }} dir="ltr">{row.revenue.toLocaleString()} EGP</td>
                             <td style={s.td}>
                                 <div style={{ display: 'flex', gap: 'var(--space-3)', fontSize: 'var(--text-xs)', marginBottom: 4 }}>
-                                    <span style={{ color: 'var(--color-success)' }}>{Math.round(row.cash / row.revenue * 100)}% Cash</span>
-                                    <span style={{ color: 'var(--color-info)' }}>{Math.round(row.card / row.revenue * 100)}% Card</span>
-                                    <span style={{ color: 'var(--color-warning)' }}>{Math.round(row.other / row.revenue * 100)}% Other</span>
+                                    <span style={{ color: 'var(--color-success)' }} dir="ltr">{Math.round(row.cash / row.revenue * 100)}% {t('txn.dailies.lblCash')}</span>
+                                    <span style={{ color: 'var(--color-info)' }} dir="ltr">{Math.round(row.card / row.revenue * 100)}% {t('txn.dailies.lblCard')}</span>
+                                    <span style={{ color: 'var(--color-warning)' }} dir="ltr">{Math.round(row.other / row.revenue * 100)}% {t('txn.dailies.lblOther')}</span>
                                 </div>
-                                <div style={s.bar}>
+                                <div style={{ ...s.bar, transform: lang === 'ar' ? 'scaleX(-1)' : 'none' }}>
                                     <div style={{ width: `${row.cash / row.revenue * 100}%`, background: 'var(--color-success)', borderRadius: 3 }} />
                                     <div style={{ width: `${row.card / row.revenue * 100}%`, background: 'var(--color-info)', borderRadius: 3 }} />
                                     <div style={{ width: `${row.other / row.revenue * 100}%`, background: 'var(--color-warning)', borderRadius: 3 }} />
                                 </div>
                             </td>
-                            <td style={s.td}>{row.closedShifts}/{row.shifts}</td>
+                            <td style={s.td} dir="ltr">{row.closedShifts}/{row.shifts}</td>
                             <td style={s.td}>
                                 <span style={{ ...s.badge, background: row.status === 'closed' ? 'var(--color-success-light)' : 'var(--color-info-light)', color: row.status === 'closed' ? 'var(--color-success)' : 'var(--color-info)' }}>
-                                    {row.status === 'closed' ? '✓ Closed' : '● Open'}
+                                    {row.status === 'closed' ? t('txn.dailies.statusClosed') : t('txn.dailies.statusOpen')}
                                 </span>
                             </td>
                         </tr>

@@ -338,7 +338,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
             <div className={styles.header}>
                 <div style={{ marginBottom: 'var(--space-4)' }}>
                     <Button variant="ghost" onClick={() => router.push('/employees')} size="sm">
-                        {"← Back to Employees"}
+                        {t('empProfile.backToList')}
                     </Button>
                 </div>
                 <div className={styles.headerTop}>
@@ -351,7 +351,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                             </h1>
                             <div className={styles.meta}>
                                 <span className={styles.metaItem}><Briefcase size={14} className={lang === 'ar' ? 'ml-1' : 'mr-1'} /> {employee.department}</span>
-                                <span className={styles.metaItem}><User size={14} className={lang === 'ar' ? 'ml-1' : 'mr-1'} /> ID: {employee.id}</span>
+                                <span className={styles.metaItem}><User size={14} className={lang === 'ar' ? 'ml-1' : 'mr-1'} /> ID: <span dir="ltr">{employee.id}</span></span>
                                 <Badge color="success">{t('empProfile.activeBadge')}</Badge>
                             </div>
                         </div>
@@ -382,7 +382,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                         <span className={styles.statLabel}>{t('empProfile.joinedLabel')}</span>
                     </div>
                     <div className={styles.statItem}>
-                        <span className={styles.statValue}>{employee.phone}</span>
+                        <span className={styles.statValue} dir="ltr">{employee.phone}</span>
                         <span className={styles.statLabel}>{t('empProfile.phoneLabel')}</span>
                     </div>
                 </div>

@@ -1,0 +1,770 @@
+{
+  "src\\app\\bookings\\list\\page.tsx": [
+    "setSearch(e.target.value)}\r\n                    />",
+    "setStatusFilter(e.target.value)}\r\n                >",
+    "setPaymentFilter(e.target.value)}\r\n                >"
+  ],
+  "src\\app\\bookings\\new\\page.tsx": [
+    "setClientName(e.target.value)}\r\n                            />",
+    "setClientPhone(e.target.value)}\r\n                                />",
+    "setSelectedDate(e.target.value)} />",
+    "setDiscount(Number(e.target.value))} />"
+  ],
+  "src\\app\\bookings\\page.tsx": [
+    "Monday, Feb 17, 2026",
+    "b.empIndex === empIndex && b.startSlot === slotIndex\r\n                                        );\r\n\r\n                                        return (",
+    "router.push('/bookings/BK-1040')}\r\n                        >",
+    "Maryam Ibrahim",
+    "Olaplex Treatment",
+    "in 23 min",
+    "4,280 EGP",
+    "from 14 bookings"
+  ],
+  "src\\app\\bookings\\print\\page.tsx": [
+    "window.print()}>"
+  ],
+  "src\\app\\bookings\\rooms\\page.tsx": [
+    "Tuesday, February 17, 2026",
+    "b.start === i);\r\n                                return ("
+  ],
+  "src\\app\\bookings\\[id]\\page.tsx": [
+    "addToast('info', 'Printing booking receipt...')}>",
+    "addToast('info', 'Edit mode enabled')}>",
+    "addToast('error', 'Booking cancelled successfully')}>",
+    "addToast('success', 'Client checked in successfully')}>",
+    "0 ? t('bk.lblPayDue') : t('bk.lblPaidInFull')}",
+    "addToast('info', 'Edit client profile clicked')}>",
+    "Created",
+    "• Feb 15, 10:00 AM",
+    "by Receptionist",
+    "Deposit Paid",
+    "• Feb 15, 10:05 AM",
+    "500 EGP (Credit Card)",
+    "Confirmed",
+    "• Feb 17, 09:00 AM",
+    "SMS Reminder Sent"
+  ],
+  "src\\app\\customers\\groups\\page.tsx": [
+    "(null);\r\n\r\n    const filtered = groups.filter(g => g.name.toLowerCase().includes(search.toLowerCase()));\r\n\r\n    return (",
+    "setSearch(e.target.value)} />",
+    "setIsAddOpen(true)}>"
+  ],
+  "src\\app\\customers\\last-visits\\page.tsx": [
+    "d.client.toLowerCase().includes(search.toLowerCase()));\r\n\r\n    return (",
+    "setSearch(e.target.value)} />"
+  ],
+  "src\\app\\customers\\layout.tsx": [
+    "Customers",
+    "Manage your client database and relationships.",
+    "Import",
+    "Export",
+    "Add Client"
+  ],
+  "src\\app\\customers\\page.tsx": [
+    "c.vip).length}",
+    "c.group === 'New').length}",
+    "c.status === 'inactive').length}",
+    "setSearch(e.target.value)}\r\n                    />",
+    "setGroupFilter(e.target.value)}\r\n                    >",
+    "VIP",
+    "Regular",
+    "New",
+    "setIsAddOpen(true)}>",
+    "Client",
+    "Contact",
+    "Group",
+    "Visits",
+    "Total Spend",
+    "Last Visit",
+    "Flags",
+    "n[0]).join('').slice(0, 2)}",
+    "Allergy"
+  ],
+  "src\\app\\customers\\statements\\page.tsx": [
+    "d.client.toLowerCase().includes(search.toLowerCase()));\r\n    const totalClosing = data.reduce((a, d) => a + d.closing, 0);\r\n\r\n    return (",
+    "d.closing > 0).length}",
+    "a + d.credits, 0).toLocaleString()} EGP",
+    "setSearch(e.target.value)} />"
+  ],
+  "src\\app\\customers\\[id]\\page.tsx": [
+    "Latex sensitivity reported on Jan 20, 2024.",
+    "Client prefers evening appointments. Usually requests tea with no sugar.\r\n                            Has sensitive scalp, avoid strong chemical shampoos.",
+    "VIP",
+    "Latex Allergy",
+    "Weekend",
+    "Big Spender",
+    ");\r\n\r\n    const renderBookings = () => (",
+    "router.push('/bookings/new')}>",
+    ");\r\n\r\n    const renderSales = () => (",
+    "r.type === reviewsFilter);\r\n\r\n        return (",
+    ");\r\n    };\r\n\r\n    return ("
+  ],
+  "src\\app\\employees\\attend-methods\\page.tsx": [
+    "Attendance Methods",
+    ": m.icon === 'smartphone' ?",
+    "handleToggle(m.id, m.active, m.name)}\r\n                            />",
+    "Device",
+    "Schedule"
+  ],
+  "src\\app\\employees\\attendance\\page.tsx": [
+    "d.status === 'present').length}",
+    "d.status === 'late').length}",
+    "d.status === 'absent').length}",
+    "d.status === 'early_leave').length}",
+    "setSearch(e.target.value)} />",
+    "addToast('info', t('attendance.toastExporting'))}>",
+    "setIsAddOpen(true)}>",
+    "openEdit(row)} title=\"Edit Record\">"
+  ],
+  "src\\app\\employees\\attendance-settings\\page.tsx": [
+    "handleChange('autoDeduct', val)} />",
+    "handleChange('notifyManager', val)} />"
+  ],
+  "src\\app\\employees\\commission-settings\\page.tsx": [
+    "},\r\n    ];\r\n\r\n    // State for each tab\r\n    const [serviceRates, setServiceRates] = useState(initialServiceRates);\r\n    const [targetRules, setTargetRules] = useState(initialTargetRules);\r\n    const [segmentRates, setSegmentRates] = useState(initialSegmentRates);\r\n    const [extractionRules, setExtractionRules] = useState(initialExtractionRules);\r\n\r\n    // Modal state\r\n    const [modalOpen, setModalOpen] = useState(false);\r\n    const [modalMode, setModalMode] = useState",
+    "('add');\r\n    const [editId, setEditId] = useState",
+    "(null);\r\n\r\n    // Form fields (shared across modals, tab-specific)\r\n    const [form, setForm] = useState",
+    ");\r\n        if (activeTab === 'target') return (",
+    ");\r\n        if (activeTab === 'segment') return (",
+    ");\r\n        if (activeTab === 'extraction') return (",
+    ");\r\n        return null;\r\n    };\r\n\r\n    // ─── Table Renderers ────────────\r\n    const renderServiceTable = () => (",
+    ") : serviceRates.map(r => (",
+    "openEdit(r.id, r)}>",
+    "handleDelete(r.id)}>",
+    ");\r\n\r\n    const renderTargetTable = () => (",
+    ") : targetRules.map(r => (",
+    ");\r\n\r\n    const renderSegmentTable = () => (",
+    ") : segmentRates.map(r => (",
+    ");\r\n\r\n    const renderExtractionTable = () => (",
+    ") : extractionRules.map(r => (",
+    "setModalOpen(false)}>"
+  ],
+  "src\\app\\employees\\commissions\\page.tsx": [
+    "= startDate) && (!endDate || item.date",
+    "serviceFilter === 'All' || item.service === serviceFilter);\r\n    }, [aggregatedExtraction, serviceFilter]);\r\n\r\n    const totalExtGross3 = tab3Data.reduce((acc: number, row: AggregatedExtraction) => acc + row.revenue, 0);\r\n    const totalExtCost3 = tab3Data.reduce((acc: number, row: AggregatedExtraction) => acc + row.extractionCost, 0);\r\n    const totalExtNet3 = tab3Data.reduce((acc: number, row: AggregatedExtraction) => acc + row.netRevenue, 0);\r\n    const totalExtCommission3 = tab3Data.reduce((acc: number, row: AggregatedExtraction) => acc + row.newCommission, 0);\r\n\r\n    return (",
+    ")\r\n                ) : activeTab === 1 ? (\r\n                    tab1Data.length > 0 ? (",
+    ")\r\n                ) : activeTab === 2 ? (\r\n                    tab2Data.length > 0 ? (",
+    ")\r\n                ) : activeTab === 3 ? (\r\n                    tab3Data.length > 0 ? (",
+    ")\r\n                ) : null}"
+  ],
+  "src\\app\\employees\\departments\\page.tsx": [
+    "('');\r\n    const [newDeptStaff, setNewDeptStaff] = useState",
+    "setSearch(e.target.value)}\r\n                    />",
+    "setIsAddOpen(true)}>",
+    "setNewDeptStaff(newDeptStaff.filter(s => s.id !== staff.id))} />",
+    "setIsAddStaffOpen(true)}>"
+  ],
+  "src\\app\\employees\\fingerprints\\page.tsx": [
+    "Fingerprint Management",
+    "setSearch(e.target.value)} />",
+    "} title=\"No fingerprint records found\" description=\"Adjust your filters or search query to find what you're looking for.\" />\n            )}",
+    "Cancel",
+    "setIsDeleteOpen(false)}>Cancel",
+    "Confirm Clear",
+    "Are you sure you want to permanently clear the enrolled fingerprint data for",
+    "? They will need to re-enroll on the device to authenticate."
+  ],
+  "src\\app\\employees\\layout.tsx": [
+    "pathname === tab.href);\r\n    const showHeaderContent = pathname === '/employees';\r\n    const showStickyHeader = showHeaderContent || isTabPage;\r\n\r\n    return (",
+    "Employees",
+    "Manage your team, roles, and performance.",
+    "window.dispatchEvent(new Event('openAddEmployee'))}>",
+    "Add Employee"
+  ],
+  "src\\app\\employees\\page.tsx": [
+    "e.id !== selectedEmp?.id));\r\n        setIsDeleteOpen(false);\r\n        addToast('success', 'Employee removed securely');\r\n    };\r\n\r\n\r\n\r\n    return (",
+    "setSearch(e.target.value)}\r\n                    />",
+    "Today",
+    "Rating",
+    "Revenue",
+    "}\r\n                        title=\"No employees found\"\r\n                        description=\"We couldn't find any employees matching your search criteria.\"\r\n                    />"
+  ],
+  "src\\app\\employees\\payroll\\page.tsx": [
+    "('summary');\r\n\r\n    // Summary state\r\n    const [month, setMonth] = useState('2026-02');\r\n    const [statusFilter, setStatusFilter] = useState('all');\r\n    const [searchSummary, setSearchSummary] = useState('');\r\n    const [payrollStatus, setPayrollStatus] = useState",
+    ">(initialPayrollStatus);\r\n    const [confirmPay, setConfirmPay] = useState",
+    "(null);\r\n\r\n    // History state\r\n    const [historySearch, setHistorySearch] = useState('');\r\n    const [historyType, setHistoryType] = useState('all');\r\n    const [payoutHistory, setPayoutHistory] = useState(initialPayoutHistory);\r\n\r\n    // Slips state\r\n    const [selectedSlip, setSelectedSlip] = useState",
+    "(null);\r\n\r\n    // Payment Methods state\r\n    const [paymentMethods, setPaymentMethods] = useState",
+    ">(initialPaymentMethods);\r\n    const [pmEmpId, setPmEmpId] = useState",
+    "(null);\r\n    const [pmEditing, setPmEditing] = useState",
+    ";\r\n        if (translatedType === 'Mobile Wallet' || type === 'Mobile Wallet') return",
+    ";\r\n        if (translatedType === 'Check' || type === 'Check') return",
+    ";\r\n        return",
+    "e.currentTarget.style.background = ''}>",
+    "setConfirmPay(emp.id)}>",
+    "0 ? emp.commission.toLocaleString() : '—'}",
+    "0 ? emp.bonus.toLocaleString() : '—'}",
+    "setSelectedSlip(emp)}>",
+    "e.id === confirmPay)!;\r\n                const net = emp.baseSalary + emp.commission + emp.bonus - emp.deductions;\r\n                return (",
+    "handlePay(confirmPay)}>",
+    "HAGZY",
+    "e.id === pmEmpId)!;\r\n                const methods = paymentMethods[pmEmpId] || [];\r\n                return ("
+  ],
+  "src\\app\\employees\\positions\\page.tsx": [
+    "p.id !== selectedPos.id));\n        setIsDeleteOpen(false);\n        setSelectedPos(null);\n        addToast('success', t('positions.toastRemSec'));\n    };\n\n    return (",
+    "setSearch(e.target.value)} />",
+    "setIsAddOpen(true)}>"
+  ],
+  "src\\app\\employees\\transfers\\page.tsx": [
+    "setSearch(e.target.value)} />",
+    "setIsAddOpen(true)}>"
+  ],
+  "src\\app\\employees\\[id]\\page.tsx": [
+    "setIsEditServicesOpen(true)}>",
+    ");\r\n\r\n    const renderSchedule = () => (",
+    ");\r\n\r\n    const renderReviews = () => (",
+    ");\r\n\r\n    return (",
+    ", onClick: () => handleActionClick('Delete Employee'), destructive: true },\r\n                            ]}\r\n                        />",
+    "handleActionClick('Edit Profile')}>",
+    "setNewServiceSelection(e.target.value)}\r\n                            />",
+    "setEmpServices(empServices.filter((_, i) => i !== idx))}\r\n                                >"
+  ],
+  "src\\app\\expenses\\page.tsx": [
+    "s + e.amount, 0);\r\n\r\n    return (",
+    "e.status === 'pending').length}",
+    "Salary",
+    "setSearch(e.target.value)} />",
+    "setCatFilter(e.target.value)}>",
+    "All Categories",
+    "Supplies",
+    "Rent",
+    "Utilities",
+    "Marketing",
+    "Equipment",
+    "Maintenance",
+    "Expense #",
+    "Date",
+    "Category",
+    "Description",
+    "Vendor",
+    "Method",
+    "Amount",
+    "Status",
+    ", onClick: () => addToast('error', 'Expense deleted'), destructive: true },\r\n                                                ]}\r\n                                            />"
+  ],
+  "src\\app\\login\\page.tsx": [
+    "'verify'\r\n    const [step, setStep] = useState",
+    "('request');\r\n    const [identifier, setIdentifier] = useState('clinic@hagzy.com'); // Defaulting for ease of demo\r\n    const [otpMethod, setOtpMethod] = useState",
+    "Hagzy",
+    "setIdentifier(e.target.value)}\r\n                                    autoFocus\r\n                                />"
+  ],
+  "src\\app\\marketing\\messages\\page.tsx": [
+    ", WhatsApp:",
+    ", Email:",
+    ", Push:",
+    ",\r\n};\r\nconst channelBadge: Record",
+    "(null);\r\n\r\n    // Template form state\r\n    const [formName, setFormName] = useState('');\r\n    const [formChannel, setFormChannel] = useState('WhatsApp');\r\n    const [formBody, setFormBody] = useState('');\r\n    const [showPlaceholders, setShowPlaceholders] = useState(false);\r\n    const textareaRef = useRef",
+    "(null);\r\n\r\n    // Compose flow\r\n    const [isComposeOpen, setIsComposeOpen] = useState(false);\r\n    const [composeTemplate, setComposeTemplate] = useState",
+    "(null);\r\n    const [selectedRecipients, setSelectedRecipients] = useState",
+    "([]);\r\n    const [recipientSearch, setRecipientSearch] = useState('');\r\n\r\n    // Message detail\r\n    const [isMessageDetailOpen, setIsMessageDetailOpen] = useState(false);\r\n    const [selectedMessage, setSelectedMessage] = useState",
+    "setShowPlaceholders(!showPlaceholders)}\r\n            >",
+    "(e.currentTarget.style.background = 'transparent')}\r\n                        >",
+    ");\r\n\r\n    const renderBodyEditor = () => (",
+    "setFormBody(e.target.value)}\r\n            />",
+    ");\r\n\r\n    return (",
+    "openEdit(tmpl)}>",
+    "openCompose(tmpl)}>",
+    "setHistorySearch(e.target.value)}\r\n                        />",
+    ") : (\r\n                            filteredHistory.map(m => (",
+    "openMessageDetail(m)}>",
+    "r.name === name)?.phone || ''}",
+    "setRecipientSearch(e.target.value)}\r\n                                />",
+    "selectedRecipients.includes(r.name)) ? t('mkt.btnDeselectAll') : t('mkt.btnSelectAll')}",
+    "toggleRecipient(r.name)}\r\n                                        >",
+    ") => setFormName(e.target.value)} />"
+  ],
+  "src\\app\\marketing\\notifications\\page.tsx": [
+    ", Push:",
+    ", Email:",
+    ", WhatsApp:",
+    ",\r\n};\r\nconst channelBadge: Record",
+    "(null);\r\n    const [recipientFilter, setRecipientFilter] = useState",
+    "r.opened);\r\n        if (recipientFilter === 'not_opened') filtered = list.filter(r => !r.opened);\r\n        if (recipientSearch) filtered = filtered.filter(r => r.name.toLowerCase().includes(recipientSearch.toLowerCase()));\r\n        return filtered;\r\n    }, [selected, recipientFilter, recipientSearch]);\r\n\r\n    const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').toUpperCase();\r\n\r\n    return (",
+    "0 ? Math.round(totalOpened / totalSent * 100) : 0}%",
+    "setIsAddOpen(true)}>",
+    "openDetail(n)}>",
+    "e.stopPropagation()}>",
+    ", onClick: () => openDelete(n) }\r\n                                    ]}\r\n                                />",
+    "openDelete(selected)}>",
+    "openEdit(selected)}>",
+    "0 ? Math.round(selected.opened / selected.sent * 100) : 0}%",
+    "!r.opened).length || 0 },\r\n                                ].map(f => (",
+    "setRecipientSearch(e.target.value)}\r\n                                />",
+    ") : (\r\n                                    filteredRecipients.map((r, i) => (",
+    "30 days', value: 'Inactive > 30 days' }]} />"
+  ],
+  "src\\app\\marketing\\offers\\page.tsx": [
+    "prev.filter(o => o.id !== selectedOffer?.id));\r\n        setIsDeleteOpen(false);\r\n        setSelectedOffer(null);\r\n        addToast('success', t('mkt.lblDeleteOffer'));\r\n    };\r\n\r\n    return (",
+    "setIsAddOpen(true)}>",
+    "openDetail(offer)}>",
+    "e.stopPropagation()}>",
+    "openDelete(selectedOffer)}>",
+    "openEdit(selectedOffer)}>"
+  ],
+  "src\\app\\marketing\\packages\\page.tsx": [
+    "prev.filter(p => p.id !== selectedPackage?.id));\r\n        setIsDeleteOpen(false);\r\n        setSelectedPackage(null);\r\n        addToast('success', t('mkt.lblDeletePackage'));\r\n    };\r\n\r\n    return (",
+    "setIsAddOpen(true)}>",
+    "openDetail(pkg)}>",
+    "e.stopPropagation()}>",
+    ", onClick: () => openDelete(pkg) }\r\n                                    ]}\r\n                                />",
+    "openDelete(selectedPackage)}>",
+    "openEdit(selectedPackage)}>"
+  ],
+  "src\\app\\marketing\\page.tsx": [
+    "(null);\r\n\r\n    const [isPromoAddOpen, setIsPromoAddOpen] = useState(false);\r\n    const [isPromoEditOpen, setIsPromoEditOpen] = useState(false);\r\n    const [isPromoDeleteOpen, setIsPromoDeleteOpen] = useState(false);\r\n    const [selectedPromo, setSelectedPromo] = useState",
+    "(null);\r\n\r\n    const [isMsgAddOpen, setIsMsgAddOpen] = useState(false);\r\n    const [isMsgEditOpen, setIsMsgEditOpen] = useState(false);\r\n    const [isMsgDeleteOpen, setIsMsgDeleteOpen] = useState(false);\r\n    const [selectedMsg, setSelectedMsg] = useState",
+    "(null);\r\n\r\n    return (",
+    "setActiveTab('offers')}>",
+    "setActiveTab('promos')}>",
+    "setActiveTab('messages')}>",
+    "setActiveTab('campaigns')}>",
+    "o.status === 'active').length}",
+    "p.status === 'active').length}",
+    "setSearch(e.target.value)}\r\n                    />",
+    "All Statuses",
+    "Active",
+    "Draft",
+    "Scheduled",
+    "Expired",
+    "o.name.toLowerCase().includes(search.toLowerCase()))\r\n                        .map((offer) => (",
+    "/ ∞ uses",
+    "Code",
+    "Type",
+    "Value",
+    "Min Spend",
+    "Usage",
+    "Status",
+    "Expires",
+    "m.name.toLowerCase().includes(search.toLowerCase()))\r\n                        .map((msg) => (",
+    "Campaign Builder",
+    "Create targeted campaigns with audience segmentation, A/B testing, and performance tracking. Coming soon!",
+    "Create First Campaign",
+    "Cancel",
+    "setIsOfferDeleteOpen(false)}>Cancel",
+    "Delete",
+    "Are you sure you want to delete",
+    "? This action cannot be undone.",
+    "setIsPromoDeleteOpen(false)}>Cancel",
+    "Are you sure you want to delete the code",
+    "Message Body",
+    "Channels",
+    "SMS",
+    "WhatsApp",
+    "Email",
+    "Template Enabled",
+    "setIsMsgDeleteOpen(false)}>Cancel",
+    "Are you sure you want to delete the template",
+    ", onClick: onDelete }\r\n                        ]}\r\n                    />",
+    "setEnabled(!enabled)}\r\n                >"
+  ],
+  "src\\app\\marketing\\promo-codes\\page.tsx": [
+    "a + c.discount, 0);\r\n    }, [selected]);\r\n\r\n    return (",
+    "setSearch(e.target.value)} />",
+    "setIsAddOpen(true)}>",
+    "openDetail(c)}>",
+    "handleCopy(c.code, e)} />",
+    "e.stopPropagation()}>",
+    ", onClick: () => openDelete(c) }\r\n                                    ]}\r\n                                />",
+    "openDelete(selected)}>",
+    "openEdit(selected)}>",
+    "setClientSearch(e.target.value)}\r\n                                />",
+    ") : (\r\n                                    filteredClients.map((c, i) => ("
+  ],
+  "src\\app\\marketing\\service-groups\\page.tsx": [
+    "(null);\r\n\r\n    // Form state\r\n    const [formName, setFormName] = useState('');\r\n    const [formColor, setFormColor] = useState('#F59E0B');\r\n    const [formServices, setFormServices] = useState",
+    "prev.filter(g => g.id !== selectedGroup?.id));\r\n        setIsDeleteOpen(false);\r\n        setSelectedGroup(null);\r\n        addToast('success', t('mkt.msgGroupDeleted'));\r\n    };\r\n\r\n    const filteredServices = allServices.filter(svc => svc.toLowerCase().includes(serviceSearch.toLowerCase()));\r\n\r\n    const renderServiceSelector = () => (",
+    "setServiceSearch(e.target.value)}\r\n                />",
+    "toggleService(svc)}>",
+    ");\r\n\r\n    return (",
+    "openEdit(g)}>",
+    "openDelete(g)}>",
+    ") => setFormName(e.target.value)} />"
+  ],
+  "src\\app\\page.tsx": [
+    "s + d.value, 0);\n\n  return (",
+    "router.push('/bookings/new')}>",
+    "router.push('/sales?quick=true')}>",
+    "Booked",
+    "Occupancy",
+    "Rate",
+    "[val, name]}\n                />",
+    "Visits",
+    "Spend",
+    "Revenue",
+    "Service",
+    "Count",
+    "Cash Drawer",
+    "Fatima A."
+  ],
+  "src\\app\\reports\\layout.tsx": [
+    "},\r\n    ];\r\n\r\n    return ("
+  ],
+  "src\\app\\reports\\[category]\\[report]\\page.tsx": [
+    "(null);\r\n    const [sortDir, setSortDir] = useState",
+    "l.toUpperCase())}`;\r\n\r\n    return (",
+    "Export PDF",
+    "Detailed Data",
+    "handleSort(i)}>",
+    "r.action) &&",
+    "Action",
+    "No data matches your search",
+    ") : (\r\n                                filteredRows.map((row: ReportRow, i: number) => (",
+    ") : (val ?? '—')}",
+    "r.action) && ("
+  ],
+  "src\\app\\returns\\cancel-down-payment\\page.tsx": [
+    "setSearch(e.target.value)} />",
+    "setSelected(i)}>",
+    "This will cancel the booking and refund",
+    "to the client. This action cannot be undone.",
+    "Client Request",
+    "Schedule Conflict",
+    "Service Unavailable",
+    "Other"
+  ],
+  "src\\app\\returns\\cash-refund\\page.tsx": [
+    "setSearch(e.target.value)} />",
+    "setSelected(i)}>",
+    "Client Request",
+    "Service Issue",
+    "Double Charge",
+    "Other"
+  ],
+  "src\\app\\returns\\page.tsx": [
+    "r.status === 'approved').reduce((s, r) => s + r.amount, 0);\r\n    const pendingCount = returns.filter(r => r.status === 'pending').length;\r\n\r\n    const typeConfig: Record",
+    "},\r\n    ];\r\n\r\n    return (",
+    "setSearch(e.target.value)} />",
+    ", onClick: () => addToast('error', 'Return rejected'), destructive: true },\r\n                                                ]}\r\n                                            />"
+  ],
+  "src\\app\\returns\\petty-cash-refund\\page.tsx": [
+    "setSearch(e.target.value)} />",
+    "setSelected(i)}>",
+    "ID:",
+    "Item Returned",
+    "Duplicate Entry",
+    "Wrong Amount",
+    "Other"
+  ],
+  "src\\app\\sales\\packages\\page.tsx": [
+    "(null);\r\n\r\n    const filtered = packages.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));\r\n\r\n    return (",
+    "setSearch(e.target.value)} />",
+    "setIsAddOpen(true)}>"
+  ],
+  "src\\app\\sales\\page.tsx": [
+    "('services');\r\n    const [searchQuery, setSearchQuery] = useState('');\r\n    const [viewMode, setViewMode] = useState",
+    "s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||\r\n                    s.description.toLowerCase().includes(searchQuery.toLowerCase())\r\n            ),\r\n        }))\r\n        .filter((cat) => cat.services.length > 0);\r\n\r\n    const filteredPackages = packages.filter(\r\n        (pkg) =>\r\n            pkg.name.toLowerCase().includes(searchQuery.toLowerCase()) ||\r\n            pkg.services.some((s) => s.toLowerCase().includes(searchQuery.toLowerCase()))\r\n    );\r\n\r\n    return (",
+    "setSearchQuery(e.target.value)}\r\n                    />",
+    "setViewMode('grid')}\r\n                        >",
+    "setViewMode('list')}\r\n                        >",
+    "0 ? (\r\n                        filteredCategories.map((category) => (",
+    "0 ? (\r\n                        filteredPackages.map((pkg) => (",
+    "setCartItem(null)}>"
+  ],
+  "src\\app\\settings\\audit-log\\page.tsx": [
+    "setSearch(e.target.value)} />"
+  ],
+  "src\\app\\settings\\branches\\page.tsx": [
+    ") => setGovernorate(e.target.value)}\r\n                />",
+    "(null);\r\n\r\n    return (",
+    "setIsAddOpen(true)}>"
+  ],
+  "src\\app\\settings\\branches\\[id]\\page.tsx": [
+    "Basic Information",
+    "Financial Settings",
+    ");\r\n\r\n    const renderHours = () => (",
+    "Opening Hours",
+    "Copy from other branch",
+    ");\r\n\r\n    const renderRooms = () => (",
+    "Rooms & Resources",
+    "Add Room",
+    "Name",
+    "Type",
+    "Capacity",
+    "Actions",
+    ");\r\n\r\n    return (",
+    "Branch Settings",
+    "Back to List",
+    "Save Changes",
+    "Branch Stats",
+    "Total Employees",
+    "Active Bookings",
+    "Last Sync",
+    "Just now"
+  ],
+  "src\\app\\settings\\devices\\page.tsx": [
+    ";\r\n        case 'Fingerprint Scanner':\r\n        case 'Face Recognition': return",
+    ";\r\n        case 'Printer': return",
+    ";\r\n        default: return"
+  ],
+  "src\\app\\settings\\fingerprint-areas\\page.tsx": [
+    "Fingerprint Areas",
+    "Group devices into physical locations/areas.",
+    "New Area",
+    "Defined Areas",
+    "Area Name",
+    "Linked Devices",
+    "Assigned Employees",
+    "Actions"
+  ],
+  "src\\app\\settings\\hours\\page.tsx": [
+    "Working Hours",
+    "Configure the standard operating hours for your business branches.",
+    "Save Changes",
+    "Standard Operating Hours",
+    "toggleDay(i)} />",
+    "addBreak(i)}>",
+    "Add Break",
+    "updateBreak(i, bIdx, 'start', e.target.value)} />",
+    "updateBreak(i, bIdx, 'end', e.target.value)} />",
+    "removeBreak(i, bIdx)}>",
+    "Closed"
+  ],
+  "src\\app\\settings\\integrations\\page.tsx": [
+    ", category: 'communication' },\r\n];\r\n\r\nconst s: Record",
+    "Connected",
+    "Available",
+    "Total Integrations",
+    "i.category === cat.key);\r\n                if (items.length === 0) return null;\r\n                return (",
+    "Settings",
+    "Disconnect",
+    "Connect",
+    "setIsModalOpen(false)}>Cancel",
+    "setIsSettingsOpen(false)}>Cancel",
+    "Save Settings",
+    "Connected & Active",
+    "Last synced: Just now",
+    "API Key",
+    "Webhook URL",
+    "Sync Frequency",
+    "Notifications",
+    "Danger Zone",
+    "Disconnecting will stop all syncing and remove stored API credentials."
+  ],
+  "src\\app\\settings\\invoice\\page.tsx": [
+    "USD",
+    "EUR",
+    "SAR"
+  ],
+  "src\\app\\settings\\page.tsx": [
+    "handleChange('businessName', e.target.value)}\r\n                        />",
+    "handleChange('legalName', e.target.value)}\r\n                        />",
+    "handleChange('crNumber', e.target.value)}\r\n                        />",
+    "handleChange('vatNumber', e.target.value)}\r\n                        />",
+    "handleChange('address', e.target.value)}\r\n                        />",
+    "handleChange('phone', e.target.value)}\r\n                        />",
+    "handleChange('email', e.target.value)}\r\n                        />",
+    "Booking Preferences",
+    "Control how bookings work in your system.",
+    "Online Booking",
+    "Allow clients to book appointments online.",
+    "handleChange('allowOnlineBooking', c)}\r\n                        />",
+    "Walk-in Customers",
+    "Allow creating bookings without an appointment.",
+    "handleChange('allowWalkIn', c)}\r\n                        />",
+    "Require Deposit",
+    "Clients must pay a deposit to secure booking.",
+    "handleChange('requireDeposit', c)}\r\n                        />",
+    "SMS Reminders",
+    "Automatically send reminders 24h before.",
+    "handleChange('sendSmsReminders', c)}\r\n                        />",
+    "Auto-Confirm",
+    "Automatically confirm new bookings.",
+    "handleChange('autoConfirm', c)}\r\n                        />"
+  ],
+  "src\\app\\settings\\payment-methods\\page.tsx": [
+    "(null);\r\n\r\n    return (",
+    "setIsAddOpen(true)}>"
+  ],
+  "src\\app\\settings\\petty-cash-items\\page.tsx": [
+    "setIsAddOpen(true)}>"
+  ],
+  "src\\app\\settings\\resources\\page.tsx": [
+    "(null);\r\n\r\n    return (",
+    "Resources & Rooms",
+    "Define physical spaces and equipment for booking.",
+    "setIsAddOpen(true)}>",
+    "Add Resource",
+    "Resource List",
+    "Name",
+    "Type",
+    "Capacity",
+    "Status",
+    "Actions",
+    "setIsAddOpen(false)}>Cancel",
+    "Save Resource",
+    "setIsEditOpen(false)}>Cancel",
+    "Save Changes",
+    "setIsDeleteOpen(false)}>Cancel",
+    "Confirm Delete",
+    "Are you sure you want to delete"
+  ],
+  "src\\app\\settings\\roles\\page.tsx": [
+    "setIsAddOpen(true)}>"
+  ],
+  "src\\app\\settings\\safes\\page.tsx": [
+    "s.id !== selectedSafe?.id));\r\n        setIsDeleteOpen(false);\r\n        setSelectedSafe(null);\r\n        addToast('success', 'Safe deleted permanently');\r\n    };\r\n\r\n    const fmt = (n: number) => n.toLocaleString('en-US');\r\n\r\n    return (",
+    "setIsAddOpen(true)}>",
+    "s.branch)).size}"
+  ],
+  "src\\app\\settings\\service-categories\\page.tsx": [
+    "(null);\r\n\r\n    return (",
+    "setIsAddOpen(true)}>"
+  ],
+  "src\\app\\settings\\services\\new\\page.tsx": [
+    "Basic Information",
+    ");\r\n            case 1:\r\n                return (",
+    "Pricing & Tax",
+    ");\r\n            case 2:\r\n                return (",
+    "Duration & Timing",
+    ");\r\n            case 3:\r\n                return (",
+    "Resourcing",
+    "Which rooms or equipment are required?",
+    ");\r\n            case 4:\r\n                return (",
+    "Staff Commission",
+    ");\r\n            case 5:\r\n                return (",
+    "Media & Preview",
+    "Click to upload image",
+    "Supports JPG, PNG (Max 5MB)",
+    "Select File",
+    ");\r\n            default:\r\n                return null;\r\n        }\r\n    };\r\n\r\n    return (",
+    "New Service Setup",
+    "router.back()}>Cancel",
+    "Back",
+    "Save Service",
+    "Next Step"
+  ],
+  "src\\app\\settings\\services\\page.tsx": [
+    "(null);\r\n\r\n    const filtered = services.filter(s => s.name.toLowerCase().includes(search.toLowerCase()));\r\n\r\n    return (",
+    "setSearch(e.target.value)} />",
+    "setIsAddOpen(true)}>"
+  ],
+  "src\\app\\settings\\subscription\\page.tsx": [
+    ", percent: 67 },\r\n    ];\r\n\r\n    return ("
+  ],
+  "src\\app\\transactions\\advance-payments\\page.tsx": [
+    "d.client.toLowerCase().includes(search.toLowerCase()));\r\n\r\n    return (",
+    "a + d.paid, 0).toLocaleString()} EGP",
+    "Total Collected",
+    "a + d.balance, 0).toLocaleString()} EGP",
+    "Outstanding Balance",
+    "d.status === 'partial').length}",
+    "Pending Collection",
+    "setSearch(e.target.value)} />",
+    "Export"
+  ],
+  "src\\app\\transactions\\best-sales\\page.tsx": [
+    "Top Services by Revenue",
+    "Top Employees by Revenue"
+  ],
+  "src\\app\\transactions\\cash-sales\\page.tsx": [
+    "d.client.toLowerCase().includes(search.toLowerCase()) || d.services.toLowerCase().includes(search.toLowerCase()));\r\n    const total = filtered.reduce((s, d) => s + d.amount, 0);\r\n\r\n    return (",
+    "Total Cash Sales",
+    "Transactions",
+    "Average Ticket",
+    "setSearch(e.target.value)} />",
+    "Export"
+  ],
+  "src\\app\\transactions\\client-sales\\page.tsx": [
+    "d.name.toLowerCase().includes(search.toLowerCase()));\r\n\r\n    return (",
+    "setSearch(e.target.value)} />",
+    "Export"
+  ],
+  "src\\app\\transactions\\dailies\\page.tsx": [
+    "a + d.revenue, 0);\r\n    return (",
+    "Weekly Revenue",
+    "Daily Average",
+    "Days Closed"
+  ],
+  "src\\app\\transactions\\package-sales\\page.tsx": [
+    "a + d.price, 0);\r\n    return (",
+    "Package Revenue",
+    "Packages Sold",
+    "d.status === 'active').length}",
+    "Active"
+  ],
+  "src\\app\\transactions\\page.tsx": [
+    "t.amount > 0).reduce((s, t) => s + t.amount, 0);\r\n    const totalRefunds = Math.abs(transactions.filter((t) => t.type === 'refund').reduce((s, t) => s + t.amount, 0));\r\n    const netRevenue = transactions.reduce((s, t) => s + t.amount, 0);\r\n\r\n    // Pagination logic\r\n    const totalPages = Math.ceil(filtered.length / itemsPerPage);\r\n    const paginatedTransactions = filtered.slice(\r\n        (currentPage - 1) * itemsPerPage,\r\n        currentPage * itemsPerPage\r\n    );\r\n\r\n    return (",
+    "Net Revenue",
+    "Transactions",
+    "setSearch(e.target.value)}\r\n                    />",
+    "setTypeFilter(e.target.value)}\r\n                >",
+    "All Types",
+    "Sales",
+    "Refunds",
+    "Petty Cash",
+    "Advance",
+    "Transfers",
+    "Txn #",
+    "Date & Time",
+    "Type",
+    "Client",
+    "Description",
+    "Employee",
+    "Method",
+    "Amount",
+    "}\r\n                            title=\"No transactions found\"\r\n                            description=\"There are no transactions matching your search criteria or filter.\"\r\n                        />"
+  ],
+  "src\\app\\transactions\\petty-cash\\page.tsx": [
+    "d.description.toLowerCase().includes(search.toLowerCase()) || d.category.toLowerCase().includes(search.toLowerCase()));\r\n    const total = data.reduce((a, d) => a + d.amount, 0);\r\n    const pending = data.filter(d => d.status === 'pending').reduce((a, d) => a + d.amount, 0);\r\n\r\n    return (",
+    "Total Petty Cash",
+    "Pending Approval",
+    "Entries",
+    "setSearch(e.target.value)} />",
+    "New Entry"
+  ],
+  "src\\app\\transactions\\safe-balances\\page.tsx": [
+    "a + s.balance, 0);\r\n    return (",
+    "Total Balance Across All Safes",
+    "Current Balance",
+    "Opening",
+    "Deposits",
+    "Withdrawals"
+  ],
+  "src\\app\\transactions\\transfers\\page.tsx": [
+    "a + d.amount, 0);\r\n    return (",
+    "Total Transferred",
+    "Transfer Count",
+    "d.status === 'pending').length}",
+    "Pending"
+  ],
+  "src\\components\\employees\\EmployeeSubPage.tsx": [
+    "This module is currently under development."
+  ],
+  "src\\components\\layout\\AppShell.tsx": [
+    ";\r\n    }\r\n\r\n    return ("
+  ],
+  "src\\components\\layout\\Sidebar.tsx": [
+    "setMobileOpen(false)}\r\n                />\r\n            )}",
+    "Hagzy",
+    "setMobileOpen(false)}\r\n                        aria-label=\"Close menu\"\r\n                    >",
+    "isActive(child.href));\r\n\r\n                            return ("
+  ],
+  "src\\components\\layout\\SidebarContext.tsx": [
+    "void;\r\n  mobileOpen: boolean;\r\n  setMobileOpen: (open: boolean) => void;\r\n}\r\n\r\nconst SidebarContext = createContext",
+    "!prev);\r\n  }, []);\r\n\r\n  return ("
+  ],
+  "src\\components\\layout\\TopBar.tsx": [
+    "('light');\r\n    const [userMenuOpen, setUserMenuOpen] = useState(false);\r\n    const [branchMenuOpen, setBranchMenuOpen] = useState(false);\r\n    const [searchFocused, setSearchFocused] = useState(false);\r\n    const userMenuRef = useRef",
+    "(null);\r\n    const branchMenuRef = useRef",
+    "document.removeEventListener('keydown', handleKeyDown);\r\n    }, []);\r\n\r\n    return (",
+    "setMobileOpen(true)}\r\n                aria-label=\"Open menu\"\r\n            >",
+    "setBranchMenuOpen(!branchMenuOpen)}\r\n                >",
+    "setSearchFocused(false)}\r\n                />",
+    "Ctrl+K",
+    "setUserMenuOpen(!userMenuOpen)}\r\n                    >"
+  ],
+  "src\\components\\MarketingTabs.tsx": [
+    "},\r\n    ];\r\n\r\n    return ("
+  ],
+  "src\\components\\ui\\index.tsx": [
+    ");\r\n}\r\n\r\n// ─── Input ───────────────────────────────────────────────────────────\r\ninterface InputProps extends React.InputHTMLAttributes",
+    ");\r\n}\r\n\r\n// ─── Select ──────────────────────────────────────────────────────────\r\ninterface SelectProps extends React.SelectHTMLAttributes",
+    ");\r\n}\r\n\r\n// ─── Textarea ────────────────────────────────────────────────────────\r\ninterface TextareaProps extends React.TextareaHTMLAttributes",
+    "e.stopPropagation()}>",
+    "void; }\r\n\r\nconst ToastCtx = createContext",
+    "Undo",
+    "remove(t.id)}>",
+    ": i + 1}",
+    "setOpen(!open)}>",
+    "document.removeEventListener('mousedown', handleClickOutside);\r\n    }, []);\r\n\r\n    return ("
+  ]
+}

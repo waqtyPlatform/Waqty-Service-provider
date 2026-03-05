@@ -162,7 +162,7 @@ export default function DashboardPage() {
   const [activeDate, setActiveDate] = useState('Today');
   const router = useRouter();
   const { user } = useAuth();
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
 
   const businessType = user?.businessType || 'salon';
   const isClinic = businessType === 'clinic';
@@ -242,7 +242,7 @@ export default function DashboardPage() {
   const totalBookings = currentBookingStatusData.reduce((s, d) => s + d.value, 0);
 
   return (
-    <div className={`${styles.dashboard} stagger-children`}>
+    <div className={`${styles.dashboard} stagger-children`} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
       {/* Header */}
       <div className={styles.header}>
         <div className={styles.headerLeft}>
@@ -258,7 +258,7 @@ export default function DashboardPage() {
                   }`}
                 onClick={() => setActiveDate(range)}
               >
-                {range}
+                {t(range === 'Today' ? 'dash.dateToday' : range === 'This Week' ? 'dash.dateWeek' : range === 'This Month' ? 'dash.dateMonth' : range === 'This Quarter' ? 'dash.dateQuarter' : 'dash.dateCustom')}
               </button>
             ))}
           </div>
@@ -310,14 +310,14 @@ export default function DashboardPage() {
               <span className={styles.kpiValue}>
                 {kpi.value}
                 {kpi.unit && (
-                  <span style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-medium)', marginLeft: '4px', color: 'var(--text-tertiary)' }}>
+                  <span style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-medium)', marginInlineStart: '4px', color: 'var(--text-tertiary)' }}>
                     {kpi.unit}
                   </span>
                 )}
               </span>
               <div className={styles.kpiLabel}>
                 {kpi.label === 'Bookings' ? bookingsTerm :
-                  kpi.label === 'New Clients' ? `New ${clientsTerm}` : kpi.label}
+                  kpi.label === 'New Clients' ? `+ ${clientsTerm}` : t(kpi.label === 'Total Revenue' ? 'dash.kpiRev' : kpi.label === 'Invoices' ? 'dash.kpiInvoices' : 'dash.kpiReturns')}
               </div>
             </div>
             <div className={styles.kpiSparkline}>
@@ -368,10 +368,10 @@ export default function DashboardPage() {
           <table className={styles.dataTable}>
             <thead>
               <tr>
-                <th>{employeeTerm}</th>
-                <th>Booked</th>
-                <th style={{ width: '40%' }}>Occupancy</th>
-                <th style={{ textAlign: 'right' }}>Rate</th>
+                <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{employeeTerm}</th>
+                <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('dash.colBooked')}</th>
+                <th style={{ width: '40%', textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('dash.occupancy')}</th>
+                <th style={{ textAlign: lang === 'ar' ? 'left' : 'right' }}>{t('dash.colRate')}</th>
               </tr>
             </thead>
             <tbody>
@@ -395,7 +395,7 @@ export default function DashboardPage() {
                   <td>
                     <span
                       className={styles.occupancyValue}
-                      style={{ color: getProgressColor(row.pct) }}
+                      style={{ color: getProgressColor(row.pct), textAlign: lang === 'ar' ? 'left' : 'right', display: 'block' }}
                     >
                       {row.pct}%
                     </span>
@@ -461,7 +461,7 @@ export default function DashboardPage() {
                   className={styles.legendDot}
                   style={{ background: item.color }}
                 />
-                <span>{item.name}</span>
+                <span>{item.name === 'Confirmed' ? t('dash.statusConfirmed') : item.name === 'Completed' ? t('dash.statusCompleted') : item.name === 'Arrived' ? t('dash.statusArrived') : item.name === 'Unconfirmed' ? t('dash.statusUnconfirmed') : item.name === 'Cancelled' ? t('dash.statusCancelled') : t('dash.statusNoShow')}</span>
                 <span className={styles.legendValue}>{item.value}</span>
               </div>
             ))}
@@ -495,10 +495,10 @@ export default function DashboardPage() {
           <table className={styles.dataTable}>
             <thead>
               <tr>
-                <th>#</th>
-                <th>{clientTerm}</th>
-                <th>Visits</th>
-                <th style={{ textAlign: 'right' }}>Spend</th>
+                <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>#</th>
+                <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{clientTerm}</th>
+                <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('dash.colVisits')}</th>
+                <th style={{ textAlign: lang === 'ar' ? 'left' : 'right' }}>{t('dash.colSpend')}</th>
               </tr>
             </thead>
             <tbody>
@@ -511,7 +511,7 @@ export default function DashboardPage() {
                   </td>
                   <td className={styles.rankName}>{c.name}</td>
                   <td>{c.visits}</td>
-                  <td className={styles.rankValue}>{c.spend} EGP</td>
+                  <td className={styles.rankValue} style={{ textAlign: lang === 'ar' ? 'left' : 'right' }}>{c.spend} EGP</td>
                 </tr>
               ))}
             </tbody>
@@ -533,10 +533,10 @@ export default function DashboardPage() {
           <table className={styles.dataTable}>
             <thead>
               <tr>
-                <th>#</th>
-                <th>{employeeTerm}</th>
-                <th>{bookingsTerm}</th>
-                <th style={{ textAlign: 'right' }}>Revenue</th>
+                <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>#</th>
+                <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{employeeTerm}</th>
+                <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{bookingsTerm}</th>
+                <th style={{ textAlign: lang === 'ar' ? 'left' : 'right' }}>{t('dash.colRevenue')}</th>
               </tr>
             </thead>
             <tbody>
@@ -549,7 +549,7 @@ export default function DashboardPage() {
                   </td>
                   <td className={styles.rankName}>{e.name}</td>
                   <td>{e.bookings}</td>
-                  <td className={styles.rankValue}>{e.revenue} EGP</td>
+                  <td className={styles.rankValue} style={{ textAlign: lang === 'ar' ? 'left' : 'right' }}>{e.revenue} EGP</td>
                 </tr>
               ))}
             </tbody>
@@ -571,10 +571,10 @@ export default function DashboardPage() {
           <table className={styles.dataTable}>
             <thead>
               <tr>
-                <th>#</th>
-                <th>Service</th>
-                <th>Count</th>
-                <th style={{ textAlign: 'right' }}>Revenue</th>
+                <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>#</th>
+                <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('sales.services')}</th>
+                <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('dash.colCount')}</th>
+                <th style={{ textAlign: lang === 'ar' ? 'left' : 'right' }}>{t('dash.colRevenue')}</th>
               </tr>
             </thead>
             <tbody>
@@ -587,7 +587,7 @@ export default function DashboardPage() {
                   </td>
                   <td className={styles.rankName}>{s.name}</td>
                   <td>{s.count}</td>
-                  <td className={styles.rankValue}>{s.revenue} EGP</td>
+                  <td className={styles.rankValue} style={{ textAlign: lang === 'ar' ? 'left' : 'right' }}>{s.revenue} EGP</td>
                 </tr>
               ))}
             </tbody>
@@ -606,7 +606,7 @@ export default function DashboardPage() {
           </div>
           <div className={styles.summaryContent}>
             <h3>{totalBookings}</h3>
-            <p>{bookingsTerm} {activeDate}</p>
+            <p>{bookingsTerm} {t(activeDate === 'Today' ? 'dash.dateToday' : activeDate === 'This Week' ? 'dash.dateWeek' : activeDate === 'This Month' ? 'dash.dateMonth' : activeDate === 'This Quarter' ? 'dash.dateQuarter' : 'dash.dateCustom')}</p>
           </div>
         </div>
         <div className={styles.summaryCard}>
@@ -618,7 +618,7 @@ export default function DashboardPage() {
           </div>
           <div className={styles.summaryContent}>
             <h3>{Math.round(18 * getMultiplier(activeDate))}</h3>
-            <p>New {clientsTerm}</p>
+            <p>+ {clientsTerm}</p>
           </div>
         </div>
         <div className={styles.summaryCard}>
@@ -630,7 +630,7 @@ export default function DashboardPage() {
           </div>
           <div className={styles.summaryContent}>
             <h3>{formatNum(Math.round(42500 * getMultiplier(activeDate)))}</h3>
-            <p>Cash Drawer</p>
+            <p>{t('dash.cashDrawer')}</p>
           </div>
         </div>
         <div className={`${styles.summaryCard} ${styles.clientOfMonth}`}>

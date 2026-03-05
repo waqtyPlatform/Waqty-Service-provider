@@ -4,18 +4,20 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Search, Plus } from 'lucide-react';
 
+import { useTranslation } from '@/hooks/useTranslation';
+
 const tabs = [
-    { label: 'Transaction Log', href: '/transactions' },
-    { label: 'Cash Sales', href: '/transactions/cash-sales' },
-    { label: 'Advance Pay', href: '/transactions/advance-payments' },
-    { label: 'Petty Cash', href: '/transactions/petty-cash' },
-    { label: 'Transfers', href: '/transactions/transfers' },
-    { label: 'Safe Balances', href: '/transactions/safe-balances' },
-    { label: 'Shifts', href: '/transactions/shifts' },
-    { label: 'Dailies', href: '/transactions/dailies' },
-    { label: 'Best Sales', href: '/transactions/best-sales' },
-    { label: 'Client Sales', href: '/transactions/client-sales' },
-    { label: 'Package Sales', href: '/transactions/package-sales' },
+    { labelKey: 'txn.tabLog', href: '/transactions' },
+    { labelKey: 'txn.tabCashSales', href: '/transactions/cash-sales' },
+    { labelKey: 'txn.tabAdvance', href: '/transactions/advance-payments' },
+    { labelKey: 'txn.tabPettyCash', href: '/transactions/petty-cash' },
+    { labelKey: 'txn.tabTransfers', href: '/transactions/transfers' },
+    { labelKey: 'txn.tabSafeBalances', href: '/transactions/safe-balances' },
+    { labelKey: 'txn.tabShifts', href: '/transactions/shifts' },
+    { labelKey: 'txn.tabDailies', href: '/transactions/dailies' },
+    { labelKey: 'txn.tabBestSales', href: '/transactions/best-sales' },
+    { labelKey: 'txn.tabClientSales', href: '/transactions/client-sales' },
+    { labelKey: 'txn.tabPackageSales', href: '/transactions/package-sales' },
 ];
 
 const data = [
@@ -52,41 +54,42 @@ const s: Record<string, React.CSSProperties> = {
 };
 
 export default function PettyCashPage() {
+    const { t, lang } = useTranslation();
     const [search, setSearch] = useState('');
     const filtered = data.filter(d => d.description.toLowerCase().includes(search.toLowerCase()) || d.category.toLowerCase().includes(search.toLowerCase()));
     const total = data.reduce((a, d) => a + d.amount, 0);
     const pending = data.filter(d => d.status === 'pending').reduce((a, d) => a + d.amount, 0);
 
     return (
-        <div style={s.page}>
+        <div style={{ ...s.page, direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
             <div style={s.tabBar}>
-                {tabs.map(t => <Link key={t.href} href={t.href} style={{ ...s.tab, ...(t.href === '/transactions/petty-cash' ? s.tabActive : {}) }}>{t.label}</Link>)}
+                {tabs.map(tab => <Link key={tab.href} href={tab.href} style={{ ...s.tab, ...(tab.href === '/transactions/petty-cash' ? s.tabActive : {}) }}>{t(tab.labelKey)}</Link>)}
             </div>
 
             <div style={s.kpis}>
-                <div style={s.kpi}><div style={s.kpiVal}>{total.toLocaleString()} EGP</div><div style={s.kpiLbl}>Total Petty Cash</div></div>
-                <div style={s.kpi}><div style={{ ...s.kpiVal, color: 'var(--color-warning)' }}>{pending.toLocaleString()} EGP</div><div style={s.kpiLbl}>Pending Approval</div></div>
-                <div style={s.kpi}><div style={s.kpiVal}>{data.length}</div><div style={s.kpiLbl}>Entries</div></div>
+                <div style={s.kpi}><div style={s.kpiVal} dir="ltr">{total.toLocaleString()} EGP</div><div style={s.kpiLbl}>{t('txn.petty.total')}</div></div>
+                <div style={s.kpi}><div style={{ ...s.kpiVal, color: 'var(--color-warning)' }} dir="ltr">{pending.toLocaleString()} EGP</div><div style={s.kpiLbl}>{t('txn.petty.pending')}</div></div>
+                <div style={s.kpi}><div style={s.kpiVal} dir="ltr">{data.length}</div><div style={s.kpiLbl}>{t('txn.petty.entries')}</div></div>
             </div>
 
             <div style={s.toolbar}>
-                <div style={s.searchBox as React.CSSProperties}><Search size={16} style={s.searchIcon as React.CSSProperties} /><input style={s.searchInput} placeholder="Search petty cash..." value={search} onChange={e => setSearch(e.target.value)} /></div>
-                <button style={s.addBtn}><Plus size={16} /> New Entry</button>
+                <div style={s.searchBox as React.CSSProperties}><Search size={16} style={{ ...s.searchIcon as React.CSSProperties, left: lang === 'ar' ? 'auto' : 12, right: lang === 'ar' ? 12 : 'auto' }} /><input style={{ ...s.searchInput, paddingLeft: lang === 'ar' ? 12 : 40, paddingRight: lang === 'ar' ? 40 : 12 }} placeholder={t('txn.petty.search')} value={search} onChange={e => setSearch(e.target.value)} /></div>
+                <button style={s.addBtn}><Plus size={16} /> {t('txn.petty.newEntry')}</button>
             </div>
 
             <table style={s.table}>
-                <thead><tr>{['ID', 'Date', 'Category', 'Description', 'Vendor', 'Amount', 'Approved By', 'Status'].map(h => <th key={h} style={s.th as React.CSSProperties}>{h}</th>)}</tr></thead>
+                <thead><tr>{['txn.petty.thID', 'txn.thDateTime', 'txn.petty.thCategory', 'txn.thDescription', 'txn.petty.thVendor', 'txn.thAmount', 'txn.petty.thApprovedBy', 'txn.thStatus'].map(h => <th key={h} style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t(h)}</th>)}</tr></thead>
                 <tbody>
                     {filtered.map(row => (
                         <tr key={row.id}>
-                            <td style={s.td}>{row.id}</td><td style={s.td}>{row.date}</td>
-                            <td style={s.td}><span style={{ ...s.dot, background: catColors[row.category] || '#6B7280' }} />{row.category}</td>
+                            <td style={s.td}>{row.id}</td><td style={s.td} dir="ltr">{row.date}</td>
+                            <td style={s.td}><span style={{ ...s.dot, background: catColors[row.category] || '#6B7280', [lang === 'ar' ? 'marginLeft' : 'marginRight']: 8 }} />{row.category}</td>
                             <td style={s.td}>{row.description}</td><td style={s.td}>{row.vendor}</td>
-                            <td style={{ ...s.td, fontWeight: 'var(--font-semibold)', color: 'var(--color-error)' }}>-{row.amount} EGP</td>
+                            <td style={{ ...s.td, fontWeight: 'var(--font-semibold)', color: 'var(--color-error)' }} dir="ltr">-{row.amount} EGP</td>
                             <td style={s.td}>{row.approvedBy}</td>
                             <td style={s.td}>
                                 <span style={{ ...s.badge, background: row.status === 'approved' ? 'var(--color-success-light)' : 'var(--color-warning-light)', color: row.status === 'approved' ? 'var(--color-success)' : 'var(--color-warning)' }}>
-                                    {row.status === 'approved' ? '✓ Approved' : '⏳ Pending'}
+                                    {row.status === 'approved' ? t('txn.petty.statusApproved') : t('txn.petty.statusPending')}
                                 </span>
                             </td>
                         </tr>

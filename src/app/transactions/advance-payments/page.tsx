@@ -4,18 +4,20 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Search, Download } from 'lucide-react';
 
+import { useTranslation } from '@/hooks/useTranslation';
+
 const tabs = [
-    { label: 'Transaction Log', href: '/transactions' },
-    { label: 'Cash Sales', href: '/transactions/cash-sales' },
-    { label: 'Advance Pay', href: '/transactions/advance-payments' },
-    { label: 'Petty Cash', href: '/transactions/petty-cash' },
-    { label: 'Transfers', href: '/transactions/transfers' },
-    { label: 'Safe Balances', href: '/transactions/safe-balances' },
-    { label: 'Shifts', href: '/transactions/shifts' },
-    { label: 'Dailies', href: '/transactions/dailies' },
-    { label: 'Best Sales', href: '/transactions/best-sales' },
-    { label: 'Client Sales', href: '/transactions/client-sales' },
-    { label: 'Package Sales', href: '/transactions/package-sales' },
+    { labelKey: 'txn.tabLog', href: '/transactions' },
+    { labelKey: 'txn.tabCashSales', href: '/transactions/cash-sales' },
+    { labelKey: 'txn.tabAdvance', href: '/transactions/advance-payments' },
+    { labelKey: 'txn.tabPettyCash', href: '/transactions/petty-cash' },
+    { labelKey: 'txn.tabTransfers', href: '/transactions/transfers' },
+    { labelKey: 'txn.tabSafeBalances', href: '/transactions/safe-balances' },
+    { labelKey: 'txn.tabShifts', href: '/transactions/shifts' },
+    { labelKey: 'txn.tabDailies', href: '/transactions/dailies' },
+    { labelKey: 'txn.tabBestSales', href: '/transactions/best-sales' },
+    { labelKey: 'txn.tabClientSales', href: '/transactions/client-sales' },
+    { labelKey: 'txn.tabPackageSales', href: '/transactions/package-sales' },
 ];
 
 const data = [
@@ -48,38 +50,39 @@ const s: Record<string, React.CSSProperties> = {
 };
 
 export default function AdvancePaymentsPage() {
+    const { t, lang } = useTranslation();
     const [search, setSearch] = useState('');
     const filtered = data.filter(d => d.client.toLowerCase().includes(search.toLowerCase()));
 
     return (
-        <div style={s.page}>
+        <div style={{ ...s.page, direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
             <div style={s.tabBar}>
-                {tabs.map(t => <Link key={t.href} href={t.href} style={{ ...s.tab, ...(t.href === '/transactions/advance-payments' ? s.tabActive : {}) }}>{t.label}</Link>)}
+                {tabs.map(tab => <Link key={tab.href} href={tab.href} style={{ ...s.tab, ...(tab.href === '/transactions/advance-payments' ? s.tabActive : {}) }}>{t(tab.labelKey)}</Link>)}
             </div>
 
             <div style={s.kpis}>
-                <div style={s.kpi}><div style={s.kpiVal}>{data.reduce((a, d) => a + d.paid, 0).toLocaleString()} EGP</div><div style={s.kpiLbl}>Total Collected</div></div>
-                <div style={s.kpi}><div style={s.kpiVal}>{data.reduce((a, d) => a + d.balance, 0).toLocaleString()} EGP</div><div style={s.kpiLbl}>Outstanding Balance</div></div>
-                <div style={s.kpi}><div style={s.kpiVal}>{data.filter(d => d.status === 'partial').length}</div><div style={s.kpiLbl}>Pending Collection</div></div>
+                <div style={s.kpi}><div style={s.kpiVal} dir="ltr">{data.reduce((a, d) => a + d.paid, 0).toLocaleString()} EGP</div><div style={s.kpiLbl}>{t('txn.adv.totalCollected')}</div></div>
+                <div style={s.kpi}><div style={s.kpiVal} dir="ltr">{data.reduce((a, d) => a + d.balance, 0).toLocaleString()} EGP</div><div style={s.kpiLbl}>{t('txn.adv.outstanding')}</div></div>
+                <div style={s.kpi}><div style={s.kpiVal}>{data.filter(d => d.status === 'partial').length}</div><div style={s.kpiLbl}>{t('txn.adv.pending')}</div></div>
             </div>
 
             <div style={s.toolbar}>
-                <div style={s.searchBox as React.CSSProperties}><Search size={16} style={s.searchIcon as React.CSSProperties} /><input style={s.searchInput} placeholder="Search advance payments..." value={search} onChange={e => setSearch(e.target.value)} /></div>
-                <button style={s.exportBtn}><Download size={16} /> Export</button>
+                <div style={s.searchBox as React.CSSProperties}><Search size={16} style={{ ...s.searchIcon as React.CSSProperties, left: lang === 'ar' ? 'auto' : 12, right: lang === 'ar' ? 12 : 'auto' }} /><input style={{ ...s.searchInput, paddingLeft: lang === 'ar' ? 12 : 40, paddingRight: lang === 'ar' ? 40 : 12 }} placeholder={t('txn.adv.search')} value={search} onChange={e => setSearch(e.target.value)} /></div>
+                <button style={s.exportBtn}><Download size={16} /> {t('txn.export')}</button>
             </div>
 
             <table style={s.table}>
-                <thead><tr>{['ID', 'Date', 'Client', 'Booking', 'Service', 'Total', 'Paid', 'Balance', 'Status'].map(h => <th key={h} style={s.th as React.CSSProperties}>{h}</th>)}</tr></thead>
+                <thead><tr>{['txn.thTxnNum', 'txn.thDateTime', 'txn.thClient', 'txn.adv.thBooking', 'txn.adv.thService', 'txn.adv.thTotal', 'txn.adv.thPaid', 'txn.adv.thBalance', 'txn.adv.thStatus'].map(h => <th key={h} style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t(h)}</th>)}</tr></thead>
                 <tbody>
                     {filtered.map(row => (
                         <tr key={row.id}>
                             <td style={s.td}>{row.id}</td><td style={s.td}>{row.date}</td><td style={s.td}>{row.client}</td>
                             <td style={s.td}>{row.booking}</td><td style={s.td}>{row.service}</td>
-                            <td style={s.td}>{row.total} EGP</td>
-                            <td style={{ ...s.td, fontWeight: 'var(--font-semibold)', color: 'var(--color-primary-600)' }}>{row.paid} EGP</td>
-                            <td style={{ ...s.td, fontWeight: 'var(--font-semibold)', color: row.balance > 0 ? 'var(--color-warning)' : 'var(--color-success)' }}>{row.balance} EGP</td>
+                            <td style={s.td} dir="ltr">{row.total} EGP</td>
+                            <td style={{ ...s.td, fontWeight: 'var(--font-semibold)', color: 'var(--color-primary-600)' }} dir="ltr">{row.paid} EGP</td>
+                            <td style={{ ...s.td, fontWeight: 'var(--font-semibold)', color: row.balance > 0 ? 'var(--color-warning)' : 'var(--color-success)' }} dir="ltr">{row.balance} EGP</td>
                             <td style={s.td}>
-                                <span style={{ ...s.badge, background: row.status === 'paid' ? 'var(--color-success-light)' : 'var(--color-warning-light)', color: row.status === 'paid' ? 'var(--color-success)' : 'var(--color-warning)' }}>{row.status === 'paid' ? '✓ Paid' : '◐ Partial'}</span>
+                                <span style={{ ...s.badge, background: row.status === 'paid' ? 'var(--color-success-light)' : 'var(--color-warning-light)', color: row.status === 'paid' ? 'var(--color-success)' : 'var(--color-warning)' }}>{row.status === 'paid' ? t('txn.adv.statusPaid') : t('txn.adv.statusPartial')}</span>
                             </td>
                         </tr>
                     ))}

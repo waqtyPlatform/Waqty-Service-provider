@@ -85,11 +85,16 @@ export default function CancelDownPaymentPage() {
                     </div>
                     <div style={s.warning}>
                         <AlertTriangle size={18} style={{ color: 'var(--color-warning)', flexShrink: 0, marginTop: 2, marginLeft: lang === 'ar' ? 12 : 0, marginRight: lang === 'ar' ? 0 : 12 }} />
-                        <div>This will cancel the booking and refund <span dir="ltr">{bookings[selected].paid} EGP</span> to the client. This action cannot be undone.</div>
+                        <div>{t('rtn.warnCancel1')} <span dir="ltr">{bookings[selected].paid} EGP</span> {t('rtn.warnCancel2')}</div>
                     </div>
                     <div style={{ marginBottom: 'var(--space-4)' }}>
                         <label style={s.label}>{t('rtn.lblCancelReason')}</label>
-                        <select style={s.select}><option>Client Request</option><option>Schedule Conflict</option><option>Service Unavailable</option><option>Other</option></select>
+                        <select style={s.select}>
+                            <option>{t('rtn.optClientReq')}</option>
+                            <option>{t('rtn.optConflict')}</option>
+                            <option>{t('rtn.optUnavail')}</option>
+                            <option>{t('rtn.optOther')}</option>
+                        </select>
                     </div>
                     <div style={{ marginBottom: 'var(--space-4)' }}>
                         <label style={s.label}>{t('rtn.lblNotes')}</label>

@@ -91,6 +91,8 @@ const getNavigation = (
             children: [
                 { label: customersLabel, href: '/customers' },
                 { label: t('sidebar.groups'), href: '/customers/groups' },
+                { label: t('sidebar.statements'), href: '/customers/statements' },
+                { label: t('sidebar.lastVisits'), href: '/customers/last-visits' },
             ],
         },
         {
@@ -100,6 +102,7 @@ const getNavigation = (
                 { label: employeesLabel, href: '/employees' },
                 { label: t('sidebar.departments'), href: '/employees/departments' },
                 { label: t('sidebar.attendance'), href: '/employees/attendance' },
+                { label: t('sidebar.commissions'), href: '/employees/commissions' },
                 { label: t('sidebar.payroll'), href: '/employees/payroll' },
             ],
         },
@@ -109,6 +112,10 @@ const getNavigation = (
             children: [
                 { label: t('sidebar.offers'), href: '/marketing/offers' },
                 { label: t('sidebar.campaigns'), href: '/marketing/packages' },
+                { label: t('sidebar.notifications'), href: '/marketing/notifications' },
+                { label: t('sidebar.promoCodes'), href: '/marketing/promo-codes' },
+                { label: t('sidebar.messages'), href: '/marketing/messages' },
+                { label: t('sidebar.serviceGroups'), href: '/marketing/service-groups' },
             ],
         },
         {
@@ -128,10 +135,11 @@ const getNavigation = (
     ];
 
     if (role === 'manager') {
-        return fullNav.filter(n => n.label !== 'Reports' && n.label !== 'Settings');
+        return fullNav.filter(n => n.label !== t('sidebar.reports') && n.label !== t('sidebar.settings'));
     }
     if (role === 'staff') {
-        return fullNav.filter(n => !['Returns', employeesLabel, 'Reports', 'Settings'].includes(n.label));
+        const excluded = [t('sidebar.returns'), employeesLabel, t('sidebar.reports'), t('sidebar.settings')];
+        return fullNav.filter(n => !excluded.includes(n.label));
     }
 
     return fullNav;
@@ -163,36 +171,28 @@ export default function Sidebar() {
 
     const isActive = (href: string) => {
         if (href === '/') return pathname === '/';
-        // Check if the current pathname is EXACTLY the href
         if (pathname === href) return true;
-        // Check if the current pathname is a deeper nested route of this href
-        // But ONLY if the href isn't a top-level matching trap like '/employees' when we are on '/employees/departments'
-        // A simple way to handle this in our specific route structure:
+
         const pathSegments = pathname.split('/').filter(Boolean);
         const hrefSegments = href.split('/').filter(Boolean);
 
-        // If href has more segments than current path, it can't be active
         if (hrefSegments.length > pathSegments.length) return false;
 
-        // If they have the exact same number of segments, they must match exactly to be true (handled above by pathname === href)
-        if (hrefSegments.length === pathSegments.length) return false;
-
-        // For cases where we are deeper (e.g. /employees/E001) we want the parent to be active ONLY if that deeper route ISN'T mapped as its own distinct sub-item.
-        // E.g., /employees/departments has its own sub-item. /employees/E001 does not.
-
-        // Find if any OTHER navigation item explicitly matches the CURRENT pathname exactly.
+        // Ensure we don't partially match, e.g., '/employees/commissions' shouldn't match '/employees'
+        // unless there is NO sub-item defined for '/employees/commissions'.
         const isMatchedByAnotherSpecificLink = navigation.some(item => {
-            if (item.href === pathname) return true;
-            if (item.children?.some(child => child.href === pathname)) return true;
+            if (item.href === pathname && item.href !== href) return true;
+            if (item.children?.some(child => child.href === pathname && child.href !== href)) return true;
             return false;
         });
 
-        // If another sublink explicitly matches (like /employees/departments), don't light up the generic parent (/employees).
         if (isMatchedByAnotherSpecificLink) {
             return false;
         }
 
-        // Lastly, if no specific link matched, safely fall back to checking if this href is the prefix (e.g., highlighting /employees for /employees/E001)
+        // Only consider it a prefix match if there are no exact matches elsewhere
+        // But also, if the user is on /employees (exact), the prefix match for /employees
+        // works. If they are on /employees/E001, it also works because no specific link matched.
         return pathname.startsWith(href + '/');
     };
 

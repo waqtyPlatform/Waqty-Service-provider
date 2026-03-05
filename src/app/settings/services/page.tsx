@@ -35,7 +35,7 @@ const s: Record<string, React.CSSProperties> = {
 export default function ServicesSettingsPage() {
     const [search, setSearch] = useState('');
     const { addToast } = useToast();
-    const { t } = useTranslation();
+    const { t, lang } = useTranslation();
 
     // CRUD state
     const [isAddOpen, setIsAddOpen] = useState(false);
@@ -46,14 +46,14 @@ export default function ServicesSettingsPage() {
     const filtered = services.filter(s => s.name.toLowerCase().includes(search.toLowerCase()));
 
     return (
-        <div style={s.page}>
+        <div style={s.page} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
             <SettingsTabs />
             <div style={s.toolbar}>
                 <div style={s.searchBox as React.CSSProperties}><Search size={16} style={s.searchIcon as React.CSSProperties} /><input style={s.searchInput} placeholder={t('settings.services.search')} value={search} onChange={e => setSearch(e.target.value)} /></div>
                 <button style={s.addBtn} onClick={() => setIsAddOpen(true)}><Plus size={16} /> {t('settings.services.addService')}</button>
             </div>
             <table style={s.table}>
-                <thead><tr>{[t('settings.services.colService'), t('settings.services.colCategory'), t('settings.services.colDuration'), t('settings.services.colPrice'), t('settings.services.colTax'), t('settings.services.colStatus'), t('settings.services.colActions')].map(h => <th key={h} style={s.th as React.CSSProperties}>{h}</th>)}</tr></thead>
+                <thead><tr>{[t('settings.services.colService'), t('settings.services.colCategory'), t('settings.services.colDuration'), t('settings.services.colPrice'), t('settings.services.colTax'), t('settings.services.colStatus'), t('settings.services.colActions')].map(h => <th key={h} style={{ ...(s.th as React.CSSProperties), textAlign: lang === 'ar' ? 'right' : 'left' }}>{h}</th>)}</tr></thead>
                 <tbody>
                     {filtered.map(svc => (
                         <tr key={svc.id}>

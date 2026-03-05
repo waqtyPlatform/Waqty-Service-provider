@@ -125,7 +125,7 @@ export default function PositionsPage() {
                                 <td style={s.td}><span style={{ ...s.badge, ...levelColors[p.level] }}>{t(`positions.lvl${p.level}` as any)}</span></td>
                                 <td style={s.td}>{t(`positions.${({ 'Hair Styling': 'deptHair', 'Skin Care': 'deptSkin', 'Massage & Body': 'deptMassage', 'Nails': 'deptNails', 'Reception': 'deptReception', 'Administration': 'deptAdmin' } as any)[p.department] || 'deptHair'}` as any)}</td>
                                 <td style={s.td}>{p.employees}</td>
-                                <td style={s.td}>{p.minSalary.toLocaleString()} - {p.maxSalary.toLocaleString()} EGP</td>
+                                <td style={s.td} dir="ltr">{p.minSalary.toLocaleString()} - {p.maxSalary.toLocaleString()} EGP</td>
                                 <td style={s.td}>
                                     <div style={s.actions}>
                                         <button style={s.btnIcon} onClick={() => {

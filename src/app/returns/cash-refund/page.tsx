@@ -129,7 +129,12 @@ export default function CashRefundPage() {
                     <div style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-4)' }}>{t('rtn.confirmDetails')}</div>
                     <div style={{ marginBottom: 'var(--space-4)' }}>
                         <label style={s.label}>{t('rtn.lblReasonRefund')}</label>
-                        <select style={s.select}><option>Client Request</option><option>Service Issue</option><option>Double Charge</option><option>Other</option></select>
+                        <select style={s.select}>
+                            <option>{t('rtn.optClientReq')}</option>
+                            <option>{t('rtn.optServiceIssue')}</option>
+                            <option>{t('rtn.optDoubleCharge')}</option>
+                            <option>{t('rtn.optOther')}</option>
+                        </select>
                     </div>
                     <div style={{ marginBottom: 'var(--space-4)' }}>
                         <label style={s.label}>{t('rtn.lblNotes')}</label>

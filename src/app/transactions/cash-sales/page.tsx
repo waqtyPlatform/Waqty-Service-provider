@@ -4,18 +4,20 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Search, Download } from 'lucide-react';
 
+import { useTranslation } from '@/hooks/useTranslation';
+
 const tabs = [
-    { label: 'Transaction Log', href: '/transactions' },
-    { label: 'Cash Sales', href: '/transactions/cash-sales' },
-    { label: 'Advance Pay', href: '/transactions/advance-payments' },
-    { label: 'Petty Cash', href: '/transactions/petty-cash' },
-    { label: 'Transfers', href: '/transactions/transfers' },
-    { label: 'Safe Balances', href: '/transactions/safe-balances' },
-    { label: 'Shifts', href: '/transactions/shifts' },
-    { label: 'Dailies', href: '/transactions/dailies' },
-    { label: 'Best Sales', href: '/transactions/best-sales' },
-    { label: 'Client Sales', href: '/transactions/client-sales' },
-    { label: 'Package Sales', href: '/transactions/package-sales' },
+    { labelKey: 'txn.tabLog', href: '/transactions' },
+    { labelKey: 'txn.tabCashSales', href: '/transactions/cash-sales' },
+    { labelKey: 'txn.tabAdvance', href: '/transactions/advance-payments' },
+    { labelKey: 'txn.tabPettyCash', href: '/transactions/petty-cash' },
+    { labelKey: 'txn.tabTransfers', href: '/transactions/transfers' },
+    { labelKey: 'txn.tabSafeBalances', href: '/transactions/safe-balances' },
+    { labelKey: 'txn.tabShifts', href: '/transactions/shifts' },
+    { labelKey: 'txn.tabDailies', href: '/transactions/dailies' },
+    { labelKey: 'txn.tabBestSales', href: '/transactions/best-sales' },
+    { labelKey: 'txn.tabClientSales', href: '/transactions/client-sales' },
+    { labelKey: 'txn.tabPackageSales', href: '/transactions/package-sales' },
 ];
 
 const data = [
@@ -50,45 +52,46 @@ const s: Record<string, React.CSSProperties> = {
 };
 
 export default function CashSalesPage() {
+    const { t, lang } = useTranslation();
     const [search, setSearch] = useState('');
     const filtered = data.filter(d => d.client.toLowerCase().includes(search.toLowerCase()) || d.services.toLowerCase().includes(search.toLowerCase()));
     const total = filtered.reduce((s, d) => s + d.amount, 0);
 
     return (
-        <div style={s.page}>
+        <div style={{ ...s.page, direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
             <div style={s.tabBar}>
-                {tabs.map(t => (
-                    <Link key={t.href} href={t.href} style={{ ...s.tab, ...(t.href === '/transactions/cash-sales' ? s.tabActive : {}) }}>{t.label}</Link>
+                {tabs.map(tab => (
+                    <Link key={tab.href} href={tab.href} style={{ ...s.tab, ...(tab.href === '/transactions/cash-sales' ? s.tabActive : {}) }}>{t(tab.labelKey)}</Link>
                 ))}
             </div>
 
             <div style={s.kpis}>
-                <div style={s.kpi}><div style={s.kpiVal}>{total.toLocaleString()} EGP</div><div style={s.kpiLbl}>Total Cash Sales</div></div>
-                <div style={s.kpi}><div style={s.kpiVal}>{filtered.length}</div><div style={s.kpiLbl}>Transactions</div></div>
-                <div style={s.kpi}><div style={s.kpiVal}>{Math.round(total / Math.max(filtered.length, 1))} EGP</div><div style={s.kpiLbl}>Average Ticket</div></div>
+                <div style={s.kpi}><div style={s.kpiVal} dir="ltr">{total.toLocaleString()} EGP</div><div style={s.kpiLbl}>{t('txn.cash.total')}</div></div>
+                <div style={s.kpi}><div style={s.kpiVal}>{filtered.length}</div><div style={s.kpiLbl}>{t('txn.transactions')}</div></div>
+                <div style={s.kpi}><div style={s.kpiVal} dir="ltr">{Math.round(total / Math.max(filtered.length, 1))} EGP</div><div style={s.kpiLbl}>{t('txn.cash.avgTicket')}</div></div>
             </div>
 
             <div style={s.toolbar}>
                 <div style={s.searchBox as React.CSSProperties}>
-                    <Search size={16} style={s.searchIcon as React.CSSProperties} />
-                    <input style={s.searchInput} placeholder="Search cash sales..." value={search} onChange={e => setSearch(e.target.value)} />
+                    <Search size={16} style={{ ...s.searchIcon as React.CSSProperties, left: lang === 'ar' ? 'auto' : 12, right: lang === 'ar' ? 12 : 'auto' }} />
+                    <input style={{ ...s.searchInput, paddingLeft: lang === 'ar' ? 12 : 40, paddingRight: lang === 'ar' ? 40 : 12 }} placeholder={t('txn.cash.search')} value={search} onChange={e => setSearch(e.target.value)} />
                 </div>
-                <button style={s.exportBtn}><Download size={16} /> Export</button>
+                <button style={s.exportBtn}><Download size={16} /> {t('txn.export')}</button>
             </div>
 
             <table style={s.table}>
                 <thead><tr>
-                    {['ID', 'Date', 'Time', 'Client', 'Services', 'Amount', 'Receipt', 'Cashier'].map(h => <th key={h} style={s.th as React.CSSProperties}>{h}</th>)}
+                    {['txn.thTxnNum', 'txn.thDateTime', 'txn.cash.thTime', 'txn.thClient', 'txn.cash.thServices', 'txn.thAmount', 'txn.cash.thReceipt', 'txn.cash.thCashier'].map(h => <th key={h} style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t(h)}</th>)}
                 </tr></thead>
                 <tbody>
                     {filtered.map(row => (
                         <tr key={row.id}>
                             <td style={s.td}>{row.id}</td>
-                            <td style={s.td}>{row.date}</td>
-                            <td style={s.td}>{row.time}</td>
+                            <td style={s.td} dir="ltr">{row.date}</td>
+                            <td style={s.td} dir="ltr">{row.time}</td>
                             <td style={s.td}>{row.client}</td>
                             <td style={s.td}>{row.services}</td>
-                            <td style={{ ...s.td, ...s.amount }}>{row.amount} EGP</td>
+                            <td style={{ ...s.td, ...s.amount }} dir="ltr">{row.amount} EGP</td>
                             <td style={s.td}>{row.receipt}</td>
                             <td style={s.td}>{row.cashier}</td>
                         </tr>

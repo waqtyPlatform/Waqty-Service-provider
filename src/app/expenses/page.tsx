@@ -44,12 +44,12 @@ const statusStyles: Record<string, { bg: string; color: string }> = {
     rejected: { bg: 'var(--color-error-light)', color: 'var(--color-error)' },
 };
 
-const tabItems = [
-    { label: 'Expense List', href: '/expenses', icon: <Receipt size={16} /> },
-    { label: 'Invoices', href: '/expenses/invoices', icon: <FileText size={16} /> },
-    { label: 'Recurring', href: '/expenses/recurring', icon: <Repeat size={16} /> },
-    { label: 'Vendors', href: '/expenses/vendors', icon: <Wallet size={16} /> },
-    { label: 'By Category', href: '/expenses/categories', icon: <PieChart size={16} /> },
+const getTabItems = (t: any) => [
+    { label: t('exp.tabList'), href: '/expenses', icon: <Receipt size={16} /> },
+    { label: t('exp.tabInvoices'), href: '/expenses/invoices', icon: <FileText size={16} /> },
+    { label: t('exp.tabRecurring'), href: '/expenses/recurring', icon: <Repeat size={16} /> },
+    { label: t('exp.tabVendors'), href: '/expenses/vendors', icon: <Wallet size={16} /> },
+    { label: t('exp.tabCategories'), href: '/expenses/categories', icon: <PieChart size={16} /> },
 ];
 
 export default function ExpensesPage() {
@@ -83,7 +83,7 @@ export default function ExpensesPage() {
             </div>
 
             <div className={styles.tabs}>
-                {tabItems.map((tab) => (
+                {getTabItems(t).map((tab) => (
                     <Link key={tab.href} href={tab.href} className={`${styles.tab} ${tab.href === '/expenses' ? styles.tabActive : ''}`}>
                         {tab.icon} {tab.label}
                     </Link>
@@ -109,17 +109,17 @@ export default function ExpensesPage() {
             <div className={styles.controls}>
                 <div className={styles.searchWrap}>
                     <Search size={16} className={styles.searchIcon} />
-                    <input className={styles.input} placeholder="Search expenses..." value={search} onChange={(e) => setSearch(e.target.value)} />
+                    <input className={styles.input} placeholder={t('exp.search')} value={search} onChange={(e) => setSearch(e.target.value)} />
                 </div>
                 <select className={styles.select} value={catFilter} onChange={(e) => setCatFilter(e.target.value)}>
-                    <option value="all">All Categories</option>
-                    <option value="supplies">Supplies</option>
-                    <option value="rent">Rent</option>
-                    <option value="utilities">Utilities</option>
-                    <option value="marketing">Marketing</option>
-                    <option value="equipment">Equipment</option>
-                    <option value="salary">Salary</option>
-                    <option value="maintenance">Maintenance</option>
+                    <option value="all">{t('exp.catAll')}</option>
+                    <option value="supplies">{t('exp.catSupplies')}</option>
+                    <option value="rent">{t('exp.catRent')}</option>
+                    <option value="utilities">{t('exp.catUtilities')}</option>
+                    <option value="marketing">{t('exp.catMarketing')}</option>
+                    <option value="equipment">{t('exp.catEquipment')}</option>
+                    <option value="salary">{t('exp.catSalary')}</option>
+                    <option value="maintenance">{t('exp.catMaintenance')}</option>
                 </select>
             </div>
 
@@ -128,14 +128,14 @@ export default function ExpensesPage() {
                     <table className={styles.dataTable}>
                         <thead>
                             <tr>
-                                <th className={styles.th}>Expense #</th>
-                                <th className={styles.th}>Date</th>
-                                <th className={styles.th}>Category</th>
-                                <th className={styles.th}>Description</th>
-                                <th className={styles.th}>Vendor</th>
-                                <th className={styles.th}>Method</th>
-                                <th className={`${styles.th} ${styles.thRight}`}>Amount</th>
-                                <th className={styles.th}>Status</th>
+                                <th className={styles.th}>{t('exp.thId')}</th>
+                                <th className={styles.th}>{t('exp.thDate')}</th>
+                                <th className={styles.th}>{t('exp.thCategory')}</th>
+                                <th className={styles.th}>{t('exp.thDesc')}</th>
+                                <th className={styles.th}>{t('exp.thVendor')}</th>
+                                <th className={styles.th}>{t('exp.thMethod')}</th>
+                                <th className={`${styles.th} ${styles.thRight}`}>{t('exp.thAmount')}</th>
+                                <th className={styles.th}>{t('exp.thStatus')}</th>
                                 <th className={styles.th}></th>
                             </tr>
                         </thead>
@@ -158,16 +158,16 @@ export default function ExpensesPage() {
                                         </td>
                                         <td className={styles.td}>
                                             <span className={styles.badge} style={{ background: st.bg, color: st.color }}>
-                                                {exp.status.charAt(0).toUpperCase() + exp.status.slice(1)}
+                                                {t(`exp.st${exp.status.charAt(0).toUpperCase() + exp.status.slice(1)}`)}
                                             </span>
                                         </td>
                                         <td className={styles.td}>
                                             <DropdownMenu
                                                 trigger={<button className={styles.actionBtn}><MoreVertical size={16} /></button>}
                                                 items={[
-                                                    { label: 'View Details', icon: <Search size={14} />, onClick: () => addToast('info', 'Viewing expense details') },
-                                                    { label: 'Edit Expense', icon: <FileText size={14} />, onClick: () => addToast('info', 'Edit expense mode') },
-                                                    { label: 'Delete', icon: <MoreVertical size={14} />, onClick: () => addToast('error', 'Expense deleted'), destructive: true },
+                                                    { label: t('exp.actionView'), icon: <Search size={14} />, onClick: () => addToast('info', 'Viewing expense details') },
+                                                    { label: t('exp.actionEdit'), icon: <FileText size={14} />, onClick: () => addToast('info', 'Edit expense mode') },
+                                                    { label: t('exp.actionDelete'), icon: <MoreVertical size={14} />, onClick: () => addToast('error', 'Expense deleted'), destructive: true },
                                                 ]}
                                             />
                                         </td>
@@ -178,7 +178,9 @@ export default function ExpensesPage() {
                     </table>
                 </div>
                 <div className={styles.pag}>
-                    <span className={styles.pageInfo}>Showing {filtered.length} of {expenses.length}</span>
+                    <span className={styles.pageInfo}>
+                        {t('exp.showing').replace('{visible}', filtered.length.toString()).replace('{total}', expenses.length.toString())}
+                    </span>
                 </div>
             </div>
         </div>

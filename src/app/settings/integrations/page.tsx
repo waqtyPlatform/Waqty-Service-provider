@@ -8,6 +8,7 @@ import {
     MessageCircle, CreditCard, CalendarDays, Mail, Workflow,
     Instagram, MapPin, Phone,
 } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const CATEGORIES = [
     { key: 'communication', label: 'Communication' },
@@ -81,6 +82,7 @@ const s: Record<string, React.CSSProperties> = {
 
 export default function IntegrationsPage() {
     const { addToast } = useToast();
+    const { t, lang } = useTranslation();
     const [integrations, setIntegrations] = React.useState(initialIntegrations);
     const [selectedIntegration, setSelectedIntegration] = React.useState<any>(null);
     const [isModalOpen, setIsModalOpen] = React.useState(false);
@@ -117,7 +119,7 @@ export default function IntegrationsPage() {
     };
 
     return (
-        <div style={s.page}>
+        <div style={s.page} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
             <SettingsTabs />
 
             {/* Stats */}
@@ -128,7 +130,7 @@ export default function IntegrationsPage() {
                     </div>
                     <div>
                         <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' }}>{connectedCount}</div>
-                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>Connected</div>
+                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{t('settings.integrations.connected')}</div>
                     </div>
                 </div>
                 <div style={s.statCard}>
@@ -137,7 +139,7 @@ export default function IntegrationsPage() {
                     </div>
                     <div>
                         <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' }}>{totalCount - connectedCount}</div>
-                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>Available</div>
+                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{t('settings.integrations.available')}</div>
                     </div>
                 </div>
                 <div style={s.statCard}>
@@ -146,7 +148,7 @@ export default function IntegrationsPage() {
                     </div>
                     <div>
                         <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' }}>{totalCount}</div>
-                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>Total Integrations</div>
+                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{t('settings.integrations.total')}</div>
                     </div>
                 </div>
             </div>
@@ -155,9 +157,17 @@ export default function IntegrationsPage() {
             {CATEGORIES.map(cat => {
                 const items = integrations.filter(i => i.category === cat.key);
                 if (items.length === 0) return null;
+                const catLabelKey: Record<string, string> = {
+                    'communication': 'settings.integrations.catComm',
+                    'payment': 'settings.integrations.catPay',
+                    'scheduling': 'settings.integrations.catSched',
+                    'marketing': 'settings.integrations.catMarket',
+                    'automation': 'settings.integrations.catAuto',
+                    'location': 'settings.integrations.catLoc'
+                };
                 return (
                     <div key={cat.key}>
-                        <div style={s.categoryLabel}>{cat.label}</div>
+                        <div style={s.categoryLabel}>{t(catLabelKey[cat.key] || cat.label)}</div>
                         <div style={s.grid}>
                             {items.map(i => (
                                 <div key={i.id} style={{
@@ -172,24 +182,24 @@ export default function IntegrationsPage() {
                                             {i.status === 'connected' ? (
                                                 <>
                                                     <span style={{ ...s.badge, background: 'var(--color-success-light)', color: 'var(--color-success)' }}>
-                                                        <CheckCircle size={12} /> Connected
+                                                        <CheckCircle size={12} /> {t('settings.integrations.connected')}
                                                     </span>
                                                     <button
                                                         onClick={() => handleSettings(i)}
                                                         style={{ ...s.actionBtn, color: 'var(--text-tertiary)' }}
                                                     >
-                                                        <Settings size={12} /> Settings
+                                                        <Settings size={12} style={{ marginInlineEnd: 4 }} /> {t('settings.integrations.settings')}
                                                     </button>
                                                     <button
                                                         onClick={() => handleDisconnect(i)}
                                                         style={{ ...s.actionBtn, color: 'var(--color-error)', borderColor: 'var(--color-error)' }}
                                                     >
-                                                        <XCircle size={12} /> Disconnect
+                                                        <XCircle size={12} style={{ marginInlineEnd: 4 }} /> {t('settings.integrations.disconnect')}
                                                     </button>
                                                 </>
                                             ) : (
                                                 <button onClick={() => handleConnect(i)} style={{ ...s.actionBtn, color: 'var(--color-primary-600)', borderColor: 'var(--color-primary-400)' }}>
-                                                    <Zap size={12} /> Connect
+                                                    <Zap size={12} style={{ marginInlineEnd: 4 }} /> {t('settings.integrations.connect')}
                                                 </button>
                                             )}
                                         </div>
@@ -205,22 +215,23 @@ export default function IntegrationsPage() {
             <Modal
                 open={isModalOpen}
                 onClose={() => { setIsModalOpen(false); setSelectedIntegration(null); }}
-                title={`${selectedIntegration?.status === 'disconnected' ? 'Connect' : 'Disconnect'} ${selectedIntegration?.name}`}
+                title={`${selectedIntegration?.status === 'disconnected' ? t('settings.integrations.connect') : t('settings.integrations.disconnect')} ${selectedIntegration?.name}`}
                 footer={
                     <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
-                        <Button variant="ghost" onClick={() => setIsModalOpen(false)}>Cancel</Button>
+                        <Button variant="ghost" onClick={() => setIsModalOpen(false)}>{t('settings.integrations.cancel')}</Button>
                         <Button
                             variant={selectedIntegration?.status === 'disconnected' ? 'primary' : 'destructive'}
                             onClick={confirmAction}
                         >
-                            Confirm {selectedIntegration?.status === 'disconnected' ? 'Connection' : 'Disconnection'}
+                            {selectedIntegration?.status === 'disconnected' ? t('settings.integrations.confirmConn') : t('settings.integrations.confirmDisconn')}
                         </Button>
                     </div>
                 }
             >
                 <p style={{ color: 'var(--text-secondary)' }}>
-                    Are you sure you want to {selectedIntegration?.status === 'disconnected' ? 'connect' : 'disconnect'} the <strong>{selectedIntegration?.name}</strong> integration?
-                    {selectedIntegration?.status === 'disconnected' && ' This will redirect you to the authorization page for this service.'}
+                    {selectedIntegration?.status === 'disconnected' ? t('settings.integrations.connMsg1') : t('settings.integrations.disconnMsg1')}
+                    <strong>{selectedIntegration?.name}</strong>
+                    {selectedIntegration?.status === 'disconnected' ? t('settings.integrations.connMsg2') : t('settings.integrations.disconnMsg2')}
                 </p>
             </Modal>
 
@@ -228,11 +239,11 @@ export default function IntegrationsPage() {
             <SlideOver
                 open={isSettingsOpen}
                 onClose={() => { setIsSettingsOpen(false); setSelectedIntegration(null); }}
-                title={`${selectedIntegration?.name} Settings`}
+                title={`${selectedIntegration?.name} ${t('settings.integrations.settings')}`}
                 footer={
                     <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
-                        <Button variant="ghost" onClick={() => setIsSettingsOpen(false)}>Cancel</Button>
-                        <Button onClick={() => { setIsSettingsOpen(false); addToast('success', `${selectedIntegration?.name} settings saved.`); }}>Save Settings</Button>
+                        <Button variant="ghost" onClick={() => setIsSettingsOpen(false)}>{t('settings.integrations.cancel')}</Button>
+                        <Button onClick={() => { setIsSettingsOpen(false); addToast('success', `${selectedIntegration?.name} settings saved.`); }}>{t('settings.integrations.saveSettings')}</Button>
                     </div>
                 }
             >
@@ -242,42 +253,43 @@ export default function IntegrationsPage() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', padding: 'var(--space-4)', background: 'var(--color-success-light)', borderRadius: 'var(--radius-lg)' }}>
                             <CheckCircle size={18} style={{ color: 'var(--color-success)' }} />
                             <div>
-                                <div style={{ fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-sm)' }}>Connected & Active</div>
-                                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>Last synced: Just now</div>
+                                <div style={{ fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-sm)' }}>{t('settings.integrations.activeStatus')}</div>
+                                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{t('settings.integrations.lastSynced')}</div>
                             </div>
                         </div>
 
                         {/* API Key */}
                         <div>
-                            <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', display: 'block', marginBottom: 'var(--space-2)' }}>API Key</label>
+                            <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', display: 'block', marginBottom: 'var(--space-2)' }}>{t('settings.integrations.apiKey')}</label>
                             <div style={{
                                 padding: 'var(--space-3)', background: 'var(--bg-secondary)',
                                 borderRadius: 'var(--radius-md)', fontFamily: 'monospace',
                                 fontSize: 'var(--text-sm)', color: 'var(--text-secondary)',
                                 border: '1px solid var(--border-color)',
-                            }}>
+                            }} dir="ltr">
                                 sk-••••••••••••••••{selectedIntegration.name.slice(0, 4).toUpperCase()}
                             </div>
                         </div>
 
                         {/* Webhook URL */}
                         <div>
-                            <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', display: 'block', marginBottom: 'var(--space-2)' }}>Webhook URL</label>
+                            <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', display: 'block', marginBottom: 'var(--space-2)' }}>{t('settings.integrations.webhookUrl')}</label>
                             <Input
                                 defaultValue={`https://api.hagzy.com/webhooks/${selectedIntegration.name.toLowerCase().replace(/\s/g, '-')}`}
+                                dir="ltr"
                             />
                         </div>
 
                         {/* Sync Settings */}
                         <div>
-                            <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', display: 'block', marginBottom: 'var(--space-2)' }}>Sync Frequency</label>
+                            <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', display: 'block', marginBottom: 'var(--space-2)' }}>{t('settings.integrations.syncFreq')}</label>
                             <Select
                                 options={[
-                                    { label: 'Real-time', value: 'realtime' },
-                                    { label: 'Every 5 minutes', value: '5min' },
-                                    { label: 'Every 15 minutes', value: '15min' },
-                                    { label: 'Every hour', value: '1hr' },
-                                    { label: 'Manual only', value: 'manual' },
+                                    { label: t('settings.integrations.syncRealtime'), value: 'realtime' },
+                                    { label: t('settings.integrations.sync5min'), value: '5min' },
+                                    { label: t('settings.integrations.sync15min'), value: '15min' },
+                                    { label: t('settings.integrations.sync1hr'), value: '1hr' },
+                                    { label: t('settings.integrations.syncManual'), value: 'manual' },
                                 ]}
                                 defaultValue="realtime"
                             />
@@ -285,11 +297,11 @@ export default function IntegrationsPage() {
 
                         {/* Notifications */}
                         <div>
-                            <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', display: 'block', marginBottom: 'var(--space-2)' }}>Notifications</label>
+                            <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', display: 'block', marginBottom: 'var(--space-2)' }}>{t('settings.integrations.notifications')}</label>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-                                <Switch checked={true} label="Notify on sync errors" />
-                                <Switch checked={true} label="Notify on disconnection" />
-                                <Switch checked={false} label="Send daily sync summary" />
+                                <Switch checked={true} label={t('settings.integrations.notifyError')} />
+                                <Switch checked={true} label={t('settings.integrations.notifyDisconn')} />
+                                <Switch checked={false} label={t('settings.integrations.notifySummary')} />
                             </div>
                         </div>
 
@@ -298,9 +310,9 @@ export default function IntegrationsPage() {
                             padding: 'var(--space-4)', borderRadius: 'var(--radius-lg)',
                             border: '1px solid var(--color-error)', background: 'var(--color-error-light)',
                         }}>
-                            <div style={{ fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-sm)', color: 'var(--color-error)', marginBottom: 'var(--space-2)' }}>Danger Zone</div>
+                            <div style={{ fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-sm)', color: 'var(--color-error)', marginBottom: 'var(--space-2)' }}>{t('settings.integrations.dangerZone')}</div>
                             <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', marginBottom: 'var(--space-3)' }}>
-                                Disconnecting will stop all syncing and remove stored API credentials.
+                                {t('settings.integrations.dangerDesc')}
                             </div>
                             <Button
                                 variant="destructive"
@@ -310,7 +322,7 @@ export default function IntegrationsPage() {
                                     handleDisconnect(selectedIntegration);
                                 }}
                             >
-                                <XCircle size={14} /> Disconnect {selectedIntegration.name}
+                                <XCircle size={14} style={{ marginInlineEnd: 8 }} /> {t('settings.integrations.disconnect')} {selectedIntegration.name}
                             </Button>
                         </div>
                     </div>

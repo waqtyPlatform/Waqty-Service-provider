@@ -11,39 +11,46 @@ import {
     Target,
     Briefcase,
     UserCog,
-    Plus
+    Plus,
+    Award,
+    Wallet
 } from 'lucide-react';
 import styles from './employees.module.css';
-
-const tabItems = [
-    { label: 'Staff List', href: '/employees', icon: <Users size={16} /> },
-    { label: 'Schedule', href: '/employees/schedule', icon: <Calendar size={16} /> },
-    { label: 'Performance', href: '/employees/performance', icon: <BarChart3 size={16} /> },
-    { label: 'Time Tracking', href: '/employees/time-tracking', icon: <Clock size={16} /> },
-    { label: 'Targets', href: '/employees/targets', icon: <Target size={16} /> },
-    { label: 'Roles', href: '/employees/roles', icon: <Briefcase size={16} /> },
-    { label: 'Permissions', href: '/employees/permissions', icon: <UserCog size={16} /> },
-];
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function EmployeesLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
+    const { t, lang } = useTranslation();
+
+    const tabItems = [
+        { label: t('empLayout.tabStaff'), href: '/employees', icon: <Users size={16} /> },
+        { label: t('empLayout.tabSchedule'), href: '/employees/schedule', icon: <Calendar size={16} /> },
+        { label: t('empLayout.tabPerformance'), href: '/employees/performance', icon: <BarChart3 size={16} /> },
+        { label: t('empLayout.tabTimeTracking'), href: '/employees/time-tracking', icon: <Clock size={16} /> },
+        { label: t('empLayout.tabTargets'), href: '/employees/targets', icon: <Target size={16} /> },
+        { label: t('empLayout.tabCommissions'), href: '/employees/commissions', icon: <Award size={16} /> },
+        { label: t('empLayout.tabPayroll'), href: '/employees/payroll', icon: <Wallet size={16} /> },
+        { label: t('empLayout.tabRoles'), href: '/employees/roles', icon: <Briefcase size={16} /> },
+        { label: t('empLayout.tabPermissions'), href: '/employees/permissions', icon: <UserCog size={16} /> },
+    ];
+
     const isTabPage = tabItems.some(tab => pathname === tab.href);
     const showHeaderContent = pathname === '/employees';
     const showStickyHeader = showHeaderContent || isTabPage;
 
     return (
-        <div className={styles.page}>
+        <div className={styles.page} style={{ direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
             {/* Sticky Header Wrapper */}
             {showStickyHeader && (
                 <div className={styles.stickyHeader}>
                     {showHeaderContent && (
                         <div className={styles.headerContent}>
                             <div>
-                                <h1 className={styles.title}>Employees</h1>
-                                <p className={styles.subtitle}>Manage your team, roles, and performance.</p>
+                                <h1 className={styles.title}>{t('empLayout.title')}</h1>
+                                <p className={styles.subtitle}>{t('empLayout.subtitle')}</p>
                             </div>
                             <button className={styles.btnAdd} onClick={() => window.dispatchEvent(new Event('openAddEmployee'))}>
-                                <Plus size={16} /> Add Employee
+                                <Plus size={16} /> {t('empLayout.addEmployee')}
                             </button>
                         </div>
                     )}

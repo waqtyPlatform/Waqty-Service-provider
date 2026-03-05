@@ -191,7 +191,7 @@ export default function BookingsCalendarPage() {
                             <div className={styles.nextApptTime}>
                                 <Clock size={12} /> 14:00 – 15:00
                             </div>
-                            <div className={styles.countdown}>in 23 min</div>
+                            <div className={styles.countdown}>{t('bookings.inMins').replace('%mins%', '23')}</div>
                         </div>
                     </div>
 
@@ -230,7 +230,7 @@ export default function BookingsCalendarPage() {
                                 4,280 EGP
                             </div>
                             <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginTop: 'var(--space-1)' }}>
-                                from 14 bookings
+                                {t('bookings.fromBookings').replace('%count%', '14')}
                             </div>
                         </div>
                     </div>

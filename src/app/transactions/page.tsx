@@ -36,11 +36,22 @@ const typeConfig: Record<string, { class: string; label: string }> = {
 export default function TransactionsPage() {
     const [search, setSearch] = useState('');
     const [typeFilter, setTypeFilter] = useState('all');
-    const { t } = useTranslation();
+    const { t, lang } = useTranslation();
 
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 8;
+
+    const getTypeLabel = (type: string) => {
+        switch (type) {
+            case 'sale': return t('txn.sales');
+            case 'refund': return t('txn.refunds');
+            case 'petty': return t('txn.pettyCash');
+            case 'advance': return t('txn.advance');
+            case 'transfer': return t('txn.transfers');
+            default: return type;
+        }
+    };
 
     const filtered = transactions.filter((t) => {
         const matchSearch =
@@ -63,39 +74,39 @@ export default function TransactionsPage() {
     );
 
     return (
-        <div className={styles.transactionsPage}>
+        <div className={styles.transactionsPage} style={{ direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
             <div className={styles.header}>
                 <div>
-                    <h1>{t('transactions.title')}</h1>
-                    <p>{t('transactions.desc')}</p>
+                    <h1>{t('txn.title')}</h1>
+                    <p>{t('txn.desc')}</p>
                 </div>
                 <button className={styles.btnOutline}>
-                    <Download size={16} /> {t('transactions.export')}
+                    <Download size={16} /> {t('txn.export')}
                 </button>
             </div>
 
             {/* KPI Row */}
             <div className={styles.kpiRow}>
                 <div className={styles.kpiCard}>
-                    <div className={styles.kpiLabel}>{t('transactions.totalSales')}</div>
-                    <div className={styles.kpiValue} style={{ color: 'var(--color-success)' }}>
+                    <div className={styles.kpiLabel}>{t('txn.totalSales')}</div>
+                    <div className={styles.kpiValue} style={{ color: 'var(--color-success)' }} dir="ltr">
                         {totalSales.toLocaleString()} EGP
                     </div>
                 </div>
                 <div className={styles.kpiCard}>
-                    <div className={styles.kpiLabel}>{t('transactions.totalRefunds')}</div>
-                    <div className={styles.kpiValue} style={{ color: 'var(--color-error)' }}>
+                    <div className={styles.kpiLabel}>{t('txn.totalRefunds')}</div>
+                    <div className={styles.kpiValue} style={{ color: 'var(--color-error)' }} dir="ltr">
                         {totalRefunds.toLocaleString()} EGP
                     </div>
                 </div>
                 <div className={styles.kpiCard}>
-                    <div className={styles.kpiLabel}>Net Revenue</div>
-                    <div className={styles.kpiValue} style={{ color: 'var(--color-primary-600)' }}>
+                    <div className={styles.kpiLabel}>{t('txn.netRevenue')}</div>
+                    <div className={styles.kpiValue} style={{ color: 'var(--color-primary-600)' }} dir="ltr">
                         {netRevenue.toLocaleString()} EGP
                     </div>
                 </div>
                 <div className={styles.kpiCard}>
-                    <div className={styles.kpiLabel}>Transactions</div>
+                    <div className={styles.kpiLabel}>{t('txn.transactions')}</div>
                     <div className={styles.kpiValue}>{transactions.length}</div>
                 </div>
             </div>
@@ -103,10 +114,11 @@ export default function TransactionsPage() {
             {/* Controls */}
             <div className={styles.controls}>
                 <div className={styles.searchWrapper}>
-                    <Search size={16} className={styles.searchIcon} />
+                    <Search size={16} className={styles.searchIcon} style={lang === 'ar' ? { left: 'auto', right: 12 } : {}} />
                     <input
                         className={styles.searchInput}
-                        placeholder="Search transaction #, client..."
+                        style={lang === 'ar' ? { paddingLeft: 12, paddingRight: 40 } : {}}
+                        placeholder={t('txn.searchPlaceholder')}
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
@@ -116,12 +128,12 @@ export default function TransactionsPage() {
                     value={typeFilter}
                     onChange={(e) => setTypeFilter(e.target.value)}
                 >
-                    <option value="all">All Types</option>
-                    <option value="sale">Sales</option>
-                    <option value="refund">Refunds</option>
-                    <option value="petty">Petty Cash</option>
-                    <option value="advance">Advance</option>
-                    <option value="transfer">Transfers</option>
+                    <option value="all">{t('txn.allTypes')}</option>
+                    <option value="sale">{t('txn.sales')}</option>
+                    <option value="refund">{t('txn.refunds')}</option>
+                    <option value="petty">{t('txn.pettyCash')}</option>
+                    <option value="advance">{t('txn.advance')}</option>
+                    <option value="transfer">{t('txn.transfers')}</option>
                 </select>
             </div>
 
@@ -132,14 +144,14 @@ export default function TransactionsPage() {
                         <table className={styles.dataTable}>
                             <thead>
                                 <tr>
-                                    <th>Txn #</th>
-                                    <th>Date & Time</th>
-                                    <th>Type</th>
-                                    <th>Client</th>
-                                    <th>Description</th>
-                                    <th>Employee</th>
-                                    <th>Method</th>
-                                    <th style={{ textAlign: 'right' }}>Amount</th>
+                                    <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('txn.thTxnNum')}</th>
+                                    <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('txn.thDateTime')}</th>
+                                    <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('txn.thType')}</th>
+                                    <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('txn.thClient')}</th>
+                                    <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('txn.thDescription')}</th>
+                                    <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('txn.thEmployee')}</th>
+                                    <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('txn.thMethod')}</th>
+                                    <th style={{ textAlign: lang === 'ar' ? 'left' : 'right' }}>{t('txn.thAmount')}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -152,7 +164,7 @@ export default function TransactionsPage() {
                                         </td>
                                         <td>
                                             <span className={`${styles.typeBadge} ${typeConfig[t.type]?.class}`}>
-                                                {typeConfig[t.type]?.label}
+                                                {getTypeLabel(t.type)}
                                             </span>
                                         </td>
                                         <td style={{ fontWeight: t.client !== '—' ? 'var(--font-medium)' : undefined, color: t.client === '—' ? 'var(--text-tertiary)' : undefined }}>
@@ -161,7 +173,7 @@ export default function TransactionsPage() {
                                         <td>{t.service}</td>
                                         <td>{t.employee}</td>
                                         <td>{t.method}</td>
-                                        <td style={{ textAlign: 'right' }}>
+                                        <td style={{ textAlign: lang === 'ar' ? 'left' : 'right' }} dir="ltr">
                                             <span className={t.amount >= 0 ? styles.amountPositive : styles.amountNegative}>
                                                 {t.amount >= 0 ? '+' : ''}{t.amount.toLocaleString()} EGP
                                             </span>
@@ -172,7 +184,9 @@ export default function TransactionsPage() {
                         </table>
                         <div className={styles.pagination}>
                             <span className={styles.pageInfo}>
-                                Showing {paginatedTransactions.length} of {filtered.length} transactions
+                                {t('txn.showingInfo')
+                                    .replace('{visible}', paginatedTransactions.length.toString())
+                                    .replace('{total}', filtered.length.toString())}
                             </span>
                             {totalPages > 1 && (
                                 <div className={styles.pageButtons}>
@@ -181,7 +195,7 @@ export default function TransactionsPage() {
                                         onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                                         disabled={currentPage === 1}
                                     >
-                                        <ChevronLeft size={16} />
+                                        <ChevronLeft size={16} style={lang === 'ar' ? { transform: 'scaleX(-1)' } : {}} />
                                     </button>
                                     <button className={`${styles.pageBtn} ${styles.pageBtnActive}`}>
                                         {currentPage}
@@ -191,7 +205,7 @@ export default function TransactionsPage() {
                                         onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                                         disabled={currentPage === totalPages}
                                     >
-                                        <ChevronRight size={16} />
+                                        <ChevronRight size={16} style={lang === 'ar' ? { transform: 'scaleX(-1)' } : {}} />
                                     </button>
                                 </div>
                             )}
@@ -201,8 +215,8 @@ export default function TransactionsPage() {
                     <div style={{ padding: 'var(--space-12) 0' }}>
                         <EmptyState
                             icon={<Receipt size={32} color="var(--text-tertiary)" />}
-                            title="No transactions found"
-                            description="There are no transactions matching your search criteria or filter."
+                            title={t('txn.emptyTitle')}
+                            description={t('txn.emptyDesc')}
                         />
                     </div>
                 )}

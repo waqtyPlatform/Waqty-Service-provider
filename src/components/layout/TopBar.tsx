@@ -135,7 +135,7 @@ export default function TopBar() {
                     className={styles.iconBtn}
                     onClick={toggleLanguage}
                     aria-label="Toggle language"
-                    title={settings.language === 'en' ? 'Switch to Arabic' : 'Switch to English'}
+                    title={settings.language === 'en' ? t('user.switchAr') : t('user.switchEn')}
                 >
                     <Languages size={20} />
                     <span style={{ fontSize: '12px', fontWeight: 'bold' }}>{settings.language === 'en' ? 'ع' : 'EN'}</span>
@@ -155,8 +155,8 @@ export default function TopBar() {
                     >
                         <div className={styles.userAvatar}>{user?.name?.charAt(0) || '?'}</div>
                         <div className={styles.userInfo}>
-                            <span className={styles.userName}>{user?.name || 'Loading...'}</span>
-                            <span className={styles.userRole} style={{ textTransform: 'capitalize' }}>{user?.role || 'Guest'}</span>
+                            <span className={styles.userName}>{user?.name || t('user.loading')}</span>
+                            <span className={styles.userRole} style={{ textTransform: 'capitalize' }}>{user?.role || t('user.guest')}</span>
                         </div>
                         <ChevronDown size={14} />
                     </button>

@@ -3,8 +3,18 @@
 import React, { useState } from 'react';
 import { Fingerprint, Search, RefreshCw, Trash2 } from 'lucide-react';
 import { Modal, Select, Button, useToast, EmptyState } from '@/components/ui';
+import { useTranslation } from '@/hooks/useTranslation';
 
-const initialData = [
+interface FingerprintRecord {
+    id: number;
+    employee: string;
+    device: string;
+    enrollDate: string;
+    fingers: number;
+    status: string;
+}
+
+const initialData: FingerprintRecord[] = [
     { id: 1, employee: 'Sara Ahmed', device: 'BioStation A2', enrollDate: '2026-01-05', fingers: 2, status: 'enrolled' },
     { id: 2, employee: 'Nora Ali', device: 'BioStation A2', enrollDate: '2026-01-05', fingers: 2, status: 'enrolled' },
     { id: 3, employee: 'Layla Hassan', device: 'BioStation A2', enrollDate: '2026-01-10', fingers: 2, status: 'enrolled' },
@@ -12,12 +22,6 @@ const initialData = [
     { id: 5, employee: 'Reem Mohamed', device: 'BioStation A2', enrollDate: '-', fingers: 0, status: 'not_enrolled' },
     { id: 6, employee: 'Dina Nabil', device: 'FaceStation F2', enrollDate: '2026-02-01', fingers: 2, status: 'enrolled' },
 ];
-
-const statusMap: Record<string, { label: string; bg: string; color: string }> = {
-    enrolled: { label: ' Enrolled', bg: 'var(--color-success-light)', color: 'var(--color-success)' },
-    partial: { label: ' Partial', bg: 'var(--color-warning-light)', color: 'var(--color-warning)' },
-    not_enrolled: { label: ' Not Enrolled', bg: 'var(--color-error-light)', color: 'var(--color-error)' },
-};
 
 const s: Record<string, React.CSSProperties> = {
     page: { display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' },
@@ -40,12 +44,19 @@ export default function FingerprintsPage() {
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('All');
     const { addToast } = useToast();
+    const { t, lang } = useTranslation();
 
     // Modals
     const [isEnrollOpen, setIsEnrollOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-    const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
+    const [selectedEmployee, setSelectedEmployee] = useState<FingerprintRecord | null>(null);
     const [isScanning, setIsScanning] = useState(false);
+
+    const statusMap: Record<string, { label: string; bg: string; color: string }> = {
+        enrolled: { label: t('fp.enrolled'), bg: 'var(--color-success-light)', color: 'var(--color-success)' },
+        partial: { label: t('fp.partial'), bg: 'var(--color-warning-light)', color: 'var(--color-warning)' },
+        not_enrolled: { label: t('fp.notEnrolled'), bg: 'var(--color-error-light)', color: 'var(--color-error)' },
+    };
 
     const filtered = fingerprints.filter(f => {
         const matchesSearch = f.employee.toLowerCase().includes(search.toLowerCase()) ||
@@ -56,51 +67,56 @@ export default function FingerprintsPage() {
 
     const handleStartScan = () => {
         setIsScanning(true);
-        // Simulate scanning delay
         setTimeout(() => {
             setIsScanning(false);
-            setFingerprints(fingerprints.map(f => f.id === selectedEmployee.id ? {
-                ...f,
-                status: 'enrolled',
-                fingers: 2,
-                enrollDate: new Date().toISOString().split('T')[0]
-            } : f));
+            if (selectedEmployee) {
+                setFingerprints(fingerprints.map(f => f.id === selectedEmployee.id ? {
+                    ...f,
+                    status: 'enrolled',
+                    fingers: 2,
+                    enrollDate: new Date().toISOString().split('T')[0]
+                } : f));
+            }
             setIsEnrollOpen(false);
             setSelectedEmployee(null);
-            addToast('success', 'Fingerprint enrolled successfully.');
+            addToast('success', t('fp.enrollSuccess'));
         }, 2000);
     };
 
     const handleDelete = () => {
-        setFingerprints(fingerprints.map(f => f.id === selectedEmployee.id ? {
-            ...f,
-            status: 'not_enrolled',
-            fingers: 0,
-            enrollDate: '-'
-        } : f));
+        if (selectedEmployee) {
+            setFingerprints(fingerprints.map(f => f.id === selectedEmployee.id ? {
+                ...f,
+                status: 'not_enrolled',
+                fingers: 0,
+                enrollDate: '-'
+            } : f));
+        }
         setIsDeleteOpen(false);
         setSelectedEmployee(null);
-        addToast('success', 'Fingerprint data cleared.');
+        addToast('success', t('fp.clearSuccess'));
     };
 
+    const columns = [t('fp.colEmployee'), t('fp.colDevice'), t('fp.colEnrollDate'), t('fp.colFingers'), t('fp.colStatus'), t('fp.colActions')];
+
     return (
-        <div style={s.page}>
-            <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' }}>Fingerprint Management</div>
+        <div style={{ ...s.page, direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
+            <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' }}>{t('fp.title')}</div>
 
             <div style={s.toolbar}>
                 <div style={s.filterGroup as React.CSSProperties}>
                     <div style={s.searchBox as React.CSSProperties}>
                         <Search size={16} style={s.searchIcon as React.CSSProperties} />
-                        <input style={s.searchInput} placeholder="Search employees or devices..." value={search} onChange={e => setSearch(e.target.value)} />
+                        <input style={s.searchInput} placeholder={t('fp.searchPlaceholder')} value={search} onChange={e => setSearch(e.target.value)} />
                     </div>
                     <Select
                         value={statusFilter}
                         onChange={e => setStatusFilter(e.target.value)}
                         options={[
-                            { label: 'All Statuses', value: 'All' },
-                            { label: 'Enrolled', value: 'enrolled' },
-                            { label: 'Partial', value: 'partial' },
-                            { label: 'Not Enrolled', value: 'not_enrolled' },
+                            { label: t('fp.allStatuses'), value: 'All' },
+                            { label: t('fp.enrolled'), value: 'enrolled' },
+                            { label: t('fp.partial'), value: 'partial' },
+                            { label: t('fp.notEnrolled'), value: 'not_enrolled' },
                         ]}
                         style={{ width: 160 }}
                     />
@@ -111,7 +127,7 @@ export default function FingerprintsPage() {
                 <table style={s.table}>
                     <thead>
                         <tr>
-                            {['Employee', 'Verification Device', 'Enrolled Date', 'Fingers Scanned', 'Status', 'Actions'].map(h =>
+                            {columns.map(h =>
                                 <th key={h} style={s.th as React.CSSProperties}>{h}</th>
                             )}
                         </tr>
@@ -132,13 +148,13 @@ export default function FingerprintsPage() {
                                                 style={{ ...s.btnHoverText, color: 'var(--color-primary-600)' }}
                                                 onClick={() => { setSelectedEmployee(row); setIsEnrollOpen(true); }}
                                             >
-                                                <RefreshCw size={14} /> {row.status === 'not_enrolled' ? 'Enroll Fingerprint' : 'Re-enroll'}
+                                                <RefreshCw size={14} /> {row.status === 'not_enrolled' ? t('fp.enrollBtn') : t('fp.reEnrollBtn')}
                                             </button>
                                             {row.status !== 'not_enrolled' && (
                                                 <button
                                                     style={{ ...s.btnIcon, color: 'var(--color-error)' }}
                                                     onClick={() => { setSelectedEmployee(row); setIsDeleteOpen(true); }}
-                                                    title="Clear Fingerprint Data"
+                                                    title={t('fp.clearTitle')}
                                                 >
                                                     <Trash2 size={14} />
                                                 </button>
@@ -151,7 +167,7 @@ export default function FingerprintsPage() {
                     </tbody>
                 </table>
             ) : (
-                <EmptyState icon={<Fingerprint size={32} color="var(--text-tertiary)" />} title="No fingerprint records found" description="Adjust your filters or search query to find what you're looking for." />
+                <EmptyState icon={<Fingerprint size={32} color="var(--text-tertiary)" />} title={t('fp.emptyTitle')} description={t('fp.emptyDesc')} />
             )}
 
             <style>{`
@@ -171,14 +187,14 @@ export default function FingerprintsPage() {
 
             {/* Enroll Modal */}
             <Modal
-                title="Device Sync & Enrollment"
+                title={t('fp.enrollTitle')}
                 open={isEnrollOpen}
                 onClose={() => !isScanning && setIsEnrollOpen(false)}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsEnrollOpen(false)} disabled={isScanning}>Cancel</Button>
+                        <Button variant="ghost" onClick={() => setIsEnrollOpen(false)} disabled={isScanning}>{t('fp.cancel')}</Button>
                         <Button onClick={handleStartScan} disabled={isScanning}>
-                            {isScanning ? 'Scanning...' : 'Start Scan on Device'}
+                            {isScanning ? t('fp.scanning') : t('fp.startScan')}
                         </Button>
                     </div>
                 }
@@ -191,13 +207,7 @@ export default function FingerprintsPage() {
 
                     <div style={{ textAlign: 'center' }}>
                         <div style={{ fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-lg)', marginBottom: 4 }}>
-                            {isScanning ? 'Scanning in progress...' : 'Ready to Enroll'}
-                        </div>
-                        <div style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)' }}>
-                            {isScanning
-                                ? `Please wait while ${selectedEmployee?.employee} scans their fingers on the ${selectedEmployee?.device} device.`
-                                : `Instruct ${selectedEmployee?.employee} to step up to the ${selectedEmployee?.device} device and place their finger on the sensor. Click Start Scan below to begin.`
-                            }
+                            {isScanning ? t('fp.scanningInProgress') : t('fp.readyToEnroll')}
                         </div>
                     </div>
 
@@ -219,18 +229,18 @@ export default function FingerprintsPage() {
 
             {/* Delete/Clear Modal */}
             <Modal
-                title="Clear Fingerprint Data"
+                title={t('fp.clearTitle')}
                 open={isDeleteOpen}
                 onClose={() => setIsDeleteOpen(false)}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
-                        <Button variant="destructive" onClick={handleDelete}>Confirm Clear</Button>
+                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>{t('fp.cancel')}</Button>
+                        <Button variant="destructive" onClick={handleDelete}>{t('fp.confirmClear')}</Button>
                     </div>
                 }
             >
                 <p style={{ color: 'var(--text-secondary)' }}>
-                    Are you sure you want to permanently clear the enrolled fingerprint data for <strong>{selectedEmployee?.employee}</strong>? They will need to re-enroll on the device to authenticate.
+                    {t('fp.clearConfirmMsg')} <strong>{selectedEmployee?.employee}</strong>{t('fp.clearConfirmMsg2')}
                 </p>
             </Modal>
         </div>

@@ -106,11 +106,10 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                     <div className={styles.cardBody}>
                         <div style={{ padding: 'var(--space-3)', background: 'var(--color-warning-light)', color: 'var(--color-warning-dark)', borderRadius: 'var(--radius-md)', display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-4)' }}>
                             <AlertCircle size={16} style={{ flexShrink: 0, marginTop: 2 }} />
-                            <span style={{ fontSize: 'var(--text-sm)' }}><strong>{t('custProfile.allergyAlert')}</strong> Latex sensitivity reported on Jan 20, 2024.</span>
+                            <span style={{ fontSize: 'var(--text-sm)' }}><strong>{t('custProfile.allergyAlert')}</strong> {t('custProfile.latexSensitivity')}</span>
                         </div>
                         <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                            Client prefers evening appointments. Usually requests tea with no sugar.
-                            Has sensitive scalp, avoid strong chemical shampoos.
+                            {t('custProfile.clientNotes')}
                         </p>
                     </div>
                 </div>
@@ -150,10 +149,10 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                     </div>
                     <div className={styles.cardBody}>
                         <div className={styles.tags}>
-                            <span className={styles.tag}>VIP</span>
-                            <span className={styles.tag}>Latex Allergy</span>
-                            <span className={styles.tag}>Weekend</span>
-                            <span className={styles.tag}>Big Spender</span>
+                            <span className={styles.tag}>{t('custProfile.tagVIP')}</span>
+                            <span className={styles.tag}>{t('custProfile.tagLatex')}</span>
+                            <span className={styles.tag}>{t('custProfile.tagWeekend')}</span>
+                            <span className={styles.tag}>{t('custProfile.tagBigSpender')}</span>
                         </div>
                     </div>
                 </div>
@@ -283,7 +282,7 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                                         <div>
                                             <div style={{ fontWeight: 'var(--font-semibold)' }}>{review.author}</div>
                                             <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
-                                                {review.type === 'by_customer' ? `Reviwed ${review.role}: ${review.target}` : `Reviewed by ${review.role}`} • {review.date}
+                                                {review.type === 'by_customer' ? `${t('custProfile.reviewed')} ${review.role}: ${review.target}` : `${t('custProfile.reviewedBy')} ${review.role}`} • {review.date}
                                             </div>
                                         </div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
@@ -320,7 +319,7 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
             <div className={styles.header}>
                 <div style={{ marginBottom: 'var(--space-4)' }}>
                     <Button variant="ghost" onClick={() => router.push('/customers')} size="sm">
-                        {"← Back to Customers"}
+                        {t('custProfile.backToCustomers')}
                     </Button>
                 </div>
                 <div className={styles.headerTop}>

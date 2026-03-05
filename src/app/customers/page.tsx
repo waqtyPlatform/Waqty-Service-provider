@@ -112,9 +112,9 @@ export default function CustomersPage() {
                         onChange={(e) => setGroupFilter(e.target.value)}
                     >
                         <option value="all">{t('customers.allGroups')}</option>
-                        <option value="vip">VIP</option>
-                        <option value="regular">Regular</option>
-                        <option value="new">New</option>
+                        <option value="vip">{t('customers.vip')}</option>
+                        <option value="regular">{t('customers.regular')}</option>
+                        <option value="new">{t('customers.new')}</option>
                     </select>
                     <button className={styles.btnPrimary} onClick={() => setIsAddOpen(true)}>
                         <UserPlus size={16} /> {t('customers.addClient')}
@@ -128,13 +128,13 @@ export default function CustomersPage() {
                         <table className={styles.dataTable}>
                             <thead>
                                 <tr>
-                                    <th>Client</th>
-                                    <th>Contact</th>
-                                    <th>Group</th>
-                                    <th>Visits</th>
-                                    <th>Total Spend</th>
-                                    <th>Last Visit</th>
-                                    <th>Flags</th>
+                                    <th>{t('customers.colClient')}</th>
+                                    <th>{t('customers.colContact')}</th>
+                                    <th>{t('customers.colGroup')}</th>
+                                    <th>{t('customers.colVisits')}</th>
+                                    <th>{t('customers.colTotalSpend')}</th>
+                                    <th>{t('customers.colLastVisit')}</th>
+                                    <th>{t('customers.colFlags')}</th>
                                     <th></th>
                                 </tr>
                             </thead>
@@ -182,8 +182,8 @@ export default function CustomersPage() {
                                         <td>
                                             <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
                                                 {c.hasAllergy && (
-                                                    <span className={styles.flagBadge} title="Has Allergies">
-                                                        <AlertTriangle size={12} /> Allergy
+                                                    <span className={styles.flagBadge} title={t('customers.hasAllergies')}>
+                                                        <AlertTriangle size={12} /> {t('customers.allergy')}
                                                     </span>
                                                 )}
                                             </div>
@@ -198,9 +198,9 @@ export default function CustomersPage() {
                                                     </button>
                                                 }
                                                 items={[
-                                                    { label: 'View Profile', icon: <Users size={14} />, onClick: () => router.push(`/customers/${c.id}`) },
-                                                    { label: 'Edit', icon: <CreditCard size={14} />, onClick: () => { setSelectedClient(c); setIsEditOpen(true); } },
-                                                    { label: 'Delete', destructive: true, icon: <AlertTriangle size={14} />, onClick: () => { setSelectedClient(c); setIsDeleteOpen(true); } },
+                                                    { label: t('customers.viewProfile'), icon: <Users size={14} />, onClick: () => router.push(`/customers/${c.id}`) },
+                                                    { label: t('customers.edit'), icon: <CreditCard size={14} />, onClick: () => { setSelectedClient(c); setIsEditOpen(true); } },
+                                                    { label: t('customers.delete'), destructive: true, icon: <AlertTriangle size={14} />, onClick: () => { setSelectedClient(c); setIsDeleteOpen(true); } },
                                                 ]}
                                             />
                                         </td>
@@ -236,7 +236,7 @@ export default function CustomersPage() {
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
                         <Button variant="ghost" onClick={() => setIsAddOpen(false)}>{t('customers.cancel')}</Button>
-                        <Button onClick={() => { setIsAddOpen(false); addToast('success', 'Client created successfully'); }}>{t('customers.saveClient')}</Button>
+                        <Button onClick={() => { setIsAddOpen(false); addToast('success', t('customers.toastCreated')); }}>{t('customers.saveClient')}</Button>
                     </div>
                 }
             >
@@ -268,7 +268,7 @@ export default function CustomersPage() {
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
                         <Button variant="ghost" onClick={() => setIsEditOpen(false)}>{t('customers.cancel')}</Button>
-                        <Button onClick={() => { setIsEditOpen(false); addToast('success', 'Profile updated successfully'); }}>{t('customers.saveChanges')}</Button>
+                        <Button onClick={() => { setIsEditOpen(false); addToast('success', t('customers.toastUpdated')); }}>{t('customers.saveChanges')}</Button>
                     </div>
                 }
             >
@@ -294,7 +294,7 @@ export default function CustomersPage() {
                 footer={
                     <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
                         <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>{t('customers.cancel')}</Button>
-                        <Button variant="destructive" onClick={() => { setIsDeleteOpen(false); addToast('error', 'Client permanently deleted'); }}>{t('customers.deleteConfirm')}</Button>
+                        <Button variant="destructive" onClick={() => { setIsDeleteOpen(false); addToast('error', t('customers.toastDeleted')); }}>{t('customers.deleteConfirm')}</Button>
                     </div>
                 }
             >

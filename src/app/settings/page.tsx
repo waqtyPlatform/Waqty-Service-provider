@@ -20,7 +20,7 @@ export default function SettingsPage() {
     const { settings, updateSettings } = useSettings();
     const [localSettings, setLocalSettings] = useState(settings);
     const [saved, setSaved] = useState(false);
-    const { t } = useTranslation();
+    const { t, lang } = useTranslation();
 
     // Sync local state when context settings load/change
     useEffect(() => {
@@ -39,7 +39,7 @@ export default function SettingsPage() {
     };
 
     return (
-        <div className={styles.page}>
+        <div className={styles.page} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
             <div className={styles.header}>
                 <h1 className={styles.title}>{t('settings.title')}</h1>
                 <p className={styles.description}>{t('settings.desc')}</p>
@@ -108,14 +108,14 @@ export default function SettingsPage() {
 
             {/* Booking Preferences Card */}
             <div className={styles.card}>
-                <div className={styles.cardTitle}>Booking Preferences</div>
-                <div className={styles.cardDesc}>Control how bookings work in your system.</div>
+                <div className={styles.cardTitle}>{t('settings.bookPrefTitle')}</div>
+                <div className={styles.cardDesc}>{t('settings.bookPrefDesc')}</div>
 
                 <div className={styles.formGrid}>
                     <div className={styles.switchRow}>
                         <div className={styles.switchLabel}>
-                            <span className={styles.switchTitle}>Online Booking</span>
-                            <span className={styles.switchDesc}>Allow clients to book appointments online.</span>
+                            <span className={styles.switchTitle}>{t('settings.onlineBooking')}</span>
+                            <span className={styles.switchDesc}>{t('settings.onlineBookingDesc')}</span>
                         </div>
                         <Switch
                             checked={localSettings.allowOnlineBooking}
@@ -125,8 +125,8 @@ export default function SettingsPage() {
 
                     <div className={styles.switchRow}>
                         <div className={styles.switchLabel}>
-                            <span className={styles.switchTitle}>Walk-in Customers</span>
-                            <span className={styles.switchDesc}>Allow creating bookings without an appointment.</span>
+                            <span className={styles.switchTitle}>{t('settings.walkIn')}</span>
+                            <span className={styles.switchDesc}>{t('settings.walkInDesc')}</span>
                         </div>
                         <Switch
                             checked={localSettings.allowWalkIn}
@@ -136,8 +136,8 @@ export default function SettingsPage() {
 
                     <div className={styles.switchRow}>
                         <div className={styles.switchLabel}>
-                            <span className={styles.switchTitle}>Require Deposit</span>
-                            <span className={styles.switchDesc}>Clients must pay a deposit to secure booking.</span>
+                            <span className={styles.switchTitle}>{t('settings.reqDeposit')}</span>
+                            <span className={styles.switchDesc}>{t('settings.reqDepositDesc')}</span>
                         </div>
                         <Switch
                             checked={localSettings.requireDeposit}
@@ -147,8 +147,8 @@ export default function SettingsPage() {
 
                     <div className={styles.switchRow}>
                         <div className={styles.switchLabel}>
-                            <span className={styles.switchTitle}>SMS Reminders</span>
-                            <span className={styles.switchDesc}>Automatically send reminders 24h before.</span>
+                            <span className={styles.switchTitle}>{t('settings.smsReminders')}</span>
+                            <span className={styles.switchDesc}>{t('settings.smsRemindersDesc')}</span>
                         </div>
                         <Switch
                             checked={localSettings.sendSmsReminders}
@@ -158,8 +158,8 @@ export default function SettingsPage() {
 
                     <div className={styles.switchRow}>
                         <div className={styles.switchLabel}>
-                            <span className={styles.switchTitle}>Auto-Confirm</span>
-                            <span className={styles.switchDesc}>Automatically confirm new bookings.</span>
+                            <span className={styles.switchTitle}>{t('settings.autoConfirm')}</span>
+                            <span className={styles.switchDesc}>{t('settings.autoConfirmDesc')}</span>
                         </div>
                         <Switch
                             checked={localSettings.autoConfirm}
@@ -169,22 +169,24 @@ export default function SettingsPage() {
 
                     <div className={styles.field}>
                         <Input
-                            label="Default Booking Gap (minutes)"
+                            label={t('settings.defaultGap')}
                             type="number"
                             value={localSettings.defaultGap}
                             onChange={(e) => handleChange('defaultGap', parseInt(e.target.value) || 0)}
-                            hint="Buffer time between appointments."
+                            hint={t('settings.defaultGapHint')}
                             style={{ maxWidth: 200 }}
+                            dir="ltr"
                         />
                     </div>
                     <div className={styles.field}>
                         <Input
-                            label="Cancellation Window (hours)"
+                            label={t('settings.cancelWindow')}
                             type="number"
                             value={localSettings.cancellationWindow}
                             onChange={(e) => handleChange('cancellationWindow', parseInt(e.target.value) || 0)}
-                            hint="Minimum notice required for cancellations."
+                            hint={t('settings.cancelWindowHint')}
                             style={{ maxWidth: 200 }}
+                            dir="ltr"
                         />
                     </div>
                 </div>

@@ -96,7 +96,7 @@ export default function MarketingPage() {
     const { addToast } = useToast();
     const [activeTab, setActiveTab] = useState<TabKey>('offers');
     const [search, setSearch] = useState('');
-    const { t } = useTranslation();
+    const { t, lang } = useTranslation();
 
     // CRUD State
     const [isOfferAddOpen, setIsOfferAddOpen] = useState(false);
@@ -115,7 +115,7 @@ export default function MarketingPage() {
     const [selectedMsg, setSelectedMsg] = useState<any>(null);
 
     return (
-        <div className={styles.marketingPage}>
+        <div className={styles.marketingPage} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
             {/* Header */}
             <div className={styles.header}>
                 <div>
@@ -199,17 +199,17 @@ export default function MarketingPage() {
                     <Search size={16} className={styles.searchIcon} />
                     <input
                         className={styles.searchInput}
-                        placeholder={`Search ${activeTab}...`}
+                        placeholder={activeTab === 'offers' ? t('marketing.searchOffers') : activeTab === 'promos' ? t('marketing.searchPromos') : activeTab === 'messages' ? t('marketing.searchMessages') : t('marketing.searchCampaigns')}
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
                 </div>
                 <select className={styles.selectFilter}>
-                    <option value="all">All Statuses</option>
-                    <option value="active">Active</option>
-                    <option value="draft">Draft</option>
-                    <option value="scheduled">Scheduled</option>
-                    <option value="expired">Expired</option>
+                    <option value="all">{t('marketing.filterAll')}</option>
+                    <option value="active">{t('marketing.filterActive')}</option>
+                    <option value="draft">{t('marketing.filterDraft')}</option>
+                    <option value="scheduled">{t('marketing.filterScheduled')}</option>
+                    <option value="expired">{t('marketing.filterExpired')}</option>
                 </select>
             </div>
 
@@ -227,18 +227,18 @@ export default function MarketingPage() {
                                     <div className={styles.offerTitle}>{offer.name}</div>
                                     <div className={styles.offerDesc}>{offer.desc}</div>
                                     <div className={styles.offerMeta}>
-                                        <span className={styles.metaItem}><Calendar size={12} /> Until {offer.validUntil}</span>
-                                        <span className={styles.metaItem}><Eye size={12} /> {offer.views} views</span>
-                                        <span className={styles.metaItem}><ShoppingCart size={12} /> {offer.uses} used</span>
+                                        <span className={styles.metaItem}><Calendar size={12} /> {t('marketing.until')} {offer.validUntil}</span>
+                                        <span className={styles.metaItem}><Eye size={12} /> {offer.views} {t('marketing.views')}</span>
+                                        <span className={styles.metaItem}><ShoppingCart size={12} /> {offer.uses} {t('marketing.used')}</span>
                                     </div>
                                     <div className={styles.offerFooter}>
                                         <span className={`${styles.statusBadge} ${statusClass[offer.status]}`}>
                                             {offer.status === 'active' && <Zap size={10} />}
-                                            {offer.status.charAt(0).toUpperCase() + offer.status.slice(1)}
+                                            {offer.status === 'active' ? t('marketing.filterActive') : offer.status === 'draft' ? t('marketing.filterDraft') : offer.status === 'scheduled' ? t('marketing.filterScheduled') : t('marketing.filterExpired')}
                                         </span>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                                             <span className={styles.statChip}>
-                                                <strong>{offer.uses}</strong> / ∞ uses
+                                                <strong>{offer.uses}</strong> / ∞ {t('marketing.uses')}
                                             </span>
                                             <DropdownMenu
                                                 trigger={
@@ -249,8 +249,8 @@ export default function MarketingPage() {
                                                     </button>
                                                 }
                                                 items={[
-                                                    { label: 'Edit Offer', icon: <Gift size={14} />, onClick: () => { setSelectedOffer(offer); setIsOfferEditOpen(true); } },
-                                                    { label: 'Delete Offer', destructive: true, icon: <Trash2 size={14} />, onClick: () => { setSelectedOffer(offer); setIsOfferDeleteOpen(true); } }
+                                                    { label: t('marketing.editOffer'), icon: <Gift size={14} />, onClick: () => { setSelectedOffer(offer); setIsOfferEditOpen(true); } },
+                                                    { label: t('marketing.deleteOffer'), destructive: true, icon: <Trash2 size={14} />, onClick: () => { setSelectedOffer(offer); setIsOfferDeleteOpen(true); } }
                                                 ]}
                                             />
                                         </div>
@@ -267,13 +267,13 @@ export default function MarketingPage() {
                     <table className={styles.dataTable}>
                         <thead>
                             <tr>
-                                <th>Code</th>
-                                <th>Type</th>
-                                <th>Value</th>
-                                <th>Min Spend</th>
-                                <th>Usage</th>
-                                <th>Status</th>
-                                <th>Expires</th>
+                                <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('marketing.colCode')}</th>
+                                <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('marketing.colType')}</th>
+                                <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('marketing.colValue')}</th>
+                                <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('marketing.colMinSpend')}</th>
+                                <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('marketing.colUsage')}</th>
+                                <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('marketing.colStatus')}</th>
+                                <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('marketing.colExpires')}</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -300,7 +300,7 @@ export default function MarketingPage() {
                                             </td>
                                             <td>
                                                 <span className={`${styles.statusBadge} ${statusClass[p.status]}`}>
-                                                    {p.status.charAt(0).toUpperCase() + p.status.slice(1)}
+                                                    {p.status === 'active' ? t('marketing.filterActive') : p.status === 'draft' ? t('marketing.filterDraft') : p.status === 'scheduled' ? t('marketing.filterScheduled') : t('marketing.filterExpired')}
                                                 </span>
                                             </td>
                                             <td style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)' }}>{p.expires}</td>
@@ -314,8 +314,8 @@ export default function MarketingPage() {
                                                         </button>
                                                     }
                                                     items={[
-                                                        { label: 'Edit Code', icon: <Tag size={14} />, onClick: () => { setSelectedPromo(p); setIsPromoEditOpen(true); } },
-                                                        { label: 'Delete', destructive: true, icon: <Trash2 size={14} />, onClick: () => { setSelectedPromo(p); setIsPromoDeleteOpen(true); } },
+                                                        { label: t('marketing.editCode'), icon: <Tag size={14} />, onClick: () => { setSelectedPromo(p); setIsPromoEditOpen(true); } },
+                                                        { label: t('marketing.delete'), destructive: true, icon: <Trash2 size={14} />, onClick: () => { setSelectedPromo(p); setIsPromoDeleteOpen(true); } },
                                                     ]}
                                                 />
                                             </td>
@@ -348,13 +348,13 @@ export default function MarketingPage() {
                 <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-xl)', padding: 'var(--space-10)', textAlign: 'center' }}>
                     <Send size={48} style={{ margin: '0 auto var(--space-4)', color: 'var(--text-tertiary)', opacity: 0.4 }} />
                     <div style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-semibold)', color: 'var(--text-primary)', marginBottom: 'var(--space-2)' }}>
-                        Campaign Builder
+                        {t('marketing.campaignBuilder')}
                     </div>
                     <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', maxWidth: 400, margin: '0 auto var(--space-4)' }}>
-                        Create targeted campaigns with audience segmentation, A/B testing, and performance tracking. Coming soon!
+                        {t('marketing.campaignDesc')}
                     </div>
                     <button className={styles.btnPrimary} style={{ margin: '0 auto' }}>
-                        <Zap size={16} /> Create First Campaign
+                        <Zap size={16} style={{ marginInlineEnd: 4 }} /> {t('marketing.createFirstCamp')}
                     </button>
                 </div>
             )}
@@ -362,110 +362,111 @@ export default function MarketingPage() {
             <SlideOver
                 open={isOfferAddOpen || isOfferEditOpen}
                 onClose={() => { setIsOfferAddOpen(false); setIsOfferEditOpen(false); setSelectedOffer(null); }}
-                title={isOfferEditOpen ? 'Edit Offer' : 'New Offer'}
+                title={isOfferEditOpen ? t('marketing.modal.editOffer') : t('marketing.modal.newOffer')}
                 footer={
                     <div style={{ display: 'flex', gap: 'var(--space-3)', width: '100%' }}>
-                        <Button variant="outline" style={{ flex: 1 }} onClick={() => { setIsOfferAddOpen(false); setIsOfferEditOpen(false); }}>Cancel</Button>
+                        <Button variant="outline" style={{ flex: 1 }} onClick={() => { setIsOfferAddOpen(false); setIsOfferEditOpen(false); }}>{t('marketing.modal.cancel')}</Button>
                         <Button style={{ flex: 1 }} onClick={() => { setIsOfferAddOpen(false); setIsOfferEditOpen(false); addToast('success', isOfferEditOpen ? 'Offer updated successfully' : 'Offer created'); }}>
-                            {isOfferEditOpen ? 'Update' : 'Create'}
+                            {isOfferEditOpen ? t('marketing.modal.update') : t('marketing.modal.create')}
                         </Button>
                     </div>
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label="Offer Name" defaultValue={selectedOffer?.name} placeholder="e.g. Summer Special" />
-                    <Input label="Description" defaultValue={selectedOffer?.desc} />
+                    <Input label={t('marketing.modal.offerName')} defaultValue={selectedOffer?.name} placeholder={t('marketing.modal.offerNamePh')} />
+                    <Input label={t('marketing.modal.desc')} defaultValue={selectedOffer?.desc} />
                     <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-                        <Input label="Discount" defaultValue={selectedOffer?.discount} style={{ flex: 1 }} />
-                        <Input type="date" label="Valid Until" defaultValue={selectedOffer?.validUntil ? new Date(selectedOffer.validUntil).toISOString().split('T')[0] : ''} style={{ flex: 1 }} />
+                        <Input label={t('marketing.modal.discount')} defaultValue={selectedOffer?.discount} style={{ flex: 1 }} dir="ltr" />
+                        <Input type="date" label={t('marketing.modal.validUntil')} defaultValue={selectedOffer?.validUntil ? new Date(selectedOffer.validUntil).toISOString().split('T')[0] : ''} style={{ flex: 1 }} />
                     </div>
-                    <Select label="Status" value={selectedOffer?.status || 'active'} options={[{ label: 'Active', value: 'active' }, { label: 'Draft', value: 'draft' }, { label: 'Scheduled', value: 'scheduled' }, { label: 'Expired', value: 'expired' }]} />
+                    <Select label={t('marketing.modal.status')} value={selectedOffer?.status || 'active'} options={[{ label: t('marketing.filterActive'), value: 'active' }, { label: t('marketing.filterDraft'), value: 'draft' }, { label: t('marketing.filterScheduled'), value: 'scheduled' }, { label: t('marketing.filterExpired'), value: 'expired' }]} />
                 </div>
             </SlideOver>
 
             <Modal
                 open={isOfferDeleteOpen}
                 onClose={() => setIsOfferDeleteOpen(false)}
-                title="Delete Offer"
+                title={t('marketing.modal.deleteOfferTitle')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsOfferDeleteOpen(false)}>Cancel</Button>
-                        <Button variant="destructive" onClick={() => { setIsOfferDeleteOpen(false); addToast('error', 'Offer deleted permanently'); }}>Delete</Button>
+                        <Button variant="ghost" onClick={() => setIsOfferDeleteOpen(false)}>{t('marketing.modal.cancel')}</Button>
+                        <Button variant="destructive" onClick={() => { setIsOfferDeleteOpen(false); addToast('error', 'Offer deleted permanently'); }}>{t('marketing.delete')}</Button>
                     </div>
                 }
             >
-                <p style={{ color: 'var(--text-secondary)' }}>Are you sure you want to delete <strong>{selectedOffer?.name}</strong>? This action cannot be undone.</p>
+                <p style={{ color: 'var(--text-secondary)' }}>{t('marketing.modal.deleteOfferConfirm').replace('{name}', selectedOffer?.name || '')}</p>
             </Modal>
 
             {/* ─── PROMO CODE MODALS ─── */}
             <SlideOver
                 open={isPromoAddOpen || isPromoEditOpen}
                 onClose={() => { setIsPromoAddOpen(false); setIsPromoEditOpen(false); setSelectedPromo(null); }}
-                title={isPromoEditOpen ? 'Edit Promo Code' : 'New Promo Code'}
+                title={isPromoEditOpen ? t('marketing.modal.editPromo') : t('marketing.modal.newPromo')}
                 footer={
                     <div style={{ display: 'flex', gap: 'var(--space-3)', width: '100%' }}>
-                        <Button variant="outline" style={{ flex: 1 }} onClick={() => { setIsPromoAddOpen(false); setIsPromoEditOpen(false); }}>Cancel</Button>
+                        <Button variant="outline" style={{ flex: 1 }} onClick={() => { setIsPromoAddOpen(false); setIsPromoEditOpen(false); }}>{t('marketing.modal.cancel')}</Button>
                         <Button style={{ flex: 1 }} onClick={() => { setIsPromoAddOpen(false); setIsPromoEditOpen(false); addToast('success', isPromoEditOpen ? 'Promo code updated' : 'Promo code created'); }}>
-                            {isPromoEditOpen ? 'Update' : 'Create'}
+                            {isPromoEditOpen ? t('marketing.modal.update') : t('marketing.modal.create')}
                         </Button>
                     </div>
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label="Promo Code" defaultValue={selectedPromo?.code} placeholder="e.g. SUMMER20" style={{ textTransform: 'uppercase' }} />
+                    <Input label={t('marketing.modal.promoCode')} defaultValue={selectedPromo?.code} placeholder="e.g. SUMMER20" style={{ textTransform: 'uppercase' }} dir="ltr" />
                     <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-                        <Select label="Type" value={selectedPromo?.type || 'Percentage'} style={{ flex: 1 }} options={[{ label: 'Percentage', value: 'Percentage' }, { label: 'Fixed Amount', value: 'Fixed' }]} />
-                        <Input label="Value" defaultValue={selectedPromo?.value} style={{ flex: 1 }} />
+                        <Select label={t('marketing.modal.type')} value={selectedPromo?.type || 'Percentage'} style={{ flex: 1 }} options={[{ label: t('marketing.modal.typePct'), value: 'Percentage' }, { label: t('marketing.modal.typeFixed'), value: 'Fixed' }]} />
+                        <Input label={t('marketing.modal.value')} defaultValue={selectedPromo?.value} style={{ flex: 1 }} dir="ltr" />
                     </div>
                     <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-                        <Input label="Min Spend (EGP)" type="number" defaultValue={selectedPromo?.minSpend} style={{ flex: 1 }} />
-                        <Input label="Max Uses" type="number" defaultValue={selectedPromo?.maxUses} style={{ flex: 1 }} />
+                        <Input label={t('marketing.modal.minSpend')} type="number" defaultValue={selectedPromo?.minSpend} style={{ flex: 1 }} dir="ltr" />
+                        <Input label={t('marketing.modal.maxUses')} type="number" defaultValue={selectedPromo?.maxUses} style={{ flex: 1 }} dir="ltr" />
                     </div>
-                    <Input type="date" label="Expiry Date" defaultValue={selectedPromo?.expires ? new Date(selectedPromo.expires).toISOString().split('T')[0] : ''} />
-                    <Select label="Status" value={selectedPromo?.status || 'active'} options={[{ label: 'Active', value: 'active' }, { label: 'Scheduled', value: 'scheduled' }, { label: 'Expired', value: 'expired' }]} />
+                    <Input type="date" label={t('marketing.modal.expiryDate')} defaultValue={selectedPromo?.expires ? new Date(selectedPromo.expires).toISOString().split('T')[0] : ''} />
+                    <Select label={t('marketing.modal.status')} value={selectedPromo?.status || 'active'} options={[{ label: t('marketing.filterActive'), value: 'active' }, { label: t('marketing.filterScheduled'), value: 'scheduled' }, { label: t('marketing.filterExpired'), value: 'expired' }]} />
                 </div>
             </SlideOver>
 
             <Modal
                 open={isPromoDeleteOpen}
                 onClose={() => setIsPromoDeleteOpen(false)}
-                title="Delete Promo Code"
+                title={t('marketing.modal.deletePromoTitle')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsPromoDeleteOpen(false)}>Cancel</Button>
-                        <Button variant="destructive" onClick={() => { setIsPromoDeleteOpen(false); addToast('error', 'Promo code deleted'); }}>Delete</Button>
+                        <Button variant="ghost" onClick={() => setIsPromoDeleteOpen(false)}>{t('marketing.modal.cancel')}</Button>
+                        <Button variant="destructive" onClick={() => { setIsPromoDeleteOpen(false); addToast('error', 'Promo code deleted'); }}>{t('marketing.delete')}</Button>
                     </div>
                 }
             >
-                <p style={{ color: 'var(--text-secondary)' }}>Are you sure you want to delete the code <strong>{selectedPromo?.code}</strong>?</p>
+                <p style={{ color: 'var(--text-secondary)' }}>{t('marketing.modal.deletePromoConfirm').replace('{code}', selectedPromo?.code || '')}</p>
             </Modal>
 
             {/* ─── MESSAGE TEMPLATE MODALS ─── */}
             <SlideOver
                 open={isMsgAddOpen || isMsgEditOpen}
                 onClose={() => { setIsMsgAddOpen(false); setIsMsgEditOpen(false); setSelectedMsg(null); }}
-                title={isMsgEditOpen ? 'Edit Message Template' : 'New Template'}
+                title={isMsgEditOpen ? t('marketing.modal.editMsg') : t('marketing.modal.newMsg')}
                 footer={
                     <div style={{ display: 'flex', gap: 'var(--space-3)', width: '100%' }}>
-                        <Button variant="outline" style={{ flex: 1 }} onClick={() => { setIsMsgAddOpen(false); setIsMsgEditOpen(false); }}>Cancel</Button>
+                        <Button variant="outline" style={{ flex: 1 }} onClick={() => { setIsMsgAddOpen(false); setIsMsgEditOpen(false); }}>{t('marketing.modal.cancel')}</Button>
                         <Button style={{ flex: 1 }} onClick={() => { setIsMsgAddOpen(false); setIsMsgEditOpen(false); addToast('success', isMsgEditOpen ? 'Template updated' : 'Template created'); }}>
-                            {isMsgEditOpen ? 'Update' : 'Create'}
+                            {isMsgEditOpen ? t('marketing.modal.update') : t('marketing.modal.create')}
                         </Button>
                     </div>
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label="Template Name" defaultValue={selectedMsg?.name} placeholder="e.g. Birthday Greeting" />
+                    <Input label={t('marketing.modal.msgName')} defaultValue={selectedMsg?.name} placeholder={t('marketing.modal.msgNamePh')} />
                     <div>
-                        <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', marginBottom: 'var(--space-1)', display: 'block' }}>Message Body</label>
+                        <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', marginBottom: 'var(--space-1)', display: 'block' }}>{t('marketing.modal.msgBody')}</label>
                         <textarea
                             defaultValue={selectedMsg?.body}
                             style={{ width: '100%', minHeight: 120, padding: 'var(--space-3)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', fontSize: 'var(--text-sm)', resize: 'vertical' }}
-                            placeholder="Use {name}, {service}, {date} for dynamic variables..."
+                            placeholder={t('marketing.modal.msgBodyPh')}
+                            dir="auto"
                         />
                     </div>
                     <div>
-                        <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', marginBottom: 'var(--space-2)', display: 'block' }}>Channels</label>
+                        <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', marginBottom: 'var(--space-2)', display: 'block' }}>{t('marketing.modal.channels')}</label>
                         <div style={{ display: 'flex', gap: 'var(--space-4)' }}>
                             <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: 'var(--text-sm)' }}>
                                 <input type="checkbox" defaultChecked={selectedMsg?.channels.includes('sms')} /> SMS
@@ -479,7 +480,7 @@ export default function MarketingPage() {
                         </div>
                     </div>
                     <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', marginTop: 'var(--space-2)' }}>
-                        <input type="checkbox" defaultChecked={selectedMsg?.enabled ?? true} /> Template Enabled
+                        <input type="checkbox" defaultChecked={selectedMsg?.enabled ?? true} /> {t('marketing.modal.templateEnabled')}
                     </label>
                 </div>
             </SlideOver>
@@ -487,15 +488,15 @@ export default function MarketingPage() {
             <Modal
                 open={isMsgDeleteOpen}
                 onClose={() => setIsMsgDeleteOpen(false)}
-                title="Delete Template"
+                title={t('marketing.modal.deleteMsgTitle')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsMsgDeleteOpen(false)}>Cancel</Button>
-                        <Button variant="destructive" onClick={() => { setIsMsgDeleteOpen(false); addToast('error', 'Template deleted'); }}>Delete</Button>
+                        <Button variant="ghost" onClick={() => setIsMsgDeleteOpen(false)}>{t('marketing.modal.cancel')}</Button>
+                        <Button variant="destructive" onClick={() => { setIsMsgDeleteOpen(false); addToast('error', 'Template deleted'); }}>{t('marketing.delete')}</Button>
                     </div>
                 }
             >
-                <p style={{ color: 'var(--text-secondary)' }}>Are you sure you want to delete the template <strong>{selectedMsg?.name}</strong>?</p>
+                <p style={{ color: 'var(--text-secondary)' }}>{t('marketing.modal.deleteMsgConfirm')}</p>
             </Modal>
         </div>
     );
@@ -503,6 +504,7 @@ export default function MarketingPage() {
 
 function MessageCard({ msg, onEdit, onDelete }: { msg: typeof messageTemplates[0], onEdit: () => void, onDelete: () => void }) {
     const [enabled, setEnabled] = useState(msg.enabled);
+    const { t } = useTranslation();
     return (
         <div className={styles.messageCard}>
             <div className={styles.messageHeader}>
@@ -516,8 +518,8 @@ function MessageCard({ msg, onEdit, onDelete }: { msg: typeof messageTemplates[0
                             </button>
                         }
                         items={[
-                            { label: 'Edit Template', icon: <MessageSquare size={14} />, onClick: onEdit },
-                            { label: 'Delete Template', destructive: true, icon: <Trash2 size={14} />, onClick: onDelete }
+                            { label: t('marketing.editTemplate'), icon: <MessageSquare size={14} />, onClick: onEdit },
+                            { label: t('marketing.deleteTemplate'), destructive: true, icon: <Trash2 size={14} />, onClick: onDelete }
                         ]}
                     />
                     <div className={styles.messageTitle}>{msg.name}</div>

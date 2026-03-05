@@ -70,7 +70,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                         <Calendar size={14} /> {booking.date} • {booking.time}
                     </div>
                     <h1>
-                        Booking {booking.id}
+                        {t('bk.lblBooking')} {booking.id}
                         <Badge color="primary">{booking.status}</Badge>
                     </h1>
                 </div>

@@ -12,6 +12,7 @@ import {
     Badge
 } from '@/components/ui';
 import styles from './page.module.css';
+import { useTranslation } from '@/hooks/useTranslation';
 
 // Mock Data
 const areas = [
@@ -21,38 +22,40 @@ const areas = [
 ];
 
 export default function FingerprintAreasPage() {
+    const { t, lang } = useTranslation();
+
     return (
-        <div className={styles.page}>
+        <div className={styles.page} style={{ direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
             <div className={styles.header}>
                 <div className={styles.titleGroup}>
-                    <h1>Fingerprint Areas</h1>
-                    <div className={styles.subtitle}>Group devices into physical locations/areas.</div>
+                    <h1>{t('fpAreas.title')}</h1>
+                    <div className={styles.subtitle}>{t('fpAreas.subtitle')}</div>
                 </div>
                 <div className={styles.actions}>
-                    <Button><Plus size={16} /> New Area</Button>
+                    <Button><Plus size={16} /> {t('fpAreas.newArea')}</Button>
                 </div>
             </div>
 
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
-                    <span className={styles.cardTitle}><MapPin size={18} /> Defined Areas</span>
+                    <span className={styles.cardTitle}><MapPin size={18} /> {t('fpAreas.definedAreas')}</span>
                 </div>
                 <div className="table-wrapper">
                     <table className="data-table">
                         <thead>
                             <tr>
-                                <th>Area Name</th>
-                                <th>Linked Devices</th>
-                                <th>Assigned Employees</th>
-                                <th>Actions</th>
+                                <th>{t('fpAreas.colName')}</th>
+                                <th>{t('fpAreas.colDevices')}</th>
+                                <th>{t('fpAreas.colEmployees')}</th>
+                                <th>{t('fpAreas.colActions')}</th>
                             </tr>
                         </thead>
                         <tbody>
                             {areas.map(area => (
                                 <tr key={area.id}>
                                     <td style={{ fontWeight: 'var(--font-medium)' }}>{area.name}</td>
-                                    <td>{area.devices} Device(s)</td>
-                                    <td><Badge color="neutral">{area.employees} Staff</Badge></td>
+                                    <td>{area.devices} {t('fpAreas.devices')}</td>
+                                    <td><Badge color="neutral">{area.employees} {t('fpAreas.staff')}</Badge></td>
                                     <td>
                                         <div style={{ display: 'flex', gap: 8 }}>
                                             <Button variant="ghost" size="sm" iconOnly><Edit size={14} /></Button>
