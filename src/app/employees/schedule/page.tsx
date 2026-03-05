@@ -1,29 +1,38 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Calendar, Clock, Users, AlertTriangle, Plus, Edit, Trash2 } from 'lucide-react';
-import { Button, Modal, Input, Select, useToast, Badge } from '@/components/ui';
+import { Calendar, Clock, Users, AlertTriangle, Plus, Coffee } from 'lucide-react';
+import { Button, Modal, Input, Select, useToast } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
 
 /* ─── Mock Data ───────────────────────── */
 const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const daysAr = ['الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت', 'الأحد'];
 
+interface Shift {
+    start: string;
+    end: string;
+    breakStart: string;
+    breakEnd: string;
+}
+
 interface ShiftRow {
     id: string;
     employee: string;
     avatar: string;
     color: string;
-    shifts: Record<string, { start: string; end: string } | null>;
+    shifts: Record<string, Shift | null>;
 }
 
+const mkShift = (start: string, end: string, bs = '13:00', be = '13:30'): Shift => ({ start, end, breakStart: bs, breakEnd: be });
+
 const initialSchedule: ShiftRow[] = [
-    { id: 'E001', employee: 'Sara Ahmed', avatar: 'SA', color: '#10b981', shifts: { Mon: { start: '10:00', end: '18:00' }, Tue: { start: '10:00', end: '18:00' }, Wed: { start: '10:00', end: '18:00' }, Thu: { start: '10:00', end: '20:00' }, Fri: { start: '13:00', end: '22:00' }, Sat: null, Sun: { start: '10:00', end: '16:00' } } },
-    { id: 'E002', employee: 'Nora Ali', avatar: 'NA', color: '#f59e0b', shifts: { Mon: { start: '09:00', end: '17:00' }, Tue: { start: '09:00', end: '17:00' }, Wed: null, Thu: { start: '09:00', end: '17:00' }, Fri: { start: '12:00', end: '20:00' }, Sat: { start: '10:00', end: '16:00' }, Sun: null } },
-    { id: 'E003', employee: 'Layla Hassan', avatar: 'LH', color: '#3b82f6', shifts: { Mon: { start: '11:00', end: '19:00' }, Tue: { start: '11:00', end: '19:00' }, Wed: { start: '11:00', end: '19:00' }, Thu: { start: '11:00', end: '21:00' }, Fri: null, Sat: { start: '10:00', end: '18:00' }, Sun: { start: '10:00', end: '16:00' } } },
-    { id: 'E004', employee: 'Hana Youssef', avatar: 'HY', color: '#8b5cf6', shifts: { Mon: { start: '08:00', end: '16:00' }, Tue: { start: '08:00', end: '16:00' }, Wed: { start: '08:00', end: '16:00' }, Thu: { start: '08:00', end: '16:00' }, Fri: { start: '08:00', end: '14:00' }, Sat: null, Sun: null } },
-    { id: 'E005', employee: 'Reem Mohamed', avatar: 'RM', color: '#ec4899', shifts: { Mon: null, Tue: { start: '12:00', end: '20:00' }, Wed: { start: '12:00', end: '20:00' }, Thu: { start: '12:00', end: '20:00' }, Fri: { start: '14:00', end: '22:00' }, Sat: { start: '11:00', end: '19:00' }, Sun: { start: '11:00', end: '17:00' } } },
-    { id: 'E006', employee: 'Dina Kamal', avatar: 'DK', color: '#6366f1', shifts: { Mon: { start: '10:00', end: '18:00' }, Tue: null, Wed: { start: '10:00', end: '18:00' }, Thu: { start: '10:00', end: '18:00' }, Fri: { start: '13:00', end: '21:00' }, Sat: { start: '10:00', end: '16:00' }, Sun: null } },
+    { id: 'E001', employee: 'Sara Ahmed', avatar: 'SA', color: '#10b981', shifts: { Mon: mkShift('10:00', '18:00'), Tue: mkShift('10:00', '18:00'), Wed: mkShift('10:00', '18:00'), Thu: mkShift('10:00', '20:00', '14:00', '14:30'), Fri: mkShift('13:00', '22:00', '17:00', '17:30'), Sat: null, Sun: mkShift('10:00', '16:00', '12:30', '13:00') } },
+    { id: 'E002', employee: 'Nora Ali', avatar: 'NA', color: '#f59e0b', shifts: { Mon: mkShift('09:00', '17:00', '12:00', '12:30'), Tue: mkShift('09:00', '17:00', '12:00', '12:30'), Wed: null, Thu: mkShift('09:00', '17:00', '12:00', '12:30'), Fri: mkShift('12:00', '20:00', '16:00', '16:30'), Sat: mkShift('10:00', '16:00', '13:00', '13:30'), Sun: null } },
+    { id: 'E003', employee: 'Layla Hassan', avatar: 'LH', color: '#3b82f6', shifts: { Mon: mkShift('11:00', '19:00'), Tue: mkShift('11:00', '19:00'), Wed: mkShift('11:00', '19:00'), Thu: mkShift('11:00', '21:00', '15:00', '15:30'), Fri: null, Sat: mkShift('10:00', '18:00'), Sun: mkShift('10:00', '16:00', '12:30', '13:00') } },
+    { id: 'E004', employee: 'Hana Youssef', avatar: 'HY', color: '#8b5cf6', shifts: { Mon: mkShift('08:00', '16:00', '12:00', '12:30'), Tue: mkShift('08:00', '16:00', '12:00', '12:30'), Wed: mkShift('08:00', '16:00', '12:00', '12:30'), Thu: mkShift('08:00', '16:00', '12:00', '12:30'), Fri: mkShift('08:00', '14:00', '11:00', '11:30'), Sat: null, Sun: null } },
+    { id: 'E005', employee: 'Reem Mohamed', avatar: 'RM', color: '#ec4899', shifts: { Mon: null, Tue: mkShift('12:00', '20:00', '16:00', '16:30'), Wed: mkShift('12:00', '20:00', '16:00', '16:30'), Thu: mkShift('12:00', '20:00', '16:00', '16:30'), Fri: mkShift('14:00', '22:00', '18:00', '18:30'), Sat: mkShift('11:00', '19:00'), Sun: mkShift('11:00', '17:00') } },
+    { id: 'E006', employee: 'Dina Kamal', avatar: 'DK', color: '#6366f1', shifts: { Mon: mkShift('10:00', '18:00'), Tue: null, Wed: mkShift('10:00', '18:00'), Thu: mkShift('10:00', '18:00'), Fri: mkShift('13:00', '21:00', '17:00', '17:30'), Sat: mkShift('10:00', '16:00', '13:00', '13:30'), Sun: null } },
 ];
 
 /* ─── Styles ───────────────────────────── */
@@ -41,8 +50,9 @@ const s: Record<string, React.CSSProperties> = {
     td: { padding: 'var(--space-3) var(--space-4)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)', borderBottom: '1px solid var(--border-color)', textAlign: 'center' },
     avatar: { width: 32, height: 32, borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 'var(--font-bold)', color: '#fff', flexShrink: 0 },
     empCell: { display: 'flex', alignItems: 'center', gap: 'var(--space-2)', textAlign: 'left' },
-    shiftCell: { display: 'inline-flex', flexDirection: 'column', alignItems: 'center', padding: '4px 10px', borderRadius: 'var(--radius-md)', fontSize: 12, lineHeight: 1.4 },
+    shiftCell: { display: 'inline-flex', flexDirection: 'column', alignItems: 'center', padding: '6px 10px', borderRadius: 'var(--radius-md)', fontSize: 12, lineHeight: 1.5, gap: 2 },
     offCell: { color: 'var(--text-tertiary)', fontSize: 12, fontStyle: 'italic' },
+    breakRow: { display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 10, opacity: 0.8 },
 };
 
 /* ─── Component ─────────────────────────── */
@@ -51,7 +61,10 @@ export default function SchedulePage() {
     const { addToast } = useToast();
     const [scheduleData, setScheduleData] = useState(initialSchedule);
     const [isAddOpen, setIsAddOpen] = useState(false);
-    const [newShift, setNewShift] = useState({ employee: '', day: 'Mon', start: '09:00', end: '17:00' });
+    const [newShift, setNewShift] = useState({
+        employee: '', day: 'Mon', start: '09:00', end: '17:00',
+        breakStart: '13:00', breakEnd: '13:30',
+    });
 
     const dayLabels = lang === 'ar' ? daysAr : days;
 
@@ -66,7 +79,10 @@ export default function SchedulePage() {
             if (!shift) return h;
             const [sh, sm] = shift.start.split(':').map(Number);
             const [eh, em] = shift.end.split(':').map(Number);
-            return h + (eh + em / 60) - (sh + sm / 60);
+            const [bsh, bsm] = shift.breakStart.split(':').map(Number);
+            const [beh, bem] = shift.breakEnd.split(':').map(Number);
+            const breakMins = (beh * 60 + bem) - (bsh * 60 + bsm);
+            return h + (eh + em / 60) - (sh + sm / 60) - breakMins / 60;
         }, 0);
         return sum + hours;
     }, 0) / scheduleData.length);
@@ -75,23 +91,24 @@ export default function SchedulePage() {
         if (!newShift.employee) return;
         setScheduleData(prev => prev.map(row => {
             if (row.employee === newShift.employee) {
-                return { ...row, shifts: { ...row.shifts, [newShift.day]: { start: newShift.start, end: newShift.end } } };
+                return {
+                    ...row,
+                    shifts: {
+                        ...row.shifts,
+                        [newShift.day]: {
+                            start: newShift.start,
+                            end: newShift.end,
+                            breakStart: newShift.breakStart,
+                            breakEnd: newShift.breakEnd,
+                        },
+                    },
+                };
             }
             return row;
         }));
         setIsAddOpen(false);
         addToast('success', t('schedule.shiftAdded'));
-        setNewShift({ employee: '', day: 'Mon', start: '09:00', end: '17:00' });
-    };
-
-    const handleRemoveShift = (empId: string, day: string) => {
-        setScheduleData(prev => prev.map(row => {
-            if (row.id === empId) {
-                return { ...row, shifts: { ...row.shifts, [day]: null } };
-            }
-            return row;
-        }));
-        addToast('warning', t('schedule.shiftRemoved'));
+        setNewShift({ employee: '', day: 'Mon', start: '09:00', end: '17:00', breakStart: '13:00', breakEnd: '13:30' });
     };
 
     const kpis = [
@@ -154,6 +171,10 @@ export default function SchedulePage() {
                                                 <div style={{ ...s.shiftCell, background: 'var(--color-success-100)', color: 'var(--color-success-700)' } as React.CSSProperties}>
                                                     <span style={{ fontWeight: 'var(--font-semibold)' }}>{shift.start}</span>
                                                     <span style={{ fontSize: 10, opacity: 0.7 }}>→ {shift.end}</span>
+                                                    <div style={{ ...s.breakRow, color: 'var(--color-warning-600)' }}>
+                                                        <Coffee size={9} />
+                                                        <span>{shift.breakStart}–{shift.breakEnd}</span>
+                                                    </div>
                                                 </div>
                                             ) : (
                                                 <span style={s.offCell}>{t('schedule.off')}</span>
@@ -192,9 +213,22 @@ export default function SchedulePage() {
                         onChange={e => setNewShift({ ...newShift, day: e.target.value })}
                         options={days.map((d, i) => ({ value: d, label: dayLabels[i] }))}
                     />
+
+                    {/* Shift Times */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
                         <Input label={t('schedule.startTime')} type="time" value={newShift.start} onChange={e => setNewShift({ ...newShift, start: e.target.value })} />
                         <Input label={t('schedule.endTime')} type="time" value={newShift.end} onChange={e => setNewShift({ ...newShift, end: e.target.value })} />
+                    </div>
+
+                    {/* Break Times */}
+                    <div style={{ padding: 'var(--space-3)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-3)', fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)', color: 'var(--color-warning-600)' }}>
+                            <Coffee size={16} /> {t('schedule.breakTime')}
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+                            <Input label={t('schedule.breakStart')} type="time" value={newShift.breakStart} onChange={e => setNewShift({ ...newShift, breakStart: e.target.value })} />
+                            <Input label={t('schedule.breakEnd')} type="time" value={newShift.breakEnd} onChange={e => setNewShift({ ...newShift, breakEnd: e.target.value })} />
+                        </div>
                     </div>
                 </div>
             </Modal>

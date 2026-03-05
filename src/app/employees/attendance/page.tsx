@@ -281,7 +281,10 @@ export default function AttendancePage() {
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label={t('attendance.empNameLabel')} placeholder={t('attendance.empNamePlaceholder')} value={formData.employee} onChange={e => setFormData({ ...formData, employee: e.target.value })} />
+                    <Select label={t('attendance.empNameLabel')} value={formData.employee} onChange={e => setFormData({ ...formData, employee: e.target.value })} options={[
+                        { value: '', label: t('attendance.selectEmployee') },
+                        ...Array.from(new Set(records.map(r => r.employee))).map(name => ({ value: name, label: name }))
+                    ]} />
                     <Input type="date" label={t('attendance.dateLabel')} value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} />
                     <Select label={t('attendance.statusLabel')} value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value })} options={[
                         { label: t('attendance.kpiPresent'), value: 'present' },
@@ -312,7 +315,10 @@ export default function AttendancePage() {
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label={t('attendance.empNameLabel')} value={formData.employee} onChange={e => setFormData({ ...formData, employee: e.target.value })} />
+                    <Select label={t('attendance.empNameLabel')} value={formData.employee} onChange={e => setFormData({ ...formData, employee: e.target.value })} options={[
+                        { value: '', label: t('attendance.selectEmployee') },
+                        ...Array.from(new Set(records.map(r => r.employee))).map(name => ({ value: name, label: name }))
+                    ]} />
                     <Input type="date" label={t('attendance.dateLabel')} value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} />
                     <Select label={t('attendance.statusLabel')} value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value })} options={[
                         { label: t('attendance.kpiPresent'), value: 'present' },

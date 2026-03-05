@@ -90,6 +90,9 @@ const translations: Translations = {
     'schedule.shiftAdded': { en: 'Shift added successfully', ar: 'تمت إضافة الوردية بنجاح' },
     'schedule.shiftRemoved': { en: 'Shift removed', ar: 'تم حذف الوردية' },
     'schedule.off': { en: 'OFF', ar: 'إجازة' },
+    'schedule.breakTime': { en: 'Break Time', ar: 'وقت الاستراحة' },
+    'schedule.breakStart': { en: 'Break Start', ar: 'بداية الاستراحة' },
+    'schedule.breakEnd': { en: 'Break End', ar: 'نهاية الاستراحة' },
 
     // Performance Page
     'perf.kpiAvgRating': { en: 'Avg Rating', ar: 'متوسط التقييم' },
@@ -1154,6 +1157,7 @@ const translations: Translations = {
     'attendance.saveChanges': { en: 'Save Changes', ar: 'حفظ التغييرات' },
     'attendance.deleteConfirmBtn': { en: 'Delete Permanently', ar: 'حذف نهائيًا' },
     'attendance.empNameLabel': { en: 'Employee Name', ar: 'اسم الموظف' },
+    'attendance.selectEmployee': { en: 'Select employee...', ar: 'اختر موظف...' },
     'attendance.empNamePlaceholder': { en: 'e.g. Sara Ahmed', ar: 'مثال: سارة أحمد' },
     'attendance.dateLabel': { en: 'Date', ar: 'التاريخ' },
     'attendance.statusLabel': { en: 'Status', ar: 'الحالة' },
