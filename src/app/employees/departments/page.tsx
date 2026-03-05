@@ -26,7 +26,7 @@ export default function DepartmentsPage() {
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [isViewOpen, setIsViewOpen] = useState(false);
     const [isAddStaffOpen, setIsAddStaffOpen] = useState(false);
-    const [selectedDept, setSelectedDept] = useState<any>(null);
+    const [selectedDept, setSelectedDept] = useState<typeof departments[0] | null>(null);
 
     // Mock staff data for details view
     const [staffList, setStaffList] = useState([
@@ -38,7 +38,7 @@ export default function DepartmentsPage() {
     // Form state
     const [formData, setFormData] = useState({ name: '', manager: '', employees: '', color: '#3B82F6' });
     const [newStaffSelection, setNewStaffSelection] = useState<string>('');
-    const [newDeptStaff, setNewDeptStaff] = useState<any[]>([]);
+    const [newDeptStaff, setNewDeptStaff] = useState<typeof staffList[0][]>([]);
 
     const availableStaffOptions = [
         { label: 'Farida Sayed (Stylist)', value: 'Farida Sayed' },
@@ -71,7 +71,7 @@ export default function DepartmentsPage() {
     const handleSaveEdit = () => {
         if (!formData.name) return addToast('error', t('departments.toastReqName'));
 
-        setDepartments(departments.map(d => d.id === selectedDept.id ? {
+        setDepartments(departments.map(d => d.id === selectedDept?.id ? {
             ...d,
             name: formData.name,
             manager: formData.manager,
@@ -84,7 +84,7 @@ export default function DepartmentsPage() {
     };
 
     const handleDelete = () => {
-        setDepartments(departments.filter(d => d.id !== selectedDept.id));
+        setDepartments(departments.filter(d => d.id !== selectedDept?.id));
         setIsDeleteOpen(false);
         setSelectedDept(null);
         addToast('success', t('departments.toastRemTitle'));

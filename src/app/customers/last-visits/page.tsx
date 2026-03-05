@@ -32,7 +32,7 @@ const s: Record<string, React.CSSProperties> = {
     callBtn: { display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', cursor: 'pointer', fontSize: 12, color: 'var(--color-primary-600)' },
 };
 
-function getDaysBadge(days: number, t: any) {
+function getDaysBadge(days: number, t: (key: string) => string) {
     if (days <= 7) return { bg: 'var(--color-success-light)', color: 'var(--color-success)', label: `${days} ${t('custVisits.daysAgo')}` };
     if (days <= 30) return { bg: 'var(--color-warning-light)', color: 'var(--color-warning)', label: `${days} ${t('custVisits.daysAgo')}` };
     return { bg: 'var(--color-error-light)', color: 'var(--color-error)', label: `${days} ${t('custVisits.daysAgo')}` };

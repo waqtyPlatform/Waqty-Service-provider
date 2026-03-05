@@ -94,13 +94,13 @@ export default function NotificationsPage() {
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [isDetailOpen, setIsDetailOpen] = useState(false);
-    const [selected, setSelected] = useState<any>(null);
+    const [selected, setSelected] = useState<typeof initialNotifications[0] | null>(null);
     const [recipientFilter, setRecipientFilter] = useState<'all' | 'opened' | 'not_opened'>('all');
     const [recipientSearch, setRecipientSearch] = useState('');
 
-    const openDetail = (n: any) => { setSelected(n); setIsDetailOpen(true); setRecipientFilter('all'); setRecipientSearch(''); };
-    const openEdit = (n: any) => { setSelected(n); setIsDetailOpen(false); setIsEditOpen(true); };
-    const openDelete = (n: any) => { setSelected(n); setIsDetailOpen(false); setIsDeleteOpen(true); };
+    const openDetail = (n: typeof initialNotifications[0]) => { setSelected(n); setIsDetailOpen(true); setRecipientFilter('all'); setRecipientSearch(''); };
+    const openEdit = (n: typeof initialNotifications[0]) => { setSelected(n); setIsDetailOpen(false); setIsEditOpen(true); };
+    const openDelete = (n: typeof initialNotifications[0]) => { setSelected(n); setIsDetailOpen(false); setIsDeleteOpen(true); };
 
     const handleDelete = () => {
         setNotifications(prev => prev.filter(n => n.id !== selected?.id));
@@ -167,9 +167,9 @@ export default function NotificationsPage() {
             <SlideOver open={isDetailOpen} onClose={() => { setIsDetailOpen(false); setSelected(null); }} title={t('mkt.lblNotificationDetails')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => openDelete(selected)}><Trash2 size={14} /> {t('mkt.lblDeleteNotification')}</Button>
+                        <Button variant="ghost" onClick={() => openDelete(selected!)}><Trash2 size={14} /> {t('mkt.lblDeleteNotification')}</Button>
                         <Button variant="ghost" onClick={() => { addToast('success', 'Notification resent'); setIsDetailOpen(false); }}><RefreshCw size={14} /> {t('mkt.btnResend')}</Button>
-                        <Button onClick={() => openEdit(selected)}><Edit size={14} /> {t('bk.btnEdit')}</Button>
+                        <Button onClick={() => openEdit(selected!)}><Edit size={14} /> {t('bk.btnEdit')}</Button>
                     </div>
                 }
             >

@@ -51,7 +51,7 @@ export default function TransfersPage() {
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-    const [selectedTransfer, setSelectedTransfer] = useState<any>(null);
+    const [selectedTransfer, setSelectedTransfer] = useState<typeof transfers[0] | null>(null);
 
     // Form
     const [formData, setFormData] = useState({
@@ -89,8 +89,8 @@ export default function TransfersPage() {
 
     const handleSaveEdit = () => {
         if (!formData.employee) return addToast('error', t('transfers.toastReqEmp'));
-        setTransfers(transfers.map(t => t.id === selectedTransfer.id ? {
-            ...t,
+        setTransfers(transfers.map(tr => tr.id === selectedTransfer?.id ? {
+            ...tr,
             employee: formData.employee,
             date: formData.date,
             from: formData.from,
@@ -98,29 +98,29 @@ export default function TransfersPage() {
             type: formData.type,
             status: formData.status,
             until: formData.type === 'Temporary' ? formData.until : ''
-        } : t));
+        } : tr));
         setIsEditOpen(false);
         setSelectedTransfer(null);
         addToast('success', t('transfers.toastUpdSec'));
     };
 
     const handleDelete = () => {
-        setTransfers(transfers.filter(t => t.id !== selectedTransfer.id));
+        setTransfers(transfers.filter(tr => tr.id !== selectedTransfer?.id));
         setIsDeleteOpen(false);
         setSelectedTransfer(null);
         addToast('success', t('transfers.toastDelSec'));
     };
 
-    const openEdit = (t: any) => {
-        setSelectedTransfer(t);
+    const openEdit = (t_item: typeof transfers[0]) => {
+        setSelectedTransfer(t_item);
         setFormData({
-            employee: t.employee,
-            date: t.date,
-            from: t.from,
-            to: t.to,
-            type: t.type,
-            status: t.status,
-            until: t.until || ''
+            employee: t_item.employee,
+            date: t_item.date,
+            from: t_item.from,
+            to: t_item.to,
+            type: t_item.type,
+            status: t_item.status,
+            until: t_item.until || ''
         });
         setIsEditOpen(true);
     };
@@ -167,15 +167,17 @@ export default function TransfersPage() {
                                 <td style={s.td}>{row.id}</td>
                                 <td style={s.td}>{row.date}</td>
                                 <td style={{ ...s.td, fontWeight: 'var(--font-medium)' } as React.CSSProperties}>{row.employee}</td>
-                                <td style={s.td}>{t(`branchMgt.${({ 'Downtown Branch': 'downtown', 'Mall of Arabia': 'mallOfArabia', 'New Cairo Branch': 'newCairo' } as any)[row.from] || 'downtown'}` as any)}</td>
+                                <td style={s.td}>{t(`branchMgt.${({ 'Downtown Branch': 'downtown', 'Mall of Arabia': 'mallOfArabia', 'New Cairo Branch': 'newCairo' } as Record<string, string>)[row.from] || 'downtown'}`)}</td>
                                 <td style={s.td}><ArrowRightLeft size={14} style={{ color: 'var(--text-tertiary)', ...(lang === 'ar' ? { transform: 'scaleX(-1)' } : {}) }} /></td>
-                                <td style={s.td}>{t(`branchMgt.${({ 'Downtown Branch': 'downtown', 'Mall of Arabia': 'mallOfArabia', 'New Cairo Branch': 'newCairo' } as any)[row.to] || 'downtown'}` as any)}</td>
                                 <td style={s.td}>
-                                    <span style={{ ...s.badge, background: row.type === 'Permanent' ? 'var(--color-primary-50)' : 'var(--color-warning-light)', color: row.type === 'Permanent' ? 'var(--color-primary-600)' : 'var(--color-warning)' }}>
-                                        {t(`transfers.type${row.type}` as any)} {row.type === 'Temporary' && row.until && ` (${t('transfers.lblUntil')} ${row.until})`}
-                                    </span>
+                                    {t(`branchMgt.${({ 'Downtown Branch': 'downtown', 'Mall of Arabia': 'mallOfArabia', 'New Cairo Branch': 'newCairo' } as Record<string, string>)[row.to] || 'downtown'}`)}
                                 </td>
-                                <td style={s.td}><span style={{ ...s.badge, ...statusColors[row.status] }}>{t(`transfers.filter${row.status.charAt(0).toUpperCase() + row.status.slice(1)}` as any)}</span></td>
+                                <td style={s.td}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                        {t(`transfers.type${row.type}`)} {row.type === 'Temporary' && row.until && ` (${t('transfers.lblUntil')} ${row.until})`}
+                                    </div>
+                                </td>
+                                <td style={s.td}><span style={{ ...s.badge, ...statusColors[row.status] }}>{t(`transfers.filter${row.status.charAt(0).toUpperCase() + row.status.slice(1)}`)}</span></td>
                                 <td style={s.td}>
                                     <div style={s.actions}>
                                         <button style={s.btnIcon} onClick={() => openEdit(row)} title={t('transfers.btnEdit')}>

@@ -237,7 +237,7 @@ export default function PayrollPage() {
     const monthLabel = (() => {
         const [y, m] = month.split('-');
         const monthKeys = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
-        const translatedMonth = t(`payroll.months.${monthKeys[parseInt(m) - 1]}` as any);
+        const translatedMonth = t(`payroll.months.${monthKeys[parseInt(m) - 1]}`);
         return lang === 'ar' ? `${translatedMonth} ${y}` : `${translatedMonth} ${y}`;
     })();
 

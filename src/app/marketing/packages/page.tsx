@@ -47,11 +47,11 @@ export default function MarketingPackagesPage() {
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [isDetailOpen, setIsDetailOpen] = useState(false);
-    const [selectedPackage, setSelectedPackage] = useState<any>(null);
+    const [selectedPackage, setSelectedPackage] = useState<typeof initialPackages[0] | null>(null);
 
-    const openDetail = (pkg: any) => { setSelectedPackage(pkg); setIsDetailOpen(true); };
-    const openEdit = (pkg: any) => { setSelectedPackage(pkg); setIsDetailOpen(false); setIsEditOpen(true); };
-    const openDelete = (pkg: any) => { setSelectedPackage(pkg); setIsDetailOpen(false); setIsDeleteOpen(true); };
+    const openDetail = (pkg: typeof initialPackages[0]) => { setSelectedPackage(pkg); setIsDetailOpen(true); };
+    const openEdit = (pkg: typeof initialPackages[0]) => { setSelectedPackage(pkg); setIsDetailOpen(false); setIsEditOpen(true); };
+    const openDelete = (pkg: typeof initialPackages[0]) => { setSelectedPackage(pkg); setIsDetailOpen(false); setIsDeleteOpen(true); };
 
     const handleDelete = () => {
         setPackages(prev => prev.filter(p => p.id !== selectedPackage?.id));
@@ -103,8 +103,8 @@ export default function MarketingPackagesPage() {
                 title={t('mkt.lblPackageDetails')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => openDelete(selectedPackage)}><Trash2 size={14} /> {t('mkt.lblDeletePackage')}</Button>
-                        <Button onClick={() => openEdit(selectedPackage)}><Edit size={14} /> {t('mkt.lblEditPackage')}</Button>
+                        <Button variant="ghost" onClick={() => openDelete(selectedPackage!)}><Trash2 size={14} /> {t('mkt.btnDeletePackage')}</Button>
+                        <Button onClick={() => openEdit(selectedPackage!)}><Edit size={14} /> {t('bk.btnEdit')}</Button>
                     </div>
                 }
             >

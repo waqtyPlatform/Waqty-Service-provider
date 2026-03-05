@@ -13,7 +13,16 @@ import {
     UserCog,
     Plus,
     Award,
-    Wallet
+    Wallet,
+    Building2,
+    ClipboardCheck,
+    Layers,
+    ScanLine,
+    Settings,
+    ArrowLeftRight,
+    Fingerprint,
+    BadgeCheck,
+    Cog
 } from 'lucide-react';
 import styles from './employees.module.css';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -24,14 +33,23 @@ export default function EmployeesLayout({ children }: { children: React.ReactNod
 
     const tabItems = [
         { label: t('empLayout.tabStaff'), href: '/employees', icon: <Users size={16} /> },
+        { label: t('empLayout.tabDepartments'), href: '/employees/departments', icon: <Building2 size={16} /> },
         { label: t('empLayout.tabSchedule'), href: '/employees/schedule', icon: <Calendar size={16} /> },
+        { label: t('empLayout.tabAttendance'), href: '/employees/attendance', icon: <ClipboardCheck size={16} /> },
         { label: t('empLayout.tabPerformance'), href: '/employees/performance', icon: <BarChart3 size={16} /> },
         { label: t('empLayout.tabTimeTracking'), href: '/employees/time-tracking', icon: <Clock size={16} /> },
         { label: t('empLayout.tabTargets'), href: '/employees/targets', icon: <Target size={16} /> },
         { label: t('empLayout.tabCommissions'), href: '/employees/commissions', icon: <Award size={16} /> },
         { label: t('empLayout.tabPayroll'), href: '/employees/payroll', icon: <Wallet size={16} /> },
+        { label: t('empLayout.tabPositions'), href: '/employees/positions', icon: <Layers size={16} /> },
         { label: t('empLayout.tabRoles'), href: '/employees/roles', icon: <Briefcase size={16} /> },
         { label: t('empLayout.tabPermissions'), href: '/employees/permissions', icon: <UserCog size={16} /> },
+        { label: t('empLayout.tabTransfers'), href: '/employees/transfers', icon: <ArrowLeftRight size={16} /> },
+        { label: t('empLayout.tabBranchMgmt'), href: '/employees/branch-management', icon: <Building2 size={16} /> },
+        { label: t('empLayout.tabFingerprints'), href: '/employees/fingerprints', icon: <Fingerprint size={16} /> },
+        { label: t('empLayout.tabAttendMethods'), href: '/employees/attend-methods', icon: <ScanLine size={16} /> },
+        { label: t('empLayout.tabAttendSettings'), href: '/employees/attendance-settings', icon: <Cog size={16} /> },
+        { label: t('empLayout.tabCommSettings'), href: '/employees/commission-settings', icon: <BadgeCheck size={16} /> },
     ];
 
     const isTabPage = tabItems.some(tab => pathname === tab.href);

@@ -62,7 +62,7 @@ export default function AttendancePage() {
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-    const [selectedRecord, setSelectedRecord] = useState<any>(null);
+    const [selectedRecord, setSelectedRecord] = useState<typeof records[0] | null>(null);
 
     const getTodayStr = () => {
         const d = new Date();
@@ -140,6 +140,7 @@ export default function AttendancePage() {
 
     const handleSaveEdit = () => {
         if (!formData.employee) return addToast('error', t('attendance.toastAddReqEmp'));
+        if (!selectedRecord) return; // Should not happen if edit modal is open
 
         let calculated = { hours: '-', overtime: '-' };
         if (formData.status !== 'absent') {
@@ -164,13 +165,13 @@ export default function AttendancePage() {
     };
 
     const handleDelete = () => {
-        setRecords(records.filter(r => r.id !== selectedRecord.id));
+        setRecords(records.filter(r => r.id !== selectedRecord?.id));
         setIsDeleteOpen(false);
         setSelectedRecord(null);
         addToast('success', t('attendance.toastDeleteSuccess'));
     };
 
-    const openEdit = (r: any) => {
+    const openEdit = (r: typeof records[0]) => {
         setSelectedRecord(r);
         setFormData({
             employee: r.employee,

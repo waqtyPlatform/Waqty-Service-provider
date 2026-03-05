@@ -38,7 +38,7 @@ export default function CustomersPage() {
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-    const [selectedClient, setSelectedClient] = useState<any>(null);
+    const [selectedClient, setSelectedClient] = useState<typeof clients[0] | null>(null);
 
     const router = useRouter();
     const { addToast } = useToast();

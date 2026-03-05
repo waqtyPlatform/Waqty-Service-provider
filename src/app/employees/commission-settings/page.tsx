@@ -94,7 +94,7 @@ export default function CommissionSettingsPage() {
         setModalOpen(true);
     };
 
-    const openEdit = (id: number, data: Record<string, any>) => {
+    const openEdit = (id: number, data: Record<string, string | number | boolean>) => {
         setModalMode('edit');
         setEditId(id);
         const strData: Record<string, string> = {};
