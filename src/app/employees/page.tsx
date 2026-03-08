@@ -32,7 +32,7 @@ export default function EmployeesPage() {
 
     // CRUD state
     const [isAddOpen, setIsAddOpen] = useState(false);
-    const [selectedEmp, setSelectedEmp] = useState<any>(null);
+    const [selectedEmp, setSelectedEmp] = useState<typeof empList[0] | null>(null);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
@@ -57,7 +57,7 @@ export default function EmployeesPage() {
         const colors = ['#8B5CF6', '#EC4899', '#3B82F6', '#10B981', '#F59E0B'];
         const randomColor = colors[Math.floor(Math.random() * colors.length)];
 
-        const added: any = {
+        const added = {
             id: `E00${empList.length + 1}`,
             name: `${newEmp.fname} ${newEmp.lname}`,
             role: newEmp.jobTitle,

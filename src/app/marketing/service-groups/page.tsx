@@ -58,7 +58,7 @@ export default function ServiceGroupsPage() {
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-    const [selectedGroup, setSelectedGroup] = useState<any>(null);
+    const [selectedGroup, setSelectedGroup] = useState<typeof initialGroups[0] | null>(null);
 
     // Form state
     const [formName, setFormName] = useState('');
@@ -74,7 +74,7 @@ export default function ServiceGroupsPage() {
         setIsAddOpen(true);
     };
 
-    const openEdit = (g: any) => {
+    const openEdit = (g: typeof initialGroups[0]) => {
         setSelectedGroup(g);
         setFormName(g.name);
         setFormColor(g.color);
@@ -83,7 +83,7 @@ export default function ServiceGroupsPage() {
         setIsEditOpen(true);
     };
 
-    const openDelete = (g: any) => {
+    const openDelete = (g: typeof initialGroups[0]) => {
         setSelectedGroup(g);
         setIsDeleteOpen(true);
     };
@@ -108,7 +108,7 @@ export default function ServiceGroupsPage() {
     const handleEdit = () => {
         if (!formName.trim()) { addToast('error', t('mkt.msgGroupNameRequired')); return; }
         if (formServices.length === 0) { addToast('error', t('mkt.msgSelectOneService')); return; }
-        setGroups(prev => prev.map(g => g.id === selectedGroup.id ? { ...g, name: formName, color: formColor, services: formServices } : g));
+        setGroups(prev => prev.map(g => g.id === selectedGroup!.id ? { ...g, name: formName, color: formColor, services: formServices } : g));
         setIsEditOpen(false);
         setSelectedGroup(null);
         addToast('success', t('mkt.msgGroupUpdated'));

@@ -46,7 +46,7 @@ export default function CustomerGroupsPage() {
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-    const [selectedGroup, setSelectedGroup] = useState<any>(null);
+    const [selectedGroup, setSelectedGroup] = useState<typeof groups[0] | null>(null);
 
     const filtered = groups.filter(g => g.name.toLowerCase().includes(search.toLowerCase()));
 

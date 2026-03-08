@@ -109,7 +109,7 @@ export default function MessagesPage() {
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-    const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+    const [selectedTemplate, setSelectedTemplate] = useState<typeof initialTemplates[0] | null>(null);
 
     // Template form state
     const [formName, setFormName] = useState('');
@@ -120,15 +120,15 @@ export default function MessagesPage() {
 
     // Compose flow
     const [isComposeOpen, setIsComposeOpen] = useState(false);
-    const [composeTemplate, setComposeTemplate] = useState<any>(null);
+    const [composeTemplate, setComposeTemplate] = useState<typeof initialTemplates[0] | null>(null);
     const [selectedRecipients, setSelectedRecipients] = useState<string[]>([]);
     const [recipientSearch, setRecipientSearch] = useState('');
 
     // Message detail
     const [isMessageDetailOpen, setIsMessageDetailOpen] = useState(false);
-    const [selectedMessage, setSelectedMessage] = useState<any>(null);
+    const [selectedMessage, setSelectedMessage] = useState<typeof initialHistory[0] | null>(null);
 
-    const openMessageDetail = (m: any) => { setSelectedMessage(m); setIsMessageDetailOpen(true); };
+    const openMessageDetail = (m: typeof initialHistory[0]) => { setSelectedMessage(m); setIsMessageDetailOpen(true); };
 
     const openAdd = () => {
         setFormName('');
@@ -137,11 +137,11 @@ export default function MessagesPage() {
         setIsAddOpen(true);
     };
 
-    const openEdit = (t: any) => {
-        setSelectedTemplate(t);
-        setFormName(t.name);
-        setFormChannel(t.channel);
-        setFormBody(t.body);
+    const openEdit = (t_item: typeof initialTemplates[0]) => {
+        setSelectedTemplate(t_item);
+        setFormName(t_item.name);
+        setFormChannel(t_item.channel);
+        setFormBody(t_item.body);
         setIsEditOpen(true);
     };
 
@@ -164,8 +164,8 @@ export default function MessagesPage() {
         }
     };
 
-    const openCompose = (t: any) => {
-        setComposeTemplate(t);
+    const openCompose = (t_item: typeof initialTemplates[0]) => {
+        setComposeTemplate(t_item);
         setSelectedRecipients([]);
         setRecipientSearch('');
         setIsComposeOpen(true);
@@ -178,12 +178,12 @@ export default function MessagesPage() {
     const handleSend = () => {
         const newEntry = {
             id: Date.now(),
-            template: composeTemplate.name,
+            template: composeTemplate!.name,
             recipients: [...selectedRecipients],
-            channel: composeTemplate.channel,
+            channel: composeTemplate!.channel,
             date: new Date().toISOString().replace('T', ' ').slice(0, 16),
             status: 'delivered' as const,
-            message: composeTemplate.body,
+            message: composeTemplate!.body,
         };
         setHistory(prev => [newEntry, ...prev]);
         setIsComposeOpen(false);
@@ -199,7 +199,7 @@ export default function MessagesPage() {
 
     const handleEditTemplate = () => {
         if (!formName.trim()) { addToast('error', 'Template name is required'); return; }
-        setTemplates(prev => prev.map(t => t.id === selectedTemplate.id ? { ...t, name: formName, channel: formChannel, body: formBody } : t));
+        setTemplates(prev => prev.map(t => t.id === selectedTemplate!.id ? { ...t, name: formName, channel: formChannel, body: formBody } : t));
         setIsEditOpen(false);
         setSelectedTemplate(null);
         addToast('success', t('mkt.btnSaveTemplate'));

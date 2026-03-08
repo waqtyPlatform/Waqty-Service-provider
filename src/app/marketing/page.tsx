@@ -102,17 +102,17 @@ export default function MarketingPage() {
     const [isOfferAddOpen, setIsOfferAddOpen] = useState(false);
     const [isOfferEditOpen, setIsOfferEditOpen] = useState(false);
     const [isOfferDeleteOpen, setIsOfferDeleteOpen] = useState(false);
-    const [selectedOffer, setSelectedOffer] = useState<any>(null);
+    const [selectedOffer, setSelectedOffer] = useState<typeof offers[0] | null>(null);
 
     const [isPromoAddOpen, setIsPromoAddOpen] = useState(false);
     const [isPromoEditOpen, setIsPromoEditOpen] = useState(false);
     const [isPromoDeleteOpen, setIsPromoDeleteOpen] = useState(false);
-    const [selectedPromo, setSelectedPromo] = useState<any>(null);
+    const [selectedPromo, setSelectedPromo] = useState<typeof promoCodes[0] | null>(null);
 
     const [isMsgAddOpen, setIsMsgAddOpen] = useState(false);
     const [isMsgEditOpen, setIsMsgEditOpen] = useState(false);
     const [isMsgDeleteOpen, setIsMsgDeleteOpen] = useState(false);
-    const [selectedMsg, setSelectedMsg] = useState<any>(null);
+    const [selectedMsg, setSelectedMsg] = useState<typeof messageTemplates[0] | null>(null);
 
     return (
         <div className={styles.marketingPage} dir={lang === 'ar' ? 'rtl' : 'ltr'}>

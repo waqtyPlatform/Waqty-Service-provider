@@ -57,11 +57,11 @@ export default function OffersPage() {
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [isDetailOpen, setIsDetailOpen] = useState(false);
-    const [selectedOffer, setSelectedOffer] = useState<any>(null);
+    const [selectedOffer, setSelectedOffer] = useState<typeof initialOffers[0] | null>(null);
 
-    const openDetail = (offer: any) => { setSelectedOffer(offer); setIsDetailOpen(true); };
-    const openEdit = (offer: any) => { setSelectedOffer(offer); setIsDetailOpen(false); setIsEditOpen(true); };
-    const openDelete = (offer: any) => { setSelectedOffer(offer); setIsDetailOpen(false); setIsDeleteOpen(true); };
+    const openDetail = (offer: typeof initialOffers[0]) => { setSelectedOffer(offer); setIsDetailOpen(true); };
+    const openEdit = (offer: typeof initialOffers[0]) => { setSelectedOffer(offer); setIsDetailOpen(false); setIsEditOpen(true); };
+    const openDelete = (offer: typeof initialOffers[0]) => { setSelectedOffer(offer); setIsDetailOpen(false); setIsDeleteOpen(true); };
 
     const { t } = useTranslation();
 
@@ -119,8 +119,8 @@ export default function OffersPage() {
                 title={t('mkt.lblOfferDetails')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => openDelete(selectedOffer)}><Trash2 size={14} /> {t('mkt.lblDeleteOffer')}</Button>
-                        <Button onClick={() => openEdit(selectedOffer)}><Edit size={14} /> {t('mkt.lblEditOffer')}</Button>
+                        <Button variant="ghost" onClick={() => openDelete(selectedOffer!)}><Trash2 size={14} /> {t('mkt.btnDeleteOffer')}</Button>
+                        <Button onClick={() => openEdit(selectedOffer!)}><Edit size={14} /> {t('bk.btnEdit')}</Button>
                     </div>
                 }
             >

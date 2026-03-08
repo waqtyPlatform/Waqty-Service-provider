@@ -40,8 +40,8 @@ export default function AttendanceSettingsPage() {
         notifyManager: false
     });
 
-    const handleChange = (key: keyof typeof config, value: any) => {
-        setConfig(prev => ({ ...prev, [key]: value }));
+    const handleChange = (key: keyof typeof config, value: boolean | string | number) => {
+        setConfig({ ...config, [key]: value });
     };
 
     const handleSave = () => {

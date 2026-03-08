@@ -83,14 +83,14 @@ export default function PromoCodesPage() {
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [isDetailOpen, setIsDetailOpen] = useState(false);
-    const [selected, setSelected] = useState<any>(null);
+    const [selected, setSelected] = useState<typeof initialCodes[0] | null>(null);
     const [clientSearch, setClientSearch] = useState('');
 
     const { t } = useTranslation();
 
-    const openDetail = (c: any) => { setSelected(c); setIsDetailOpen(true); setClientSearch(''); };
-    const openEdit = (c: any) => { setSelected(c); setIsDetailOpen(false); setIsEditOpen(true); };
-    const openDelete = (c: any) => { setSelected(c); setIsDetailOpen(false); setIsDeleteOpen(true); };
+    const openDetail = (c: typeof initialCodes[0]) => { setSelected(c); setIsDetailOpen(true); setClientSearch(''); };
+    const openEdit = (c: typeof initialCodes[0]) => { setSelected(c); setIsDetailOpen(false); setIsEditOpen(true); };
+    const openDelete = (c: typeof initialCodes[0]) => { setSelected(c); setIsDetailOpen(false); setIsDeleteOpen(true); };
 
     const handleDelete = () => {
         setCodes(prev => prev.filter(c => c.id !== selected?.id));
@@ -158,8 +158,8 @@ export default function PromoCodesPage() {
             <SlideOver open={isDetailOpen} onClose={() => { setIsDetailOpen(false); setSelected(null); }} title={t('mkt.lblPromoCodeDetails')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => openDelete(selected)}><Trash2 size={14} /> {t('mkt.lblDeletePromoCode')}</Button>
-                        <Button onClick={() => openEdit(selected)}><Edit size={14} /> {t('mkt.lblEditCode')}</Button>
+                        <Button variant="ghost" onClick={() => openDelete(selected!)}><Trash2 size={14} /> {t('mkt.lblDeletePromoCode')}</Button>
+                        <Button onClick={() => openEdit(selected!)}><Edit size={14} /> {t('mkt.lblEditCode')}</Button>
                     </div>
                 }
             >

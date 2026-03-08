@@ -49,7 +49,7 @@ export default function PositionsPage() {
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-    const [selectedPos, setSelectedPos] = useState<any>(null);
+    const [selectedPos, setSelectedPos] = useState<typeof positions[0] | null>(null);
 
     // Form
     const [formData, setFormData] = useState({ title: '', level: 'Mid', department: 'Hair Styling', minSalary: '', maxSalary: '' });
@@ -75,7 +75,7 @@ export default function PositionsPage() {
 
     const handleSaveEdit = () => {
         if (!formData.title) return addToast('error', t('positions.toastReqTitle'));
-        setPositions(positions.map(p => p.id === selectedPos.id ? {
+        setPositions(positions.map(p => p.id === selectedPos?.id ? {
             ...p,
             title: formData.title,
             level: formData.level,
@@ -89,7 +89,7 @@ export default function PositionsPage() {
     };
 
     const handleDelete = () => {
-        setPositions(positions.filter(p => p.id !== selectedPos.id));
+        setPositions(positions.filter(p => p.id !== selectedPos?.id));
         setIsDeleteOpen(false);
         setSelectedPos(null);
         addToast('success', t('positions.toastRemSec'));
@@ -122,8 +122,8 @@ export default function PositionsPage() {
                         {filtered.map(p => (
                             <tr key={p.id} className="hoverRow">
                                 <td style={{ ...s.td, fontWeight: 'var(--font-medium)' } as React.CSSProperties}>{p.title}</td>
-                                <td style={s.td}><span style={{ ...s.badge, ...levelColors[p.level] }}>{t(`positions.lvl${p.level}` as any)}</span></td>
-                                <td style={s.td}>{t(`positions.${({ 'Hair Styling': 'deptHair', 'Skin Care': 'deptSkin', 'Massage & Body': 'deptMassage', 'Nails': 'deptNails', 'Reception': 'deptReception', 'Administration': 'deptAdmin' } as any)[p.department] || 'deptHair'}` as any)}</td>
+                                <td style={s.td}><span style={{ ...s.badge, ...levelColors[p.level] }}>{t(`positions.lvl${p.level}`)}</span></td>
+                                <td style={s.td}>{t(`positions.${({ 'Hair Styling': 'deptHair', 'Skin Care': 'deptSkin', 'Massage & Body': 'deptMassage', 'Nails': 'deptNails', 'Reception': 'deptReception', 'Administration': 'deptAdmin' } as Record<string, string>)[p.department] || 'deptHair'}`)}</td>
                                 <td style={s.td}>{p.employees}</td>
                                 <td style={s.td} dir="ltr">{p.minSalary.toLocaleString()} - {p.maxSalary.toLocaleString()} EGP</td>
                                 <td style={s.td}>

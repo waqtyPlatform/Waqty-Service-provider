@@ -217,7 +217,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
                                 <RechartsTooltip
                                     contentStyle={{ borderRadius: '8px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}
-                                    formatter={(value: any) => [`${value} EGP`, 'Revenue']}
+                                    formatter={(value: number | string | undefined) => [`${value || 0} EGP`, 'Revenue']}
                                 />
                                 <Area type="monotone" dataKey="revenue" stroke="var(--color-primary-500)" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" />
                             </AreaChart>
@@ -507,7 +507,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                             <tbody>
                                 {modules.map(m => (
                                     <tr key={m}>
-                                        <td style={{ padding: 'var(--space-2) var(--space-3)', fontSize: 13, borderBottom: '1px solid var(--border-color)' }}>{t(`modules.${m}` as any)}</td>
+                                        <td style={{ padding: 'var(--space-2) var(--space-3)', fontSize: 13, borderBottom: '1px solid var(--border-color)' }}>{t(`modules.${m}`)}</td>
                                         <td style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', borderBottom: '1px solid var(--border-color)' }}><input type="checkbox" defaultChecked={m === 'dashboard' || m === 'sales'} /></td>
                                         <td style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', borderBottom: '1px solid var(--border-color)' }}><input type="checkbox" defaultChecked={m === 'sales'} /></td>
                                         <td style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', borderBottom: '1px solid var(--border-color)' }}><input type="checkbox" defaultChecked={false} /></td>
