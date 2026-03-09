@@ -17,6 +17,7 @@ import {
   Users,
   Crown,
 } from 'lucide-react';
+import { EmptyState } from '@/components/ui';
 import {
   PieChart,
   Pie,
@@ -271,6 +272,17 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      {user?.isNewWorkspace ? (
+         <div style={{ padding: 'var(--space-12) 0', background: 'var(--bg-primary)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--border-color)', marginTop: 'var(--space-6)' }}>
+             <EmptyState
+                icon={<CalendarCheck size={48} color="var(--color-primary-500)" />}
+                title="Your workspace is empty"
+                description="Business insights will appear here once you start taking bookings. Let's set up your calendar first!"
+                action={<button className={styles.quickActionBtn} onClick={() => router.push('/bookings')} style={{ margin: '0 auto', display: 'flex', marginTop: '16px' }}>Go to Calendar</button>}
+             />
+         </div>
+      ) : (
+      <>
       {/* KPI Cards */}
       <motion.div
         className={styles.kpiGrid}
@@ -645,7 +657,9 @@ export default function DashboardPage() {
             <p>🌟 {clientTerm} {t('dash.clientOfMonth')}</p>
           </div>
         </div>
-      </div >
-    </div >
+      </div>
+      </>
+      )}
+    </div>
   );
 }

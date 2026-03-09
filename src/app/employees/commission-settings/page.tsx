@@ -213,23 +213,31 @@ export default function CommissionSettingsPage() {
     // ─── Table Renderers ────────────
     const renderServiceTable = () => (
         <table style={s.table}>
-            <thead><tr>{[t('commSettings.fldServiceName'), t('commSettings.fldCategory'), t('commSettings.fldRate'), t('commSettings.colActions')].map(h => <th key={h} style={{ ...s.th, textAlign: isRtl ? 'right' : 'left' } as React.CSSProperties}>{h}</th>)}</tr></thead>
+            <thead><tr>
+                {[t('commSettings.fldServiceName'), t('commSettings.fldCategory'), 'Extraction %', 'Net Rev Rate %', t('commSettings.colActions')].map(h => (
+                    <th key={h} style={{ ...s.th, textAlign: isRtl ? 'right' : 'left' } as React.CSSProperties} title={h === 'Net Rev Rate %' ? 'Rate applied to net revenue after extraction costs are deducted' : undefined}>{h}</th>
+                ))}
+            </tr></thead>
             <tbody>
                 {serviceRates.length === 0 ? (
-                    <tr><td colSpan={4} style={s.emptyRow as React.CSSProperties}>{t('commSettings.emptyService')}</td></tr>
-                ) : serviceRates.map(r => (
-                    <tr key={r.id} className="hoverRow">
-                        <td style={{ ...s.td, fontWeight: 'var(--font-medium)' }}>{r.service}</td>
-                        <td style={s.td}><Badge color="neutral" size="sm">{t(`commSettings.cat${r.category.replace(/\s+/g, '')}`) || r.category}</Badge></td>
-                        <td style={{ ...s.td, fontWeight: 'var(--font-semibold)', color: 'var(--color-primary-600)' }}>{r.rate}%</td>
-                        <td style={s.td}>
-                            <div style={s.actions}>
-                                <button style={s.btnIcon} onClick={() => openEdit(r.id, r)}><Edit size={14} /></button>
-                                <button style={{ ...s.btnIcon, color: 'var(--color-error)' }} onClick={() => handleDelete(r.id)}><Trash2 size={14} /></button>
-                            </div>
-                        </td>
-                    </tr>
-                ))}
+                    <tr><td colSpan={5} style={s.emptyRow as React.CSSProperties}>{t('commSettings.emptyService')}</td></tr>
+                ) : serviceRates.map(r => {
+                    const ext = extractionRules.find(e => e.service === r.service);
+                    return (
+                        <tr key={r.id} className="hoverRow">
+                            <td style={{ ...s.td, fontWeight: 'var(--font-medium)' }}>{r.service}</td>
+                            <td style={s.td}><Badge color="neutral" size="sm">{t(`commSettings.cat${r.category.replace(/\s+/g, '')}`) || r.category}</Badge></td>
+                            <td style={{ ...s.td, color: ext ? '#ef4444' : 'var(--text-tertiary)' }}>{ext ? `-${ext.extractionRate}%` : '—'}</td>
+                            <td style={{ ...s.td, fontWeight: 'var(--font-semibold)', color: 'var(--color-primary-600)' }}>{r.rate}%</td>
+                            <td style={s.td}>
+                                <div style={s.actions}>
+                                    <button style={s.btnIcon} onClick={() => openEdit(r.id, r)}><Edit size={14} /></button>
+                                    <button style={{ ...s.btnIcon, color: 'var(--color-error)' }} onClick={() => handleDelete(r.id)}><Trash2 size={14} /></button>
+                                </div>
+                            </td>
+                        </tr>
+                    );
+                })}
             </tbody>
         </table>
     );
@@ -313,6 +321,21 @@ export default function CommissionSettingsPage() {
         return null;
     };
 
+    // Task 03: Commission Summary Preview text generator
+    const buildSummaryText = () => {
+        const lines: string[] = [];
+        serviceRates.forEach(r => {
+            const ext = extractionRules.find(e => e.service === r.service);
+            if (ext) {
+                lines.push(`${r.service}: ${r.rate}% on net revenue after ${ext.extractionRate}% extraction`);
+            } else {
+                lines.push(`${r.service}: ${r.rate}% on gross revenue`);
+            }
+        });
+        return lines.length > 0 ? lines : ['No service rates configured yet.'];
+    };
+    const totalExtractionCost = extractionRules.reduce((sum, r) => sum + r.extractionRate, 0);
+
     return (
         <div style={{ ...s.page, direction: isRtl ? 'rtl' : 'ltr' }}>
             <div style={s.header}>
@@ -321,6 +344,36 @@ export default function CommissionSettingsPage() {
                     <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginTop: 'var(--space-1)' }}>{t('commSettings.desc')}</div>
                 </div>
                 <Button onClick={handleSaveAll}><Save size={16} className={isRtl ? 'ml-2' : 'mr-2'} /> {t('commSettings.saveAll')}</Button>
+            </div>
+
+            {/* Task 03: KPI card for total extraction costs + Summary Preview */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-5)' }}>
+                <div style={{ ...s.card, padding: 'var(--space-5)' }}>
+                    <div style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-2)' }}>
+                        Total Extraction Costs This Month
+                    </div>
+                    <div style={{ fontSize: 'var(--text-3xl)', fontWeight: 'var(--font-bold)', color: '#ef4444' }}>
+                        {(totalExtractionCost * 320).toLocaleString()} EGP
+                    </div>
+                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: 'var(--space-1)' }}>
+                        Based on {extractionRules.length} extraction rule(s) across all services
+                    </div>
+                </div>
+                <div style={{ ...s.card, padding: 'var(--space-5)' }}>
+                    <div style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-3)' }}>
+                        Commission Summary Preview
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', maxHeight: 120, overflowY: 'auto' }}>
+                        {buildSummaryText().map((line, i) => (
+                            <div key={i} style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', padding: 'var(--space-2)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', fontFamily: 'var(--font-mono)' }}>
+                                {line}
+                            </div>
+                        ))}
+                    </div>
+                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: 'var(--space-2)' }}>
+                        This text syncs to the Employee App commission screen.
+                    </div>
+                </div>
             </div>
 
             <div style={s.tabBar}>

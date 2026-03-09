@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { DropdownMenu, useToast } from '@/components/ui';
+import { DropdownMenu, useToast, EmptyState } from '@/components/ui';
 import Link from 'next/link';
+import { useAuth } from '@/contexts/AuthContext';
 import {
     Search,
     Plus,
@@ -57,6 +58,8 @@ export default function ExpensesPage() {
     const [catFilter, setCatFilter] = useState('all');
     const { addToast } = useToast();
     const { t } = useTranslation();
+    const { user } = useAuth();
+    const isNewWorkspace = user?.isNewWorkspace;
 
     const filtered = expenses.filter((e) => {
         const matchSearch =
@@ -123,6 +126,16 @@ export default function ExpensesPage() {
                 </select>
             </div>
 
+            {isNewWorkspace ? (
+                <div style={{ padding: 'var(--space-12) 0', background: 'var(--bg-primary)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--border-color)', marginTop: 'var(--space-6)' }}>
+                    <EmptyState
+                        icon={<Receipt size={48} color="var(--color-primary-500)" />}
+                        title="No expenses logged"
+                        description="Track your money flowing out. Log your first business expense."
+                        action={<button className={styles.btnPrimary} style={{ margin: '0 auto', display: 'flex', marginTop: '16px' }}><Plus size={16} style={{marginInlineEnd: 4}}/> Add Expense</button>}
+                    />
+                </div>
+            ) : (
             <div className={styles.card}>
                 <div className={styles.tableResponsive}>
                     <table className={styles.dataTable}>
@@ -183,6 +196,7 @@ export default function ExpensesPage() {
                     </span>
                 </div>
             </div>
+            )}
         </div>
     );
 }

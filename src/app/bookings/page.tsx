@@ -68,10 +68,26 @@ const statusBlockClass: Record<string, string> = {
     workDone: styles.blockWorkDone,
 };
 
+function formatDate(d: Date): string {
+    return d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
+}
+
 export default function BookingsCalendarPage() {
     const [calendarView, setCalendarView] = useState<'day' | 'week' | 'month'>('day');
+    const [currentDate, setCurrentDate] = useState(new Date());
     const router = useRouter();
     const { t } = useTranslation();
+
+    const goToday = () => setCurrentDate(new Date());
+    const goPrev  = () => setCurrentDate(d => { const n = new Date(d); n.setDate(n.getDate() - 1); return n; });
+    const goNext  = () => setCurrentDate(d => { const n = new Date(d); n.setDate(n.getDate() + 1); return n; });
+
+    const handleEmptyCellClick = (empIndex: number, slotIndex: number) => {
+        const time = timeSlots[slotIndex];
+        const emp  = employees[empIndex];
+        const dateStr = currentDate.toISOString().split('T')[0];
+        router.push(`/bookings/new?emp=${emp.initials}&date=${dateStr}&time=${time}`);
+    };
 
     return (
         <div className={styles.bookingsPage}>
@@ -81,10 +97,10 @@ export default function BookingsCalendarPage() {
             {/* Calendar Header */}
             <div className={styles.calendarHeader}>
                 <div className={styles.calendarNav}>
-                    <button className={styles.navBtn}><ChevronLeft size={18} /></button>
-                    <span className={styles.calendarTitle}>Monday, Feb 17, 2026</span>
-                    <button className={styles.navBtn}><ChevronRight size={18} /></button>
-                    <button className={styles.todayBtn}>{t('bookings.today')}</button>
+                    <button className={styles.navBtn} onClick={goPrev}><ChevronLeft size={18} /></button>
+                    <span className={styles.calendarTitle}>{formatDate(currentDate)}</span>
+                    <button className={styles.navBtn} onClick={goNext}><ChevronRight size={18} /></button>
+                    <button className={styles.todayBtn} onClick={goToday}>{t('bookings.today')}</button>
                 </div>
 
                 <div className={styles.viewToggle}>
@@ -143,12 +159,18 @@ export default function BookingsCalendarPage() {
                                         );
 
                                         return (
-                                            <div key={empIndex} className={styles.timeCell}>
+                                            <div
+                                                key={empIndex}
+                                                className={styles.timeCell}
+                                                onClick={() => !block && handleEmptyCellClick(empIndex, slotIndex)}
+                                                style={{ cursor: block ? 'default' : 'pointer' }}
+                                                title={!block ? `Book slot — ${timeSlots[slotIndex]}` : undefined}
+                                            >
                                                 {block && (
                                                     <div
                                                         className={`${styles.bookingBlock} ${statusBlockClass[block.status] || ''}`}
                                                         style={{ height: `${block.span * 64 - 4}px` }}
-                                                        onClick={() => block.id && router.push(`/bookings/${block.id}`)}
+                                                        onClick={(e) => { e.stopPropagation(); block.id && router.push(`/bookings/${block.id}`); }}
                                                     >
                                                         <div className={styles.bookingBlockName}>{block.client}</div>
                                                         <div className={styles.bookingBlockService}>{block.service}</div>

@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { DropdownMenu, useToast, SlideOver, Modal, Input, Select, Button } from '@/components/ui';
+import { DropdownMenu, useToast, SlideOver, Modal, Input, Select, Button, EmptyState } from '@/components/ui';
+import { useAuth } from '@/contexts/AuthContext';
 import {
     Search,
     Plus,
@@ -97,6 +98,8 @@ export default function MarketingPage() {
     const [activeTab, setActiveTab] = useState<TabKey>('offers');
     const [search, setSearch] = useState('');
     const { t, lang } = useTranslation();
+    const { user } = useAuth();
+    const isNewWorkspace = user?.isNewWorkspace;
 
     // CRUD State
     const [isOfferAddOpen, setIsOfferAddOpen] = useState(false);
@@ -215,6 +218,16 @@ export default function MarketingPage() {
 
             {/* ─── Offers Tab ──────────────────────────────────────── */}
             {activeTab === 'offers' && (
+                isNewWorkspace ? (
+                    <div style={{ padding: 'var(--space-12) 0', background: 'var(--bg-primary)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--border-color)', marginTop: 'var(--space-6)' }}>
+                        <EmptyState
+                            icon={<Gift size={48} color="var(--color-primary-500)" />}
+                            title="No offers yet"
+                            description="Ready to grow? Create your first promotional campaign to engage your clients."
+                            action={<button className={styles.btnPrimary} onClick={() => setIsOfferAddOpen(true)} style={{ margin: '0 auto', display: 'flex', marginTop: '16px' }}><Plus size={16} style={{ marginInlineEnd: 4 }}/> Create Offer</button>}
+                        />
+                    </div>
+                ) : (
                 <div className={styles.cardGrid}>
                     {offers
                         .filter(o => o.name.toLowerCase().includes(search.toLowerCase()))
@@ -259,6 +272,7 @@ export default function MarketingPage() {
                             </div>
                         ))}
                 </div>
+                )
             )}
 
             {/* ─── Promo Codes Tab ─────────────────────────────────── */}

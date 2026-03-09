@@ -12,6 +12,9 @@ import {
     Download,
     Check,
     X,
+    AlertTriangle,
+    Eye,
+    Edit,
 } from 'lucide-react';
 import styles from '../bookings.module.css';
 import BookingsTabs from '../BookingsTabs';
@@ -47,16 +50,59 @@ const bookings = [
     { id: 'BK-1033', branch: 'Downtown', client: 'Yara Bassam', mobile: '+20 188 999 000', date: 'Feb 16, 2026', time: '10:00', service: 'Pedicure', employee: 'Reem Mohamed', value: 120, status: 'noShow', payment: 'unpaid', payMethod: '—' },
 ];
 
+function CancelConfirmModal({ bookingId, onConfirm, onClose }: {
+    bookingId: string;
+    onConfirm: () => void;
+    onClose: () => void;
+}) {
+    const overlay: React.CSSProperties = { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center' };
+    const box: React.CSSProperties = { background: 'var(--bg-primary)', borderRadius: 'var(--radius-xl)', padding: 'var(--space-6)', width: 400, maxWidth: '90vw', border: '1px solid var(--border-color)' };
+    return (
+        <div style={overlay} onClick={onClose}>
+            <div style={box} onClick={(e) => e.stopPropagation()}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-3)' }}>
+                    <AlertTriangle size={20} color="#ef4444" />
+                    <h3 style={{ fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-lg)' }}>Cancel Booking {bookingId}?</h3>
+                </div>
+                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', marginBottom: 'var(--space-5)' }}>
+                    This booking will be marked as cancelled. The client will be notified.
+                </p>
+                <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
+                    <button
+                        onClick={onClose}
+                        style={{ padding: 'var(--space-2) var(--space-4)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', background: 'var(--bg-primary)', cursor: 'pointer', fontSize: 'var(--text-sm)' }}>
+                        Keep Booking
+                    </button>
+                    <button
+                        onClick={onConfirm}
+                        style={{ padding: 'var(--space-2) var(--space-4)', border: 'none', borderRadius: 'var(--radius-lg)', background: '#ef4444', color: 'white', cursor: 'pointer', fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)' }}>
+                        Confirm Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export default function BookingListPage() {
     const { t, lang } = useTranslation();
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [paymentFilter, setPaymentFilter] = useState('all');
     const [currentPage, setCurrentPage] = useState(1);
+    const [rows, setRows] = useState(bookings);
+    const [cancelTarget, setCancelTarget] = useState<string | null>(null);
     const router = useRouter();
     const { addToast } = useToast();
 
-    const filtered = bookings.filter((b) => {
+    const confirmCancel = () => {
+        if (!cancelTarget) return;
+        setRows(prev => prev.map(b => b.id === cancelTarget ? { ...b, status: 'cancelled', payment: 'unpaid' } : b));
+        addToast('error', `Booking ${cancelTarget} cancelled`);
+        setCancelTarget(null);
+    };
+
+    const filtered = rows.filter((b) => {
         const matchSearch =
             b.client.toLowerCase().includes(search.toLowerCase()) ||
             b.id.toLowerCase().includes(search.toLowerCase()) ||
@@ -76,6 +122,14 @@ export default function BookingListPage() {
     }, [search, statusFilter, paymentFilter]);
 
     return (
+        <>
+        {cancelTarget && (
+            <CancelConfirmModal
+                bookingId={cancelTarget}
+                onConfirm={confirmCancel}
+                onClose={() => setCancelTarget(null)}
+            />
+        )}
         <div className={styles.bookingsPage} style={{ direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
             {/* Tabs */}
             <BookingsTabs />
@@ -142,7 +196,7 @@ export default function BookingListPage() {
                     </thead>
                     <tbody>
                         {currentItems.map((b) => (
-                            <tr key={b.id}>
+                            <tr key={b.id} style={{ cursor: 'pointer' }} onClick={() => router.push(`/bookings/${b.id}`)}>
                                 <td className={styles.bookingId}>{b.id}</td>
                                 <td>{b.branch}</td>
                                 <td style={{ fontWeight: 'var(--font-medium)' }}>{b.client}</td>
@@ -166,13 +220,15 @@ export default function BookingListPage() {
                                         {paymentConfig[b.payment] ? t(paymentConfig[b.payment].labelKey) : b.payment}
                                     </span>
                                 </td>
-                                <td>
+                                <td onClick={(e) => e.stopPropagation()}>
                                     <DropdownMenu
                                         trigger={<button className={styles.actionBtn}><MoreVertical size={16} /></button>}
                                         items={[
-                                            { label: t('bk.actionView'), icon: <Search size={14} />, onClick: () => router.push(`/bookings/${b.id}`) },
-                                            { label: t('bk.actionEdit'), icon: <List size={14} />, onClick: () => addToast('info', `Edit mode for ${b.id}`) },
-                                            { label: t('bk.actionCancel'), icon: <X size={14} />, onClick: () => addToast('error', `Booking ${b.id} cancelled`), destructive: true },
+                                            { label: t('bk.actionView'), icon: <Eye size={14} />, onClick: () => router.push(`/bookings/${b.id}`) },
+                                            { label: t('bk.actionEdit'), icon: <Edit size={14} />, onClick: () => router.push(`/bookings/new?edit=${b.id}`) },
+                                            ...(b.status !== 'cancelled' && b.status !== 'completed' ? [
+                                                { label: t('bk.actionCancel'), icon: <X size={14} />, onClick: () => setCancelTarget(b.id), destructive: true },
+                                            ] : []),
                                         ]}
                                     />
                                 </td>
@@ -217,5 +273,6 @@ export default function BookingListPage() {
                 </div>
             </div>
         </div>
+        </>
     );
 }

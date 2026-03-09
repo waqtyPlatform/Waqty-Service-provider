@@ -20,7 +20,13 @@ import {
     Plus,
     MessageSquare,
     Star,
-    Flag
+    Flag,
+    Smartphone,
+    Copy,
+    Bell,
+    Target,
+    CheckCircle,
+    XCircle
 } from 'lucide-react';
 import {
     Tabs,
@@ -118,6 +124,18 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
     const [isScheduleEditOpen, setIsScheduleEditOpen] = useState(false);
     const [editableSchedule, setEditableSchedule] = useState(schedule.map(d => ({ ...d })));
 
+    // Task 02: Mobile App Access
+    const [isPinModalOpen, setIsPinModalOpen] = useState(false);
+    const [pinSet, setPinSet] = useState(false);
+    const [pinValue, setPinValue] = useState('');
+    const [pinConfirm, setPinConfirm] = useState('');
+
+    // Task 09: Notification Preferences (read-only mirror of employee app settings)
+    const [notifPrefs] = useState({
+        newBookings: true, cancellations: true, reminders: true,
+        shiftReminders: false, newReviews: true, payslipAvailable: true, announcements: false,
+    });
+
     const [empServices, setEmpServices] = useState([
         { name: 'Hair Cut & Style', commission: '15%' },
         { name: 'Hair Coloring', commission: '20%' },
@@ -199,6 +217,49 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                     />
                 </div>
 
+                {/* Task 06: Target Progress Card */}
+                {(() => {
+                    const revTarget = 10000; const revAchieved = 7420;
+                    const bkTarget = 120; const bkAchieved = 84;
+                    const revPct = Math.min(200, Math.round((revAchieved / revTarget) * 100));
+                    const bkPct = Math.min(200, Math.round((bkAchieved / bkTarget) * 100));
+                    const tierMultiplier = revPct >= 150 ? 2.0 : revPct >= 120 ? 1.5 : 1.0;
+                    const baseBonus = 1000;
+                    const projBonus = Math.round(baseBonus * tierMultiplier * (revPct / 100));
+                    const barColor = (pct: number) => pct >= 150 ? 'var(--color-primary-500)' : pct >= 120 ? '#f59e0b' : pct >= 100 ? '#22c55e' : 'var(--color-gray-300)';
+                    return (
+                        <div className={styles.card} style={{ marginTop: 'var(--space-4)' }}>
+                            <div className={styles.cardHeader}>
+                                <span className={styles.cardTitle}><Target size={18} style={{ marginRight: 6 }} /> Target Progress</span>
+                            </div>
+                            <div className={styles.cardBody} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                                {[
+                                    { label: 'Revenue Target', achieved: revAchieved.toLocaleString() + ' EGP', target: revTarget.toLocaleString() + ' EGP', pct: revPct },
+                                    { label: 'Bookings Target', achieved: bkAchieved + ' appts', target: bkTarget + ' appts', pct: bkPct },
+                                ].map(bar => (
+                                    <div key={bar.label}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-sm)', marginBottom: 6 }}>
+                                            <span style={{ fontWeight: 'var(--font-medium)' }}>{bar.label}</span>
+                                            <span style={{ color: 'var(--text-secondary)' }}>{bar.achieved} / {bar.target} ({bar.pct}%)</span>
+                                        </div>
+                                        <div style={{ height: 8, borderRadius: 4, background: 'var(--bg-secondary)', overflow: 'hidden' }}>
+                                            <div style={{ height: '100%', width: `${Math.min(100, bar.pct)}%`, background: barColor(bar.pct), borderRadius: 4, transition: 'width 0.4s' }} />
+                                        </div>
+                                    </div>
+                                ))}
+                                <div style={{ padding: 'var(--space-3)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', fontSize: 'var(--text-sm)' }}>
+                                    <div style={{ color: 'var(--text-secondary)', marginBottom: 4 }}>
+                                        At {revPct}% → <strong>Base bonus (1×)</strong>&nbsp;|&nbsp;Reach 120% → 1.5×&nbsp;|&nbsp;Reach 150% → 2×
+                                    </div>
+                                    <div style={{ fontWeight: 'var(--font-semibold)', color: 'var(--color-primary-600)' }}>
+                                        Estimated bonus at current pace: {projBonus.toLocaleString()} EGP
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })()}
+
                 <div className={styles.card} style={{ marginTop: 'var(--space-6)' }}>
                     <div className={styles.cardHeader}>
                         <span className={styles.cardTitle}><TrendingUp size={18} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('empProfile.perfAnalytics')}</span>
@@ -249,6 +310,39 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                                     <span className={styles.serviceComm}>{s.commission}</span>
                                 </div>
                             ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Task 02: Mobile App Access Card */}
+                <div className={styles.card}>
+                    <div className={styles.cardHeader}>
+                        <span className={styles.cardTitle}><Smartphone size={16} style={{ marginRight: 6 }} />Mobile App Access</span>
+                    </div>
+                    <div className={styles.cardBody}>
+                        <div style={{ marginBottom: 'var(--space-3)' }}>
+                            <span style={{
+                                display: 'inline-flex', alignItems: 'center', gap: 4,
+                                padding: '2px 8px', borderRadius: 'var(--radius-full)',
+                                fontSize: 12, fontWeight: 'var(--font-semibold)',
+                                background: pinSet ? 'var(--color-success-light)' : 'var(--color-gray-100)',
+                                color: pinSet ? 'var(--color-success)' : 'var(--color-gray-500)',
+                            }}>
+                                {pinSet ? <><CheckCircle size={11} /> App Access: Active</> : 'App Access: Not Configured'}
+                            </span>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                            <Button size="sm" variant="outline" fullWidth onClick={() => { setPinValue(''); setPinConfirm(''); setIsPinModalOpen(true); }}>
+                                <Lock size={14} style={{ marginRight: 6 }} /> Set PIN
+                            </Button>
+                            <Button size="sm" variant="outline" fullWidth onClick={() => {
+                                const token = Math.random().toString(36).substring(7);
+                                const link = `${window.location.origin}/invite/${token}?phone=${encodeURIComponent(employee.phone)}&role=staff`;
+                                navigator.clipboard.writeText(link);
+                                addToast('success', 'App invite link copied to clipboard');
+                            }}>
+                                <Copy size={14} style={{ marginRight: 6 }} /> Send App Invite
+                            </Button>
                         </div>
                     </div>
                 </div>
@@ -332,6 +426,48 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
         </div>
     );
 
+    const renderNotifications = () => {
+        const notifItems = [
+            { key: 'newBookings', label: 'New Bookings' },
+            { key: 'cancellations', label: 'Cancellations' },
+            { key: 'reminders', label: 'Appointment Reminders' },
+            { key: 'shiftReminders', label: 'Shift Reminders' },
+            { key: 'newReviews', label: 'New Reviews' },
+            { key: 'payslipAvailable', label: 'Payslip Available' },
+            { key: 'announcements', label: 'Manager Announcements' },
+        ] as const;
+        const enabledCount = notifItems.filter(i => notifPrefs[i.key]).length;
+        return (
+            <div className={styles.mainPanel}>
+                <div className={styles.card}>
+                    <div className={styles.cardHeader}>
+                        <span className={styles.cardTitle}><Bell size={18} style={{ marginRight: 6 }} /> Notification Preferences</span>
+                        <Badge color="neutral">{enabledCount}/{notifItems.length} enabled</Badge>
+                    </div>
+                    <div className={styles.cardBody} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                        {notifItems.map(item => (
+                            <div key={item.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--space-3)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', background: 'var(--bg-secondary)' }}>
+                                <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)' }}>{item.label}</span>
+                                <span style={{
+                                    display: 'inline-flex', alignItems: 'center', gap: 4,
+                                    padding: '2px 10px', borderRadius: 'var(--radius-full)',
+                                    fontSize: 12, fontWeight: 'var(--font-semibold)',
+                                    background: notifPrefs[item.key] ? 'var(--color-success-light)' : 'var(--color-gray-100)',
+                                    color: notifPrefs[item.key] ? 'var(--color-success)' : 'var(--color-gray-500)',
+                                }}>
+                                    {notifPrefs[item.key] ? <><CheckCircle size={11} /> On</> : <><XCircle size={11} /> Off</>}
+                                </span>
+                            </div>
+                        ))}
+                        <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: 'var(--space-2)' }}>
+                            Employee controls these settings from their mobile app — changes sync automatically.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     return (
         <div className={styles.page} style={{ direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
             {/* Header */}
@@ -397,6 +533,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                     { key: 'schedule', label: t('empProfile.tabSchedule'), icon: <Calendar size={16} /> },
                     { key: 'attendance', label: t('empProfile.tabAttendance'), icon: <Clock size={16} /> },
                     { key: 'reviews', label: t('empProfile.tabReviews'), icon: <MessageSquare size={16} /> },
+                    { key: 'notifications', label: 'Notifications', icon: <Bell size={16} /> },
                 ]}
             />
 
@@ -404,6 +541,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
             {activeTab === 'performance' && renderPerformance()}
             {activeTab === 'schedule' && renderSchedule()}
             {activeTab === 'reviews' && renderReviews()}
+            {activeTab === 'notifications' && renderNotifications()}
             {activeTab === 'attendance' && (
                 <EmptyState
                     icon={<Clock size={48} />}
@@ -630,6 +768,46 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
                         <Button variant="outline" onClick={() => setIsEditServicesOpen(false)}>{t('empProfile.btnCancel')}</Button>
                         <Button onClick={() => { setIsEditServicesOpen(false); addToast('success', t('empProfile.toastServSec')); }}>{t('empProfile.btnSaveServ')}</Button>
+                    </div>
+                </div>
+            </Modal>
+
+            {/* Task 02: Set PIN Modal */}
+            <Modal open={isPinModalOpen} onClose={() => setIsPinModalOpen(false)} title="Set Employee PIN">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)' }}>
+                        Set a 6-digit PIN for <strong>{employee.name}</strong>. They can use this PIN to log into the Hagzy Employee App.
+                    </p>
+                    <Input
+                        label="New PIN (6 digits)"
+                        type="password"
+                        maxLength={6}
+                        placeholder="••••••"
+                        value={pinValue}
+                        onChange={(e) => setPinValue(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    />
+                    <Input
+                        label="Confirm PIN"
+                        type="password"
+                        maxLength={6}
+                        placeholder="••••••"
+                        value={pinConfirm}
+                        onChange={(e) => setPinConfirm(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    />
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
+                        <Button variant="outline" onClick={() => setIsPinModalOpen(false)}>Cancel</Button>
+                        <Button
+                            disabled={pinValue.length < 6 || pinValue !== pinConfirm}
+                            onClick={() => {
+                                if (pinValue.length < 6) return addToast('error', 'PIN must be 6 digits');
+                                if (pinValue !== pinConfirm) return addToast('error', 'PINs do not match');
+                                setPinSet(true);
+                                setIsPinModalOpen(false);
+                                addToast('success', 'PIN set — employee can now log into the Hagzy Employee App');
+                            }}
+                        >
+                            Save PIN
+                        </Button>
                     </div>
                 </div>
             </Modal>

@@ -8,7 +8,8 @@ import {
     Plus,
     Trash2,
     Settings,
-    Building2
+    Building2,
+    MapPin
 } from 'lucide-react';
 import {
     Tabs,
@@ -53,6 +54,12 @@ export default function BranchSettingsPage({ params }: { params: Promise<{ id: s
     const [activeTab, setActiveTab] = useState('general');
     const { t, lang } = useTranslation();
 
+    // Task 10: Geofence state
+    const [geoLat, setGeoLat] = useState('30.0444');
+    const [geoLng, setGeoLng] = useState('31.2357');
+    const [geoRadius, setGeoRadius] = useState(200);
+    const [requireGps, setRequireGps] = useState(true);
+
     const renderGeneral = () => (
         <div className={styles.mainPanel}>
             <div className={styles.card}>
@@ -92,6 +99,64 @@ export default function BranchSettingsPage({ params }: { params: Promise<{ id: s
                     </div>
                     <Checkbox label={t('branchSettings.enableTax')} checked={true} />
                     <Checkbox label={t('branchSettings.printTaxId')} checked={true} />
+                </div>
+            </div>
+
+            {/* Task 10: Location & Geofencing */}
+            <div className={styles.card}>
+                <div className={styles.cardHeader}>
+                    <span className={styles.cardTitle}><MapPin size={16} style={{ marginRight: 6 }} /> Location & Geofencing</span>
+                </div>
+                <div className={styles.cardBody}>
+                    <div className={styles.row}>
+                        <div className={styles.col}>
+                            <Input
+                                label="Latitude"
+                                type="number"
+                                value={geoLat}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setGeoLat(e.target.value)}
+                                placeholder="e.g. 30.0444"
+                            />
+                        </div>
+                        <div className={styles.col}>
+                            <Input
+                                label="Longitude"
+                                type="number"
+                                value={geoLng}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setGeoLng(e.target.value)}
+                                placeholder="e.g. 31.2357"
+                            />
+                        </div>
+                    </div>
+                    <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginBottom: 'var(--space-3)' }}>
+                        Paste your branch address into Google Maps, right-click the pin, and copy the coordinates.
+                    </p>
+                    <div style={{ marginBottom: 'var(--space-3)' }}>
+                        <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', display: 'block', marginBottom: 'var(--space-2)' }}>
+                            Geofence Radius: <strong>{geoRadius}m</strong>
+                        </label>
+                        <input
+                            type="range"
+                            min={50} max={1000} step={50}
+                            value={geoRadius}
+                            onChange={(e) => setGeoRadius(Number(e.target.value))}
+                            style={{ width: '100%', accentColor: 'var(--color-primary-500)' }}
+                        />
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
+                            <span>50m</span><span>1000m</span>
+                        </div>
+                    </div>
+                    <div style={{ padding: 'var(--space-3)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', marginBottom: 'var(--space-3)' }}>
+                        Employees must be within <strong>{geoRadius}m</strong> of <strong>[{geoLat || '—'}, {geoLng || '—'}]</strong> to clock in via the mobile app.
+                    </div>
+                    <Checkbox
+                        label="Require GPS for clock-in"
+                        checked={requireGps}
+                        onChange={(val: boolean) => setRequireGps(val)}
+                    />
+                    <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: 'var(--space-2)' }}>
+                        If disabled, employees can clock in from anywhere (useful for remote or delivery roles).
+                    </p>
                 </div>
             </div>
         </div>

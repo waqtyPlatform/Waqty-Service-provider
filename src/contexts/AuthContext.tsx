@@ -12,12 +12,13 @@ export interface User {
     email: string;
     role: UserRole;
     businessType: BusinessType;
+    isNewWorkspace?: boolean;
 }
 
 interface AuthContextType {
     user: User | null;
     requestOTP: (identifier: string) => Promise<{ success: boolean, type: 'email' | 'phone' }>;
-    verifyOTP: (identifier: string, code: string) => Promise<{ success: boolean, user?: User, error?: string }>;
+    verifyOTP: (identifier: string, code: string, redirect?: boolean) => Promise<{ success: boolean, user?: User, error?: string }>;
     logout: () => void;
     loading: boolean;
 }
@@ -50,7 +51,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     useEffect(() => {
         if (!loading) {
-            if (!user && pathname !== '/login') {
+            const isPublicRoute = pathname === '/login' || pathname === '/onboarding' || pathname.startsWith('/invite/');
+            if (!user && !isPublicRoute) {
                 router.push('/login');
             } else if (user && pathname === '/login') {
                 router.push('/'); // Redirect to dashboard if logged in
@@ -70,7 +72,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { success: true, type } as const;
     };
 
-    const verifyOTP = async (identifier: string, code: string) => {
+    const verifyOTP = async (identifier: string, code: string, redirect = true) => {
         // Simulate network delay
         await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -84,7 +86,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         setUser(mockUser);
         localStorage.setItem('hagzy_user', JSON.stringify(mockUser));
-        router.push('/');
+        if (redirect) {
+            router.push('/');
+        }
         return { success: true, user: mockUser };
     };
 

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { Mail, Smartphone, ArrowRight, ShieldCheck, RefreshCw } from 'lucide-react';
 import { useToast } from '@/components/ui';
@@ -207,6 +208,15 @@ export default function LoginPage() {
                         ? t('auth.demoTipRequest')
                         : <span>{t('auth.demoTipVerify')} <bdi><strong>123456</strong></bdi>.</span>}
                 </div>
+
+                {step === 'request' && (
+                    <div style={{ textAlign: 'center', marginTop: 'var(--space-6)', fontSize: 'var(--text-sm)' }}>
+                        <span style={{ color: 'var(--text-secondary)' }}>Don't have a workspace?</span>{' '}
+                        <Link href="/onboarding" style={{ color: 'var(--color-primary-600)', fontWeight: 'var(--font-medium)', textDecoration: 'none' }}>
+                            Sign up here
+                        </Link>
+                    </div>
+                )}
             </div>
         </div>
     );
