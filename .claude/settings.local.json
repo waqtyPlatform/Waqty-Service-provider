@@ -1,9 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "mcp__Claude_Preview__preview_start",
-      "Skill(commit-commands:commit-push-pr)",
-      "Skill(commit-commands:commit-push-pr:*)"
+      "mcp__ba414327-b5f0-45c0-9dc7-42a23bc2e09d__deploy_to_vercel",
+      "Bash(vercel deploy)"
     ]
   },
   "enabledPlugins": {
