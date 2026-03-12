@@ -102,16 +102,11 @@ const getNavigation = (
             children: [
                 { label: employeesLabel, href: '/employees' },
                 { label: t('sidebar.departments'), href: '/employees/departments' },
+                { label: t('sidebar.schedule'), href: '/employees/schedule' },
                 { label: t('sidebar.attendance'), href: '/employees/attendance' },
-                { label: t('sidebar.commissions'), href: '/employees/commissions' },
                 { label: t('sidebar.payroll'), href: '/employees/payroll' },
-                { label: t('sidebar.positions'), href: '/employees/positions' },
+                { label: t('sidebar.roles'), href: '/employees/roles' },
                 { label: t('sidebar.transfers'), href: '/employees/transfers' },
-                { label: t('sidebar.branchMgmt'), href: '/employees/branch-management' },
-                { label: t('sidebar.fingerprints'), href: '/employees/fingerprints' },
-                { label: t('sidebar.attendMethods'), href: '/employees/attend-methods' },
-                { label: t('sidebar.attendSettings'), href: '/employees/attendance-settings' },
-                { label: t('sidebar.commSettings'), href: '/employees/commission-settings' },
             ],
         },
         {

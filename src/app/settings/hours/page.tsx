@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import SettingsTabs from '@/components/SettingsTabs';
 import { Button, useToast, Input } from '@/components/ui';
 import { Plus, Trash2 } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -67,10 +66,7 @@ export default function WorkingHoursPage() {
                 </div>
                 <Button onClick={handleSave}>{t('settings.saveChanges')}</Button>
             </div>
-
-            <SettingsTabs />
-
-            <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-xl)', padding: 'var(--space-5)' }}>
+<div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-xl)', padding: 'var(--space-5)' }}>
                 <h2 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-4)' }}>{t('settings.hours.standardHours')}</h2>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>

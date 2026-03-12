@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import SettingsTabs from '@/components/SettingsTabs';
 import { Switch, Select, Button } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -19,8 +18,7 @@ export default function AppearanceSettingsPage() {
     const { t } = useTranslation();
     return (
         <div style={cs.page}>
-            <SettingsTabs />
-            <div style={cs.card}>
+<div style={cs.card}>
                 <div style={cs.cardTitle}>{t('settings.appearance.title')}</div>
                 <div style={cs.cardDesc}>{t('settings.appearance.desc')}</div>
 

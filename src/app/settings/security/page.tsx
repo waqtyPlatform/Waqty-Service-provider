@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import SettingsTabs from '@/components/SettingsTabs';
 import { Switch, Input, Button } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -16,8 +15,7 @@ export default function SecuritySettingsPage() {
     const { t } = useTranslation();
     return (
         <div style={cs.page}>
-            <SettingsTabs />
-            <div style={cs.card}>
+<div style={cs.card}>
                 <div style={cs.cardTitle}>{t('settings.security.title')}</div>
                 <div style={cs.cardDesc}>{t('settings.security.desc')}</div>
 

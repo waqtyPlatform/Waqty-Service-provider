@@ -11,6 +11,7 @@ import {
 import BookingsTabs from '../BookingsTabs';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useAuth } from '@/contexts/AuthContext';
+import { isEmployeeOnShift, isEmployeeDuringBreak } from '@/lib/shiftData';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -349,12 +350,21 @@ function ServiceBookingCard({
                         onChange={(e) => onUpdate(item.id, 'employee', employees.find(em => em.id === e.target.value) ?? employees[0])}>
                         {employees.map((em) => {
                             const busy = EMP_BUSY[em.id]?.[item.date]?.includes(item.time);
-                            return <option key={em.id} value={em.id}>{busy ? '⚠ ' : '✓ '}{em.name} — {em.role}</option>;
+                            const offShift = !isEmployeeOnShift(em.id, em.role, item.date);
+                            const onBreak = isEmployeeDuringBreak(em.id, em.role, item.date, item.time);
+                            const prefix = offShift ? '⛔ ' : onBreak ? '☕ ' : busy ? '⚠ ' : '✓ ';
+                            return <option key={em.id} value={em.id}>{prefix}{em.name} — {em.role}</option>;
                         })}
                     </select>
                     <span style={{ ...s.hint, display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
                         <span style={{ ...s.dot, background: item.employee.color }} />
                         {item.employee.role}
+                        {!isEmployeeOnShift(item.employee.id, item.employee.role, item.date) && (
+                            <span style={{ color: 'var(--color-warning-600)', fontWeight: 600 }}> — Off-shift</span>
+                        )}
+                        {isEmployeeDuringBreak(item.employee.id, item.employee.role, item.date, item.time) && (
+                            <span style={{ color: 'var(--color-warning-600)', fontWeight: 600 }}> — On break</span>
+                        )}
                     </span>
                 </div>
             </div>

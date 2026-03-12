@@ -16,7 +16,6 @@ import {
     Select,
     useToast
 } from '@/components/ui';
-import SettingsTabs from '@/components/SettingsTabs';
 import styles from './page.module.css';
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -47,10 +46,7 @@ export default function PaymentMethodsPage() {
                     <Button onClick={() => setIsAddOpen(true)}><Plus size={16} /> {t('settings.paymentMethods.addMethod')}</Button>
                 </div>
             </div>
-
-            <SettingsTabs />
-
-            <div className={styles.card}>
+<div className={styles.card}>
                 <div className={styles.cardHeader}>
                     <span className={styles.cardTitle}><CreditCard size={18} /> {t('settings.paymentMethods.listTitle')}</span>
                 </div>

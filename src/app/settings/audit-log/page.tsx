@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { Search, Download } from 'lucide-react';
-import SettingsTabs from '@/components/SettingsTabs';
 import { useTranslation } from '@/hooks/useTranslation';
 
 const logs = [
@@ -51,8 +50,7 @@ export default function AuditLogPage() {
 
     return (
         <div style={s.page}>
-            <SettingsTabs />
-            <div style={s.toolbar}>
+<div style={s.toolbar}>
                 <div style={s.searchBox as React.CSSProperties}><Search size={16} style={{ ...s.searchIcon as React.CSSProperties, left: lang === 'ar' ? 'auto' : 12, right: lang === 'ar' ? 12 : 'auto' }} /><input style={{ ...s.searchInput, paddingLeft: lang === 'ar' ? 16 : 40, paddingRight: lang === 'ar' ? 40 : 16 }} placeholder={t('settings.audit.search')} value={search} onChange={e => setSearch(e.target.value)} /></div>
                 <button style={s.exportBtn}><Download size={16} /> {t('settings.audit.export')}</button>
             </div>

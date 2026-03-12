@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { Monitor, Smartphone, Printer, Wifi, WifiOff } from 'lucide-react';
-import SettingsTabs from '@/components/SettingsTabs';
 import { useTranslation } from '@/hooks/useTranslation';
 
 const devices = [
@@ -47,8 +46,7 @@ export default function DevicesPage() {
 
     return (
         <div style={s.page}>
-            <SettingsTabs />
-            <table style={s.table}>
+<table style={s.table}>
                 <thead>
                     <tr>
                         <th style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('settings.devices.colDevice')}</th>
