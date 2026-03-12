@@ -10,40 +10,40 @@ import { useTranslation } from '@/hooks/useTranslation';
 // Mock client usage data per promo code
 const clientUsageData: Record<number, Array<{ name: string; phone: string; usedAt: string; orderAmount: number; discount: number }>> = {
     1: [
-        { name: 'Fatima Ali', phone: '+201012345678', usedAt: '2026-02-15 10:00', orderAmount: 450, discount: 50 },
-        { name: 'Noura Ahmed', phone: '+201087654321', usedAt: '2026-02-14 14:30', orderAmount: 380, discount: 50 },
-        { name: 'Huda Saleh', phone: '+201055667788', usedAt: '2026-02-12 11:00', orderAmount: 600, discount: 50 },
-        { name: 'Rania Khalil', phone: '+201099887766', usedAt: '2026-02-10 16:20', orderAmount: 280, discount: 50 },
-        { name: 'Sara Mahmoud', phone: '+201011223344', usedAt: '2026-02-08 09:45', orderAmount: 520, discount: 50 },
+        { name: 'Fatima Ali', phone: '+201012345678', usedAt: '2026-03-26 10:00', orderAmount: 450, discount: 50 },
+        { name: 'Noura Ahmed', phone: '+201087654321', usedAt: '2026-03-18 14:30', orderAmount: 380, discount: 50 },
+        { name: 'Huda Saleh', phone: '+201055667788', usedAt: '2026-03-19 11:00', orderAmount: 600, discount: 50 },
+        { name: 'Rania Khalil', phone: '+201099887766', usedAt: '2026-03-14 16:20', orderAmount: 280, discount: 50 },
+        { name: 'Sara Mahmoud', phone: '+201011223344', usedAt: '2026-03-26 09:45', orderAmount: 520, discount: 50 },
     ],
     2: [
-        { name: 'Layla Hassan', phone: '+201077889900', usedAt: '2026-02-18 11:30', orderAmount: 450, discount: 113 },
-        { name: 'Mona Tarek', phone: '+201044556677', usedAt: '2026-02-17 15:00', orderAmount: 380, discount: 95 },
-        { name: 'Hana Ali', phone: '+201033445566', usedAt: '2026-02-16 10:00', orderAmount: 520, discount: 130 },
+        { name: 'Layla Hassan', phone: '+201077889900', usedAt: '2026-03-19 11:30', orderAmount: 450, discount: 113 },
+        { name: 'Mona Tarek', phone: '+201044556677', usedAt: '2026-03-24 15:00', orderAmount: 380, discount: 95 },
+        { name: 'Hana Ali', phone: '+201033445566', usedAt: '2026-03-20 10:00', orderAmount: 520, discount: 130 },
     ],
     3: [
-        { name: 'Fatima Ali', phone: '+201012345678', usedAt: '2026-03-01 09:00', orderAmount: 200, discount: 20 },
-        { name: 'Noura Ahmed', phone: '+201087654321', usedAt: '2026-03-02 14:00', orderAmount: 350, discount: 35 },
+        { name: 'Fatima Ali', phone: '+201012345678', usedAt: '2026-03-13 09:00', orderAmount: 200, discount: 20 },
+        { name: 'Noura Ahmed', phone: '+201087654321', usedAt: '2026-03-13 14:00', orderAmount: 350, discount: 35 },
     ],
     4: [
-        { name: 'Huda Saleh', phone: '+201055667788', usedAt: '2026-02-07 10:00', orderAmount: 300, discount: 120 },
-        { name: 'Rania Khalil', phone: '+201099887766', usedAt: '2026-02-07 11:00', orderAmount: 400, discount: 160 },
-        { name: 'Sara Mahmoud', phone: '+201011223344', usedAt: '2026-02-07 12:30', orderAmount: 250, discount: 100 },
-        { name: 'Layla Hassan', phone: '+201077889900', usedAt: '2026-02-07 14:00', orderAmount: 500, discount: 200 },
+        { name: 'Huda Saleh', phone: '+201055667788', usedAt: '2026-03-22 10:00', orderAmount: 300, discount: 120 },
+        { name: 'Rania Khalil', phone: '+201099887766', usedAt: '2026-03-22 11:00', orderAmount: 400, discount: 160 },
+        { name: 'Sara Mahmoud', phone: '+201011223344', usedAt: '2026-03-14 12:30', orderAmount: 250, discount: 100 },
+        { name: 'Layla Hassan', phone: '+201077889900', usedAt: '2026-03-17 14:00', orderAmount: 500, discount: 200 },
     ],
     5: [
-        { name: 'Mona Tarek', phone: '+201044556677', usedAt: '2026-03-10 16:00', orderAmount: 300, discount: 60 },
-        { name: 'Hana Ali', phone: '+201033445566', usedAt: '2026-03-15 10:00', orderAmount: 200, discount: 40 },
+        { name: 'Mona Tarek', phone: '+201044556677', usedAt: '2026-03-24 16:00', orderAmount: 300, discount: 60 },
+        { name: 'Hana Ali', phone: '+201033445566', usedAt: '2026-03-13 10:00', orderAmount: 200, discount: 40 },
     ],
 };
 
 const initialCodes = [
-    { id: 1, code: 'WELCOME50', discount: 50, type: 'fixed', uses: 67, limit: 200, minOrder: 200, expires: '2026-12-31', status: 'active', createdAt: '2026-01-01', description: 'Welcome offer for new clients on their first booking.' },
-    { id: 2, code: 'EID25', discount: 25, type: 'percentage', uses: 34, limit: 50, minOrder: 300, expires: '2026-02-20', status: 'active', createdAt: '2026-02-01', description: 'Special Eid discount for all services above minimum order.' },
-    { id: 3, code: 'VIP10', discount: 10, type: 'percentage', uses: 120, limit: 500, minOrder: 0, expires: '2026-06-30', status: 'active', createdAt: '2026-01-15', description: 'Exclusive VIP discount. No minimum order required.' },
-    { id: 4, code: 'FRIDAY40', discount: 40, type: 'percentage', uses: 30, limit: 30, minOrder: 250, expires: '2026-02-07', status: 'exhausted', createdAt: '2026-02-06', description: 'Flash Friday deal — 40% off all services. Limited to 30 uses.' },
-    { id: 5, code: 'REFER20', discount: 20, type: 'percentage', uses: 15, limit: 100, minOrder: 150, expires: '2026-04-30', status: 'active', createdAt: '2026-01-20', description: 'Referral program discount. Share with friends!' },
-    { id: 6, code: 'SUMMER100', discount: 100, type: 'fixed', uses: 0, limit: 50, minOrder: 500, expires: '2026-06-01', status: 'scheduled', createdAt: '2026-02-15', description: 'Summer launch promo. 100 EGP off orders above 500 EGP.' },
+    { id: 1, code: 'WELCOME50', discount: 50, type: 'fixed', uses: 67, limit: 200, minOrder: 200, expires: '2026-03-16', status: 'active', createdAt: '2026-03-24', description: 'Welcome offer for new clients on their first booking.' },
+    { id: 2, code: 'EID25', discount: 25, type: 'percentage', uses: 34, limit: 50, minOrder: 300, expires: '2026-03-24', status: 'active', createdAt: '2026-03-25', description: 'Special Eid discount for all services above minimum order.' },
+    { id: 3, code: 'VIP10', discount: 10, type: 'percentage', uses: 120, limit: 500, minOrder: 0, expires: '2026-03-13', status: 'active', createdAt: '2026-03-15', description: 'Exclusive VIP discount. No minimum order required.' },
+    { id: 4, code: 'FRIDAY40', discount: 40, type: 'percentage', uses: 30, limit: 30, minOrder: 250, expires: '2026-03-23', status: 'exhausted', createdAt: '2026-03-17', description: 'Flash Friday deal — 40% off all services. Limited to 30 uses.' },
+    { id: 5, code: 'REFER20', discount: 20, type: 'percentage', uses: 15, limit: 100, minOrder: 150, expires: '2026-03-23', status: 'active', createdAt: '2026-03-19', description: 'Referral program discount. Share with friends!' },
+    { id: 6, code: 'SUMMER100', discount: 100, type: 'fixed', uses: 0, limit: 50, minOrder: 500, expires: '2026-03-22', status: 'scheduled', createdAt: '2026-03-15', description: 'Summer launch promo. 100 EGP off orders above 500 EGP.' },
 ];
 
 const statusBadge: Record<string, 'success' | 'info' | 'error' | 'neutral'> = { active: 'success', scheduled: 'info', exhausted: 'error' };

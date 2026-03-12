@@ -6,10 +6,10 @@ import { Search, ChevronRight } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 
 const entries = [
-    { id: 'PC-001', date: '2026-02-17', category: 'Cleaning Supplies', description: 'Towels & Disinfectant', vendor: 'CleanCo', amount: 180 },
-    { id: 'PC-002', date: '2026-02-17', category: 'Office Supplies', description: 'Paper, Ink Cartridge', vendor: 'OfficeMax', amount: 95 },
-    { id: 'PC-004', date: '2026-02-16', category: 'Maintenance', description: 'AC Filter Replacement', vendor: 'CoolTech', amount: 350 },
-    { id: 'PC-005', date: '2026-02-16', category: 'Beauty Products', description: 'Hair Color Tubes x10', vendor: "L'Oreal Pro", amount: 450 },
+    { id: 'PC-001', date: '2026-03-20', category: 'Cleaning Supplies', description: 'Towels & Disinfectant', vendor: 'CleanCo', amount: 180 },
+    { id: 'PC-002', date: '2026-03-26', category: 'Office Supplies', description: 'Paper, Ink Cartridge', vendor: 'OfficeMax', amount: 95 },
+    { id: 'PC-004', date: '2026-03-13', category: 'Maintenance', description: 'AC Filter Replacement', vendor: 'CoolTech', amount: 350 },
+    { id: 'PC-005', date: '2026-03-22', category: 'Beauty Products', description: 'Hair Color Tubes x10', vendor: "L'Oreal Pro", amount: 450 },
 ];
 
 const s: Record<string, React.CSSProperties> = {

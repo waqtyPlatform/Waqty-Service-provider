@@ -20,13 +20,13 @@ const tabs = [
 ];
 
 const data = [
-    { date: '2026-02-17', revenue: 7850, cash: 5300, card: 2100, other: 450, shifts: 2, closedShifts: 1, status: 'open' },
-    { date: '2026-02-16', revenue: 7150, cash: 4600, card: 2200, other: 350, shifts: 2, closedShifts: 2, status: 'closed' },
-    { date: '2026-02-15', revenue: 5500, cash: 3280, card: 1800, other: 420, shifts: 2, closedShifts: 2, status: 'closed' },
-    { date: '2026-02-14', revenue: 6200, cash: 4100, card: 1700, other: 400, shifts: 2, closedShifts: 2, status: 'closed' },
-    { date: '2026-02-13', revenue: 4800, cash: 3200, card: 1300, other: 300, shifts: 2, closedShifts: 2, status: 'closed' },
-    { date: '2026-02-12', revenue: 8100, cash: 5500, card: 2200, other: 400, shifts: 2, closedShifts: 2, status: 'closed' },
-    { date: '2026-02-11', revenue: 3200, cash: 2100, card: 900, other: 200, shifts: 1, closedShifts: 1, status: 'closed' },
+    { date: '2026-03-25', revenue: 7850, cash: 5300, card: 2100, other: 450, shifts: 2, closedShifts: 1, status: 'open' },
+    { date: '2026-03-26', revenue: 7150, cash: 4600, card: 2200, other: 350, shifts: 2, closedShifts: 2, status: 'closed' },
+    { date: '2026-03-18', revenue: 5500, cash: 3280, card: 1800, other: 420, shifts: 2, closedShifts: 2, status: 'closed' },
+    { date: '2026-03-20', revenue: 6200, cash: 4100, card: 1700, other: 400, shifts: 2, closedShifts: 2, status: 'closed' },
+    { date: '2026-03-12', revenue: 4800, cash: 3200, card: 1300, other: 300, shifts: 2, closedShifts: 2, status: 'closed' },
+    { date: '2026-03-26', revenue: 8100, cash: 5500, card: 2200, other: 400, shifts: 2, closedShifts: 2, status: 'closed' },
+    { date: '2026-03-21', revenue: 3200, cash: 2100, card: 900, other: 200, shifts: 1, closedShifts: 1, status: 'closed' },
 ];
 
 const s: Record<string, React.CSSProperties> = {

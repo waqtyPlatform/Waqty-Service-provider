@@ -10,46 +10,46 @@ import { useTranslation } from '@/hooks/useTranslation';
 // Mock recipient data per notification
 const recipientData: Record<number, Array<{ name: string; phone: string; opened: boolean; openedAt?: string }>> = {
     1: [
-        { name: 'Fatima Ali', phone: '+201012345678', opened: true, openedAt: '2026-02-10 10:15' },
-        { name: 'Noura Ahmed', phone: '+201087654321', opened: true, openedAt: '2026-02-10 10:22' },
-        { name: 'Huda Saleh', phone: '+201055667788', opened: true, openedAt: '2026-02-10 11:05' },
+        { name: 'Fatima Ali', phone: '+201012345678', opened: true, openedAt: '2026-03-25 10:15' },
+        { name: 'Noura Ahmed', phone: '+201087654321', opened: true, openedAt: '2026-03-15 10:22' },
+        { name: 'Huda Saleh', phone: '+201055667788', opened: true, openedAt: '2026-03-14 11:05' },
         { name: 'Rania Khalil', phone: '+201099887766', opened: false },
-        { name: 'Hana Ali', phone: '+201033445566', opened: true, openedAt: '2026-02-10 12:30' },
+        { name: 'Hana Ali', phone: '+201033445566', opened: true, openedAt: '2026-03-14 12:30' },
         { name: 'Layla Hassan', phone: '+201077889900', opened: false },
-        { name: 'Sara Mahmoud', phone: '+201011223344', opened: true, openedAt: '2026-02-10 14:00' },
+        { name: 'Sara Mahmoud', phone: '+201011223344', opened: true, openedAt: '2026-03-16 14:00' },
         { name: 'Mona Tarek', phone: '+201044556677', opened: false },
     ],
     2: [
-        { name: 'Fatima Ali', phone: '+201012345678', opened: true, openedAt: '2026-02-17 09:05' },
-        { name: 'Noura Ahmed', phone: '+201087654321', opened: true, openedAt: '2026-02-17 09:10' },
-        { name: 'Huda Saleh', phone: '+201055667788', opened: true, openedAt: '2026-02-17 09:30' },
+        { name: 'Fatima Ali', phone: '+201012345678', opened: true, openedAt: '2026-03-19 09:05' },
+        { name: 'Noura Ahmed', phone: '+201087654321', opened: true, openedAt: '2026-03-17 09:10' },
+        { name: 'Huda Saleh', phone: '+201055667788', opened: true, openedAt: '2026-03-16 09:30' },
         { name: 'Rania Khalil', phone: '+201099887766', opened: false },
     ],
     4: [
-        { name: 'Layla Hassan', phone: '+201077889900', opened: true, openedAt: '2026-02-05 10:00' },
+        { name: 'Layla Hassan', phone: '+201077889900', opened: true, openedAt: '2026-03-21 10:00' },
         { name: 'Sara Mahmoud', phone: '+201011223344', opened: false },
-        { name: 'Mona Tarek', phone: '+201044556677', opened: true, openedAt: '2026-02-05 15:15' },
+        { name: 'Mona Tarek', phone: '+201044556677', opened: true, openedAt: '2026-03-20 15:15' },
         { name: 'Hana Ali', phone: '+201033445566', opened: false },
     ],
     5: [
-        { name: 'Fatima Ali', phone: '+201012345678', opened: true, openedAt: '2026-02-16 14:10' },
-        { name: 'Noura Ahmed', phone: '+201087654321', opened: true, openedAt: '2026-02-16 14:45' },
+        { name: 'Fatima Ali', phone: '+201012345678', opened: true, openedAt: '2026-03-19 14:10' },
+        { name: 'Noura Ahmed', phone: '+201087654321', opened: true, openedAt: '2026-03-23 14:45' },
         { name: 'Huda Saleh', phone: '+201055667788', opened: false },
     ],
     6: [
-        { name: 'Rania Khalil', phone: '+201099887766', opened: true, openedAt: '2026-02-17 08:00' },
-        { name: 'Hana Ali', phone: '+201033445566', opened: true, openedAt: '2026-02-17 09:00' },
-        { name: 'Layla Hassan', phone: '+201077889900', opened: true, openedAt: '2026-02-17 10:30' },
+        { name: 'Rania Khalil', phone: '+201099887766', opened: true, openedAt: '2026-03-17 08:00' },
+        { name: 'Hana Ali', phone: '+201033445566', opened: true, openedAt: '2026-03-25 09:00' },
+        { name: 'Layla Hassan', phone: '+201077889900', opened: true, openedAt: '2026-03-23 10:30' },
     ],
 };
 
 const initialNotifications = [
-    { id: 1, title: 'Eid Special Offer!', channel: 'SMS', audience: 'All Clients', sent: 142, opened: 98, date: '2026-02-10', status: 'sent', message: 'Celebrate Eid with us! Get 25% off on all services from Feb 10-20. Book now on our app or call us. Limited spots available! ✨🎉' },
-    { id: 2, title: 'Your appointment is tomorrow', channel: 'Push', audience: 'Booked Clients', sent: 28, opened: 25, date: '2026-02-17', status: 'sent', message: 'Hi {name}, just a friendly reminder that your {service} appointment is scheduled for tomorrow at {time}. See you soon! 💇‍♀️' },
-    { id: 3, title: 'Spring Sale – 30% Off!', channel: 'Email', audience: 'VIP Group', sent: 0, opened: 0, date: '2026-03-01', status: 'scheduled', message: 'Dear {name}, as a VIP client, you get exclusive early access to our Spring Sale! Enjoy 30% off on all premium services. Valid March 1-15.' },
-    { id: 4, title: 'We miss you! Come back for 20% off', channel: 'WhatsApp', audience: 'Inactive > 30 days', sent: 38, opened: 15, date: '2026-02-05', status: 'sent', message: 'Hi {name}, it\'s been a while! We\'d love to see you again. Here\'s 20% off your next visit as a welcome back gift. Book now! 💕' },
-    { id: 5, title: 'Rate your experience', channel: 'SMS', audience: 'Today\'s Completed', sent: 12, opened: 8, date: '2026-02-16', status: 'sent', message: 'Thank you for visiting us today! We\'d love your feedback. Rate your experience: ⭐⭐⭐⭐⭐ Reply with 1-5.' },
-    { id: 6, title: 'Happy Birthday! Gift inside', channel: 'Push', audience: 'Birthday Today', sent: 3, opened: 3, date: '2026-02-17', status: 'sent', message: 'Happy Birthday {name}! 🎂🎁 As our gift to you, enjoy a FREE express facial on your next visit. Valid for 7 days.' },
+    { id: 1, title: 'Eid Special Offer!', channel: 'SMS', audience: 'All Clients', sent: 142, opened: 98, date: '2026-03-26', status: 'sent', message: 'Celebrate Eid with us! Get 25% off on all services from Feb 10-20. Book now on our app or call us. Limited spots available! ✨🎉' },
+    { id: 2, title: 'Your appointment is tomorrow', channel: 'Push', audience: 'Booked Clients', sent: 28, opened: 25, date: '2026-03-24', status: 'sent', message: 'Hi {name}, just a friendly reminder that your {service} appointment is scheduled for tomorrow at {time}. See you soon! 💇‍♀️' },
+    { id: 3, title: 'Spring Sale – 30% Off!', channel: 'Email', audience: 'VIP Group', sent: 0, opened: 0, date: '2026-03-26', status: 'scheduled', message: 'Dear {name}, as a VIP client, you get exclusive early access to our Spring Sale! Enjoy 30% off on all premium services. Valid March 1-15.' },
+    { id: 4, title: 'We miss you! Come back for 20% off', channel: 'WhatsApp', audience: 'Inactive > 30 days', sent: 38, opened: 15, date: '2026-03-21', status: 'sent', message: 'Hi {name}, it\'s been a while! We\'d love to see you again. Here\'s 20% off your next visit as a welcome back gift. Book now! 💕' },
+    { id: 5, title: 'Rate your experience', channel: 'SMS', audience: 'Today\'s Completed', sent: 12, opened: 8, date: '2026-03-23', status: 'sent', message: 'Thank you for visiting us today! We\'d love your feedback. Rate your experience: ⭐⭐⭐⭐⭐ Reply with 1-5.' },
+    { id: 6, title: 'Happy Birthday! Gift inside', channel: 'Push', audience: 'Birthday Today', sent: 3, opened: 3, date: '2026-03-23', status: 'sent', message: 'Happy Birthday {name}! 🎂🎁 As our gift to you, enjoy a FREE express facial on your next visit. Valid for 7 days.' },
 ];
 
 const channelIcons: Record<string, React.ReactNode> = {

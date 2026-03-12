@@ -6,14 +6,14 @@ import { Search, AlertCircle, Phone } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 
 const data = [
-    { id: 1, client: 'Fatima Ali', phone: '+20 123 456 789', lastService: 'Hair Coloring', lastEmployee: 'Sara Ahmed', lastDate: '2026-02-17', daysSince: 0, followUp: false },
-    { id: 2, client: 'Rania Khalil', phone: '+20 111 222 333', lastService: 'Keratin Treatment', lastEmployee: 'Sara Ahmed', lastDate: '2026-02-16', daysSince: 1, followUp: false },
-    { id: 3, client: 'Noura Ahmed', phone: '+20 100 200 300', lastService: 'Swedish Massage', lastEmployee: 'Layla Hassan', lastDate: '2026-02-10', daysSince: 7, followUp: false },
-    { id: 4, client: 'Huda Saleh', phone: '+20 155 666 777', lastService: 'HydraFacial', lastEmployee: 'Nora Ali', lastDate: '2026-02-03', daysSince: 14, followUp: true },
-    { id: 5, client: 'Maryam Ibrahim', phone: '+20 122 333 444', lastService: 'Classic Facial', lastEmployee: 'Nora Ali', lastDate: '2026-01-20', daysSince: 28, followUp: true },
-    { id: 6, client: 'Sama Latif', phone: '+20 133 444 555', lastService: 'Gel Manicure', lastEmployee: 'Hana Youssef', lastDate: '2026-01-10', daysSince: 38, followUp: true },
-    { id: 7, client: 'Dana Faris', phone: '+20 144 555 666', lastService: 'Deep Tissue', lastEmployee: 'Reem Mohamed', lastDate: '2025-12-25', daysSince: 54, followUp: true },
-    { id: 8, client: 'Lina Qasim', phone: '+20 166 777 888', lastService: 'Pedicure', lastEmployee: 'Hana Youssef', lastDate: '2025-12-01', daysSince: 78, followUp: true },
+    { id: 1, client: 'Fatima Ali', phone: '+20 123 456 789', lastService: 'Hair Coloring', lastEmployee: 'Sara Ahmed', lastDate: '2026-03-16', daysSince: 0, followUp: false },
+    { id: 2, client: 'Rania Khalil', phone: '+20 111 222 333', lastService: 'Keratin Treatment', lastEmployee: 'Sara Ahmed', lastDate: '2026-03-23', daysSince: 1, followUp: false },
+    { id: 3, client: 'Noura Ahmed', phone: '+20 100 200 300', lastService: 'Swedish Massage', lastEmployee: 'Layla Hassan', lastDate: '2026-03-24', daysSince: 7, followUp: false },
+    { id: 4, client: 'Huda Saleh', phone: '+20 155 666 777', lastService: 'HydraFacial', lastEmployee: 'Nora Ali', lastDate: '2026-03-13', daysSince: 14, followUp: true },
+    { id: 5, client: 'Maryam Ibrahim', phone: '+20 122 333 444', lastService: 'Classic Facial', lastEmployee: 'Nora Ali', lastDate: '2026-03-23', daysSince: 28, followUp: true },
+    { id: 6, client: 'Sama Latif', phone: '+20 133 444 555', lastService: 'Gel Manicure', lastEmployee: 'Hana Youssef', lastDate: '2026-03-18', daysSince: 38, followUp: true },
+    { id: 7, client: 'Dana Faris', phone: '+20 144 555 666', lastService: 'Deep Tissue', lastEmployee: 'Reem Mohamed', lastDate: '2026-03-26', daysSince: 54, followUp: true },
+    { id: 8, client: 'Lina Qasim', phone: '+20 166 777 888', lastService: 'Pedicure', lastEmployee: 'Hana Youssef', lastDate: '2026-03-19', daysSince: 78, followUp: true },
 ];
 
 const s: Record<string, React.CSSProperties> = {

@@ -46,13 +46,13 @@ interface AggregatedExtraction extends CommissionData {
 }
 
 const allCommissionsData: CommissionData[] = [
-    { id: '1', date: '2026-02-17', employee: 'Sara Ahmed', service: 'Hair Coloring', segment: 'Hair Care', count: 12, revenue: 4800, rate: 10, commission: 480 },
-    { id: '2', date: '2026-02-17', employee: 'Sara Ahmed', service: 'Keratin Treatment', segment: 'Hair Care', count: 5, revenue: 4000, rate: 12, commission: 480 },
-    { id: '3', date: '2026-02-16', employee: 'Nora Ali', service: 'HydraFacial', segment: 'Skincare', count: 8, revenue: 4160, rate: 10, commission: 416 },
-    { id: '4', date: '2026-02-16', employee: 'Nora Ali', service: 'Classic Facial', segment: 'Skincare', count: 10, revenue: 2800, rate: 8, commission: 224 },
-    { id: '5', date: '2026-02-15', employee: 'Layla Hassan', service: 'Swedish Massage', segment: 'Spa', count: 10, revenue: 3500, rate: 10, commission: 350 },
-    { id: '6', date: '2026-02-14', employee: 'Hana Youssef', service: 'Gel Manicure', segment: 'Nail Care', count: 18, revenue: 2700, rate: 8, commission: 216 },
-    { id: '7', date: '2026-02-10', employee: 'Reem Mohamed', service: 'Deep Tissue', segment: 'Spa', count: 8, revenue: 2400, rate: 12, commission: 288 },
+    { id: '1', date: '2026-03-16', employee: 'Sara Ahmed', service: 'Hair Coloring', segment: 'Hair Care', count: 12, revenue: 4800, rate: 10, commission: 480 },
+    { id: '2', date: '2026-03-23', employee: 'Sara Ahmed', service: 'Keratin Treatment', segment: 'Hair Care', count: 5, revenue: 4000, rate: 12, commission: 480 },
+    { id: '3', date: '2026-03-14', employee: 'Nora Ali', service: 'HydraFacial', segment: 'Skincare', count: 8, revenue: 4160, rate: 10, commission: 416 },
+    { id: '4', date: '2026-03-24', employee: 'Nora Ali', service: 'Classic Facial', segment: 'Skincare', count: 10, revenue: 2800, rate: 8, commission: 224 },
+    { id: '5', date: '2026-03-25', employee: 'Layla Hassan', service: 'Swedish Massage', segment: 'Spa', count: 10, revenue: 3500, rate: 10, commission: 350 },
+    { id: '6', date: '2026-03-22', employee: 'Hana Youssef', service: 'Gel Manicure', segment: 'Nail Care', count: 18, revenue: 2700, rate: 8, commission: 216 },
+    { id: '7', date: '2026-03-14', employee: 'Reem Mohamed', service: 'Deep Tissue', segment: 'Spa', count: 8, revenue: 2400, rate: 12, commission: 288 },
 ];
 
 const targetDefinitions: Record<string, { targetRev: number, targetBonus: number }> = {

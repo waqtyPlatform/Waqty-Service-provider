@@ -20,14 +20,14 @@ import styles from './customers.module.css';
 import { useTranslation } from '@/hooks/useTranslation';
 
 const clients = [
-    { id: 'C001', name: 'Fatima Al-Rashid', phone: '+20 123 456 789', email: 'fatima@email.com', visits: 24, spend: 8400, lastVisit: 'Feb 15, 2026', vip: true, hasAllergy: true, group: 'VIP', status: 'active' },
-    { id: 'C002', name: 'Aisha Mohammed', phone: '+20 111 222 333', email: 'aisha@email.com', visits: 19, spend: 6250, lastVisit: 'Feb 12, 2026', vip: true, hasAllergy: false, group: 'VIP', status: 'active' },
-    { id: 'C003', name: 'Maryam Ibrahim', phone: '+20 100 200 300', email: 'maryam@email.com', visits: 17, spend: 5800, lastVisit: 'Feb 10, 2026', vip: false, hasAllergy: false, group: 'Regular', status: 'active' },
-    { id: 'C004', name: 'Huda Saleh', phone: '+20 155 666 777', email: 'huda@email.com', visits: 15, spend: 4900, lastVisit: 'Feb 8, 2026', vip: false, hasAllergy: true, group: 'Regular', status: 'active' },
-    { id: 'C005', name: 'Noura Ahmed', phone: '+20 199 888 999', email: 'noura@email.com', visits: 12, spend: 3600, lastVisit: 'Feb 5, 2026', vip: false, hasAllergy: false, group: 'Regular', status: 'active' },
-    { id: 'C006', name: 'Rania Khalil', phone: '+20 133 444 555', email: 'rania@email.com', visits: 8, spend: 2400, lastVisit: 'Jan 28, 2026', vip: false, hasAllergy: false, group: 'New', status: 'active' },
-    { id: 'C007', name: 'Dana Faris', phone: '+20 177 333 222', email: 'dana@email.com', visits: 6, spend: 1800, lastVisit: 'Jan 20, 2026', vip: false, hasAllergy: false, group: 'New', status: 'inactive' },
-    { id: 'C008', name: 'Lina Tariq', phone: '+20 122 555 666', email: 'lina@email.com', visits: 3, spend: 750, lastVisit: 'Jan 10, 2026', vip: false, hasAllergy: false, group: 'New', status: 'inactive' },
+    { id: 'C001', name: 'Fatima Al-Rashid', phone: '+20 123 456 789', email: 'fatima@email.com', visits: 24, spend: 8400, lastVisit: 'Mar 23, 2026', vip: true, hasAllergy: true, group: 'VIP', status: 'active' },
+    { id: 'C002', name: 'Aisha Mohammed', phone: '+20 111 222 333', email: 'aisha@email.com', visits: 19, spend: 6250, lastVisit: 'Mar 25, 2026', vip: true, hasAllergy: false, group: 'VIP', status: 'active' },
+    { id: 'C003', name: 'Maryam Ibrahim', phone: '+20 100 200 300', email: 'maryam@email.com', visits: 17, spend: 5800, lastVisit: 'Mar 18, 2026', vip: false, hasAllergy: false, group: 'Regular', status: 'active' },
+    { id: 'C004', name: 'Huda Saleh', phone: '+20 155 666 777', email: 'huda@email.com', visits: 15, spend: 4900, lastVisit: 'Mar 22, 2026', vip: false, hasAllergy: true, group: 'Regular', status: 'active' },
+    { id: 'C005', name: 'Noura Ahmed', phone: '+20 199 888 999', email: 'noura@email.com', visits: 12, spend: 3600, lastVisit: 'Mar 26, 2026', vip: false, hasAllergy: false, group: 'Regular', status: 'active' },
+    { id: 'C006', name: 'Rania Khalil', phone: '+20 133 444 555', email: 'rania@email.com', visits: 8, spend: 2400, lastVisit: 'Mar 19, 2026', vip: false, hasAllergy: false, group: 'New', status: 'active' },
+    { id: 'C007', name: 'Dana Faris', phone: '+20 177 333 222', email: 'dana@email.com', visits: 6, spend: 1800, lastVisit: 'Mar 14, 2026', vip: false, hasAllergy: false, group: 'New', status: 'inactive' },
+    { id: 'C008', name: 'Lina Tariq', phone: '+20 122 555 666', email: 'lina@email.com', visits: 3, spend: 750, lastVisit: 'Mar 16, 2026', vip: false, hasAllergy: false, group: 'New', status: 'inactive' },
 ];
 
 export default function CustomersPage() {

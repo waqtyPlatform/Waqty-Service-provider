@@ -47,14 +47,14 @@ const initialPayrollStatus: Record<string, 'Pending' | 'Paid'> = {};
 employees.forEach(e => { initialPayrollStatus[e.id] = 'Pending'; });
 
 const initialPayoutHistory = [
-    { id: 'PO-1001', date: '2026-01-28', employee: 'Sara Ahmed', type: 'Salary', amount: 8000, method: 'Bank Transfer', ref: 'TRX-JAN-001', status: 'Completed' },
-    { id: 'PO-1002', date: '2026-01-28', employee: 'Sara Ahmed', type: 'Commission', amount: 2100, method: 'Bank Transfer', ref: 'TRX-JAN-002', status: 'Completed' },
-    { id: 'PO-1003', date: '2026-01-28', employee: 'Nora Ali', type: 'Salary', amount: 7000, method: 'Bank Transfer', ref: 'TRX-JAN-003', status: 'Completed' },
-    { id: 'PO-1004', date: '2026-01-28', employee: 'Nora Ali', type: 'Commission', amount: 1500, method: 'Bank Transfer', ref: 'TRX-JAN-004', status: 'Completed' },
-    { id: 'PO-1005', date: '2026-01-28', employee: 'Mona Zein', type: 'Salary', amount: 7500, method: 'Bank Transfer', ref: 'TRX-JAN-005', status: 'Completed' },
-    { id: 'PO-1006', date: '2026-01-28', employee: 'Layla Hassan', type: 'Salary', amount: 5500, method: 'Cash', ref: 'TRX-JAN-006', status: 'Completed' },
-    { id: 'PO-1007', date: '2025-12-28', employee: 'Sara Ahmed', type: 'Bonus', amount: 500, method: 'Bank Transfer', ref: 'TRX-DEC-001', status: 'Completed' },
-    { id: 'PO-1008', date: '2025-12-28', employee: 'Reem Mohamed', type: 'Salary', amount: 6000, method: 'Bank Transfer', ref: 'TRX-DEC-002', status: 'Completed' },
+    { id: 'PO-1001', date: '2026-03-19', employee: 'Sara Ahmed', type: 'Salary', amount: 8000, method: 'Bank Transfer', ref: 'TRX-JAN-001', status: 'Completed' },
+    { id: 'PO-1002', date: '2026-03-18', employee: 'Sara Ahmed', type: 'Commission', amount: 2100, method: 'Bank Transfer', ref: 'TRX-JAN-002', status: 'Completed' },
+    { id: 'PO-1003', date: '2026-03-20', employee: 'Nora Ali', type: 'Salary', amount: 7000, method: 'Bank Transfer', ref: 'TRX-JAN-003', status: 'Completed' },
+    { id: 'PO-1004', date: '2026-03-20', employee: 'Nora Ali', type: 'Commission', amount: 1500, method: 'Bank Transfer', ref: 'TRX-JAN-004', status: 'Completed' },
+    { id: 'PO-1005', date: '2026-03-16', employee: 'Mona Zein', type: 'Salary', amount: 7500, method: 'Bank Transfer', ref: 'TRX-JAN-005', status: 'Completed' },
+    { id: 'PO-1006', date: '2026-03-14', employee: 'Layla Hassan', type: 'Salary', amount: 5500, method: 'Cash', ref: 'TRX-JAN-006', status: 'Completed' },
+    { id: 'PO-1007', date: '2026-03-12', employee: 'Sara Ahmed', type: 'Bonus', amount: 500, method: 'Bank Transfer', ref: 'TRX-DEC-001', status: 'Completed' },
+    { id: 'PO-1008', date: '2026-03-23', employee: 'Reem Mohamed', type: 'Salary', amount: 6000, method: 'Bank Transfer', ref: 'TRX-DEC-002', status: 'Completed' },
 ];
 
 /* ─── Styles ─────────────────────────────────────────────────────── */

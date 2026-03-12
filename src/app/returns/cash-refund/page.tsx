@@ -13,10 +13,10 @@ const tabs = [
 ];
 
 const transactions = [
-    { id: 'TXN-2041', date: '2026-02-17', client: 'Fatima Ali', items: ['Haircut - 120 EGP', 'Blow Dry - 80 EGP'], total: 200, method: 'Cash' },
-    { id: 'TXN-2042', date: '2026-02-17', client: 'Rania Khalil', items: ['Hair Coloring - 450 EGP'], total: 450, method: 'Cash' },
-    { id: 'TXN-2039', date: '2026-02-16', client: 'Sama Latif', items: ['HydraFacial - 520 EGP'], total: 520, method: 'Cash' },
-    { id: 'TXN-2038', date: '2026-02-16', client: 'Noura Ahmed', items: ['Keratin Treatment - 800 EGP'], total: 800, method: 'Cash' },
+    { id: 'TXN-2041', date: '2026-03-19', client: 'Fatima Ali', items: ['Haircut - 120 EGP', 'Blow Dry - 80 EGP'], total: 200, method: 'Cash' },
+    { id: 'TXN-2042', date: '2026-03-23', client: 'Rania Khalil', items: ['Hair Coloring - 450 EGP'], total: 450, method: 'Cash' },
+    { id: 'TXN-2039', date: '2026-03-16', client: 'Sama Latif', items: ['HydraFacial - 520 EGP'], total: 520, method: 'Cash' },
+    { id: 'TXN-2038', date: '2026-03-19', client: 'Noura Ahmed', items: ['Keratin Treatment - 800 EGP'], total: 800, method: 'Cash' },
 ];
 
 const s: Record<string, React.CSSProperties> = {

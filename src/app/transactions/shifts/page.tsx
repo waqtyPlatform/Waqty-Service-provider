@@ -20,12 +20,12 @@ const tabs = [
 ];
 
 const data = [
-    { id: 'SH-001', date: '2026-02-17', cashier: 'Nora Ali', safe: 'Cashier 1 Safe', openTime: '09:00', closeTime: '18:00', opening: 500, expected: 4700, actual: 4680, variance: -20, status: 'closed' },
-    { id: 'SH-002', date: '2026-02-17', cashier: 'Sara Ahmed', safe: 'Cashier 2 Safe', openTime: '09:00', closeTime: '-', opening: 500, expected: 3100, actual: 0, variance: 0, status: 'open' },
-    { id: 'SH-003', date: '2026-02-16', cashier: 'Nora Ali', safe: 'Cashier 1 Safe', openTime: '09:00', closeTime: '18:15', opening: 500, expected: 4600, actual: 4600, variance: 0, status: 'closed' },
-    { id: 'SH-004', date: '2026-02-16', cashier: 'Sara Ahmed', safe: 'Cashier 2 Safe', openTime: '09:00', closeTime: '17:45', opening: 500, expected: 3050, actual: 3050, variance: 0, status: 'closed' },
-    { id: 'SH-005', date: '2026-02-15', cashier: 'Nora Ali', safe: 'Cashier 1 Safe', openTime: '09:00', closeTime: '18:00', opening: 500, expected: 3300, actual: 3280, variance: -20, status: 'closed' },
-    { id: 'SH-006', date: '2026-02-15', cashier: 'Sara Ahmed', safe: 'Cashier 2 Safe', openTime: '10:00', closeTime: '17:30', opening: 500, expected: 2200, actual: 2200, variance: 0, status: 'closed' },
+    { id: 'SH-001', date: '2026-03-24', cashier: 'Nora Ali', safe: 'Cashier 1 Safe', openTime: '09:00', closeTime: '18:00', opening: 500, expected: 4700, actual: 4680, variance: -20, status: 'closed' },
+    { id: 'SH-002', date: '2026-03-20', cashier: 'Sara Ahmed', safe: 'Cashier 2 Safe', openTime: '09:00', closeTime: '-', opening: 500, expected: 3100, actual: 0, variance: 0, status: 'open' },
+    { id: 'SH-003', date: '2026-03-25', cashier: 'Nora Ali', safe: 'Cashier 1 Safe', openTime: '09:00', closeTime: '18:15', opening: 500, expected: 4600, actual: 4600, variance: 0, status: 'closed' },
+    { id: 'SH-004', date: '2026-03-16', cashier: 'Sara Ahmed', safe: 'Cashier 2 Safe', openTime: '09:00', closeTime: '17:45', opening: 500, expected: 3050, actual: 3050, variance: 0, status: 'closed' },
+    { id: 'SH-005', date: '2026-03-13', cashier: 'Nora Ali', safe: 'Cashier 1 Safe', openTime: '09:00', closeTime: '18:00', opening: 500, expected: 3300, actual: 3280, variance: -20, status: 'closed' },
+    { id: 'SH-006', date: '2026-03-14', cashier: 'Sara Ahmed', safe: 'Cashier 2 Safe', openTime: '10:00', closeTime: '17:30', opening: 500, expected: 2200, actual: 2200, variance: 0, status: 'closed' },
 ];
 
 const s: Record<string, React.CSSProperties> = {

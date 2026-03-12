@@ -15,12 +15,12 @@ interface FingerprintRecord {
 }
 
 const initialData: FingerprintRecord[] = [
-    { id: 1, employee: 'Sara Ahmed', device: 'BioStation A2', enrollDate: '2026-01-05', fingers: 2, status: 'enrolled' },
-    { id: 2, employee: 'Nora Ali', device: 'BioStation A2', enrollDate: '2026-01-05', fingers: 2, status: 'enrolled' },
-    { id: 3, employee: 'Layla Hassan', device: 'BioStation A2', enrollDate: '2026-01-10', fingers: 2, status: 'enrolled' },
-    { id: 4, employee: 'Hana Youssef', device: 'BioStation A2', enrollDate: '2026-01-10', fingers: 1, status: 'partial' },
+    { id: 1, employee: 'Sara Ahmed', device: 'BioStation A2', enrollDate: '2026-03-17', fingers: 2, status: 'enrolled' },
+    { id: 2, employee: 'Nora Ali', device: 'BioStation A2', enrollDate: '2026-03-21', fingers: 2, status: 'enrolled' },
+    { id: 3, employee: 'Layla Hassan', device: 'BioStation A2', enrollDate: '2026-03-22', fingers: 2, status: 'enrolled' },
+    { id: 4, employee: 'Hana Youssef', device: 'BioStation A2', enrollDate: '2026-03-23', fingers: 1, status: 'partial' },
     { id: 5, employee: 'Reem Mohamed', device: 'BioStation A2', enrollDate: '-', fingers: 0, status: 'not_enrolled' },
-    { id: 6, employee: 'Dina Nabil', device: 'FaceStation F2', enrollDate: '2026-02-01', fingers: 2, status: 'enrolled' },
+    { id: 6, employee: 'Dina Nabil', device: 'FaceStation F2', enrollDate: '2026-03-26', fingers: 2, status: 'enrolled' },
 ];
 
 const s: Record<string, React.CSSProperties> = {

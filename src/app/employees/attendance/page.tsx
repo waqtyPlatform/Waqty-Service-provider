@@ -10,14 +10,14 @@ import AttendanceSettingsPage from '@/app/employees/attendance-settings/page';
 import FingerprintsPage from '@/app/employees/fingerprints/page';
 
 const initialData = [
-    { id: 'AT-001', employee: 'Sara Ahmed', date: '2026-02-17', checkIn: '08:55', checkOut: '18:05', hours: '9h 10m', late: false, overtime: '10m', status: 'present' },
-    { id: 'AT-002', employee: 'Nora Ali', date: '2026-02-17', checkIn: '09:10', checkOut: '18:00', hours: '8h 50m', late: true, overtime: '0m', status: 'late' },
-    { id: 'AT-003', employee: 'Layla Hassan', date: '2026-02-17', checkIn: '08:50', checkOut: '18:30', hours: '9h 40m', late: false, overtime: '40m', status: 'present' },
-    { id: 'AT-004', employee: 'Hana Youssef', date: '2026-02-17', checkIn: '09:00', checkOut: '18:00', hours: '9h 0m', late: false, overtime: '0m', status: 'present' },
-    { id: 'AT-005', employee: 'Reem Mohamed', date: '2026-02-17', checkIn: '-', checkOut: '-', hours: '-', late: false, overtime: '-', status: 'absent' },
-    { id: 'AT-006', employee: 'Dina Nabil', date: '2026-02-17', checkIn: '08:45', checkOut: '17:00', hours: '8h 15m', late: false, overtime: '0m', status: 'early_leave' },
-    { id: 'AT-007', employee: 'Sara Ahmed', date: '2026-02-16', checkIn: '09:00', checkOut: '18:00', hours: '9h 0m', late: false, overtime: '0m', status: 'present' },
-    { id: 'AT-008', employee: 'Nora Ali', date: '2026-02-16', checkIn: '08:58', checkOut: '18:15', hours: '9h 17m', late: false, overtime: '17m', status: 'present' },
+    { id: 'AT-001', employee: 'Sara Ahmed', date: '2026-03-24', checkIn: '08:55', checkOut: '18:05', hours: '9h 10m', late: false, overtime: '10m', status: 'present' },
+    { id: 'AT-002', employee: 'Nora Ali', date: '2026-03-23', checkIn: '09:10', checkOut: '18:00', hours: '8h 50m', late: true, overtime: '0m', status: 'late' },
+    { id: 'AT-003', employee: 'Layla Hassan', date: '2026-03-25', checkIn: '08:50', checkOut: '18:30', hours: '9h 40m', late: false, overtime: '40m', status: 'present' },
+    { id: 'AT-004', employee: 'Hana Youssef', date: '2026-03-26', checkIn: '09:00', checkOut: '18:00', hours: '9h 0m', late: false, overtime: '0m', status: 'present' },
+    { id: 'AT-005', employee: 'Reem Mohamed', date: '2026-03-24', checkIn: '-', checkOut: '-', hours: '-', late: false, overtime: '-', status: 'absent' },
+    { id: 'AT-006', employee: 'Dina Nabil', date: '2026-03-24', checkIn: '08:45', checkOut: '17:00', hours: '8h 15m', late: false, overtime: '0m', status: 'early_leave' },
+    { id: 'AT-007', employee: 'Sara Ahmed', date: '2026-03-15', checkIn: '09:00', checkOut: '18:00', hours: '9h 0m', late: false, overtime: '0m', status: 'present' },
+    { id: 'AT-008', employee: 'Nora Ali', date: '2026-03-21', checkIn: '08:58', checkOut: '18:15', hours: '9h 17m', late: false, overtime: '17m', status: 'present' },
 ];
 
 const statusMap: Record<string, { label: string; bg: string; color: string }> = {

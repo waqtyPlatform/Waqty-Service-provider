@@ -13,16 +13,16 @@ import styles from './transactions.module.css';
 import { useTranslation } from '@/hooks/useTranslation';
 
 const transactions = [
-    { id: 'TXN-2048', date: 'Feb 17, 2026', time: '09:15', type: 'sale', client: 'Fatima Al-Rashid', service: 'Hair Coloring', employee: 'Sara Ahmed', method: 'Card', amount: 400 },
-    { id: 'TXN-2047', date: 'Feb 17, 2026', time: '09:40', type: 'sale', client: 'Aisha Mohammed', service: 'Keratin', employee: 'Nora Ali', method: 'Cash', amount: 500 },
-    { id: 'TXN-2046', date: 'Feb 17, 2026', time: '10:10', type: 'sale', client: 'Maryam Ibrahim', service: 'Classic Facial', employee: 'Layla Hassan', method: 'Card', amount: 200 },
-    { id: 'TXN-2045', date: 'Feb 17, 2026', time: '10:45', type: 'refund', client: 'Huda Saleh', service: 'Gel Manicure', employee: 'Hana Youssef', method: 'Cash', amount: -150 },
-    { id: 'TXN-2044', date: 'Feb 17, 2026', time: '11:00', type: 'sale', client: 'Noura Ahmed', service: 'Massage', employee: 'Reem Mohamed', method: 'Cash', amount: 300 },
-    { id: 'TXN-2043', date: 'Feb 17, 2026', time: '11:30', type: 'petty', client: '—', service: 'Office Supplies', employee: 'Admin', method: 'Cash', amount: -80 },
-    { id: 'TXN-2042', date: 'Feb 17, 2026', time: '12:00', type: 'advance', client: 'Rania Khalil', service: 'Bridal Package', employee: 'Nora Ali', method: 'Card', amount: 1000 },
-    { id: 'TXN-2041', date: 'Feb 17, 2026', time: '13:15', type: 'sale', client: 'Dana Faris', service: 'HydraFacial', employee: 'Layla Hassan', method: 'Card', amount: 450 },
-    { id: 'TXN-2040', date: 'Feb 17, 2026', time: '14:00', type: 'transfer', client: '—', service: 'Cashier Transfer', employee: 'Manager', method: 'Internal', amount: 5000 },
-    { id: 'TXN-2039', date: 'Feb 17, 2026', time: '14:30', type: 'sale', client: 'Lina Tariq', service: 'Olaplex', employee: 'Sara Ahmed', method: 'Cash', amount: 350 },
+    { id: 'TXN-2048', date: 'Mar 17, 2026', time: '09:15', type: 'sale', client: 'Fatima Al-Rashid', service: 'Hair Coloring', employee: 'Sara Ahmed', method: 'Card', amount: 400 },
+    { id: 'TXN-2047', date: 'Mar 19, 2026', time: '09:40', type: 'sale', client: 'Aisha Mohammed', service: 'Keratin', employee: 'Nora Ali', method: 'Cash', amount: 500 },
+    { id: 'TXN-2046', date: 'Mar 23, 2026', time: '10:10', type: 'sale', client: 'Maryam Ibrahim', service: 'Classic Facial', employee: 'Layla Hassan', method: 'Card', amount: 200 },
+    { id: 'TXN-2045', date: 'Mar 21, 2026', time: '10:45', type: 'refund', client: 'Huda Saleh', service: 'Gel Manicure', employee: 'Hana Youssef', method: 'Cash', amount: -150 },
+    { id: 'TXN-2044', date: 'Mar 13, 2026', time: '11:00', type: 'sale', client: 'Noura Ahmed', service: 'Massage', employee: 'Reem Mohamed', method: 'Cash', amount: 300 },
+    { id: 'TXN-2043', date: 'Mar 13, 2026', time: '11:30', type: 'petty', client: '—', service: 'Office Supplies', employee: 'Admin', method: 'Cash', amount: -80 },
+    { id: 'TXN-2042', date: 'Mar 16, 2026', time: '12:00', type: 'advance', client: 'Rania Khalil', service: 'Bridal Package', employee: 'Nora Ali', method: 'Card', amount: 1000 },
+    { id: 'TXN-2041', date: 'Mar 17, 2026', time: '13:15', type: 'sale', client: 'Dana Faris', service: 'HydraFacial', employee: 'Layla Hassan', method: 'Card', amount: 450 },
+    { id: 'TXN-2040', date: 'Mar 15, 2026', time: '14:00', type: 'transfer', client: '—', service: 'Cashier Transfer', employee: 'Manager', method: 'Internal', amount: 5000 },
+    { id: 'TXN-2039', date: 'Mar 12, 2026', time: '14:30', type: 'sale', client: 'Lina Tariq', service: 'Olaplex', employee: 'Sara Ahmed', method: 'Cash', amount: 350 },
 ];
 
 const typeConfig: Record<string, { class: string; label: string }> = {

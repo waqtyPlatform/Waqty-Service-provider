@@ -21,13 +21,13 @@ const tabs = [
 ];
 
 const data = [
-    { id: 'PC-001', date: '2026-02-17', category: 'Cleaning Supplies', description: 'Towels & Disinfectant', vendor: 'CleanCo', amount: 180, approvedBy: 'Sara Ahmed', status: 'approved' },
-    { id: 'PC-002', date: '2026-02-17', category: 'Office Supplies', description: 'Paper, Ink Cartridge', vendor: 'OfficeMax', amount: 95, approvedBy: 'Sara Ahmed', status: 'approved' },
-    { id: 'PC-003', date: '2026-02-17', category: 'Refreshments', description: 'Coffee, Tea, Water', vendor: 'Hypermarket', amount: 120, approvedBy: '-', status: 'pending' },
-    { id: 'PC-004', date: '2026-02-16', category: 'Maintenance', description: 'AC Filter Replacement', vendor: 'CoolTech', amount: 350, approvedBy: 'Sara Ahmed', status: 'approved' },
-    { id: 'PC-005', date: '2026-02-16', category: 'Staff Allowances', description: 'Team Lunch', vendor: 'Local Restaurant', amount: 450, approvedBy: 'Sara Ahmed', status: 'approved' },
-    { id: 'PC-006', date: '2026-02-15', category: 'Cleaning Supplies', description: 'Salon Floor Cleaner', vendor: 'CleanCo', amount: 65, approvedBy: '-', status: 'pending' },
-    { id: 'PC-007', date: '2026-02-15', category: 'Transport', description: 'Delivery from supplier', vendor: 'Careem', amount: 45, approvedBy: 'Sara Ahmed', status: 'approved' },
+    { id: 'PC-001', date: '2026-03-14', category: 'Cleaning Supplies', description: 'Towels & Disinfectant', vendor: 'CleanCo', amount: 180, approvedBy: 'Sara Ahmed', status: 'approved' },
+    { id: 'PC-002', date: '2026-03-24', category: 'Office Supplies', description: 'Paper, Ink Cartridge', vendor: 'OfficeMax', amount: 95, approvedBy: 'Sara Ahmed', status: 'approved' },
+    { id: 'PC-003', date: '2026-03-23', category: 'Refreshments', description: 'Coffee, Tea, Water', vendor: 'Hypermarket', amount: 120, approvedBy: '-', status: 'pending' },
+    { id: 'PC-004', date: '2026-03-24', category: 'Maintenance', description: 'AC Filter Replacement', vendor: 'CoolTech', amount: 350, approvedBy: 'Sara Ahmed', status: 'approved' },
+    { id: 'PC-005', date: '2026-03-12', category: 'Staff Allowances', description: 'Team Lunch', vendor: 'Local Restaurant', amount: 450, approvedBy: 'Sara Ahmed', status: 'approved' },
+    { id: 'PC-006', date: '2026-03-16', category: 'Cleaning Supplies', description: 'Salon Floor Cleaner', vendor: 'CleanCo', amount: 65, approvedBy: '-', status: 'pending' },
+    { id: 'PC-007', date: '2026-03-18', category: 'Transport', description: 'Delivery from supplier', vendor: 'Careem', amount: 45, approvedBy: 'Sara Ahmed', status: 'approved' },
 ];
 
 const catColors: Record<string, string> = { 'Cleaning Supplies': '#3B82F6', 'Office Supplies': '#8B5CF6', 'Refreshments': '#F59E0B', 'Maintenance': '#EF4444', 'Staff Allowances': '#EC4899', 'Transport': '#10B981' };

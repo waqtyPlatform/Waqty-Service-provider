@@ -19,14 +19,14 @@ import styles from './expenses.module.css';
 import { useTranslation } from '@/hooks/useTranslation';
 
 const expenses = [
-    { id: 'EXP-401', date: 'Feb 17, 2026', category: 'Supplies', description: 'Hair color supplies (L\'Oréal)', vendor: 'Beauty Suppliers Co.', amount: 2500, method: 'Transfer', status: 'approved' },
-    { id: 'EXP-400', date: 'Feb 16, 2026', category: 'Rent', description: 'Branch rent – February 2026', vendor: 'Al-Masry Properties', amount: 15000, method: 'Transfer', status: 'approved' },
-    { id: 'EXP-399', date: 'Feb 15, 2026', category: 'Utilities', description: 'Electricity & Water bill', vendor: 'Utility Company', amount: 1800, method: 'Cash', status: 'approved' },
-    { id: 'EXP-398', date: 'Feb 14, 2026', category: 'Marketing', description: 'Instagram sponsored posts – Feb', vendor: 'Meta Ads', amount: 3000, method: 'Card', status: 'pending' },
-    { id: 'EXP-397', date: 'Feb 13, 2026', category: 'Equipment', description: 'New hair dryer – Dyson Supersonic', vendor: 'Dyson Egypt', amount: 8500, method: 'Card', status: 'approved' },
-    { id: 'EXP-396', date: 'Feb 12, 2026', category: 'Supplies', description: 'Facial masks & serums restock', vendor: 'DermaCare Ltd.', amount: 1200, method: 'Cash', status: 'approved' },
-    { id: 'EXP-395', date: 'Feb 10, 2026', category: 'Salary', description: 'Employee salaries – February', vendor: '—', amount: 45000, method: 'Transfer', status: 'approved' },
-    { id: 'EXP-394', date: 'Feb 8, 2026', category: 'Maintenance', description: 'AC repair & servicing', vendor: 'CoolTech Services', amount: 650, method: 'Cash', status: 'approved' },
+    { id: 'EXP-401', date: 'Mar 17, 2026', category: 'Supplies', description: 'Hair color supplies (L\'Oréal)', vendor: 'Beauty Suppliers Co.', amount: 2500, method: 'Transfer', status: 'approved' },
+    { id: 'EXP-400', date: 'Mar 16, 2026', category: 'Rent', description: 'Branch rent – February 2026', vendor: 'Al-Masry Properties', amount: 15000, method: 'Transfer', status: 'approved' },
+    { id: 'EXP-399', date: 'Mar 23, 2026', category: 'Utilities', description: 'Electricity & Water bill', vendor: 'Utility Company', amount: 1800, method: 'Cash', status: 'approved' },
+    { id: 'EXP-398', date: 'Mar 13, 2026', category: 'Marketing', description: 'Instagram sponsored posts – Feb', vendor: 'Meta Ads', amount: 3000, method: 'Card', status: 'pending' },
+    { id: 'EXP-397', date: 'Mar 25, 2026', category: 'Equipment', description: 'New hair dryer – Dyson Supersonic', vendor: 'Dyson Egypt', amount: 8500, method: 'Card', status: 'approved' },
+    { id: 'EXP-396', date: 'Mar 24, 2026', category: 'Supplies', description: 'Facial masks & serums restock', vendor: 'DermaCare Ltd.', amount: 1200, method: 'Cash', status: 'approved' },
+    { id: 'EXP-395', date: 'Mar 23, 2026', category: 'Salary', description: 'Employee salaries – February', vendor: '—', amount: 45000, method: 'Transfer', status: 'approved' },
+    { id: 'EXP-394', date: 'Mar 16, 2026', category: 'Maintenance', description: 'AC repair & servicing', vendor: 'CoolTech Services', amount: 650, method: 'Cash', status: 'approved' },
 ];
 
 const categoryColors: Record<string, string> = {

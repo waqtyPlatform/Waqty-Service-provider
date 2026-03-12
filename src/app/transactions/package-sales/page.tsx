@@ -20,12 +20,12 @@ const tabs = [
 ];
 
 const data = [
-    { id: 'PKS-001', date: '2026-02-17', client: 'Fatima Ali', package: 'Bridal Glow Package', price: 2500, sessionsTotal: 8, sessionsUsed: 3, expires: '2026-04-17', status: 'active' },
-    { id: 'PKS-002', date: '2026-02-15', client: 'Rania Khalil', package: 'VIP Monthly Care', price: 1200, sessionsTotal: 6, sessionsUsed: 2, expires: '2026-03-17', status: 'active' },
-    { id: 'PKS-003', date: '2026-02-10', client: 'Noura Ahmed', package: 'Relaxation Retreat', price: 800, sessionsTotal: 4, sessionsUsed: 4, expires: '2026-03-27', status: 'completed' },
-    { id: 'PKS-004', date: '2026-02-08', client: 'Huda Saleh', package: 'VIP Monthly Care', price: 1200, sessionsTotal: 6, sessionsUsed: 5, expires: '2026-03-10', status: 'active' },
-    { id: 'PKS-005', date: '2026-01-20', client: 'Maryam Ibrahim', package: 'Hair Transformation', price: 1500, sessionsTotal: 5, sessionsUsed: 5, expires: '2026-02-19', status: 'completed' },
-    { id: 'PKS-006', date: '2026-01-15', client: 'Sama Latif', package: 'Relaxation Retreat', price: 800, sessionsTotal: 4, sessionsUsed: 2, expires: '2026-02-28', status: 'expired' },
+    { id: 'PKS-001', date: '2026-03-13', client: 'Fatima Ali', package: 'Bridal Glow Package', price: 2500, sessionsTotal: 8, sessionsUsed: 3, expires: '2026-03-20', status: 'active' },
+    { id: 'PKS-002', date: '2026-03-17', client: 'Rania Khalil', package: 'VIP Monthly Care', price: 1200, sessionsTotal: 6, sessionsUsed: 2, expires: '2026-03-13', status: 'active' },
+    { id: 'PKS-003', date: '2026-03-18', client: 'Noura Ahmed', package: 'Relaxation Retreat', price: 800, sessionsTotal: 4, sessionsUsed: 4, expires: '2026-03-13', status: 'completed' },
+    { id: 'PKS-004', date: '2026-03-17', client: 'Huda Saleh', package: 'VIP Monthly Care', price: 1200, sessionsTotal: 6, sessionsUsed: 5, expires: '2026-03-12', status: 'active' },
+    { id: 'PKS-005', date: '2026-03-13', client: 'Maryam Ibrahim', package: 'Hair Transformation', price: 1500, sessionsTotal: 5, sessionsUsed: 5, expires: '2026-03-26', status: 'completed' },
+    { id: 'PKS-006', date: '2026-03-13', client: 'Sama Latif', package: 'Relaxation Retreat', price: 800, sessionsTotal: 4, sessionsUsed: 2, expires: '2026-03-19', status: 'expired' },
 ];
 
 const s: Record<string, React.CSSProperties> = {

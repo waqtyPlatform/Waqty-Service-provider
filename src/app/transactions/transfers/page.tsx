@@ -21,12 +21,12 @@ const tabs = [
 ];
 
 const data = [
-    { id: 'TF-001', date: '2026-02-17', time: '18:00', fromSafe: 'Cashier 1 Safe', toSafe: 'Main Safe', amount: 3200, cashier: 'Nora Ali', status: 'completed' },
-    { id: 'TF-002', date: '2026-02-17', time: '18:15', fromSafe: 'Cashier 2 Safe', toSafe: 'Main Safe', amount: 2450, cashier: 'Sara Ahmed', status: 'completed' },
-    { id: 'TF-003', date: '2026-02-16', time: '18:30', fromSafe: 'Cashier 1 Safe', toSafe: 'Main Safe', amount: 4100, cashier: 'Nora Ali', status: 'completed' },
-    { id: 'TF-004', date: '2026-02-16', time: '10:00', fromSafe: 'Main Safe', toSafe: 'Cashier 1 Safe', amount: 500, cashier: 'Admin', status: 'completed' },
-    { id: 'TF-005', date: '2026-02-15', time: '18:00', fromSafe: 'Cashier 1 Safe', toSafe: 'Main Safe', amount: 2800, cashier: 'Nora Ali', status: 'completed' },
-    { id: 'TF-006', date: '2026-02-15', time: '14:00', fromSafe: 'Main Safe', toSafe: 'Bank Deposit', amount: 10000, cashier: 'Admin', status: 'pending' },
+    { id: 'TF-001', date: '2026-03-12', time: '18:00', fromSafe: 'Cashier 1 Safe', toSafe: 'Main Safe', amount: 3200, cashier: 'Nora Ali', status: 'completed' },
+    { id: 'TF-002', date: '2026-03-19', time: '18:15', fromSafe: 'Cashier 2 Safe', toSafe: 'Main Safe', amount: 2450, cashier: 'Sara Ahmed', status: 'completed' },
+    { id: 'TF-003', date: '2026-03-22', time: '18:30', fromSafe: 'Cashier 1 Safe', toSafe: 'Main Safe', amount: 4100, cashier: 'Nora Ali', status: 'completed' },
+    { id: 'TF-004', date: '2026-03-13', time: '10:00', fromSafe: 'Main Safe', toSafe: 'Cashier 1 Safe', amount: 500, cashier: 'Admin', status: 'completed' },
+    { id: 'TF-005', date: '2026-03-26', time: '18:00', fromSafe: 'Cashier 1 Safe', toSafe: 'Main Safe', amount: 2800, cashier: 'Nora Ali', status: 'completed' },
+    { id: 'TF-006', date: '2026-03-21', time: '14:00', fromSafe: 'Main Safe', toSafe: 'Bank Deposit', amount: 10000, cashier: 'Admin', status: 'pending' },
 ];
 
 const s: Record<string, React.CSSProperties> = {

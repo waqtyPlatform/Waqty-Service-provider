@@ -2053,7 +2053,7 @@ const translations: Translations = {
     'custProfile.reviewed': { en: 'Reviewed', ar: 'قيم' },
     'custProfile.reviewedBy': { en: 'Reviewed by', ar: 'تم التقييم بواسطة' },
     'custProfile.backToCustomers': { en: '← Back to Customers', ar: '← العودة إلى العملاء' },
-    'custProfile.latexSensitivity': { en: 'Latex sensitivity reported on Jan 20, 2024.', ar: 'تم الإبلاغ عن حساسية اللاتكس في 20 يناير 2024.' },
+    'custProfile.latexSensitivity': { en: 'Latex sensitivity reported on Mar 13, 2026.', ar: 'تم الإبلاغ عن حساسية اللاتكس في 20 يناير 2024.' },
     'custProfile.clientNotes': { en: 'Client prefers evening appointments. Usually requests tea with no sugar. Has sensitive scalp, avoid strong chemical shampoos.', ar: 'يفضل العميل مواعيد المساء. يطلب عادة شاياً بدون سكر. لديه فروة رأس حساسة، تجنب الشامبو الكيميائي القوي.' },
     'custProfile.tagVIP': { en: 'VIP', ar: 'كبار العملاء (VIP)' },
     'custProfile.tagLatex': { en: 'Latex Allergy', ar: 'حساسية اللاتكس' },

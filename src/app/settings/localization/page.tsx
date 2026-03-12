@@ -54,7 +54,7 @@ export default function LocalizationSettingsPage() {
                         options={[
                             { value: 'DD/MM/YYYY', label: 'DD/MM/YYYY (31/12/2026)' },
                             { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY (12/31/2026)' },
-                            { value: 'YYYY-MM-DD', label: 'YYYY-MM-DD (2026-12-31)' }
+                            { value: 'YYYY-MM-DD', label: 'YYYY-MM-DD (2026-03-12)' }
                         ]}
                         defaultValue="YYYY-MM-DD"
                         style={{ maxWidth: 400 }}
