@@ -1,9 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Shield, Plus, Edit, Trash2, Users, MoreVertical } from 'lucide-react';
+import { Shield, Plus, Edit, Trash2, Users, MoreVertical, Lock } from 'lucide-react';
 import { Button, Modal, Input, useToast, DropdownMenu, Badge } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
+import SubTabs from '@/components/SubTabs';
+import PermissionsPage from '@/app/employees/permissions/page';
 
 /* ─── Types ───────────────────────── */
 interface Permissions { view: boolean; create: boolean; edit: boolean; delete: boolean; }
@@ -106,8 +108,16 @@ export default function RolesPage() {
         addToast('success', t('roles.permsSaved'));
     };
 
+    const subTabs = [
+        { key: 'roles', label: t('empLayout.tabRoles'), icon: <Shield size={14} /> },
+        { key: 'permissions', label: t('empLayout.tabPermissions'), icon: <Lock size={14} /> },
+    ];
+
     return (
         <div style={{ ...s.page, direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
+            <SubTabs tabs={subTabs} defaultTab="roles" children={{
+                roles: (
+                    <>
             <div style={s.toolbar}>
                 <div style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-semibold)' }}>{t('roles.title')}</div>
                 <Button onClick={() => setIsAddOpen(true)}><Plus size={16} /> {t('roles.addRole')}</Button>
@@ -204,6 +214,10 @@ export default function RolesPage() {
                     </div>
                 )}
             </Modal>
+                    </>
+                ),
+                permissions: <PermissionsPage />,
+            }} />
         </div>
     );
 }

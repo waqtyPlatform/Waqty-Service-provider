@@ -1,9 +1,11 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { BarChart3, Star, TrendingUp, DollarSign, Users, Award, Search } from 'lucide-react';
+import { BarChart3, Star, TrendingUp, DollarSign, Users, Award, Search, Target } from 'lucide-react';
 import { Select, Badge } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
+import SubTabs from '@/components/SubTabs';
+import TargetsPage from '@/app/employees/targets/page';
 
 /* ─── Mock Data ───────────────────────── */
 interface PerformanceRow {
@@ -91,8 +93,16 @@ export default function PerformancePage() {
         { icon: <Users size={20} />, bg: 'var(--color-purple-100)', color: 'var(--color-purple-600)', value: totalBookings, label: t('perf.kpiTotalBookings') },
     ];
 
+    const subTabs = [
+        { key: 'performance', label: t('empLayout.tabPerformance'), icon: <BarChart3 size={14} /> },
+        { key: 'targets', label: t('empLayout.tabTargets'), icon: <Target size={14} /> },
+    ];
+
     return (
         <div style={{ ...s.page, direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
+            <SubTabs tabs={subTabs} defaultTab="performance" children={{
+                performance: (
+                    <>
             {/* KPIs */}
             <div style={s.kpis}>
                 {kpis.map((kpi, i) => (
@@ -173,6 +183,10 @@ export default function PerformancePage() {
                     </tbody>
                 </table>
             </div>
+                    </>
+                ),
+                targets: <TargetsPage />,
+            }} />
         </div>
     );
 }

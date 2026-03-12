@@ -40,6 +40,7 @@ const translations: Translations = {
     'sidebar.calendar': { en: 'Calendar', ar: 'التقويم' },
     'sidebar.bookingList': { en: 'Booking List', ar: 'قائمة الحجوزات' },
     'sidebar.newBooking': { en: 'New Booking', ar: 'حجز جديد' },
+    'sidebar.rooms': { en: 'Room Calendar', ar: 'تقويم الغرف' },
     'sidebar.log': { en: 'Transaction Log', ar: 'سجل المعاملات' },
     'sidebar.groups': { en: 'Client Groups', ar: 'مجموعات العملاء' },
     'sidebar.schedule': { en: 'Schedules', ar: 'الجداول' },
@@ -103,6 +104,7 @@ const translations: Translations = {
     'schedule.weeklyTitle': { en: 'Weekly Schedule', ar: 'الجدول الأسبوعي' },
     'schedule.addShift': { en: 'Add Shift', ar: 'إضافة وردية' },
     'schedule.addShiftTitle': { en: 'Add New Shift', ar: 'إضافة وردية جديدة' },
+    'schedule.editShift': { en: 'Edit Shift', ar: 'تعديل الوردية' },
     'schedule.colEmployee': { en: 'Employee', ar: 'الموظف' },
     'schedule.selectEmployee': { en: 'Select employee...', ar: 'اختر موظف...' },
     'schedule.day': { en: 'Day', ar: 'اليوم' },
@@ -116,6 +118,55 @@ const translations: Translations = {
     'schedule.breakTime': { en: 'Break Time', ar: 'وقت الاستراحة' },
     'schedule.breakStart': { en: 'Break Start', ar: 'بداية الاستراحة' },
     'schedule.breakEnd': { en: 'Break End', ar: 'نهاية الاستراحة' },
+    'schedule.selectAll': { en: 'Select All', ar: 'تحديد الكل' },
+    'schedule.deselectAll': { en: 'Deselect All', ar: 'إلغاء تحديد الكل' },
+    'schedule.assignTemplate': { en: 'Assign Template', ar: 'تعيين قالب' },
+    'schedule.assignTitle': { en: 'Assign Shift Template', ar: 'تعيين قالب وردية' },
+    'schedule.selectTemplate': { en: 'Select template...', ar: 'اختر قالب...' },
+    'schedule.targetType': { en: 'Assign To', ar: 'تعيين إلى' },
+    'schedule.individual': { en: 'Individual Employee', ar: 'موظف فردي' },
+    'schedule.byRole': { en: 'By Role (Group)', ar: 'حسب الدور (مجموعة)' },
+    'schedule.selectRole': { en: 'Select role...', ar: 'اختر الدور...' },
+    'schedule.applyDays': { en: 'Apply on Days', ar: 'تطبيق في الأيام' },
+    'schedule.assignSaved': { en: 'Template assigned successfully', ar: 'تم تعيين القالب بنجاح' },
+    'schedule.conflictOutsideHours': { en: 'Outside branch hours', ar: 'خارج ساعات الفرع' },
+    'schedule.conflictDuringBreak': { en: 'Booking during break', ar: 'حجز خلال الاستراحة' },
+    'schedule.conflictOverlap': { en: 'Overlapping shifts', ar: 'ورديات متداخلة' },
+    'schedule.templateLabel': { en: 'Template', ar: 'القالب' },
+    'schedule.customShift': { en: 'Custom Shift', ar: 'وردية مخصصة' },
+    'schedule.useTemplate': { en: 'Use Template', ar: 'استخدم قالب' },
+
+    // Shift Templates (Settings)
+    'sidebar.shifts': { en: 'Shift Templates', ar: 'قوالب الورديات' },
+    'settings.tab.shifts': { en: 'Shifts', ar: 'الورديات' },
+    'shifts.title': { en: 'Shift Templates', ar: 'قوالب الورديات' },
+    'shifts.subtitle': { en: 'Define reusable shift templates for your team, then assign them in the Schedule page.', ar: 'حدد قوالب ورديات قابلة لإعادة الاستخدام لفريقك، ثم قم بتعيينها في صفحة الجدول.' },
+    'shifts.addTemplate': { en: 'Add Template', ar: 'إضافة قالب' },
+    'shifts.editTemplate': { en: 'Edit Template', ar: 'تعديل قالب' },
+    'shifts.deleteConfirm': { en: 'Are you sure you want to delete this template? Any assignments using it will be removed.', ar: 'هل أنت متأكد من حذف هذا القالب؟ سيتم إزالة أي تعيينات تستخدمه.' },
+    'shifts.templateName': { en: 'Template Name', ar: 'اسم القالب' },
+    'shifts.color': { en: 'Color', ar: 'اللون' },
+    'shifts.colName': { en: 'Name', ar: 'الاسم' },
+    'shifts.colHours': { en: 'Hours', ar: 'الساعات' },
+    'shifts.colBreak': { en: 'Break', ar: 'الاستراحة' },
+    'shifts.colColor': { en: 'Color', ar: 'اللون' },
+    'shifts.colActions': { en: 'Actions', ar: 'الإجراءات' },
+    'shifts.cancel': { en: 'Cancel', ar: 'إلغاء' },
+    'shifts.save': { en: 'Save', ar: 'حفظ' },
+    'shifts.delete': { en: 'Delete', ar: 'حذف' },
+    'shifts.templateAdded': { en: 'Template added successfully', ar: 'تمت إضافة القالب بنجاح' },
+    'shifts.templateUpdated': { en: 'Template updated successfully', ar: 'تم تحديث القالب بنجاح' },
+    'shifts.templateDeleted': { en: 'Template deleted successfully', ar: 'تم حذف القالب بنجاح' },
+    'shifts.offShift': { en: 'Off-shift', ar: 'خارج الوردية' },
+    'shifts.onBreak': { en: 'On break', ar: 'في استراحة' },
+    'shifts.startTime': { en: 'Start Time', ar: 'وقت البدء' },
+    'shifts.endTime': { en: 'End Time', ar: 'وقت الانتهاء' },
+    'shifts.breakStart': { en: 'Break Start', ar: 'بداية الاستراحة' },
+    'shifts.breakEnd': { en: 'Break End', ar: 'نهاية الاستراحة' },
+    'shifts.assignments': { en: 'Current Assignments', ar: 'التعيينات الحالية' },
+    'shifts.noAssignments': { en: 'No assignments yet. Assign templates in the Schedule page.', ar: 'لا توجد تعيينات بعد. قم بتعيين القوالب في صفحة الجدول.' },
+    'shifts.employeeTarget': { en: 'Employee', ar: 'موظف' },
+    'shifts.roleTarget': { en: 'Role', ar: 'دور' },
 
     // Performance Page
     'perf.kpiAvgRating': { en: 'Avg Rating', ar: 'متوسط التقييم' },
@@ -339,6 +390,18 @@ const translations: Translations = {
     'sidebar.general': { en: 'General', ar: 'عام' },
     'sidebar.branches': { en: 'Branches', ar: 'الفروع' },
     'sidebar.roles': { en: 'Roles', ar: 'الأدوار' },
+    'sidebar.appearance': { en: 'Appearance', ar: 'المظهر' },
+    'sidebar.auditLog': { en: 'Audit Log', ar: 'سجل التدقيق' },
+    'sidebar.dataManagement': { en: 'Data Management', ar: 'إدارة البيانات' },
+    'sidebar.devices': { en: 'Devices', ar: 'الأجهزة' },
+    'sidebar.integrations': { en: 'Integrations', ar: 'التكاملات' },
+    'sidebar.invoiceSettings': { en: 'Invoice Settings', ar: 'إعدادات الفاتورة' },
+    'sidebar.localization': { en: 'Localization', ar: 'اللغة والمنطقة' },
+    'sidebar.paymentMethods': { en: 'Payment Methods', ar: 'طرق الدفع' },
+    'sidebar.safes': { en: 'Safes', ar: 'الخزائن' },
+    'sidebar.security': { en: 'Security', ar: 'الأمان' },
+    'sidebar.settingsNotifications': { en: 'Notifications', ar: 'الإشعارات' },
+    'sidebar.subscription': { en: 'Subscription', ar: 'الاشتراك' },
 
     // Dashboard Overview
     'dash.dashboard': { en: 'Dashboard', ar: 'لوحة القيادة' },
@@ -518,6 +581,14 @@ const translations: Translations = {
     'employees.deleteEmployeeTitle': { en: 'Remove Employee', ar: 'إزالة الموظف' },
     'employees.confirmRemoval': { en: 'Confirm Removal', ar: 'تأكيد الإزالة' },
     'employees.deleteWarning': { en: 'Are you sure you want to remove this employee? This will revoke their platform access immediately and detach them from future active bookings.', ar: 'هل أنت متأكد أنك تريد إزالة هذا الموظف؟ سيؤدي ذلك إلى إلغاء وصوله إلى المنصة فورًا وفصله عن أي حجوزات نشطة مستقبلية.' },
+
+    // Settings Categories
+    'settings.cat.business': { en: 'Business', ar: 'الأعمال' },
+    'settings.cat.services': { en: 'Services', ar: 'الخدمات' },
+    'settings.cat.finance': { en: 'Finance', ar: 'المالية' },
+    'settings.cat.scheduling': { en: 'Scheduling', ar: 'الجدولة' },
+    'settings.cat.hardware': { en: 'Hardware', ar: 'الأجهزة' },
+    'settings.cat.system': { en: 'System', ar: 'النظام' },
 
     // Settings Tabs
     'settings.tab.general': { en: 'General', ar: 'عام' },
@@ -1240,6 +1311,18 @@ const translations: Translations = {
     'attendanceSettings.toastSaved': { en: 'Attendance settings saved successfully.', ar: 'تم حفظ إعدادات الحضور بنجاح.' },
     'attendanceSettings.hrs': { en: 'hrs', ar: 'ساعات' },
     'attendanceSettings.min': { en: 'min', ar: 'دقيقة' },
+    'attendanceSettings.subtitle': { en: 'Configure grace periods, overtime, penalties, and notifications', ar: 'إعداد فترات السماح والعمل الإضافي والعقوبات والإشعارات' },
+    'attendanceSettings.shiftSource': { en: 'Shifts managed on Schedule page', ar: 'الورديات تُدار من صفحة الجدول' },
+    'attendanceSettings.shiftSourceHint': { en: 'Work hours are defined per-employee via shift templates. Click to manage.', ar: 'ساعات العمل محددة لكل موظف عبر قوالب الورديات. انقر للإدارة.' },
+    'attendanceSettings.secOvertime': { en: 'Overtime', ar: 'العمل الإضافي' },
+    'attendanceSettings.overtimeThreshold': { en: 'Overtime threshold', ar: 'حد العمل الإضافي' },
+    'attendanceSettings.overtimeThresholdHint': { en: 'Minutes after shift end before counting as overtime', ar: 'الدقائق بعد نهاية الوردية قبل احتساب العمل الإضافي' },
+    'attendanceSettings.maxOvertimeDaily': { en: 'Max daily overtime', ar: 'أقصى عمل إضافي يومي' },
+    'attendanceSettings.maxOvertimeDailyHint': { en: 'Cap on overtime hours per day', ar: 'سقف ساعات العمل الإضافي في اليوم' },
+    'attendanceSettings.enforceBreaks': { en: 'Enforce breaks', ar: 'فرض الاستراحات' },
+    'attendanceSettings.enforceBreaksHint': { en: 'Flag violations when employees skip scheduled breaks', ar: 'تسجيل مخالفة عند تجاوز الموظفين لأوقات الاستراحة' },
+    'attendanceSettings.autoClockOut': { en: 'Auto clock-out', ar: 'خروج تلقائي' },
+    'attendanceSettings.autoClockOutHint': { en: 'Automatically clock out employees after shift end + buffer', ar: 'تسجيل خروج الموظفين تلقائياً بعد نهاية الوردية + فترة السماح' },
 
     // Payroll Page
     'payroll.tabSummary': { en: 'Payroll Summary', ar: 'ملخص الرواتب' },
@@ -2615,7 +2698,124 @@ const translations: Translations = {
     'auth.demoTipRequest': { en: 'For this demo, enter any email (e.g. clinic@hagzy.com) to simulate sending an OTP.', ar: 'في هذا العرض، أدخل أي بريد إلكتروني (مثل clinic@hagzy.com) لمحاكاة إرسال الكود.' },
     'auth.demoTipVerify': { en: 'The mock Verification Code is', ar: 'كود التحقق التجريبي هو' },
     'auth.otpSentEmail': { en: 'Verification code sent via Email', ar: 'تم إرسال كود التحقق عبر البريد الإلكتروني' },
-    'auth.otpSentWhatsApp': { en: 'Verification code sent via WhatsApp', ar: 'تم إرسال كود التحقق عبر واتساب' }
+    'auth.otpSentWhatsApp': { en: 'Verification code sent via WhatsApp', ar: 'تم إرسال كود التحقق عبر واتساب' },
+
+    // ─── Missing Keys (bulk fill) ────────────────────────────────────────────
+
+    // Customer Profile
+    'custProfile.medicalUpdated': { en: 'Medical information updated', ar: 'تم تحديث المعلومات الطبية' },
+    'custProfile.fileUploaded': { en: 'File uploaded successfully', ar: 'تم رفع الملف بنجاح' },
+    'custProfile.formSent': { en: 'Form sent successfully', ar: 'تم إرسال النموذج بنجاح' },
+    'custProfile.lblClientName': { en: 'Client Name', ar: 'اسم العميل' },
+    'custProfile.lblFullNameDesc': { en: 'Full name as registered', ar: 'الاسم الكامل كما هو مسجل' },
+    'custProfile.lblFirstName': { en: 'First Name', ar: 'الاسم الأول' },
+    'custProfile.lblFirstNameDesc': { en: 'First name only', ar: 'الاسم الأول فقط' },
+
+    // Employee Layout
+    'openAddEmployee': { en: 'Add Employee', ar: 'إضافة موظف' },
+
+    // Employee Profile — Reviews
+    'empProfile.reviewReportedMsg': { en: 'Review reported', ar: 'تم الإبلاغ عن التقييم' },
+    'empProfile.reviews': { en: 'Reviews', ar: 'التقييمات' },
+    'empProfile.noReviewsTitle': { en: 'No Reviews Yet', ar: 'لا توجد تقييمات بعد' },
+    'empProfile.noReviewsDesc': { en: 'This employee hasn\'t received any reviews yet.', ar: 'لم يتلق هذا الموظف أي تقييمات بعد.' },
+
+    // Marketing — Messages
+    'mkt.lblTime': { en: 'Time', ar: 'الوقت' },
+    'mkt.lblService': { en: 'Service', ar: 'الخدمة' },
+    'mkt.lblAmount': { en: 'Amount', ar: 'المبلغ' },
+    'mkt.lblBranch': { en: 'Branch', ar: 'الفرع' },
+    'mkt.lblLink': { en: 'Link', ar: 'الرابط' },
+    'mkt.btnDeleteOffer': { en: 'Delete Offer', ar: 'حذف العرض' },
+    'mkt.btnDeletePackage': { en: 'Delete Package', ar: 'حذف الباقة' },
+
+    // Settings — New Service Wizard
+    'settings.services.new.step1': { en: 'Basic Info', ar: 'المعلومات الأساسية' },
+    'settings.services.new.step2': { en: 'Pricing', ar: 'التسعير' },
+    'settings.services.new.step3': { en: 'Duration', ar: 'المدة' },
+    'settings.services.new.step4': { en: 'Resourcing', ar: 'الموارد' },
+    'settings.services.new.step5': { en: 'Commission', ar: 'العمولة' },
+    'settings.services.new.step6': { en: 'Media', ar: 'الوسائط' },
+    'settings.services.new.basicInfo': { en: 'Basic Information', ar: 'المعلومات الأساسية' },
+    'settings.services.new.svcName': { en: 'Service Name', ar: 'اسم الخدمة' },
+    'settings.services.new.category': { en: 'Category', ar: 'الفئة' },
+    'settings.services.new.catHair': { en: 'Hair', ar: 'الشعر' },
+    'settings.services.new.catNails': { en: 'Nails', ar: 'الأظافر' },
+    'settings.services.new.catSpa': { en: 'Spa', ar: 'سبا' },
+    'settings.services.new.desc': { en: 'Description', ar: 'الوصف' },
+    'settings.services.new.descHint': { en: 'Brief description shown to clients when booking online', ar: 'وصف مختصر يظهر للعملاء عند الحجز عبر الإنترنت' },
+    'settings.services.new.pricing': { en: 'Pricing', ar: 'التسعير' },
+    'settings.services.new.price': { en: 'Price (EGP)', ar: 'السعر (ج.م)' },
+    'settings.services.new.costPrice': { en: 'Cost Price (EGP)', ar: 'سعر التكلفة (ج.م)' },
+    'settings.services.new.taxable': { en: 'Taxable', ar: 'خاضع للضريبة' },
+    'settings.services.new.allowOnline': { en: 'Allow Online Booking', ar: 'السماح بالحجز عبر الإنترنت' },
+    'settings.services.new.durationTitle': { en: 'Duration & Scheduling', ar: 'المدة والجدولة' },
+    'settings.services.new.durationMin': { en: 'Duration (minutes)', ar: 'المدة (بالدقائق)' },
+    'settings.services.new.bufferAfter': { en: 'Buffer After (minutes)', ar: 'فترة الراحة بعد (بالدقائق)' },
+    'settings.services.new.bufferHint': { en: 'Time between this and the next appointment', ar: 'الوقت بين هذا الموعد والموعد التالي' },
+    'settings.services.new.processDuring': { en: 'Processing During (minutes)', ar: 'وقت المعالجة (بالدقائق)' },
+    'settings.services.new.processHint': { en: 'Time during which the client is unattended (e.g. color processing)', ar: 'الوقت الذي لا يحتاج فيه العميل متابعة (مثل وقت الصبغة)' },
+    'settings.services.new.resourcing': { en: 'Resourcing', ar: 'الموارد' },
+    'settings.services.new.resDesc': { en: 'What resource does this service require?', ar: 'ما المورد المطلوب لهذه الخدمة؟' },
+    'settings.services.new.reqRes': { en: 'Required Resource', ar: 'المورد المطلوب' },
+    'settings.services.new.resNone': { en: 'None', ar: 'لا شيء' },
+    'settings.services.new.resChair': { en: 'Chair / Station', ar: 'كرسي / محطة' },
+    'settings.services.new.resRoom': { en: 'Room', ar: 'غرفة' },
+    'settings.services.new.targetGender': { en: 'Target Gender', ar: 'الجنس المستهدف' },
+    'settings.services.new.genderUnisex': { en: 'Unisex', ar: 'للجنسين' },
+    'settings.services.new.genderFemale': { en: 'Female', ar: 'أنثى' },
+    'settings.services.new.genderMale': { en: 'Male', ar: 'ذكر' },
+    'settings.services.new.commission': { en: 'Commission', ar: 'العمولة' },
+    'settings.services.new.commPct': { en: 'Commission %', ar: 'نسبة العمولة %' },
+    'settings.services.new.commFixed': { en: 'Fixed Amount (EGP)', ar: 'مبلغ ثابت (ج.م)' },
+    'settings.services.new.deductCost': { en: 'Deduct Cost Price from Commission', ar: 'خصم سعر التكلفة من العمولة' },
+    'settings.services.new.media': { en: 'Media', ar: 'الوسائط' },
+    'settings.services.new.uploadMsg1': { en: 'Upload images for this service', ar: 'ارفع صور لهذه الخدمة' },
+    'settings.services.new.uploadMsg2': { en: 'JPG, PNG up to 5MB', ar: 'JPG, PNG حتى 5 ميجابايت' },
+    'settings.services.new.selectFile': { en: 'Select File', ar: 'اختر ملف' },
+    'settings.services.new.title': { en: 'Add New Service', ar: 'إضافة خدمة جديدة' },
+    'settings.services.new.stepTitle': { en: 'Step', ar: 'الخطوة' },
+    'settings.services.new.of': { en: 'of', ar: 'من' },
+    'settings.services.new.cancel': { en: 'Cancel', ar: 'إلغاء' },
+    'settings.services.new.back': { en: 'Back', ar: 'رجوع' },
+    'settings.services.new.save': { en: 'Save Service', ar: 'حفظ الخدمة' },
+    'settings.services.new.next': { en: 'Next', ar: 'التالي' },
+
+    // Transactions — Packages
+    'txn.packages.revenue': { en: 'Package Revenue', ar: 'إيرادات الباقات' },
+    'txn.packages.sold': { en: 'Packages Sold', ar: 'الباقات المباعة' },
+    'txn.packages.active': { en: 'Active Packages', ar: 'الباقات النشطة' },
+
+    // Transactions — Petty Cash
+    'txn.petty.total': { en: 'Total Petty Cash', ar: 'إجمالي المصروفات النثرية' },
+    'txn.petty.pending': { en: 'Pending Approval', ar: 'في انتظار الموافقة' },
+    'txn.petty.entries': { en: 'Entries', ar: 'السجلات' },
+    'txn.petty.search': { en: 'Search entries...', ar: 'ابحث عن سجلات...' },
+    'txn.petty.newEntry': { en: 'New Entry', ar: 'سجل جديد' },
+    'txn.petty.statusApproved': { en: 'Approved', ar: 'تمت الموافقة' },
+    'txn.petty.statusPending': { en: 'Pending', ar: 'معلق' },
+
+    // Transactions — Safe Balances
+    'txn.safe.total': { en: 'Total Safe Balance', ar: 'إجمالي رصيد الخزنة' },
+    'txn.safe.current': { en: 'Current Balance', ar: 'الرصيد الحالي' },
+    'txn.safe.opening': { en: 'Opening Balance', ar: 'الرصيد الافتتاحي' },
+    'txn.safe.deposits': { en: 'Deposits', ar: 'الإيداعات' },
+    'txn.safe.withdrawals': { en: 'Withdrawals', ar: 'السحوبات' },
+
+    // Transactions — Shifts
+    'txn.shifts.statusClosed': { en: 'Closed', ar: 'مغلقة' },
+    'txn.shifts.statusOpen': { en: 'Open', ar: 'مفتوحة' },
+
+    // Transactions — Transfers
+    'txn.transfers.total': { en: 'Total Transfers', ar: 'إجمالي التحويلات' },
+    'txn.transfers.count': { en: 'Transfer Count', ar: 'عدد التحويلات' },
+    'txn.transfers.pending': { en: 'Pending Transfers', ar: 'التحويلات المعلقة' },
+    'txn.transfers.statusDone': { en: 'Done', ar: 'تم' },
+    'txn.transfers.statusPending': { en: 'Pending', ar: 'معلق' },
+
+    // Sidebar (missing)
+    'sidebar.hours': { en: 'Working Hours', ar: 'ساعات العمل' },
+    'sidebar.resources': { en: 'Resources', ar: 'الموارد' },
 };
 
 export function useTranslation() {
@@ -2630,5 +2830,6 @@ export function useTranslation() {
         return translations[key][lang] || translations[key].en;
     };
 
-    return { t, lang };
+    return { t, lang 
+};
 }

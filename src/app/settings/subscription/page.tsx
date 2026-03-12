@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { Check, Crown, Zap, Star, Calendar, CreditCard, Users, Building2, ArrowRight, Shield } from 'lucide-react';
-import SettingsTabs from '@/components/SettingsTabs';
 import { Button } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -127,9 +126,7 @@ export default function SubscriptionPage() {
 
     return (
         <div style={s.page}>
-            <SettingsTabs />
-
-            {/* Current Plan Summary */}
+{/* Current Plan Summary */}
             <div style={s.currentPlan}>
                 <div style={s.currentPlanHeader}>
                     <div>

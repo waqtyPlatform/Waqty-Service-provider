@@ -9,7 +9,6 @@ import {
     Button, Badge, useToast, Modal, Input, Select, SlideOver
 } from '@/components/ui';
 import styles from './page.module.css';
-import SettingsTabs from '@/components/SettingsTabs';
 import { useTranslation } from '@/hooks/useTranslation';
 
 const initialSafes = [
@@ -63,9 +62,7 @@ export default function SafesPage() {
 
     return (
         <div className={styles.page}>
-            <SettingsTabs />
-
-            <div className={styles.header}>
+<div className={styles.header}>
                 <div className={styles.titleGroup}>
                     <h1><Lock size={24} /> {t('settings.safes.title')}</h1>
                     <div className={styles.subtitle}>{t('settings.safes.desc')}</div>

@@ -9,6 +9,9 @@ import {
 } from 'lucide-react';
 import { Button, Select, Badge, Modal, useToast, SlideOver } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
+import SubTabs from '@/components/SubTabs';
+import CommissionsPage from '@/app/employees/commissions/page';
+import CommissionSettingsPage from '@/app/employees/commission-settings/page';
 
 /* ─── Mock Data ──────────────────────────────────────────────────── */
 
@@ -243,8 +246,17 @@ export default function PayrollPage() {
 
     /* ─── Render ─────────────────────────────────────────────── */
 
+    const outerTabs = [
+        { key: 'payroll', label: t('empLayout.tabPayroll'), icon: <Wallet size={14} /> },
+        { key: 'commissions', label: t('empLayout.tabCommissions'), icon: <Award size={14} /> },
+        { key: 'commSettings', label: t('empLayout.tabCommSettings'), icon: <CreditCard size={14} /> },
+    ];
+
     return (
         <div style={s.page}>
+            <SubTabs tabs={outerTabs} defaultTab="payroll" children={{
+                payroll: (
+                    <>
             {/* Tab Switcher */}
             <div style={s.tabBar}>
                 {(['summary', 'history', 'slips'] as const).map(tab => (
@@ -556,14 +568,12 @@ export default function PayrollPage() {
                 );
             })()}
 
-            {/* ═══ PAYMENT METHODS SLIDEOVER ═══ */}
             {pmEmpId && (() => {
                 const emp = employees.find(e => e.id === pmEmpId)!;
                 const methods = paymentMethods[pmEmpId] || [];
                 return (
                     <SlideOver open onClose={() => { setPmEmpId(null); setPmShowForm(false); setPmEditing(null); }} title={`${t('payroll.pmTitle')}${emp.name}`}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
-                            {/* Existing Methods */}
                             {methods.length === 0 && <div style={{ padding: 'var(--space-6)', textAlign: 'center', color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)' }}>{t('payroll.pmEmpty')}</div>}
                             {methods.map(m => (
                                 <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', padding: 'var(--space-3)', background: m.isDefault ? 'var(--color-primary-50)' : 'var(--bg-secondary)', border: `1px solid ${m.isDefault ? 'var(--color-primary-200)' : 'var(--border-color)'}`, borderRadius: 'var(--radius-lg)', textAlign: lang === 'ar' ? 'right' : 'left' }}>
@@ -583,13 +593,12 @@ export default function PayrollPage() {
                                 </div>
                             ))}
 
-                            {/* Add / Edit Form */}
                             {pmShowForm ? (
                                 <div style={{ border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-4)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', textAlign: lang === 'ar' ? 'right' : 'left' }}>
                                     <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)' }}>{pmEditing ? t('payroll.pmEdit') : t('payroll.pmAdd')}</div>
                                     <div>
                                         <label style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', display: 'block', marginBottom: 4 }}>{t('payroll.pmType')}</label>
-                                        <select value={pmForm.type} onChange={e => setPmForm(p => ({ ...p, type: e.target.value as PaymentMethod['type'] }))} style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)', textAlign: lang === 'ar' ? 'right' : 'left', direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
+                                        <select value={pmForm.type} onChange={e => setPmForm(p => ({ ...p, type: e.target.value as PaymentMethod['type'] }))} style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}>
                                             <option value="Bank Transfer">{t('payroll.typeBankTrans')}</option>
                                             <option value="Cash">{t('payroll.typeCashVal')}</option>
                                             <option value="Mobile Wallet">{t('payroll.typeWalletVal')}</option>
@@ -598,14 +607,14 @@ export default function PayrollPage() {
                                     </div>
                                     <div>
                                         <label style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', display: 'block', marginBottom: 4 }}>{t('payroll.pmLabel')}</label>
-                                        <input value={pmForm.label} onChange={e => setPmForm(p => ({ ...p, label: e.target.value }))} placeholder={pmForm.type === 'Bank Transfer' ? t('payroll.pmPlaceholderBank') : pmForm.type === 'Mobile Wallet' ? t('payroll.pmPlaceholderWallet') : t('payroll.pmPlaceholderName')} style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)', textAlign: lang === 'ar' ? 'right' : 'left' }} />
+                                        <input value={pmForm.label} onChange={e => setPmForm(p => ({ ...p, label: e.target.value }))} placeholder={pmForm.type === 'Bank Transfer' ? t('payroll.pmPlaceholderBank') : t('payroll.pmPlaceholderName')} style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)' }} />
                                     </div>
                                     <div>
                                         <label style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', display: 'block', marginBottom: 4 }}>{t('payroll.pmDetails')}</label>
-                                        <input value={pmForm.details} onChange={e => setPmForm(p => ({ ...p, details: e.target.value }))} placeholder={pmForm.type === 'Bank Transfer' ? t('payroll.pmPlaceholderAcc') : pmForm.type === 'Mobile Wallet' ? t('payroll.pmPlaceholderPhone') : t('payroll.pmPlaceholderDetails')} style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)', textAlign: lang === 'ar' ? 'right' : 'left' }} />
+                                        <input value={pmForm.details} onChange={e => setPmForm(p => ({ ...p, details: e.target.value }))} placeholder={pmForm.type === 'Bank Transfer' ? t('payroll.pmPlaceholderAcc') : t('payroll.pmPlaceholderDetails')} style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)' }} />
                                     </div>
-                                    <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: lang === 'ar' ? 'flex-start' : 'flex-end', flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}>
-                                        <Button variant="outline" size="sm" onClick={() => { setPmShowForm(false); setPmEditing(null); setPmForm({ type: 'Bank Transfer', label: '', details: '' }); }}>{t('payroll.btnCancel')}</Button>
+                                    <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end' }}>
+                                        <Button variant="outline" size="sm" onClick={() => { setPmShowForm(false); setPmEditing(null); }}>{t('payroll.btnCancel')}</Button>
                                         <Button variant="primary" size="sm" onClick={() => pmEditing ? handleEditPm(pmEmpId) : handleAddPm(pmEmpId)}>{pmEditing ? t('payroll.btnSaveChanges') : t('payroll.btnAddMethod')}</Button>
                                     </div>
                                 </div>
@@ -616,6 +625,11 @@ export default function PayrollPage() {
                     </SlideOver>
                 );
             })()}
+                    </>
+                ),
+                commissions: <CommissionsPage />,
+                commSettings: <CommissionSettingsPage />,
+            }} />
         </div>
     );
 }

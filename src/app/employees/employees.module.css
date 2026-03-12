@@ -41,14 +41,8 @@
 .tabsScrollContainer {
     display: flex;
     gap: var(--space-1);
-    overflow-x: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
     margin-bottom: -2px;
-}
-
-.tabsScrollContainer::-webkit-scrollbar {
-    display: none;
+    flex-wrap: wrap;
 }
 
 .tab {

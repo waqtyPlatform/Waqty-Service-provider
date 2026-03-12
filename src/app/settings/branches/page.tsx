@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { Building2, Plus, MoreVertical, Edit, Trash2, MapPin, ExternalLink } from 'lucide-react';
 import { useToast, SlideOver, Modal, Input, Select, Button, DropdownMenu } from '@/components/ui';
-import SettingsTabs from '@/components/SettingsTabs';
 import { useTranslation } from '@/hooks/useTranslation';
 
 const GOVERNORATES = [
@@ -100,8 +99,7 @@ export default function BranchesPage() {
 
     return (
         <div style={s.page}>
-            <SettingsTabs />
-            <div style={s.toolbar}>
+<div style={s.toolbar}>
                 <Button onClick={() => setIsAddOpen(true)}><Plus size={16} style={{ marginRight: 8 }} /> {t('settings.branches.addBranch')}</Button>
             </div>
             <div style={s.grid}>

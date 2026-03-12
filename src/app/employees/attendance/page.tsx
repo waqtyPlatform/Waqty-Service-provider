@@ -1,9 +1,13 @@
-﻿'use client';
+'use client';
 
 import React, { useState } from 'react';
-import { Search, Download, Clock, Plus, Edit, Trash2 } from 'lucide-react';
+import { Search, Download, Clock, Plus, Edit, Trash2, Fingerprint, Settings, Smartphone } from 'lucide-react';
 import { SlideOver, Modal, Input, Select, Button, useToast, EmptyState } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
+import SubTabs from '@/components/SubTabs';
+import AttendMethodsPage from '@/app/employees/attend-methods/page';
+import AttendanceSettingsPage from '@/app/employees/attendance-settings/page';
+import FingerprintsPage from '@/app/employees/fingerprints/page';
 
 const initialData = [
     { id: 'AT-001', employee: 'Sara Ahmed', date: '2026-02-17', checkIn: '08:55', checkOut: '18:05', hours: '9h 10m', late: false, overtime: '10m', status: 'present' },
@@ -183,8 +187,18 @@ export default function AttendancePage() {
         setIsEditOpen(true);
     };
 
+    const subTabs = [
+        { key: 'attendance', label: t('empLayout.tabAttendance'), icon: <Clock size={14} /> },
+        { key: 'attendMethods', label: t('empLayout.tabAttendMethods'), icon: <Smartphone size={14} /> },
+        { key: 'attendSettings', label: t('empLayout.tabAttendSettings'), icon: <Settings size={14} /> },
+        { key: 'fingerprints', label: t('empLayout.tabFingerprints'), icon: <Fingerprint size={14} /> },
+    ];
+
     return (
         <div style={{ ...s.page, direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
+            <SubTabs tabs={subTabs} defaultTab="attendance" children={{
+                attendance: (
+                    <>
             <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' }}>{t('attendance.title')}</div>
 
             <div style={s.kpis}>
@@ -353,6 +367,12 @@ export default function AttendancePage() {
                     {t('attendance.deleteConfirmMsg1')}<strong>{selectedRecord?.employee}</strong>{t('attendance.deleteConfirmMsg2')}{selectedRecord?.date}{t('attendance.deleteConfirmMsg3')}
                 </p>
             </Modal>
+                    </>
+                ),
+                attendMethods: <AttendMethodsPage />,
+                attendSettings: <AttendanceSettingsPage />,
+                fingerprints: <FingerprintsPage />,
+            }} />
         </div>
     );
 }

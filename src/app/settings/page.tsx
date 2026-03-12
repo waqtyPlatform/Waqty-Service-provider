@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import SettingsTabs from '@/components/SettingsTabs';
 import { Button, Input, Textarea } from '@/components/ui';
 import { Save, Check } from 'lucide-react';
 import { useSettings } from '@/contexts/SettingsContext';
@@ -40,13 +39,6 @@ export default function SettingsPage() {
 
     return (
         <div className={styles.page} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
-            <div className={styles.header}>
-                <h1 className={styles.title}>{t('settings.title')}</h1>
-                <p className={styles.description}>{t('settings.desc')}</p>
-            </div>
-
-            <SettingsTabs />
-
             {/* Business Info Card */}
             <div className={styles.card}>
                 <div className={styles.cardTitle}>{t('settings.bizInfo')}</div>
