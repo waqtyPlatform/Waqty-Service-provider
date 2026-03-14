@@ -17,6 +17,11 @@
     width: var(--sidebar-collapsed);
 }
 
+.collapsed .header {
+    justify-content: center;
+    padding: var(--space-4) var(--space-2);
+}
+
 /* ── Header ── */
 .header {
     display: flex;
@@ -59,6 +64,21 @@
     white-space: nowrap;
 }
 
+.logoIconBtn {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.logoIconBtn:hover .logoIcon {
+    background: var(--color-primary-400);
+}
+
 .collapseBtn {
     width: 28px;
     height: 28px;
@@ -74,10 +94,6 @@
 .collapseBtn:hover {
     background: var(--bg-sidebar-hover);
     color: white;
-}
-
-.collapsed .collapseBtn {
-    transform: rotate(180deg);
 }
 
 .mobileCloseBtn {

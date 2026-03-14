@@ -237,22 +237,29 @@ export default function Sidebar() {
             >
                 {/* Header */}
                 <div className={styles.header}>
-                    {!collapsed && (
+                    {!collapsed ? (
                         <Link href="/" className={styles.logo}>
                             <div className={styles.logoIcon}>H</div>
                             <span className={styles.logoText}>Hagzy</span>
                         </Link>
+                    ) : (
+                        <button
+                            className={styles.logoIconBtn}
+                            onClick={toggleSidebar}
+                            aria-label="Expand sidebar"
+                        >
+                            <div className={styles.logoIcon}>H</div>
+                        </button>
                     )}
-                    {collapsed && (
-                        <div className={styles.logoIcon}>H</div>
+                    {!collapsed && (
+                        <button
+                            className={styles.collapseBtn}
+                            onClick={toggleSidebar}
+                            aria-label="Collapse sidebar"
+                        >
+                            <ChevronLeft size={18} />
+                        </button>
                     )}
-                    <button
-                        className={styles.collapseBtn}
-                        onClick={toggleSidebar}
-                        aria-label="Toggle sidebar"
-                    >
-                        <ChevronLeft size={18} />
-                    </button>
                     <button
                         className={styles.mobileCloseBtn}
                         onClick={() => setMobileOpen(false)}
@@ -290,7 +297,16 @@ export default function Sidebar() {
                                         <button
                                             className={`${styles.navLink} ${itemActive ? styles.active : ''
                                                 }`}
-                                            onClick={() => toggleExpand(item.label)}
+                                            onClick={() => {
+                                                if (collapsed) {
+                                                    toggleSidebar();
+                                                    setExpandedItems(prev =>
+                                                        prev.includes(item.label) ? prev : [...prev, item.label]
+                                                    );
+                                                } else {
+                                                    toggleExpand(item.label);
+                                                }
+                                            }}
                                             title={collapsed ? item.label : undefined}
                                         >
                                             <span className={styles.navIcon}>{item.icon}</span>

@@ -187,7 +187,7 @@ export default function DashboardPage() {
     { icon: <Image size={18} />, label: 'Add your logo', href: '/settings', color: '#7C3AED' },
     { icon: <Clock size={18} />, label: 'Set working hours', href: '/settings/hours', color: '#0EA5E9' },
     { icon: <UserCog size={18} />, label: 'Add team members', href: '/employees', color: '#F59E0B' },
-    { icon: <Globe size={18} />, label: 'Set up booking page', href: '/settings/appearance', color: '#10B981' },
+    { icon: <Globe size={18} />, label: 'Add your services', href: '/settings/services', color: '#10B981' },
     { icon: <CreditCard size={18} />, label: 'Add payment method', href: '/settings/payment-methods', color: '#EF4444' },
   ];
 
