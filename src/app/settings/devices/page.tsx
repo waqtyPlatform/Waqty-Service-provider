@@ -2,16 +2,15 @@
 
 import React from 'react';
 import { Monitor, Smartphone, Printer, Wifi, WifiOff } from 'lucide-react';
-import SettingsTabs from '@/components/SettingsTabs';
 import { useTranslation } from '@/hooks/useTranslation';
 
 const devices = [
-    { id: 1, name: 'Reception POS', type: 'POS Terminal', model: 'Sunmi V2 Pro', branch: 'Downtown', lastSeen: '2026-02-17 10:05', online: true },
-    { id: 2, name: 'BioStation A2', type: 'Fingerprint Scanner', model: 'Suprema BioStation A2', branch: 'Downtown', lastSeen: '2026-02-17 10:00', online: true },
-    { id: 3, name: 'FaceStation F2', type: 'Face Recognition', model: 'Suprema FaceStation F2', branch: 'Downtown', lastSeen: '2026-02-17 09:58', online: true },
-    { id: 4, name: 'Receipt Printer', type: 'Printer', model: 'Epson TM-T88VI', branch: 'Downtown', lastSeen: '2026-02-17 09:45', online: true },
-    { id: 5, name: 'Mall POS', type: 'POS Terminal', model: 'Sunmi V2 Pro', branch: 'Mall of Arabia', lastSeen: '2026-02-17 08:30', online: true },
-    { id: 6, name: 'New Cairo POS', type: 'POS Terminal', model: 'Sunmi V2 Pro', branch: 'New Cairo', lastSeen: '2026-02-16 18:00', online: false },
+    { id: 1, name: 'Reception POS', type: 'POS Terminal', model: 'Sunmi V2 Pro', branch: 'Downtown', lastSeen: '2026-03-13 10:05', online: true },
+    { id: 2, name: 'BioStation A2', type: 'Fingerprint Scanner', model: 'Suprema BioStation A2', branch: 'Downtown', lastSeen: '2026-03-19 10:00', online: true },
+    { id: 3, name: 'FaceStation F2', type: 'Face Recognition', model: 'Suprema FaceStation F2', branch: 'Downtown', lastSeen: '2026-03-25 09:58', online: true },
+    { id: 4, name: 'Receipt Printer', type: 'Printer', model: 'Epson TM-T88VI', branch: 'Downtown', lastSeen: '2026-03-15 09:45', online: true },
+    { id: 5, name: 'Mall POS', type: 'POS Terminal', model: 'Sunmi V2 Pro', branch: 'Mall of Arabia', lastSeen: '2026-03-13 08:30', online: true },
+    { id: 6, name: 'New Cairo POS', type: 'POS Terminal', model: 'Sunmi V2 Pro', branch: 'New Cairo', lastSeen: '2026-03-13 18:00', online: false },
 ];
 
 const getTypeIcon = (type: string) => {
@@ -47,8 +46,7 @@ export default function DevicesPage() {
 
     return (
         <div style={s.page}>
-            <SettingsTabs />
-            <table style={s.table}>
+<table style={s.table}>
                 <thead>
                     <tr>
                         <th style={{ ...s.th as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('settings.devices.colDevice')}</th>

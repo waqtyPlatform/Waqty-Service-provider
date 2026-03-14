@@ -20,16 +20,16 @@ interface TimeEntry {
 }
 
 const timeData: TimeEntry[] = [
-    { id: 'T001', employee: 'Sara Ahmed', avatar: 'SA', color: '#10b981', date: '2026-02-18', clockIn: '09:55', clockOut: '18:10', totalHours: '8h 15m', overtime: '10m', status: 'on_time' },
-    { id: 'T002', employee: 'Nora Ali', avatar: 'NA', color: '#f59e0b', date: '2026-02-18', clockIn: '10:20', clockOut: '18:00', totalHours: '7h 40m', overtime: '-', status: 'late' },
-    { id: 'T003', employee: 'Layla Hassan', avatar: 'LH', color: '#3b82f6', date: '2026-02-18', clockIn: '09:58', clockOut: '17:30', totalHours: '7h 32m', overtime: '-', status: 'early_leave' },
-    { id: 'T004', employee: 'Hana Youssef', avatar: 'HY', color: '#8b5cf6', date: '2026-02-18', clockIn: '09:00', clockOut: '17:05', totalHours: '8h 05m', overtime: '5m', status: 'on_time' },
-    { id: 'T005', employee: 'Reem Mohamed', avatar: 'RM', color: '#ec4899', date: '2026-02-18', clockIn: '-', clockOut: '-', totalHours: '-', overtime: '-', status: 'absent' },
-    { id: 'T006', employee: 'Dina Kamal', avatar: 'DK', color: '#6366f1', date: '2026-02-18', clockIn: '09:50', clockOut: '18:30', totalHours: '8h 40m', overtime: '30m', status: 'on_time' },
-    { id: 'T007', employee: 'Sara Ahmed', avatar: 'SA', color: '#10b981', date: '2026-02-17', clockIn: '09:58', clockOut: '18:05', totalHours: '8h 07m', overtime: '5m', status: 'on_time' },
-    { id: 'T008', employee: 'Nora Ali', avatar: 'NA', color: '#f59e0b', date: '2026-02-17', clockIn: '09:55', clockOut: '18:00', totalHours: '8h 05m', overtime: '-', status: 'on_time' },
-    { id: 'T009', employee: 'Layla Hassan', avatar: 'LH', color: '#3b82f6', date: '2026-02-17', clockIn: '10:15', clockOut: '18:00', totalHours: '7h 45m', overtime: '-', status: 'late' },
-    { id: 'T010', employee: 'Hana Youssef', avatar: 'HY', color: '#8b5cf6', date: '2026-02-17', clockIn: '09:00', clockOut: '17:00', totalHours: '8h 00m', overtime: '-', status: 'on_time' },
+    { id: 'T001', employee: 'Sara Ahmed', avatar: 'SA', color: '#10b981', date: '2026-03-25', clockIn: '09:55', clockOut: '18:10', totalHours: '8h 15m', overtime: '10m', status: 'on_time' },
+    { id: 'T002', employee: 'Nora Ali', avatar: 'NA', color: '#f59e0b', date: '2026-03-25', clockIn: '10:20', clockOut: '18:00', totalHours: '7h 40m', overtime: '-', status: 'late' },
+    { id: 'T003', employee: 'Layla Hassan', avatar: 'LH', color: '#3b82f6', date: '2026-03-18', clockIn: '09:58', clockOut: '17:30', totalHours: '7h 32m', overtime: '-', status: 'early_leave' },
+    { id: 'T004', employee: 'Hana Youssef', avatar: 'HY', color: '#8b5cf6', date: '2026-03-23', clockIn: '09:00', clockOut: '17:05', totalHours: '8h 05m', overtime: '5m', status: 'on_time' },
+    { id: 'T005', employee: 'Reem Mohamed', avatar: 'RM', color: '#ec4899', date: '2026-03-26', clockIn: '-', clockOut: '-', totalHours: '-', overtime: '-', status: 'absent' },
+    { id: 'T006', employee: 'Dina Kamal', avatar: 'DK', color: '#6366f1', date: '2026-03-21', clockIn: '09:50', clockOut: '18:30', totalHours: '8h 40m', overtime: '30m', status: 'on_time' },
+    { id: 'T007', employee: 'Sara Ahmed', avatar: 'SA', color: '#10b981', date: '2026-03-21', clockIn: '09:58', clockOut: '18:05', totalHours: '8h 07m', overtime: '5m', status: 'on_time' },
+    { id: 'T008', employee: 'Nora Ali', avatar: 'NA', color: '#f59e0b', date: '2026-03-20', clockIn: '09:55', clockOut: '18:00', totalHours: '8h 05m', overtime: '-', status: 'on_time' },
+    { id: 'T009', employee: 'Layla Hassan', avatar: 'LH', color: '#3b82f6', date: '2026-03-14', clockIn: '10:15', clockOut: '18:00', totalHours: '7h 45m', overtime: '-', status: 'late' },
+    { id: 'T010', employee: 'Hana Youssef', avatar: 'HY', color: '#8b5cf6', date: '2026-03-17', clockIn: '09:00', clockOut: '17:00', totalHours: '8h 00m', overtime: '-', status: 'on_time' },
 ];
 
 /* ─── Styles ───────────────────────────── */
@@ -65,7 +65,7 @@ export default function TimeTrackingPage() {
     const { t, lang } = useTranslation();
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
-    const [dateFilter, setDateFilter] = useState('2026-02-18');
+    const [dateFilter, setDateFilter] = useState('2026-03-21');
 
     const statusLabels: Record<string, string> = {
         on_time: t('timeTrack.onTime'),
@@ -83,7 +83,7 @@ export default function TimeTrackingPage() {
         });
     }, [search, statusFilter, dateFilter]);
 
-    const todayEntries = timeData.filter(e => e.date === '2026-02-18');
+    const todayEntries = timeData.filter(e => e.date === '2026-03-25');
     const clockedIn = todayEntries.filter(e => e.status !== 'absent').length;
     const lateToday = todayEntries.filter(e => e.status === 'late').length;
     const avgHours = '8h 05m';

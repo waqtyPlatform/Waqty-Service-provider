@@ -6,14 +6,14 @@ import { Search, Download } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 
 const data = [
-    { id: 1, client: 'Fatima Ali', group: 'VIP', opening: 0, credits: 2500, debits: 2180, closing: 320, lastTxn: '2026-02-17' },
-    { id: 2, client: 'Rania Khalil', group: 'VIP', opening: 150, credits: 1200, debits: 1350, closing: 0, lastTxn: '2026-02-16' },
-    { id: 3, client: 'Noura Ahmed', group: 'Regular', opening: 0, credits: 800, debits: 400, closing: 400, lastTxn: '2026-02-15' },
-    { id: 4, client: 'Huda Saleh', group: 'VIP', opening: 200, credits: 600, debits: 800, closing: 0, lastTxn: '2026-02-14' },
-    { id: 5, client: 'Maryam Ibrahim', group: 'Regular', opening: 0, credits: 350, debits: 200, closing: 150, lastTxn: '2026-02-13' },
-    { id: 6, client: 'Sama Latif', group: 'Regular', opening: 0, credits: 520, debits: 520, closing: 0, lastTxn: '2026-02-12' },
-    { id: 7, client: 'Dana Faris', group: 'New', opening: 0, credits: 1500, debits: 1000, closing: 500, lastTxn: '2026-02-10' },
-    { id: 8, client: 'Lina Qasim', group: 'Regular', opening: 100, credits: 300, debits: 250, closing: 150, lastTxn: '2026-02-11' },
+    { id: 1, client: 'Fatima Ali', group: 'VIP', opening: 0, credits: 2500, debits: 2180, closing: 320, lastTxn: '2026-03-21' },
+    { id: 2, client: 'Rania Khalil', group: 'VIP', opening: 150, credits: 1200, debits: 1350, closing: 0, lastTxn: '2026-03-14' },
+    { id: 3, client: 'Noura Ahmed', group: 'Regular', opening: 0, credits: 800, debits: 400, closing: 400, lastTxn: '2026-03-14' },
+    { id: 4, client: 'Huda Saleh', group: 'VIP', opening: 200, credits: 600, debits: 800, closing: 0, lastTxn: '2026-03-23' },
+    { id: 5, client: 'Maryam Ibrahim', group: 'Regular', opening: 0, credits: 350, debits: 200, closing: 150, lastTxn: '2026-03-24' },
+    { id: 6, client: 'Sama Latif', group: 'Regular', opening: 0, credits: 520, debits: 520, closing: 0, lastTxn: '2026-03-25' },
+    { id: 7, client: 'Dana Faris', group: 'New', opening: 0, credits: 1500, debits: 1000, closing: 500, lastTxn: '2026-03-23' },
+    { id: 8, client: 'Lina Qasim', group: 'Regular', opening: 100, credits: 300, debits: 250, closing: 150, lastTxn: '2026-03-26' },
 ];
 
 const s: Record<string, React.CSSProperties> = {

@@ -11,18 +11,20 @@ import {
     CalendarDays,
     Clock,
     Building2,
+    AlertTriangle,
 } from 'lucide-react';
 import { EmptyState } from '@/components/ui';
 import styles from './bookings.module.css';
 import BookingsTabs from './BookingsTabs';
 import { useTranslation } from '@/hooks/useTranslation';
+import { isEmployeeOnShift } from '@/lib/shiftData';
 
 const employees = [
-    { name: 'Sara A.', initials: 'SA', color: '#8B5CF6', status: 'Available' },
-    { name: 'Nora A.', initials: 'NA', color: '#EC4899', status: 'In Session' },
-    { name: 'Layla H.', initials: 'LH', color: '#3B82F6', status: 'Available' },
-    { name: 'Reem M.', initials: 'RM', color: '#10B981', status: 'Break' },
-    { name: 'Hana Y.', initials: 'HY', color: '#F59E0B', status: 'Available' },
+    { name: 'Sara A.', initials: 'SA', color: '#8B5CF6', status: 'Available', empId: 'E001', role: 'Senior Stylist' },
+    { name: 'Nora A.', initials: 'NA', color: '#EC4899', status: 'In Session', empId: 'E002', role: 'Skin Specialist' },
+    { name: 'Layla H.', initials: 'LH', color: '#3B82F6', status: 'Available', empId: 'E003', role: 'Senior Therapist' },
+    { name: 'Reem M.', initials: 'RM', color: '#10B981', status: 'Break', empId: 'E005', role: 'Massage Therapist' },
+    { name: 'Hana Y.', initials: 'HY', color: '#F59E0B', status: 'Available', empId: 'E004', role: 'Nail Technician' },
 ];
 
 const timeSlots = [
@@ -144,6 +146,11 @@ export default function BookingsCalendarPage() {
                                     </div>
                                     <div className={styles.empName}>{emp.name}</div>
                                     <div className={styles.empStatus}>{emp.status}</div>
+                                    {!isEmployeeOnShift(emp.empId, emp.role, currentDate.toISOString().split('T')[0]) && (
+                                        <div style={{ color: 'var(--color-warning-600)', fontSize: 10, display: 'flex', alignItems: 'center', gap: 2, marginTop: 2 }}>
+                                            <AlertTriangle size={10} /> Off-shift
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>

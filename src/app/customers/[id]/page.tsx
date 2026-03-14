@@ -42,14 +42,14 @@ import styles from './page.module.css';
 
 // Mock Data
 const clientReviews = [
-    { id: '1', author: 'Fatima Al-Rashid', target: 'Sara Ahmed', role: 'Employee', rating: 5, date: 'Feb 15, 2026', comment: 'Sara is amazing! Best hair coloring I ever had.', type: 'by_customer' },
-    { id: '2', author: 'Nora Ali', target: 'Fatima Al-Rashid', role: 'Customer', rating: 4, date: 'Feb 10, 2026', comment: 'Client was slightly late, but otherwise very pleasant.', type: 'about_customer' }
+    { id: '1', author: 'Fatima Al-Rashid', target: 'Sara Ahmed', role: 'Employee', rating: 5, date: 'Mar 16, 2026', comment: 'Sara is amazing! Best hair coloring I ever had.', type: 'by_customer' },
+    { id: '2', author: 'Nora Ali', target: 'Fatima Al-Rashid', role: 'Customer', rating: 4, date: 'Mar 25, 2026', comment: 'Client was slightly late, but otherwise very pleasant.', type: 'about_customer' }
 ];
 
 // Task 05: Staff Notes (internal employee notes about client)
 const initialStaffNotes = [
-    { id: '1', employee: 'Sara Ahmed', employeeAvatar: 'SA', service: 'Hair Coloring', date: 'Feb 15, 2026', rating: 5, note: 'Client has sensitive scalp — used sulfate-free products. Very cooperative and communicates well. Great client to work with.' },
-    { id: '2', employee: 'Nora Ali', employeeAvatar: 'NA', service: 'Facial', date: 'Jan 20, 2026', rating: 3, note: 'Client arrived 15 minutes late which compressed the session. Requested lower pressure throughout. Should allocate extra buffer time.' },
+    { id: '1', employee: 'Sara Ahmed', employeeAvatar: 'SA', service: 'Hair Coloring', date: 'Mar 21, 2026', rating: 5, note: 'Client has sensitive scalp — used sulfate-free products. Very cooperative and communicates well. Great client to work with.' },
+    { id: '2', employee: 'Nora Ali', employeeAvatar: 'NA', service: 'Facial', date: 'Mar 14, 2026', rating: 3, note: 'Client arrived 15 minutes late which compressed the session. Requested lower pressure throughout. Should allocate extra buffer time.' },
 ];
 
 const client = {
@@ -61,7 +61,7 @@ const client = {
     avatar: 'FA',
     status: 'active',
     vip: true,
-    joined: 'Jan 15, 2024',
+    joined: 'Mar 17, 2026',
     dob: '1992-05-12',
     medical: {
         allergies: ['Latex'],
@@ -93,28 +93,28 @@ const PREF_COLORS: Record<string, { bg: string; color: string }> = {
 };
 
 const timelineEvents = [
-    { time: 'Feb 15, 2026', title: 'Completed Appointment', description: 'Hair Coloring with Sarah Ahmed. Paid 1,200 EGP.' },
-    { time: 'Feb 10, 2026', title: 'Service Add-on', description: 'Added Deep Conditioning. Paid 450 EGP.' },
-    { time: 'Jan 28, 2026', title: 'Missed Appointment', description: 'No-show for Manicure. Marked by Reception.' },
+    { time: 'Mar 19, 2026', title: 'Completed Appointment', description: 'Hair Coloring with Sarah Ahmed. Paid 1,200 EGP.' },
+    { time: 'Mar 17, 2026', title: 'Service Add-on', description: 'Added Deep Conditioning. Paid 450 EGP.' },
+    { time: 'Mar 22, 2026', title: 'Missed Appointment', description: 'No-show for Manicure. Marked by Reception.' },
 ];
 
 const bookings = [
-    { id: 1042, date: 'Feb 15, 2026', time: '10:00 AM', service: 'Hair Coloring', employee: 'Sarah Ahmed', status: 'completed', price: 1200 },
-    { id: 1055, date: 'Feb 28, 2026', time: '02:00 PM', service: 'Keratin Treatment', employee: 'Nora Ali', status: 'confirmed', price: 2500 },
+    { id: 1042, date: 'Mar 14, 2026', time: '10:00 AM', service: 'Hair Coloring', employee: 'Sarah Ahmed', status: 'completed', price: 1200 },
+    { id: 1055, date: 'Mar 18, 2026', time: '02:00 PM', service: 'Keratin Treatment', employee: 'Nora Ali', status: 'confirmed', price: 2500 },
 ];
 
 const sales = [
-    { id: 'INV-001', date: 'Feb 15, 2026', items: 'Hair Coloring, Shampoo', total: 1450, status: 'paid' },
-    { id: 'INV-002', date: 'Feb 10, 2026', items: 'Deep Conditioning Add-on', total: 450, status: 'paid' },
+    { id: 'INV-001', date: 'Mar 16, 2026', items: 'Hair Coloring, Shampoo', total: 1450, status: 'paid' },
+    { id: 'INV-002', date: 'Mar 14, 2026', items: 'Deep Conditioning Add-on', total: 450, status: 'paid' },
 ];
 
 const medicalFiles = [
-    { id: '1', name: 'Dermatology_Consult_Notes.pdf', type: 'PDF', size: '2.4 MB', date: 'Feb 15, 2026', uploader: 'Dr. Sarah Ahmed' },
-    { id: '2', name: 'Before_Treatment_Skin.jpg', type: 'Image', size: '4.1 MB', date: 'Feb 10, 2026', uploader: 'Fatima Al-Rashid' }
+    { id: '1', name: 'Dermatology_Consult_Notes.pdf', type: 'PDF', size: '2.4 MB', date: 'Mar 16, 2026', uploader: 'Dr. Sarah Ahmed' },
+    { id: '2', name: 'Before_Treatment_Skin.jpg', type: 'Image', size: '4.1 MB', date: 'Mar 23, 2026', uploader: 'Fatima Al-Rashid' }
 ];
 
 const intakeForms = [
-    { id: '1', name: 'Initial Health Intake Questionnaire', status: 'Completed', dateCompleted: 'Jan 15, 2024', relatedBooking: null },
+    { id: '1', name: 'Initial Health Intake Questionnaire', status: 'Completed', dateCompleted: 'Mar 16, 2026', relatedBooking: null },
     { id: '2', name: 'Laser Hair Removal Consent Form', status: 'Pending', dateCompleted: null, relatedBooking: '#1055' }
 ];
 

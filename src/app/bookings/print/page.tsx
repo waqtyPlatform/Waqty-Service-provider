@@ -79,7 +79,7 @@ export default function EmployeePrintPage() {
 
             <div style={s.header}>
                 <div>
-                    <h1 style={s.h1}>{t('bk.printTitle')} — Feb 17, 2026</h1>
+                    <h1 style={s.h1}>{t('bk.printTitle')} — Mar 16, 2026</h1>
                     <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginTop: 'var(--space-1)' }}>{t('bk.printSub')}</p>
                 </div>
                 <button style={s.printBtn} onClick={() => window.print()}>

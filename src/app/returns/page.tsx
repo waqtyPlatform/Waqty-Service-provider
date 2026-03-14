@@ -18,11 +18,11 @@ import { useTranslation } from '@/hooks/useTranslation';
 import styles from './returns.module.css';
 
 const returns = [
-    { id: 'RTN-301', date: 'Feb 17, 2026', time: '10:30', type: 'service', originalTxn: 'TXN-2045', client: 'Huda Saleh', item: 'Gel Manicure', reason: 'Client dissatisfied with result', amount: 150, method: 'Cash', status: 'approved', employee: 'Hana Youssef' },
-    { id: 'RTN-299', date: 'Feb 15, 2026', time: '11:45', type: 'service', originalTxn: 'TXN-2028', client: 'Noura Ahmed', item: 'Swedish Massage', reason: 'Service not completed – emergency', amount: 300, method: 'Cash', status: 'pending', employee: 'Reem Mohamed' },
-    { id: 'RTN-298', date: 'Feb 14, 2026', time: '13:00', type: 'advance', originalTxn: 'TXN-2025', client: 'Rania Khalil', item: 'Bridal Package Down Payment', reason: 'Wedding postponed', amount: 1000, method: 'Card', status: 'approved', employee: 'Nora Ali' },
-    { id: 'RTN-296', date: 'Feb 10, 2026', time: '16:30', type: 'petty', originalTxn: 'TXN-2015', client: '—', item: 'Petty Cash Refund – Supplier Overcharge', reason: 'Vendor corrected invoice', amount: 120, method: 'Internal', status: 'approved', employee: 'Admin' },
-    { id: 'RTN-295', date: 'Feb 8, 2026', time: '12:00', type: 'service', originalTxn: 'TXN-2010', client: 'Maryam Ibrahim', item: 'HydraFacial', reason: 'Double booking – service cancelled', amount: 450, method: 'Card', status: 'rejected', employee: 'Nora Ali' },
+    { id: 'RTN-301', date: 'Mar 21, 2026', time: '10:30', type: 'service', originalTxn: 'TXN-2045', client: 'Huda Saleh', item: 'Gel Manicure', reason: 'Client dissatisfied with result', amount: 150, method: 'Cash', status: 'approved', employee: 'Hana Youssef' },
+    { id: 'RTN-299', date: 'Mar 25, 2026', time: '11:45', type: 'service', originalTxn: 'TXN-2028', client: 'Noura Ahmed', item: 'Swedish Massage', reason: 'Service not completed – emergency', amount: 300, method: 'Cash', status: 'pending', employee: 'Reem Mohamed' },
+    { id: 'RTN-298', date: 'Mar 13, 2026', time: '13:00', type: 'advance', originalTxn: 'TXN-2025', client: 'Rania Khalil', item: 'Bridal Package Down Payment', reason: 'Wedding postponed', amount: 1000, method: 'Card', status: 'approved', employee: 'Nora Ali' },
+    { id: 'RTN-296', date: 'Mar 19, 2026', time: '16:30', type: 'petty', originalTxn: 'TXN-2015', client: '—', item: 'Petty Cash Refund – Supplier Overcharge', reason: 'Vendor corrected invoice', amount: 120, method: 'Internal', status: 'approved', employee: 'Admin' },
+    { id: 'RTN-295', date: 'Mar 12, 2026', time: '12:00', type: 'service', originalTxn: 'TXN-2010', client: 'Maryam Ibrahim', item: 'HydraFacial', reason: 'Double booking – service cancelled', amount: 450, method: 'Card', status: 'rejected', employee: 'Nora Ali' },
 ];
 
 export default function ReturnsPage() {

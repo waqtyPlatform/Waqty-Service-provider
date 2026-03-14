@@ -101,9 +101,9 @@ const recentActivity = [
 const modules = ['dashboard', 'sales', 'transactions', 'returns', 'customers', 'employees', 'marketing', 'reports', 'settings'];
 
 const employeeReviews = [
-    { id: '1', customer: 'Fatima Al-Rashid', rating: 5, date: 'Feb 15, 2026', comment: 'Sara is an amazing stylist! The best hair coloring I\'ve ever had.' },
-    { id: '2', customer: 'Aisha Mohammed', rating: 4, date: 'Feb 10, 2026', comment: 'Very professional. Took a bit longer than expected, but great results.' },
-    { id: '3', customer: 'Huda Saleh', rating: 5, date: 'Jan 28, 2026', comment: 'Always a pleasure getting my hair done here.' },
+    { id: '1', customer: 'Fatima Al-Rashid', rating: 5, date: 'Mar 20, 2026', comment: 'Sara is an amazing stylist! The best hair coloring I\'ve ever had.' },
+    { id: '2', customer: 'Aisha Mohammed', rating: 4, date: 'Mar 26, 2026', comment: 'Very professional. Took a bit longer than expected, but great results.' },
+    { id: '3', customer: 'Huda Saleh', rating: 5, date: 'Mar 25, 2026', comment: 'Always a pleasure getting my hair done here.' },
 ];
 
 export default function EmployeeProfilePage({ params }: { params: Promise<{ id: string }> }) {

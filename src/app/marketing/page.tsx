@@ -27,22 +27,22 @@ const offers = [
     {
         id: 'OF-001', name: 'Valentine\'s Special', desc: 'Buy any facial treatment and get 50% off a massage.',
         discount: '50% OFF', bg: 'linear-gradient(135deg, #EC4899 0%, #8B5CF6 100%)',
-        status: 'active', validUntil: 'Feb 28, 2026', uses: 42, views: 320,
+        status: 'active', validUntil: 'Mar 20, 2026', uses: 42, views: 320,
     },
     {
         id: 'OF-002', name: 'New Client Welcome', desc: 'First-time clients get 25% off any service.',
         discount: '25% OFF', bg: 'linear-gradient(135deg, #10B981 0%, #3B82F6 100%)',
-        status: 'active', validUntil: 'Mar 31, 2026', uses: 87, views: 560,
+        status: 'active', validUntil: 'Mar 20, 2026', uses: 87, views: 560,
     },
     {
         id: 'OF-003', name: 'Summer Hair Bundle', desc: 'Haircut + Keratin + Styling for a fixed price.',
         discount: 'BUNDLE', bg: 'linear-gradient(135deg, #F59E0B 0%, #EF4444 100%)',
-        status: 'draft', validUntil: 'Jun 30, 2026', uses: 0, views: 0,
+        status: 'draft', validUntil: 'Mar 14, 2026', uses: 0, views: 0,
     },
     {
         id: 'OF-004', name: 'Loyalty Reward', desc: 'Every 10th visit gets a free classic manicure.',
         discount: 'FREE', bg: 'linear-gradient(135deg, #6366F1 0%, #EC4899 100%)',
-        status: 'active', validUntil: 'Dec 31, 2026', uses: 15, views: 210,
+        status: 'active', validUntil: 'Mar 26, 2026', uses: 15, views: 210,
     },
     {
         id: 'OF-005', name: 'Flash Friday', desc: '30% off all skin services — Fridays only.',
@@ -52,17 +52,17 @@ const offers = [
     {
         id: 'OF-006', name: 'Eid Celebration', desc: 'Special full-body pampering package at 40% off.',
         discount: '40% OFF', bg: 'linear-gradient(135deg, #B45309 0%, #F59E0B 100%)',
-        status: 'expired', validUntil: 'Jan 15, 2026', uses: 63, views: 480,
+        status: 'expired', validUntil: 'Mar 23, 2026', uses: 63, views: 480,
     },
 ];
 
 // ─── PROMO CODES ─────────────────────────────────────────────────────
 const promoCodes = [
-    { code: 'WELCOME25', type: 'Percentage', value: '25%', minSpend: 200, maxUses: 100, used: 87, status: 'active', expires: 'Mar 31, 2026' },
-    { code: 'VALENTINE50', type: 'Percentage', value: '50%', minSpend: 300, maxUses: 50, used: 42, status: 'active', expires: 'Feb 28, 2026' },
-    { code: 'EID100', type: 'Fixed', value: '100 EGP', minSpend: 500, maxUses: 200, used: 63, status: 'expired', expires: 'Jan 15, 2026' },
-    { code: 'FLASH30', type: 'Percentage', value: '30%', minSpend: 150, maxUses: 80, used: 0, status: 'scheduled', expires: 'Mar 15, 2026' },
-    { code: 'VIP2026', type: 'Fixed', value: '200 EGP', minSpend: 1000, maxUses: 30, used: 12, status: 'active', expires: 'Dec 31, 2026' },
+    { code: 'WELCOME25', type: 'Percentage', value: '25%', minSpend: 200, maxUses: 100, used: 87, status: 'active', expires: 'Mar 13, 2026' },
+    { code: 'VALENTINE50', type: 'Percentage', value: '50%', minSpend: 300, maxUses: 50, used: 42, status: 'active', expires: 'Mar 25, 2026' },
+    { code: 'EID100', type: 'Fixed', value: '100 EGP', minSpend: 500, maxUses: 200, used: 63, status: 'expired', expires: 'Mar 25, 2026' },
+    { code: 'FLASH30', type: 'Percentage', value: '30%', minSpend: 150, maxUses: 80, used: 0, status: 'scheduled', expires: 'Mar 25, 2026' },
+    { code: 'VIP2026', type: 'Fixed', value: '200 EGP', minSpend: 1000, maxUses: 30, used: 12, status: 'active', expires: 'Mar 21, 2026' },
 ];
 
 // ─── MESSAGE TEMPLATES ───────────────────────────────────────────────

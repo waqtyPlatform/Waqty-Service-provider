@@ -1,9 +1,13 @@
 {
   "permissions": {
     "allow": [
+      "mcp__ba414327-b5f0-45c0-9dc7-42a23bc2e09d__deploy_to_vercel",
+      "Bash(vercel deploy)",
+      "Bash(npx next build)",
       "mcp__Claude_Preview__preview_start",
-      "Skill(commit-commands:commit-push-pr)",
-      "Skill(commit-commands:commit-push-pr:*)"
+      "Bash(npm run dev)",
+      "Bash(git add src/app/onboarding/onboarding.module.css src/app/onboarding/page.tsx src/app/page.module.css src/app/page.tsx src/app/settings/page.tsx src/app/settings/settings.module.css src/contexts/AuthContext.tsx)",
+      "Bash(git commit:*)"
     ]
   },
   "enabledPlugins": {

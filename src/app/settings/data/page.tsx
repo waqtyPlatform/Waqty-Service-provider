@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import SettingsTabs from '@/components/SettingsTabs';
 import { Button, Switch, Modal, useToast } from '@/components/ui';
 import { Database, Download, Upload } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -35,8 +34,7 @@ export default function DataSettingsPage() {
 
     return (
         <div style={cs.page}>
-            <SettingsTabs />
-            <div style={cs.card}>
+<div style={cs.card}>
                 <div style={cs.cardTitle}>{t('settings.data.title')}</div>
                 <div style={cs.cardDesc}>{t('settings.data.desc')}</div>
 

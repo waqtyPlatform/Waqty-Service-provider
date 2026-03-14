@@ -21,12 +21,12 @@ const tabs = [
 ];
 
 const data = [
-    { id: 'ADV-001', date: '2026-02-17', client: 'Fatima Ali', booking: 'BK-1042', service: 'Bridal Package', total: 2500, paid: 1000, balance: 1500, status: 'partial' },
-    { id: 'ADV-002', date: '2026-02-16', client: 'Noura Ahmed', booking: 'BK-1038', service: 'Keratin + Color', total: 1200, paid: 600, balance: 600, status: 'partial' },
-    { id: 'ADV-003', date: '2026-02-15', client: 'Rania Khalil', booking: 'BK-1035', service: 'VIP Monthly', total: 1200, paid: 1200, balance: 0, status: 'paid' },
-    { id: 'ADV-004', date: '2026-02-14', client: 'Huda Saleh', booking: 'BK-1030', service: 'Relaxation Retreat', total: 800, paid: 400, balance: 400, status: 'partial' },
-    { id: 'ADV-005', date: '2026-02-13', client: 'Maryam Ibrahim', booking: 'BK-1028', service: 'Deep Tissue x3', total: 600, paid: 200, balance: 400, status: 'partial' },
-    { id: 'ADV-006', date: '2026-02-12', client: 'Sama Latif', booking: 'BK-1025', service: 'Hair Transformation', total: 1500, paid: 1500, balance: 0, status: 'paid' },
+    { id: 'ADV-001', date: '2026-03-14', client: 'Fatima Ali', booking: 'BK-1042', service: 'Bridal Package', total: 2500, paid: 1000, balance: 1500, status: 'partial' },
+    { id: 'ADV-002', date: '2026-03-16', client: 'Noura Ahmed', booking: 'BK-1038', service: 'Keratin + Color', total: 1200, paid: 600, balance: 600, status: 'partial' },
+    { id: 'ADV-003', date: '2026-03-22', client: 'Rania Khalil', booking: 'BK-1035', service: 'VIP Monthly', total: 1200, paid: 1200, balance: 0, status: 'paid' },
+    { id: 'ADV-004', date: '2026-03-16', client: 'Huda Saleh', booking: 'BK-1030', service: 'Relaxation Retreat', total: 800, paid: 400, balance: 400, status: 'partial' },
+    { id: 'ADV-005', date: '2026-03-22', client: 'Maryam Ibrahim', booking: 'BK-1028', service: 'Deep Tissue x3', total: 600, paid: 200, balance: 400, status: 'partial' },
+    { id: 'ADV-006', date: '2026-03-18', client: 'Sama Latif', booking: 'BK-1025', service: 'Hair Transformation', total: 1500, paid: 1500, balance: 0, status: 'paid' },
 ];
 
 const s: Record<string, React.CSSProperties> = {

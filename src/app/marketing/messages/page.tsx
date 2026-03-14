@@ -20,19 +20,19 @@ const initialPlaceholders = [
 ];
 
 const initialTemplates = [
-    { id: 1, name: 'Appointment Reminder', channel: 'WhatsApp', body: 'Hi {name}, this is a reminder for your appointment on {date} at {time}. Reply YES to confirm.', lastUsed: '2026-02-17', usageCount: 156 },
-    { id: 2, name: 'Thank You Follow-up', channel: 'SMS', body: 'Thank you {name} for visiting us! We hope you enjoyed your {service}. See you again soon! ✨', lastUsed: '2026-02-16', usageCount: 89 },
-    { id: 3, name: 'Birthday Greeting', channel: 'WhatsApp', body: 'Happy Birthday {name}! 🎂 Enjoy a special {discount}% off on any service today!', lastUsed: '2026-02-15', usageCount: 42 },
-    { id: 4, name: 'Payment Due Reminder', channel: 'SMS', body: 'Hi {name}, you have an outstanding balance of {amount} EGP. Please settle at your convenience.', lastUsed: '2026-02-10', usageCount: 67 },
+    { id: 1, name: 'Appointment Reminder', channel: 'WhatsApp', body: 'Hi {name}, this is a reminder for your appointment on {date} at {time}. Reply YES to confirm.', lastUsed: '2026-03-25', usageCount: 156 },
+    { id: 2, name: 'Thank You Follow-up', channel: 'SMS', body: 'Thank you {name} for visiting us! We hope you enjoyed your {service}. See you again soon! ✨', lastUsed: '2026-03-13', usageCount: 89 },
+    { id: 3, name: 'Birthday Greeting', channel: 'WhatsApp', body: 'Happy Birthday {name}! 🎂 Enjoy a special {discount}% off on any service today!', lastUsed: '2026-03-14', usageCount: 42 },
+    { id: 4, name: 'Payment Due Reminder', channel: 'SMS', body: 'Hi {name}, you have an outstanding balance of {amount} EGP. Please settle at your convenience.', lastUsed: '2026-03-14', usageCount: 67 },
 ];
 
 const initialHistory = [
-    { id: 1, template: 'Appointment Reminder', recipients: ['Fatima Ali', 'Rania Khalil', 'Sara Mahmoud'], channel: 'WhatsApp', date: '2026-02-17 10:00', status: 'delivered', message: 'Hi {name}, this is a reminder for your appointment on Feb 18 at 10:00 AM. Reply YES to confirm.' },
-    { id: 2, template: 'Thank You Follow-up', recipients: ['Noura Ahmed'], channel: 'SMS', date: '2026-02-16 18:30', status: 'delivered', message: 'Thank you Noura for visiting us! We hope you enjoyed your HydraFacial. See you again soon! ✨' },
-    { id: 3, template: 'Birthday Greeting', recipients: ['Huda Saleh', 'Layla Hassan'], channel: 'WhatsApp', date: '2026-02-15 09:00', status: 'read', message: 'Happy Birthday {name}! 🎂 Enjoy a special 20% off on any service today!' },
-    { id: 4, template: 'Payment Due Reminder', recipients: ['Hana Ali'], channel: 'SMS', date: '2026-02-14 14:00', status: 'delivered', message: 'Hi Hana, you have an outstanding balance of 350 EGP. Please settle at your convenience.' },
-    { id: 5, template: 'Appointment Reminder', recipients: ['Mona Tarek', 'Huda Saleh'], channel: 'WhatsApp', date: '2026-02-13 11:00', status: 'delivered', message: 'Hi {name}, this is a reminder for your appointment on Feb 14 at 3:00 PM. Reply YES to confirm.' },
-    { id: 6, template: 'Thank You Follow-up', recipients: ['Mona Tarek'], channel: 'SMS', date: '2026-02-12 16:30', status: 'delivered', message: 'Thank you Mona for visiting us! We hope you enjoyed your Gel Manicure. See you again soon! ✨' },
+    { id: 1, template: 'Appointment Reminder', recipients: ['Fatima Ali', 'Rania Khalil', 'Sara Mahmoud'], channel: 'WhatsApp', date: '2026-03-15 10:00', status: 'delivered', message: 'Hi {name}, this is a reminder for your appointment on Feb 18 at 10:00 AM. Reply YES to confirm.' },
+    { id: 2, template: 'Thank You Follow-up', recipients: ['Noura Ahmed'], channel: 'SMS', date: '2026-03-19 18:30', status: 'delivered', message: 'Thank you Noura for visiting us! We hope you enjoyed your HydraFacial. See you again soon! ✨' },
+    { id: 3, template: 'Birthday Greeting', recipients: ['Huda Saleh', 'Layla Hassan'], channel: 'WhatsApp', date: '2026-03-22 09:00', status: 'read', message: 'Happy Birthday {name}! 🎂 Enjoy a special 20% off on any service today!' },
+    { id: 4, template: 'Payment Due Reminder', recipients: ['Hana Ali'], channel: 'SMS', date: '2026-03-12 14:00', status: 'delivered', message: 'Hi Hana, you have an outstanding balance of 350 EGP. Please settle at your convenience.' },
+    { id: 5, template: 'Appointment Reminder', recipients: ['Mona Tarek', 'Huda Saleh'], channel: 'WhatsApp', date: '2026-03-16 11:00', status: 'delivered', message: 'Hi {name}, this is a reminder for your appointment on Feb 14 at 3:00 PM. Reply YES to confirm.' },
+    { id: 6, template: 'Thank You Follow-up', recipients: ['Mona Tarek'], channel: 'SMS', date: '2026-03-23 16:30', status: 'delivered', message: 'Thank you Mona for visiting us! We hope you enjoyed your Gel Manicure. See you again soon! ✨' },
 ];
 
 const recipients = [

@@ -21,14 +21,14 @@ const tabs = [
 ];
 
 const data = [
-    { id: 1, name: 'Fatima Ali', group: 'VIP', visits: 47, totalSpend: 12400, avgTicket: 264, lastVisit: '2026-02-17', topService: 'Hair Coloring' },
-    { id: 2, name: 'Rania Khalil', group: 'VIP', visits: 38, totalSpend: 9800, avgTicket: 258, lastVisit: '2026-02-16', topService: 'Keratin Treatment' },
-    { id: 3, name: 'Noura Ahmed', group: 'Regular', visits: 32, totalSpend: 8200, avgTicket: 256, lastVisit: '2026-02-15', topService: 'Swedish Massage' },
-    { id: 4, name: 'Huda Saleh', group: 'VIP', visits: 28, totalSpend: 7500, avgTicket: 268, lastVisit: '2026-02-14', topService: 'HydraFacial' },
-    { id: 5, name: 'Maryam Ibrahim', group: 'Regular', visits: 24, totalSpend: 5400, avgTicket: 225, lastVisit: '2026-02-13', topService: 'Classic Facial' },
-    { id: 6, name: 'Sama Latif', group: 'Regular', visits: 19, totalSpend: 4200, avgTicket: 221, lastVisit: '2026-02-12', topService: 'Gel Manicure' },
-    { id: 7, name: 'Dana Faris', group: 'New', visits: 8, totalSpend: 2100, avgTicket: 263, lastVisit: '2026-02-10', topService: 'Deep Tissue' },
-    { id: 8, name: 'Lina Qasim', group: 'Regular', visits: 15, totalSpend: 3600, avgTicket: 240, lastVisit: '2026-02-11', topService: 'Pedicure' },
+    { id: 1, name: 'Fatima Ali', group: 'VIP', visits: 47, totalSpend: 12400, avgTicket: 264, lastVisit: '2026-03-12', topService: 'Hair Coloring' },
+    { id: 2, name: 'Rania Khalil', group: 'VIP', visits: 38, totalSpend: 9800, avgTicket: 258, lastVisit: '2026-03-13', topService: 'Keratin Treatment' },
+    { id: 3, name: 'Noura Ahmed', group: 'Regular', visits: 32, totalSpend: 8200, avgTicket: 256, lastVisit: '2026-03-26', topService: 'Swedish Massage' },
+    { id: 4, name: 'Huda Saleh', group: 'VIP', visits: 28, totalSpend: 7500, avgTicket: 268, lastVisit: '2026-03-22', topService: 'HydraFacial' },
+    { id: 5, name: 'Maryam Ibrahim', group: 'Regular', visits: 24, totalSpend: 5400, avgTicket: 225, lastVisit: '2026-03-15', topService: 'Classic Facial' },
+    { id: 6, name: 'Sama Latif', group: 'Regular', visits: 19, totalSpend: 4200, avgTicket: 221, lastVisit: '2026-03-25', topService: 'Gel Manicure' },
+    { id: 7, name: 'Dana Faris', group: 'New', visits: 8, totalSpend: 2100, avgTicket: 263, lastVisit: '2026-03-20', topService: 'Deep Tissue' },
+    { id: 8, name: 'Lina Qasim', group: 'Regular', visits: 15, totalSpend: 3600, avgTicket: 240, lastVisit: '2026-03-24', topService: 'Pedicure' },
 ];
 
 const maxSpend = data[0].totalSpend;

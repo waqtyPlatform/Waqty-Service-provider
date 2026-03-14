@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import SettingsTabs from '@/components/SettingsTabs';
 import { Select, Button } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -17,8 +16,7 @@ export default function LocalizationSettingsPage() {
     const { t } = useTranslation();
     return (
         <div style={cs.page}>
-            <SettingsTabs />
-            <div style={cs.card}>
+<div style={cs.card}>
                 <div style={cs.cardTitle}>{t('settings.localization.title')}</div>
                 <div style={cs.cardDesc}>{t('settings.localization.desc')}</div>
 
@@ -56,7 +54,7 @@ export default function LocalizationSettingsPage() {
                         options={[
                             { value: 'DD/MM/YYYY', label: 'DD/MM/YYYY (31/12/2026)' },
                             { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY (12/31/2026)' },
-                            { value: 'YYYY-MM-DD', label: 'YYYY-MM-DD (2026-12-31)' }
+                            { value: 'YYYY-MM-DD', label: 'YYYY-MM-DD (2026-03-12)' }
                         ]}
                         defaultValue="YYYY-MM-DD"
                         style={{ maxWidth: 400 }}

@@ -2,18 +2,17 @@
 
 import React, { useState } from 'react';
 import { Search, Download } from 'lucide-react';
-import SettingsTabs from '@/components/SettingsTabs';
 import { useTranslation } from '@/hooks/useTranslation';
 
 const logs = [
-    { id: 1, time: '2026-02-17 10:05', user: 'Sara Ahmed', action: 'Created', entity: 'Booking #BK-1044', details: 'New booking for Fatima Ali – Hair Coloring', ip: '192.168.1.15' },
-    { id: 2, time: '2026-02-17 09:55', user: 'Dina Nabil', action: 'Updated', entity: 'Client Profile', details: 'Updated phone number for Noura Ahmed', ip: '192.168.1.10' },
-    { id: 3, time: '2026-02-17 09:30', user: 'Sara Ahmed', action: 'Processed', entity: 'Payment #TXN-2043', details: 'Cash payment of 450 EGP – Hair Coloring', ip: '192.168.1.15' },
-    { id: 4, time: '2026-02-17 09:00', user: 'System', action: 'Auto', entity: 'Shift #SH-031', details: 'Auto-opened morning shift for Downtown branch', ip: 'System' },
-    { id: 5, time: '2026-02-16 18:15', user: 'Sara Ahmed', action: 'Closed', entity: 'Shift #SH-030', details: 'Closed evening shift – Variance: +50 EGP', ip: '192.168.1.15' },
-    { id: 6, time: '2026-02-16 17:00', user: 'Admin', action: 'Modified', entity: 'Commission Settings', details: 'Changed Hair Coloring rate from 8% to 10%', ip: '192.168.1.2' },
-    { id: 7, time: '2026-02-16 16:30', user: 'Nora Ali', action: 'Refunded', entity: 'Return #RTN-005', details: 'Cash refund of 280 EGP – Client request', ip: '192.168.1.20' },
-    { id: 8, time: '2026-02-16 14:00', user: 'Admin', action: 'Created', entity: 'Promo Code', details: 'Created promo code EID25 – 25% discount', ip: '192.168.1.2' },
+    { id: 1, time: '2026-03-25 10:05', user: 'Sara Ahmed', action: 'Created', entity: 'Booking #BK-1044', details: 'New booking for Fatima Ali – Hair Coloring', ip: '192.168.1.15' },
+    { id: 2, time: '2026-03-18 09:55', user: 'Dina Nabil', action: 'Updated', entity: 'Client Profile', details: 'Updated phone number for Noura Ahmed', ip: '192.168.1.10' },
+    { id: 3, time: '2026-03-19 09:30', user: 'Sara Ahmed', action: 'Processed', entity: 'Payment #TXN-2043', details: 'Cash payment of 450 EGP – Hair Coloring', ip: '192.168.1.15' },
+    { id: 4, time: '2026-03-20 09:00', user: 'System', action: 'Auto', entity: 'Shift #SH-031', details: 'Auto-opened morning shift for Downtown branch', ip: 'System' },
+    { id: 5, time: '2026-03-22 18:15', user: 'Sara Ahmed', action: 'Closed', entity: 'Shift #SH-030', details: 'Closed evening shift – Variance: +50 EGP', ip: '192.168.1.15' },
+    { id: 6, time: '2026-03-12 17:00', user: 'Admin', action: 'Modified', entity: 'Commission Settings', details: 'Changed Hair Coloring rate from 8% to 10%', ip: '192.168.1.2' },
+    { id: 7, time: '2026-03-13 16:30', user: 'Nora Ali', action: 'Refunded', entity: 'Return #RTN-005', details: 'Cash refund of 280 EGP – Client request', ip: '192.168.1.20' },
+    { id: 8, time: '2026-03-22 14:00', user: 'Admin', action: 'Created', entity: 'Promo Code', details: 'Created promo code EID25 – 25% discount', ip: '192.168.1.2' },
 ];
 
 const actionColors: Record<string, { bg: string; color: string }> = {
@@ -51,8 +50,7 @@ export default function AuditLogPage() {
 
     return (
         <div style={s.page}>
-            <SettingsTabs />
-            <div style={s.toolbar}>
+<div style={s.toolbar}>
                 <div style={s.searchBox as React.CSSProperties}><Search size={16} style={{ ...s.searchIcon as React.CSSProperties, left: lang === 'ar' ? 'auto' : 12, right: lang === 'ar' ? 12 : 'auto' }} /><input style={{ ...s.searchInput, paddingLeft: lang === 'ar' ? 16 : 40, paddingRight: lang === 'ar' ? 40 : 16 }} placeholder={t('settings.audit.search')} value={search} onChange={e => setSearch(e.target.value)} /></div>
                 <button style={s.exportBtn}><Download size={16} /> {t('settings.audit.export')}</button>
             </div>

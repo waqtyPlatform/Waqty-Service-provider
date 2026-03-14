@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import SettingsTabs from '@/components/SettingsTabs';
 import { Save } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -22,9 +21,7 @@ export default function InvoiceSettingsPage() {
     const { t } = useTranslation();
     return (
         <div style={s.page}>
-            <SettingsTabs />
-
-            <div style={s.card}>
+<div style={s.card}>
                 <div style={s.section}>
                     <div style={s.sectionTitle}>{t('settings.invoice.businessInfo')}</div>
                     <div style={s.row}><div style={s.label}>{t('settings.invoice.businessName')}</div><input style={s.input} defaultValue="Hagzy Beauty Center" /></div>

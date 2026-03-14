@@ -61,11 +61,11 @@ const getSalesData = (report: string) => {
     const common = {
         chartType: 'bar' as const,
         rows: [
-            { id: 1, date: '2026-02-18', amount: 3200, count: 12, status: 'Completed', link: '/transactions/dailies?date=2026-02-18' },
-            { id: 2, date: '2026-02-17', amount: 2800, count: 10, status: 'Completed', link: '/transactions/dailies?date=2026-02-17' },
-            { id: 3, date: '2026-02-16', amount: 4100, count: 15, status: 'Completed', link: '/transactions/dailies?date=2026-02-16' },
-            { id: 4, date: '2026-02-15', amount: 3500, count: 14, status: 'Completed', link: '/transactions/dailies?date=2026-02-15' },
-            { id: 5, date: '2026-02-14', amount: 5200, count: 20, status: 'Completed', link: '/transactions/dailies?date=2026-02-14' },
+            { id: 1, date: '2026-03-15', amount: 3200, count: 12, status: 'Completed', link: '/transactions/dailies?date=2026-03-26' },
+            { id: 2, date: '2026-03-14', amount: 2800, count: 10, status: 'Completed', link: '/transactions/dailies?date=2026-03-21' },
+            { id: 3, date: '2026-03-15', amount: 4100, count: 15, status: 'Completed', link: '/transactions/dailies?date=2026-03-14' },
+            { id: 4, date: '2026-03-26', amount: 3500, count: 14, status: 'Completed', link: '/transactions/dailies?date=2026-03-12' },
+            { id: 5, date: '2026-03-12', amount: 5200, count: 20, status: 'Completed', link: '/transactions/dailies?date=2026-03-17' },
         ],
         chartData: [
             { name: 'Feb 14', value: 5200 },
@@ -145,11 +145,11 @@ const getBookingsData = (report: string) => {
             chartType: 'bar' as const,
             columns: ['Date', 'Cancelled By', 'Reason', 'Lost Revenue'],
             rows: [
-                { id: 1, col1: '2026-02-18', col2: 'Client', col3: 'Sick', col4: '450 EGP', action: { label: 'View Booking', href: '/bookings/BK-28492' } },
-                { id: 2, col1: '2026-02-17', col2: 'Client', col3: 'Schedule Conflict', col4: '300 EGP', action: { label: 'View Booking', href: '/bookings/BK-28491' } },
-                { id: 3, col1: '2026-02-15', col2: 'System', col3: 'No Show', col4: '600 EGP', action: { label: 'View Booking', href: '/bookings/BK-28490' } },
-                { id: 4, col1: '2026-02-14', col2: 'Client', col3: 'Changed Mind', col4: '250 EGP', action: { label: 'View Booking', href: '/bookings/BK-28489' } },
-                { id: 5, col1: '2026-02-13', col2: 'Staff', col3: 'Employee Absent', col4: '500 EGP', action: { label: 'View Booking', href: '/bookings/BK-28488' } },
+                { id: 1, col1: '2026-03-21', col2: 'Client', col3: 'Sick', col4: '450 EGP', action: { label: 'View Booking', href: '/bookings/BK-28492' } },
+                { id: 2, col1: '2026-03-13', col2: 'Client', col3: 'Schedule Conflict', col4: '300 EGP', action: { label: 'View Booking', href: '/bookings/BK-28491' } },
+                { id: 3, col1: '2026-03-16', col2: 'System', col3: 'No Show', col4: '600 EGP', action: { label: 'View Booking', href: '/bookings/BK-28490' } },
+                { id: 4, col1: '2026-03-18', col2: 'Client', col3: 'Changed Mind', col4: '250 EGP', action: { label: 'View Booking', href: '/bookings/BK-28489' } },
+                { id: 5, col1: '2026-03-20', col2: 'Staff', col3: 'Employee Absent', col4: '500 EGP', action: { label: 'View Booking', href: '/bookings/BK-28488' } },
             ],
             chartData: [{ name: 'Feb 13', value: 1 }, { name: 'Feb 14', value: 1 }, { name: 'Feb 15', value: 1 }, { name: 'Feb 16', value: 0 }, { name: 'Feb 17', value: 1 }, { name: 'Feb 18', value: 1 }]
         };

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,8 +16,14 @@ import {
   Wallet,
   Users,
   Crown,
+  X,
+  Image,
+  Clock,
+  UserCog,
+  Globe,
+  CreditCard,
+  ChevronRight,
 } from 'lucide-react';
-import { EmptyState } from '@/components/ui';
 import {
   PieChart,
   Pie,
@@ -161,9 +167,29 @@ function pseudoRandom(seed: string) {
 
 export default function DashboardPage() {
   const [activeDate, setActiveDate] = useState('Today');
+  const [showProfileBanner, setShowProfileBanner] = useState(true);
   const router = useRouter();
   const { user } = useAuth();
   const { t, lang } = useTranslation();
+
+  // Check if banner was previously dismissed
+  useEffect(() => {
+    const dismissed = localStorage.getItem('hagzy_profile_banner_dismissed');
+    if (dismissed) setShowProfileBanner(false);
+  }, []);
+
+  const dismissProfileBanner = () => {
+    setShowProfileBanner(false);
+    localStorage.setItem('hagzy_profile_banner_dismissed', 'true');
+  };
+
+  const profileSetupItems = [
+    { icon: <Image size={18} />, label: 'Add your logo', href: '/settings', color: '#7C3AED' },
+    { icon: <Clock size={18} />, label: 'Set working hours', href: '/settings/hours', color: '#0EA5E9' },
+    { icon: <UserCog size={18} />, label: 'Add team members', href: '/employees', color: '#F59E0B' },
+    { icon: <Globe size={18} />, label: 'Set up booking page', href: '/settings/appearance', color: '#10B981' },
+    { icon: <CreditCard size={18} />, label: 'Add payment method', href: '/settings/payment-methods', color: '#EF4444' },
+  ];
 
   const businessType = user?.businessType || 'salon';
   const isClinic = businessType === 'clinic';
@@ -272,16 +298,36 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {user?.isNewWorkspace ? (
-         <div style={{ padding: 'var(--space-12) 0', background: 'var(--bg-primary)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--border-color)', marginTop: 'var(--space-6)' }}>
-             <EmptyState
-                icon={<CalendarCheck size={48} color="var(--color-primary-500)" />}
-                title="Your workspace is empty"
-                description="Business insights will appear here once you start taking bookings. Let's set up your calendar first!"
-                action={<button className={styles.quickActionBtn} onClick={() => router.push('/bookings')} style={{ margin: '0 auto', display: 'flex', marginTop: '16px' }}>Go to Calendar</button>}
-             />
-         </div>
-      ) : (
+      {/* Profile Completion Banner */}
+      {user?.isNewWorkspace && showProfileBanner && (
+        <div className={styles.profileBanner}>
+          <div className={styles.profileBannerHeader}>
+            <div>
+              <h3 className={styles.profileBannerTitle}>Complete your business profile</h3>
+              <p className={styles.profileBannerDesc}>Finish setting up to unlock all features. Your 14-day free trial is active.</p>
+            </div>
+            <button className={styles.profileBannerClose} onClick={dismissProfileBanner}>
+              <X size={18} />
+            </button>
+          </div>
+          <div className={styles.profileBannerItems}>
+            {profileSetupItems.map((item) => (
+              <button
+                key={item.label}
+                className={styles.profileBannerItem}
+                onClick={() => router.push(item.href)}
+              >
+                <div className={styles.profileBannerItemIcon} style={{ background: `${item.color}14`, color: item.color }}>
+                  {item.icon}
+                </div>
+                <span>{item.label}</span>
+                <ChevronRight size={14} className={styles.profileBannerItemArrow} />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <>
       {/* KPI Cards */}
       <motion.div
@@ -659,7 +705,6 @@ export default function DashboardPage() {
         </div>
       </div>
       </>
-      )}
     </div>
   );
 }

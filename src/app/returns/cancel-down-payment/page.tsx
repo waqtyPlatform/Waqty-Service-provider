@@ -6,10 +6,10 @@ import { Search, AlertTriangle } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 
 const bookings = [
-    { id: 'BK-1042', client: 'Fatima Ali', service: 'Bridal Glow Package', date: '2026-04-17', paid: 1000, total: 2500 },
-    { id: 'BK-1038', client: 'Noura Ahmed', service: 'Keratin + Color', date: '2026-03-10', paid: 600, total: 1200 },
-    { id: 'BK-1030', client: 'Huda Saleh', service: 'Relaxation Retreat', date: '2026-03-01', paid: 400, total: 800 },
-    { id: 'BK-1028', client: 'Maryam Ibrahim', service: 'Deep Tissue x3', date: '2026-02-28', paid: 200, total: 600 },
+    { id: 'BK-1042', client: 'Fatima Ali', service: 'Bridal Glow Package', date: '2026-03-17', paid: 1000, total: 2500 },
+    { id: 'BK-1038', client: 'Noura Ahmed', service: 'Keratin + Color', date: '2026-03-13', paid: 600, total: 1200 },
+    { id: 'BK-1030', client: 'Huda Saleh', service: 'Relaxation Retreat', date: '2026-03-16', paid: 400, total: 800 },
+    { id: 'BK-1028', client: 'Maryam Ibrahim', service: 'Deep Tissue x3', date: '2026-03-22', paid: 200, total: 600 },
 ];
 
 const s: Record<string, React.CSSProperties> = {

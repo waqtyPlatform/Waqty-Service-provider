@@ -28,7 +28,7 @@ type ItemStatus = 'confirmed' | 'pending_assignment';
 
 const BOOKING_DATA = {
     id: '#BK-28492',
-    date: 'Feb 18, 2026',
+    date: 'Mar 17, 2026',
     time: '14:30',
     duration: '2h 15m',
     initialStatus: 'confirmed' as BookingStatus,

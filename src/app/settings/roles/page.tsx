@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { Edit, Plus, MoreVertical, Trash2 } from 'lucide-react';
 import { useToast, Modal, Input, Button, DropdownMenu } from '@/components/ui';
-import SettingsTabs from '@/components/SettingsTabs';
 import { useTranslation } from '@/hooks/useTranslation';
 
 interface Permissions {
@@ -74,8 +73,7 @@ export default function RolesPage() {
 
     return (
         <div style={s.page}>
-            <SettingsTabs />
-            <div style={s.toolbar}><Button onClick={() => setIsAddOpen(true)}><Plus size={16} className={lang === 'ar' ? "ml-2" : "mr-2"} /> {t('settings.roles.newRole')}</Button></div>
+<div style={s.toolbar}><Button onClick={() => setIsAddOpen(true)}><Plus size={16} className={lang === 'ar' ? "ml-2" : "mr-2"} /> {t('settings.roles.newRole')}</Button></div>
             <table style={s.table}>
                 <thead>
                     <tr>

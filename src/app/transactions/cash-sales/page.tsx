@@ -21,14 +21,14 @@ const tabs = [
 ];
 
 const data = [
-    { id: 'CS-001', date: '2026-02-17', time: '09:15', client: 'Fatima Ali', services: 'Haircut, Blow Dry', amount: 320, method: 'Cash', receipt: 'RCP-2041', cashier: 'Nora' },
-    { id: 'CS-002', date: '2026-02-17', time: '10:30', client: 'Rania Khalil', services: 'Hair Coloring', amount: 450, method: 'Cash', receipt: 'RCP-2042', cashier: 'Nora' },
-    { id: 'CS-003', date: '2026-02-17', time: '11:00', client: 'Walk-in', services: 'Classic Facial', amount: 280, method: 'Cash', receipt: 'RCP-2043', cashier: 'Nora' },
-    { id: 'CS-004', date: '2026-02-17', time: '12:45', client: 'Huda Saleh', services: 'Manicure, Pedicure', amount: 180, method: 'Cash', receipt: 'RCP-2044', cashier: 'Sara' },
-    { id: 'CS-005', date: '2026-02-17', time: '14:00', client: 'Maryam Ibrahim', services: 'Swedish Massage', amount: 350, method: 'Cash', receipt: 'RCP-2045', cashier: 'Sara' },
-    { id: 'CS-006', date: '2026-02-16', time: '09:30', client: 'Noura Ahmed', services: 'Keratin Treatment', amount: 800, method: 'Cash', receipt: 'RCP-2038', cashier: 'Nora' },
-    { id: 'CS-007', date: '2026-02-16', time: '11:15', client: 'Sama Latif', services: 'HydraFacial', amount: 520, method: 'Cash', receipt: 'RCP-2039', cashier: 'Nora' },
-    { id: 'CS-008', date: '2026-02-16', time: '13:00', client: 'Lina Qasim', services: 'Gel Nails', amount: 150, method: 'Cash', receipt: 'RCP-2040', cashier: 'Sara' },
+    { id: 'CS-001', date: '2026-03-14', time: '09:15', client: 'Fatima Ali', services: 'Haircut, Blow Dry', amount: 320, method: 'Cash', receipt: 'RCP-2041', cashier: 'Nora' },
+    { id: 'CS-002', date: '2026-03-23', time: '10:30', client: 'Rania Khalil', services: 'Hair Coloring', amount: 450, method: 'Cash', receipt: 'RCP-2042', cashier: 'Nora' },
+    { id: 'CS-003', date: '2026-03-17', time: '11:00', client: 'Walk-in', services: 'Classic Facial', amount: 280, method: 'Cash', receipt: 'RCP-2043', cashier: 'Nora' },
+    { id: 'CS-004', date: '2026-03-21', time: '12:45', client: 'Huda Saleh', services: 'Manicure, Pedicure', amount: 180, method: 'Cash', receipt: 'RCP-2044', cashier: 'Sara' },
+    { id: 'CS-005', date: '2026-03-18', time: '14:00', client: 'Maryam Ibrahim', services: 'Swedish Massage', amount: 350, method: 'Cash', receipt: 'RCP-2045', cashier: 'Sara' },
+    { id: 'CS-006', date: '2026-03-15', time: '09:30', client: 'Noura Ahmed', services: 'Keratin Treatment', amount: 800, method: 'Cash', receipt: 'RCP-2038', cashier: 'Nora' },
+    { id: 'CS-007', date: '2026-03-23', time: '11:15', client: 'Sama Latif', services: 'HydraFacial', amount: 520, method: 'Cash', receipt: 'RCP-2039', cashier: 'Nora' },
+    { id: 'CS-008', date: '2026-03-12', time: '13:00', client: 'Lina Qasim', services: 'Gel Nails', amount: 150, method: 'Cash', receipt: 'RCP-2040', cashier: 'Sara' },
 ];
 
 const s: Record<string, React.CSSProperties> = {

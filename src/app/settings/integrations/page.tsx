@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import SettingsTabs from '@/components/SettingsTabs';
 import { useToast, Modal, Button, SlideOver, Input, Select, Switch } from '@/components/ui';
 import {
     CheckCircle, XCircle, Zap, Settings,
@@ -120,9 +119,7 @@ export default function IntegrationsPage() {
 
     return (
         <div style={s.page} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
-            <SettingsTabs />
-
-            {/* Stats */}
+{/* Stats */}
             <div style={s.statsRow}>
                 <div style={s.statCard}>
                     <div style={{ ...s.statIcon, background: 'var(--color-success-light)', color: 'var(--color-success)' }}>

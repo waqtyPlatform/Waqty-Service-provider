@@ -6,11 +6,11 @@ import { SlideOver, Modal, Input, Select, Button, useToast, EmptyState } from '@
 import { useTranslation } from '@/hooks/useTranslation';
 
 const initialData = [
-    { id: 'TR-001', date: '2026-02-15', employee: 'Maya Adel', from: 'Mall of Arabia', to: 'Downtown Branch', type: 'Permanent', status: 'completed', until: '' },
-    { id: 'TR-002', date: '2026-02-10', employee: 'Rana Fawzy', from: 'Downtown Branch', to: 'New Cairo Branch', type: 'Temporary', status: 'active', until: '2026-03-10' },
-    { id: 'TR-003', date: '2026-01-28', employee: 'Salma Karim', from: 'New Cairo Branch', to: 'Mall of Arabia', type: 'Permanent', status: 'completed', until: '' },
-    { id: 'TR-004', date: '2026-01-15', employee: 'Nadia Omar', from: 'Downtown Branch', to: 'New Cairo Branch', type: 'Permanent', status: 'completed', until: '' },
-    { id: 'TR-005', date: '2026-02-17', employee: 'Yara Emad', from: 'New Cairo Branch', to: 'Downtown Branch', type: 'Temporary', status: 'pending', until: '2026-02-24' },
+    { id: 'TR-001', date: '2026-03-16', employee: 'Maya Adel', from: 'Mall of Arabia', to: 'Downtown Branch', type: 'Permanent', status: 'completed', until: '' },
+    { id: 'TR-002', date: '2026-03-25', employee: 'Rana Fawzy', from: 'Downtown Branch', to: 'New Cairo Branch', type: 'Temporary', status: 'active', until: '2026-03-12' },
+    { id: 'TR-003', date: '2026-03-12', employee: 'Salma Karim', from: 'New Cairo Branch', to: 'Mall of Arabia', type: 'Permanent', status: 'completed', until: '' },
+    { id: 'TR-004', date: '2026-03-15', employee: 'Nadia Omar', from: 'Downtown Branch', to: 'New Cairo Branch', type: 'Permanent', status: 'completed', until: '' },
+    { id: 'TR-005', date: '2026-03-21', employee: 'Yara Emad', from: 'New Cairo Branch', to: 'Downtown Branch', type: 'Temporary', status: 'pending', until: '2026-03-21' },
 ];
 
 const statusColors: Record<string, { bg: string; color: string }> = {

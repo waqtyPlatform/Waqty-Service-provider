@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { Plus, Search, Edit, Trash2, Clock } from 'lucide-react';
 import { useToast, Modal, Input, Select, Button } from '@/components/ui';
-import SettingsTabs from '@/components/SettingsTabs';
 import { useTranslation } from '@/hooks/useTranslation';
 
 const services = [
@@ -47,8 +46,7 @@ export default function ServicesSettingsPage() {
 
     return (
         <div style={s.page} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
-            <SettingsTabs />
-            <div style={s.toolbar}>
+<div style={s.toolbar}>
                 <div style={s.searchBox as React.CSSProperties}><Search size={16} style={s.searchIcon as React.CSSProperties} /><input style={s.searchInput} placeholder={t('settings.services.search')} value={search} onChange={e => setSearch(e.target.value)} /></div>
                 <button style={s.addBtn} onClick={() => setIsAddOpen(true)}><Plus size={16} /> {t('settings.services.addService')}</button>
             </div>
