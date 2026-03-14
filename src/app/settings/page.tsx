@@ -1,18 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button, Input, Textarea } from '@/components/ui';
-import { Save, Check } from 'lucide-react';
+import { Save, Check, Upload, X, ImageIcon } from 'lucide-react';
 import { useSettings } from '@/contexts/SettingsContext';
 import styles from './settings.module.css';
 import { useTranslation } from '@/hooks/useTranslation';
-
-// Simple Toggle Component (since we don't have a reusable Switch component in ui/index yet, or maybe we do? 
-// Based on previous logs, I saw Button, Input, Select, Textarea in imports. 
-// I'll check ui/index.tsx content from previous logs. 
-// Ah, the previous settings page imported Switch from '@/components/ui'.
-// Let me double check if Switch is exported from components/ui/index.tsx.
-// It was imported in the previous file. safely assume it exists.
 import { Switch } from '@/components/ui';
 
 export default function SettingsPage() {
@@ -21,13 +14,32 @@ export default function SettingsPage() {
     const [saved, setSaved] = useState(false);
     const { t, lang } = useTranslation();
 
+    // Logo & Banner state (stored in localStorage separately)
+    const [logo, setLogo] = useState<string | null>(null);
+    const [banner, setBanner] = useState<string | null>(null);
+    const logoInputRef = useRef<HTMLInputElement>(null);
+    const bannerInputRef = useRef<HTMLInputElement>(null);
+
     // Sync local state when context settings load/change
     useEffect(() => {
         setLocalSettings(settings);
     }, [settings]);
 
+    // Load saved logo & banner
+    useEffect(() => {
+        const savedLogo = localStorage.getItem('hagzy_logo');
+        const savedBanner = localStorage.getItem('hagzy_banner');
+        if (savedLogo) setLogo(savedLogo);
+        if (savedBanner) setBanner(savedBanner);
+    }, []);
+
     const handleSave = () => {
         updateSettings(localSettings);
+        // Also persist logo & banner
+        if (logo) localStorage.setItem('hagzy_logo', logo);
+        else localStorage.removeItem('hagzy_logo');
+        if (banner) localStorage.setItem('hagzy_banner', banner);
+        else localStorage.removeItem('hagzy_banner');
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);
     };
@@ -37,8 +49,131 @@ export default function SettingsPage() {
         setSaved(false);
     };
 
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'logo' | 'banner') => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (file.size > 2 * 1024 * 1024) {
+            alert('Image must be under 2MB');
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+            const result = reader.result as string;
+            if (type === 'logo') setLogo(result);
+            else setBanner(result);
+            setSaved(false);
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleDrop = (e: React.DragEvent, type: 'logo' | 'banner') => {
+        e.preventDefault();
+        e.stopPropagation();
+        const file = e.dataTransfer.files?.[0];
+        if (!file || !file.type.startsWith('image/')) return;
+        if (file.size > 2 * 1024 * 1024) {
+            alert('Image must be under 2MB');
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+            const result = reader.result as string;
+            if (type === 'logo') setLogo(result);
+            else setBanner(result);
+            setSaved(false);
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const preventDefault = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+    };
+
     return (
         <div className={styles.page} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+            {/* Branding Card */}
+            <div className={styles.card}>
+                <div className={styles.cardTitle}>Branding</div>
+                <div className={styles.cardDesc}>Upload your business logo and banner image. These appear on your booking page and invoices.</div>
+
+                <div className={styles.brandingRow}>
+                    {/* Logo Upload */}
+                    <div className={styles.brandingCol}>
+                        <label className={styles.brandingLabel}>Logo</label>
+                        <div
+                            className={`${styles.uploadZone} ${styles.uploadZoneLogo}`}
+                            onClick={() => logoInputRef.current?.click()}
+                            onDrop={(e) => handleDrop(e, 'logo')}
+                            onDragOver={preventDefault}
+                            onDragEnter={preventDefault}
+                        >
+                            {logo ? (
+                                <>
+                                    <img src={logo} alt="Logo" className={styles.uploadPreviewLogo} />
+                                    <button
+                                        className={styles.uploadRemove}
+                                        onClick={(e) => { e.stopPropagation(); setLogo(null); setSaved(false); }}
+                                    >
+                                        <X size={14} />
+                                    </button>
+                                </>
+                            ) : (
+                                <div className={styles.uploadPlaceholder}>
+                                    <ImageIcon size={28} />
+                                    <span>Upload Logo</span>
+                                    <span className={styles.uploadHint}>PNG, JPG up to 2MB</span>
+                                </div>
+                            )}
+                        </div>
+                        <input
+                            ref={logoInputRef}
+                            type="file"
+                            accept="image/png,image/jpeg,image/webp"
+                            style={{ display: 'none' }}
+                            onChange={(e) => handleImageUpload(e, 'logo')}
+                        />
+                    </div>
+
+                    {/* Banner Upload */}
+                    <div className={styles.brandingCol} style={{ flex: 2 }}>
+                        <label className={styles.brandingLabel}>Banner</label>
+                        <div
+                            className={`${styles.uploadZone} ${styles.uploadZoneBanner}`}
+                            onClick={() => bannerInputRef.current?.click()}
+                            onDrop={(e) => handleDrop(e, 'banner')}
+                            onDragOver={preventDefault}
+                            onDragEnter={preventDefault}
+                        >
+                            {banner ? (
+                                <>
+                                    <img src={banner} alt="Banner" className={styles.uploadPreviewBanner} />
+                                    <button
+                                        className={styles.uploadRemove}
+                                        onClick={(e) => { e.stopPropagation(); setBanner(null); setSaved(false); }}
+                                    >
+                                        <X size={14} />
+                                    </button>
+                                </>
+                            ) : (
+                                <div className={styles.uploadPlaceholder}>
+                                    <Upload size={28} />
+                                    <span>Upload Banner</span>
+                                    <span className={styles.uploadHint}>Recommended: 1200 x 300px, PNG or JPG up to 2MB</span>
+                                </div>
+                            )}
+                        </div>
+                        <input
+                            ref={bannerInputRef}
+                            type="file"
+                            accept="image/png,image/jpeg,image/webp"
+                            style={{ display: 'none' }}
+                            onChange={(e) => handleImageUpload(e, 'banner')}
+                        />
+                    </div>
+                </div>
+            </div>
+
             {/* Business Info Card */}
             <div className={styles.card}>
                 <div className={styles.cardTitle}>{t('settings.bizInfo')}</div>

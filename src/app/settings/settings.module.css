@@ -100,3 +100,113 @@
     font-size: var(--text-xs);
     color: var(--text-tertiary);
 }
+
+/* Branding / Image Upload */
+.brandingRow {
+    display: flex;
+    gap: var(--space-5);
+    align-items: flex-start;
+}
+
+.brandingCol {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.brandingLabel {
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--text-secondary);
+}
+
+.uploadZone {
+    position: relative;
+    border: 2px dashed var(--border-color);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.uploadZone:hover {
+    border-color: var(--color-primary-400);
+    background: var(--color-primary-50);
+}
+
+.uploadZoneLogo {
+    width: 140px;
+    height: 140px;
+}
+
+.uploadZoneBanner {
+    width: 100%;
+    height: 140px;
+}
+
+.uploadPlaceholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-1);
+    color: var(--text-tertiary);
+    font-size: var(--text-sm);
+    text-align: center;
+    padding: var(--space-3);
+}
+
+.uploadHint {
+    font-size: var(--text-xs);
+    color: var(--text-tertiary);
+    opacity: 0.7;
+}
+
+.uploadPreviewLogo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+}
+
+.uploadPreviewBanner {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.uploadRemove {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.uploadZone:hover .uploadRemove {
+    opacity: 1;
+}
+
+@media (max-width: 640px) {
+    .brandingRow {
+        flex-direction: column;
+    }
+
+    .uploadZoneLogo {
+        width: 120px;
+        height: 120px;
+    }
+}

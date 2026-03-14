@@ -2,11 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth, BusinessType } from '@/contexts/AuthContext';
-import { useTranslation } from '@/hooks/useTranslation';
 import { useToast } from '@/components/ui';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Mail, Smartphone, ArrowRight, ShieldCheck, RefreshCw, Briefcase, MapPin, Tag } from 'lucide-react';
+import {
+    Mail, Smartphone, ArrowRight, ArrowLeft, ShieldCheck, RefreshCw,
+    User, Stethoscope, Sparkles, Scissors, MapPin, Tag, Check,
+    Navigation, Briefcase
+} from 'lucide-react';
 import styles from './onboarding.module.css';
 
 const egyptLocations: Record<string, string[]> = {
@@ -45,243 +48,380 @@ const suggestedServices: Record<string, string[]> = {
     barber: ['Classic Haircut', 'Beard Trim & Shave', 'Hair & Beard Combo', 'Keratin Smoothing', 'Skin Fade'],
 };
 
+const businessTypes = [
+    { value: 'clinic' as BusinessType, label: 'Clinic / Medical', description: 'Medical center, dental, dermatology, or healthcare', icon: Stethoscope },
+    { value: 'salon' as BusinessType, label: 'Salon / Spa', description: 'Beauty salon, spa, nails, skincare, or wellness', icon: Sparkles },
+    { value: 'barber' as BusinessType, label: 'Barbershop', description: "Men's grooming, barbershop, or styling studio", icon: Scissors },
+];
+
 export default function OnboardingPage() {
-    const { requestOTP, verifyOTP, user } = useAuth();
-    const { t } = useTranslation();
+    const { requestOTP, verifyOTP, updateUser, user } = useAuth();
     const { addToast } = useToast();
     const router = useRouter();
 
     const [step, setStep] = useState(1);
+    const [substep, setSubstep] = useState<'identifier' | 'otp' | 'name'>('identifier');
     const [isLoading, setIsLoading] = useState(false);
 
-    // Step 1: Identity
-    const [identifier, setIdentifier] = useState('newadmin@hagzy.com');
-    const [otpSent, setOtpSent] = useState(false);
+    // Step 1: Account
+    const [identifier, setIdentifier] = useState('');
     const [otpCode, setOtpCode] = useState(['', '', '', '', '', '']);
+    const [fullName, setFullName] = useState('');
+    const [countdown, setCountdown] = useState(60);
 
-    // Step 2: Business Profile
+    // Step 2: Business
+    const [selectedBusinessType, setSelectedBusinessType] = useState<BusinessType | ''>('');
     const [businessName, setBusinessName] = useState('');
-    const [businessCategory, setBusinessCategory] = useState('clinic');
     const [governorate, setGovernorate] = useState('');
     const [city, setCity] = useState('');
-    const [addressDetails, setAddressDetails] = useState('');
+    const [street, setStreet] = useState('');
+    const [building, setBuilding] = useState('');
+    const [floor, setFloor] = useState('');
+    const [mapPinned, setMapPinned] = useState(false);
 
-    // Step 3: Quick Setup
+    // Step 3: Services
     const [selectedServices, setSelectedServices] = useState<string[]>([]);
     const [customService, setCustomService] = useState('');
 
-    // --- Handlers ---
+    // Countdown timer for OTP resend
+    useEffect(() => {
+        let timer: NodeJS.Timeout;
+        if (substep === 'otp' && countdown > 0) {
+            timer = setInterval(() => setCountdown(c => c - 1), 1000);
+        }
+        return () => clearInterval(timer);
+    }, [substep, countdown]);
+
+    // ── Step 1 Handlers ──
     const handleRequestOTP = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!identifier.trim()) return addToast('error', t('auth.errorEmpty'));
-        
+        if (!identifier.trim()) return addToast('error', 'Please enter your email or phone number');
         setIsLoading(true);
         try {
             const res = await requestOTP(identifier);
             if (res.success) {
-                setOtpSent(true);
-                addToast('success', 'Authentication code sent');
+                setSubstep('otp');
+                setCountdown(60);
+                addToast('success', res.type === 'email' ? 'Verification code sent to your email' : 'Verification code sent via WhatsApp');
             }
-        } catch (err) {
-            addToast('error', t('auth.errorRequest'));
+        } catch {
+            addToast('error', 'Failed to send verification code');
         } finally {
             setIsLoading(false);
         }
     };
 
-    const handleVerifyIdentity = async (e: React.FormEvent) => {
+    const handleVerifyOTP = async (e: React.FormEvent) => {
         e.preventDefault();
         const code = otpCode.join('');
-        if (code.length < 6) return addToast('error', t('auth.error6Digits'));
-
+        if (code.length < 6) return addToast('error', 'Please enter the 6-digit code');
         setIsLoading(true);
         try {
-            // Wait! Pass `false` so AuthContext doesn't redirect immediately.
             const res = await verifyOTP(identifier, code, false);
             if (!res.success) {
-                addToast('error', res.error || t('auth.errorVerify'));
-                setOtpCode(['', '', '', '', '', '']); 
+                addToast('error', res.error || 'Invalid verification code');
+                setOtpCode(['', '', '', '', '', '']);
             } else {
-                addToast('success', 'Identity Verified!');
-                setStep(2); // Move to business profile
+                addToast('success', 'Identity verified!');
+                setSubstep('name');
             }
-        } catch (err) {
-            addToast('error', t('auth.errorVerify'));
+        } catch {
+            addToast('error', 'Verification failed');
         } finally {
             setIsLoading(false);
         }
     };
 
+    const handleNameSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!fullName.trim()) return addToast('error', 'Please enter your name');
+        setStep(2);
+    };
+
+    // ── Step 2 Handlers ──
     const handleBusinessSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!businessName.trim() || !governorate || !city || !addressDetails.trim()) {
-            return addToast('error', 'Please fill all fields');
-        }
-        // In a real app, save to backend here
+        if (!selectedBusinessType) return addToast('error', 'Please select your business type');
+        if (!businessName.trim()) return addToast('error', 'Please enter your business name');
+        if (!governorate) return addToast('error', 'Please select your governorate');
+        if (!city) return addToast('error', 'Please select your city');
+        if (!street.trim()) return addToast('error', 'Please enter your street address');
+
+        // Pre-select all suggested services
+        setSelectedServices([...(suggestedServices[selectedBusinessType] || [])]);
         setStep(3);
     };
 
+    const handlePinLocation = () => {
+        setMapPinned(true);
+        addToast('success', 'Location pinned successfully');
+    };
+
+    // ── Step 3 Handlers ──
     const handleFinishSetup = (e: React.FormEvent) => {
         e.preventDefault();
         const finalServices = [...selectedServices];
         if (customService.trim() && !finalServices.includes(customService.trim())) {
             finalServices.push(customService.trim());
         }
+        if (finalServices.length === 0) return addToast('error', 'Please select at least one service');
 
-        if (finalServices.length === 0) {
-            return addToast('error', 'Add at least one service to start');
-        }
-        // Save service & finish onboarding
-        addToast('success', 'Workspace Created successfully!');
-        
-        // Mocking user profile update
-        if (user) {
-            const updatedUser = { ...user, businessType: businessCategory as BusinessType, isNewWorkspace: true };
-            localStorage.setItem('hagzy_user', JSON.stringify(updatedUser));
-        }
+        // Save user with workspace data + auto-start free trial
+        updateUser({
+            name: fullName || user?.name || '',
+            businessType: selectedBusinessType as BusinessType,
+            isNewWorkspace: true,
+        });
 
+        // Save onboarding data
+        localStorage.setItem('hagzy_onboarding', JSON.stringify({
+            businessName,
+            governorate,
+            city,
+            address: { street, building, floor },
+            mapPinned,
+            services: finalServices,
+            plan: 'trial',
+            trialStartDate: new Date().toISOString(),
+            completedAt: new Date().toISOString(),
+        }));
+
+        addToast('success', 'Welcome to Hagzy! Your 14-day free trial has started.');
         router.push('/');
     };
 
-    // --- Inputs Handlers ---
+    // ── OTP Input Handlers ──
     const handleOtpChange = (index: number, val: string) => {
         const numericVal = val.replace(/\D/g, '').slice(0, 1);
         const newCode = [...otpCode];
         newCode[index] = numericVal;
         setOtpCode(newCode);
         if (numericVal && index < 5) {
-            const nextInput = document.getElementById(`onboarding-otp-${index + 1}`);
-            nextInput?.focus();
+            document.getElementById(`signup-otp-${index + 1}`)?.focus();
         }
     };
+
     const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
         if (e.key === 'Backspace' && !otpCode[index] && index > 0) {
-            const prevInput = document.getElementById(`onboarding-otp-${index - 1}`);
-            prevInput?.focus();
+            document.getElementById(`signup-otp-${index - 1}`)?.focus();
         }
+    };
+
+    const toggleService = (service: string) => {
+        setSelectedServices(prev =>
+            prev.includes(service) ? prev.filter(s => s !== service) : [...prev, service]
+        );
+    };
+
+    const addCustomService = () => {
+        if (customService.trim() && !selectedServices.includes(customService.trim())) {
+            setSelectedServices(prev => [...prev, customService.trim()]);
+            setCustomService('');
+        }
+    };
+
+    // ── Step Config ──
+    const stepLabels = ['Account', 'Business', 'Services'];
+    const stepTitles: Record<number, string> = {
+        1: substep === 'identifier' ? 'Create Your Account' : substep === 'otp' ? 'Verify Your Identity' : 'Almost There!',
+        2: 'About Your Business',
+        3: 'Add Your Services',
+    };
+    const stepDescriptions: Record<number, string> = {
+        1: substep === 'identifier'
+            ? 'Enter your email or phone to get started'
+            : substep === 'otp'
+                ? `We sent a code to ${identifier}`
+                : 'Tell us your name to personalize your experience',
+        2: 'Help us customize your workspace',
+        3: 'Select the services you offer — you can edit these anytime',
     };
 
     return (
         <div className={styles.page}>
             <div className={styles.container}>
+                {/* Header */}
                 <div className={styles.header}>
                     <div className={styles.logo}>
                         <div className={styles.logoMark}></div>
-                        <span>Hagzy Workspace</span>
+                        <span>Hagzy</span>
                     </div>
-                    <h1>{step === 1 ? 'Verify Identity' : step === 2 ? 'Business Profile' : 'Quick Setup'}</h1>
-                    <p>{step === 1 ? 'Let\'s secure your account before creating your workspace.' : step === 2 ? 'Tell us about your business to customize your experience.' : 'Add your first service to power up the dashboard.'}</p>
+                    <h1>{stepTitles[step]}</h1>
+                    <p>{stepDescriptions[step]}</p>
                 </div>
 
-                <div className={styles.stepIndicator}>
-                    <div className={`${styles.stepDot} ${step >= 1 ? styles.stepDotCompleted : ''} ${step === 1 ? styles.stepDotActive : ''}`} />
-                    <div className={`${styles.stepDot} ${step >= 2 ? styles.stepDotCompleted : ''} ${step === 2 ? styles.stepDotActive : ''}`} />
-                    <div className={`${styles.stepDot} ${step >= 3 ? styles.stepDotCompleted : ''} ${step === 3 ? styles.stepDotActive : ''}`} />
+                {/* Stepper */}
+                <div className={styles.stepper}>
+                    {stepLabels.map((label, i) => (
+                        <React.Fragment key={label}>
+                            {i > 0 && <div className={`${styles.stepLine} ${step > i ? styles.stepLineDone : ''}`} />}
+                            <div className={styles.stepItem}>
+                                <div className={`${styles.stepCircle} ${step > i + 1 ? styles.stepDone : step === i + 1 ? styles.stepActive : ''}`}>
+                                    {step > i + 1 ? <Check size={14} /> : i + 1}
+                                </div>
+                                <span className={step === i + 1 ? styles.stepLabelActive : styles.stepLabel}>{label}</span>
+                            </div>
+                        </React.Fragment>
+                    ))}
                 </div>
 
-                {/* Step 1: Identity */}
-                {step === 1 && (
-                    !otpSent ? (
-                        <form className={styles.form} onSubmit={handleRequestOTP}>
-                            <div className={styles.inputGroup}>
-                                <label className={styles.label}>Email or Phone Number</label>
-                                <div style={{ position: 'relative' }}>
-                                    <div style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }}>
-                                        {identifier.includes('@') ? <Mail size={18} /> : <Smartphone size={18} />}
-                                    </div>
-                                    <input
-                                        type="text"
-                                        className={styles.loginInput}
-                                        style={{ paddingLeft: 44 }}
-                                        placeholder="admin@example.com"
-                                        value={identifier}
-                                        onChange={(e) => setIdentifier(e.target.value)}
-                                        autoFocus
-                                    />
+                {/* ════════ STEP 1: ACCOUNT ════════ */}
+
+                {/* 1a: Email / Phone */}
+                {step === 1 && substep === 'identifier' && (
+                    <form className={styles.form} onSubmit={handleRequestOTP}>
+                        <div className={styles.inputGroup}>
+                            <label className={styles.label}>Email or Phone Number</label>
+                            <div className={styles.inputWithIcon}>
+                                <div className={styles.inputIcon}>
+                                    {identifier.includes('@') ? <Mail size={18} /> : <Smartphone size={18} />}
                                 </div>
+                                <input
+                                    type="text"
+                                    className={styles.loginInput}
+                                    style={{ paddingInlineStart: 44 }}
+                                    placeholder="you@example.com or 01xxxxxxxxx"
+                                    value={identifier}
+                                    onChange={(e) => setIdentifier(e.target.value)}
+                                    autoFocus
+                                />
                             </div>
-                            <button type="submit" className={styles.loginBtn} disabled={isLoading}>
-                                {isLoading ? <RefreshCw size={18} className="spin" /> : <ArrowRight size={18} />}
-                                Continue
-                            </button>
-                            <div className={styles.tip}>
-                                <h4>Why do we need this?</h4>
-                                <p>We verify your identity to ensure your customer data remains secure and accessible only by you.</p>
-                            </div>
-                        </form>
-                    ) : (
-                        <form className={styles.form} onSubmit={handleVerifyIdentity}>
-                            <div className={styles.inputGroup}>
-                                <label className={styles.label} style={{ textAlign: 'center' }}>Enter 6-digit Code</label>
-                                <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'center', marginTop: 'var(--space-2)' }}>
-                                    {otpCode.map((digit, idx) => (
-                                        <input
-                                            key={idx}
-                                            id={`onboarding-otp-${idx}`}
-                                            type="text"
-                                            inputMode="numeric"
-                                            pattern="[0-9]*"
-                                            maxLength={1}
-                                            value={digit}
-                                            onChange={(e) => handleOtpChange(idx, e.target.value)}
-                                            onKeyDown={(e) => handleOtpKeyDown(idx, e)}
-                                            style={{
-                                                width: 44, height: 52, textAlign: 'center', fontSize: 'var(--text-xl)',
-                                                fontWeight: 'var(--font-bold)', borderRadius: 'var(--radius-lg)',
-                                                border: `1px solid ${digit ? 'var(--color-primary-500)' : 'var(--border-color)'}`,
-                                                background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none'
-                                            }}
-                                            autoFocus={idx === 0}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-                            <button type="submit" className={styles.loginBtn} disabled={isLoading || otpCode.join('').length < 6}>
-                                {isLoading ? <RefreshCw size={18} className="spin" /> : <ShieldCheck size={18} />}
-                                Verify & Continue
-                            </button>
-                            <div className={styles.tip} style={{ textAlign: 'center' }}>
-                                <p>Demo Tip: Enter <strong>123456</strong></p>
-                            </div>
-                        </form>
-                    )
+                        </div>
+                        <button type="submit" className={styles.loginBtn} disabled={isLoading}>
+                            {isLoading ? <RefreshCw size={18} className="spin" /> : <ArrowRight size={18} />}
+                            {isLoading ? 'Sending...' : 'Continue'}
+                        </button>
+                        <div className={styles.tip}>
+                            <p>Demo tip: Use any email and code <strong>123456</strong></p>
+                        </div>
+                        <div className={styles.loginLink}>
+                            <span>Already have an account?</span>{' '}
+                            <Link href="/login">Log in</Link>
+                        </div>
+                    </form>
                 )}
 
-                {/* Step 2: Business Profile */}
+                {/* 1b: OTP */}
+                {step === 1 && substep === 'otp' && (
+                    <form className={styles.form} onSubmit={handleVerifyOTP}>
+                        <div className={styles.inputGroup}>
+                            <label className={styles.label} style={{ textAlign: 'center' }}>Enter 6-digit Code</label>
+                            <div className={styles.otpRow}>
+                                {otpCode.map((digit, idx) => (
+                                    <input
+                                        key={idx}
+                                        id={`signup-otp-${idx}`}
+                                        type="text"
+                                        inputMode="numeric"
+                                        pattern="[0-9]*"
+                                        maxLength={1}
+                                        value={digit}
+                                        onChange={(e) => handleOtpChange(idx, e.target.value)}
+                                        onKeyDown={(e) => handleOtpKeyDown(idx, e)}
+                                        className={`${styles.otpInput} ${digit ? styles.otpInputFilled : ''}`}
+                                        autoFocus={idx === 0}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                        <button type="submit" className={styles.loginBtn} disabled={isLoading || otpCode.join('').length < 6}>
+                            {isLoading ? <RefreshCw size={18} className="spin" /> : <ShieldCheck size={18} />}
+                            {isLoading ? 'Verifying...' : 'Verify & Continue'}
+                        </button>
+                        <div style={{ textAlign: 'center' }}>
+                            <button
+                                type="button"
+                                disabled={countdown > 0}
+                                onClick={handleRequestOTP as any}
+                                className={styles.resendBtn}
+                                style={{ opacity: countdown > 0 ? 0.5 : 1, cursor: countdown > 0 ? 'not-allowed' : 'pointer' }}
+                            >
+                                {countdown > 0 ? `Resend in 0:${countdown.toString().padStart(2, '0')}` : 'Resend Code'}
+                            </button>
+                        </div>
+                        <div className={styles.tip}>
+                            <p>Demo tip: Enter <strong>123456</strong></p>
+                        </div>
+                    </form>
+                )}
+
+                {/* 1c: Name */}
+                {step === 1 && substep === 'name' && (
+                    <form className={styles.form} onSubmit={handleNameSubmit}>
+                        <div className={styles.inputGroup}>
+                            <label className={styles.label}>Your Full Name</label>
+                            <div className={styles.inputWithIcon}>
+                                <div className={styles.inputIcon}>
+                                    <User size={18} />
+                                </div>
+                                <input
+                                    type="text"
+                                    className={styles.loginInput}
+                                    style={{ paddingInlineStart: 44 }}
+                                    placeholder="e.g., Ahmed Mohamed"
+                                    value={fullName}
+                                    onChange={(e) => setFullName(e.target.value)}
+                                    autoFocus
+                                />
+                            </div>
+                        </div>
+                        <button type="submit" className={styles.loginBtn}>
+                            <ArrowRight size={18} />
+                            Continue
+                        </button>
+                    </form>
+                )}
+
+                {/* ════════ STEP 2: BUSINESS ════════ */}
                 {step === 2 && (
                     <form className={styles.form} onSubmit={handleBusinessSubmit}>
+                        {/* Business Type Cards */}
+                        <div className={styles.inputGroup}>
+                            <label className={styles.label}>Business Type</label>
+                            <div className={styles.businessCards}>
+                                {businessTypes.map((bt) => {
+                                    const Icon = bt.icon;
+                                    const isActive = selectedBusinessType === bt.value;
+                                    return (
+                                        <button
+                                            key={bt.value}
+                                            type="button"
+                                            className={`${styles.businessCard} ${isActive ? styles.businessCardActive : ''}`}
+                                            onClick={() => setSelectedBusinessType(bt.value)}
+                                        >
+                                            <div className={`${styles.businessCardIcon} ${isActive ? styles.businessCardIconActive : ''}`}>
+                                                <Icon size={22} />
+                                            </div>
+                                            <div className={styles.businessCardLabel}>{bt.label}</div>
+                                            <div className={styles.businessCardDesc}>{bt.description}</div>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Business Name */}
                         <div className={styles.inputGroup}>
                             <label className={styles.label}>Business Name</label>
-                            <div style={{ position: 'relative' }}>
-                                <div style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }}>
+                            <div className={styles.inputWithIcon}>
+                                <div className={styles.inputIcon}>
                                     <Briefcase size={18} />
                                 </div>
                                 <input
                                     type="text"
                                     className={styles.loginInput}
-                                    style={{ paddingLeft: 44 }}
-                                    placeholder="e.g., Elite Wellness Clinic"
+                                    style={{ paddingInlineStart: 44 }}
+                                    placeholder="e.g., Elite Beauty Salon"
                                     value={businessName}
                                     onChange={(e) => setBusinessName(e.target.value)}
-                                    autoFocus
                                 />
                             </div>
                         </div>
-                        <div className={styles.inputGroup}>
-                            <label className={styles.label}>Category</label>
-                            <select 
-                                className={styles.roleSelect}
-                                value={businessCategory}
-                                onChange={(e) => setBusinessCategory(e.target.value)}
-                            >
-                                <option value="clinic">Clinic / Medical</option>
-                                <option value="salon">Salon / Spa</option>
-                                <option value="barber">Barbershop</option>
-                            </select>
-                        </div>
+
+                        {/* Governorate */}
                         <div className={styles.inputGroup}>
                             <label className={styles.label}>Governorate</label>
-                            <select 
+                            <select
                                 className={styles.roleSelect}
                                 value={governorate}
                                 onChange={(e) => { setGovernorate(e.target.value); setCity(''); }}
@@ -290,176 +430,187 @@ export default function OnboardingPage() {
                                 {Object.keys(egyptLocations).sort().map((gov) => (
                                     <option key={gov} value={gov}>{gov}</option>
                                 ))}
-                                <option value="Other">Other Governorate</option>
                             </select>
                         </div>
+
+                        {/* City */}
                         <div className={styles.inputGroup}>
                             <label className={styles.label}>City / Area</label>
-                            {governorate === 'Other' ? (
+                            <select
+                                className={styles.roleSelect}
+                                value={city}
+                                onChange={(e) => setCity(e.target.value)}
+                                disabled={!governorate}
+                            >
+                                <option value="" disabled>Select City / Area...</option>
+                                {governorate && egyptLocations[governorate]?.sort().map((c) => (
+                                    <option key={c} value={c}>{c}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Full Address */}
+                        <div className={styles.inputGroup}>
+                            <label className={styles.label}>Full Address</label>
+                            <div className={styles.addressGrid}>
                                 <input
                                     type="text"
                                     className={styles.loginInput}
-                                    placeholder="Enter your city/area"
-                                    value={city}
-                                    onChange={(e) => setCity(e.target.value)}
+                                    placeholder="Street name"
+                                    value={street}
+                                    onChange={(e) => setStreet(e.target.value)}
                                 />
-                            ) : (
-                                <select 
-                                    className={styles.roleSelect}
-                                    value={city}
-                                    onChange={(e) => setCity(e.target.value)}
-                                    disabled={!governorate}
-                                >
-                                    <option value="" disabled>Select City / Area...</option>
-                                    {governorate && egyptLocations[governorate] && egyptLocations[governorate].sort().map((c) => (
-                                        <option key={c} value={c}>{c}</option>
-                                    ))}
-                                    <option value="Other">Other City/Area</option>
-                                </select>
-                            )}
-                        </div>
-                        <div className={styles.inputGroup}>
-                            <label className={styles.label}>Full Address Details</label>
-                            <div style={{ position: 'relative' }}>
-                                <div style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }}>
-                                    <MapPin size={18} />
-                                </div>
-                                <input
-                                    type="text"
-                                    className={styles.loginInput}
-                                    style={{ paddingLeft: 44 }}
-                                    placeholder="Street name, Building number, Floor..."
-                                    value={addressDetails}
-                                    onChange={(e) => setAddressDetails(e.target.value)}
-                                />
-                            </div>
-                        </div>
-                        <button type="submit" className={styles.loginBtn}>
-                            <ArrowRight size={18} />
-                            Save Profile
-                        </button>
-                    </form>
-                )}
-
-                {/* Step 3: Quick Setup */}
-                {step === 3 && (
-                    <form className={styles.form} onSubmit={handleFinishSetup}>
-                        <div className={styles.inputGroup}>
-                            <label className={styles.label}>Add Primary Services</label>
-                            
-                            {selectedServices.length > 0 && (
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)', marginBottom: 'var(--space-4)' }}>
-                                    {selectedServices.map(service => (
-                                        <div key={service} style={{
-                                            display: 'flex', alignItems: 'center', gap: 'var(--space-1)',
-                                            padding: 'var(--space-2) var(--space-4)', borderRadius: 'var(--radius-full)',
-                                            background: 'var(--color-primary-50)', color: 'var(--color-primary-600)',
-                                            border: '1px solid var(--color-primary-200)', fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)'
-                                        }}>
-                                            {service}
-                                            <button 
-                                                type="button" 
-                                                onClick={() => setSelectedServices(prev => prev.filter(s => s !== service))}
-                                                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', display: 'flex', fontSize: 'var(--text-lg)' }}
-                                            >
-                                                &times;
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-
-                            <div style={{ position: 'relative' }}>
-                                <div style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }}>
-                                    <Tag size={18} />
-                                </div>
-                                <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                                <div className={styles.addressRow}>
                                     <input
                                         type="text"
                                         className={styles.loginInput}
-                                        style={{ paddingLeft: 44, flex: 1 }}
-                                        placeholder={businessCategory === 'clinic' ? 'e.g., General Consultation' : businessCategory === 'salon' ? 'e.g., Keratin Treatment' : 'e.g., Classic Haircut'}
+                                        placeholder="Building No."
+                                        value={building}
+                                        onChange={(e) => setBuilding(e.target.value)}
+                                    />
+                                    <input
+                                        type="text"
+                                        className={styles.loginInput}
+                                        placeholder="Floor / Apt"
+                                        value={floor}
+                                        onChange={(e) => setFloor(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Google Maps Pin */}
+                        <div className={styles.inputGroup}>
+                            <label className={styles.label}>
+                                Pin on Map
+                                <span className={styles.optionalBadge}>Optional</span>
+                            </label>
+                            <div className={`${styles.mapSection} ${mapPinned ? styles.mapSectionPinned : ''}`}>
+                                {mapPinned ? (
+                                    <div className={styles.mapPinnedContent}>
+                                        <div className={styles.mapPinnedIcon}>
+                                            <Check size={20} />
+                                        </div>
+                                        <span className={styles.mapPinnedText}>Location pinned</span>
+                                        <button type="button" className={styles.mapChangeBtn} onClick={() => setMapPinned(false)}>
+                                            Change
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className={styles.mapContent}>
+                                        <MapPin size={28} className={styles.mapIcon} />
+                                        <p className={styles.mapText}>Pin your business on the map so customers can find you</p>
+                                        <button type="button" className={styles.btnOutline} onClick={handlePinLocation}>
+                                            <Navigation size={16} />
+                                            Use My Location
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Navigation */}
+                        <div className={styles.navRow}>
+                            <button type="button" className={styles.backBtn} onClick={() => setStep(1)}>
+                                <ArrowLeft size={16} /> Back
+                            </button>
+                            <button type="submit" className={styles.loginBtn} style={{ flex: 1 }}>
+                                <ArrowRight size={18} /> Continue
+                            </button>
+                        </div>
+                    </form>
+                )}
+
+                {/* ════════ STEP 3: SERVICES ════════ */}
+                {step === 3 && (
+                    <form className={styles.form} onSubmit={handleFinishSetup}>
+                        {/* Suggested services (pre-checked) */}
+                        <div className={styles.inputGroup}>
+                            <label className={styles.label}>
+                                Suggested for your {selectedBusinessType === 'clinic' ? 'clinic' : selectedBusinessType === 'salon' ? 'salon' : 'barbershop'}
+                            </label>
+                            <div className={styles.serviceChips}>
+                                {(suggestedServices[selectedBusinessType as string] || []).map((service) => {
+                                    const isSelected = selectedServices.includes(service);
+                                    return (
+                                        <button
+                                            key={service}
+                                            type="button"
+                                            className={`${styles.serviceChip} ${isSelected ? styles.serviceChipActive : ''}`}
+                                            onClick={() => toggleService(service)}
+                                        >
+                                            {isSelected && <Check size={14} />}
+                                            {service}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Custom services display */}
+                        {selectedServices.filter(s => !(suggestedServices[selectedBusinessType as string] || []).includes(s)).length > 0 && (
+                            <div className={styles.inputGroup}>
+                                <label className={styles.label}>Your custom services</label>
+                                <div className={styles.serviceChips}>
+                                    {selectedServices
+                                        .filter(s => !(suggestedServices[selectedBusinessType as string] || []).includes(s))
+                                        .map((service) => (
+                                            <button
+                                                key={service}
+                                                type="button"
+                                                className={`${styles.serviceChip} ${styles.serviceChipActive}`}
+                                                onClick={() => toggleService(service)}
+                                            >
+                                                <Check size={14} />
+                                                {service}
+                                                <span style={{ marginInlineStart: 4 }}>&times;</span>
+                                            </button>
+                                        ))
+                                    }
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Add custom service */}
+                        <div className={styles.inputGroup}>
+                            <label className={styles.label}>Add your own</label>
+                            <div className={styles.customServiceRow}>
+                                <div className={styles.inputWithIcon} style={{ flex: 1 }}>
+                                    <div className={styles.inputIcon}>
+                                        <Tag size={18} />
+                                    </div>
+                                    <input
+                                        type="text"
+                                        className={styles.loginInput}
+                                        style={{ paddingInlineStart: 44 }}
+                                        placeholder="e.g., Deep Conditioning"
                                         value={customService}
                                         onChange={(e) => setCustomService(e.target.value)}
                                         onKeyDown={(e) => {
                                             if (e.key === 'Enter') {
                                                 e.preventDefault();
-                                                if (customService.trim() && !selectedServices.includes(customService.trim())) {
-                                                    setSelectedServices([...selectedServices, customService.trim()]);
-                                                    setCustomService('');
-                                                }
+                                                addCustomService();
                                             }
                                         }}
                                     />
-                                    <button 
-                                        type="button" 
-                                        className={styles.btnOutline} 
-                                        onClick={() => {
-                                            if (customService.trim() && !selectedServices.includes(customService.trim())) {
-                                                setSelectedServices([...selectedServices, customService.trim()]);
-                                                setCustomService('');
-                                            }
-                                        }}
-                                    >
-                                        Add
-                                    </button>
                                 </div>
+                                <button type="button" className={styles.btnOutline} onClick={addCustomService}>
+                                    Add
+                                </button>
                             </div>
-
-                            <div style={{ marginTop: 'var(--space-4)' }}>
-                                <label style={{ fontSize: 'var(--text-md)', color: 'var(--text-secondary)', marginBottom: 'var(--space-2)', display: 'block' }}>Suggestions for your {businessCategory === 'clinic' ? 'Clinic/Medical Center' : businessCategory === 'salon' ? 'Salon/Spa' : 'Barbershop'}:</label>
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
-                                    {suggestedServices[businessCategory]?.map(suggestion => {
-                                        const isSelected = selectedServices.includes(suggestion);
-                                        return (
-                                            <button
-                                                key={suggestion}
-                                                type="button"
-                                                onClick={() => {
-                                                    if (isSelected) {
-                                                        setSelectedServices(prev => prev.filter(s => s !== suggestion));
-                                                    } else {
-                                                        setSelectedServices(prev => [...prev, suggestion]);
-                                                    }
-                                                }}
-                                                style={{
-                                                    padding: 'var(--space-2) var(--space-4)',
-                                                    borderRadius: 'var(--radius-full)',
-                                                    fontSize: 'var(--text-sm)',
-                                                    fontWeight: 'var(--font-medium)',
-                                                    background: isSelected ? 'var(--color-primary-50)' : 'var(--bg-secondary)',
-                                                    color: isSelected ? 'var(--color-primary-600)' : 'var(--text-secondary)',
-                                                    border: `1px solid ${isSelected ? 'var(--color-primary-200)' : 'var(--border-color)'}`,
-                                                    cursor: 'pointer',
-                                                    transition: 'all 0.2s ease'
-                                                }}
-                                            >
-                                                {suggestion}
-                                                {isSelected && <span style={{ marginInlineStart: 4 }}>&times;</span>}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                            
-                            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: 'var(--space-4)' }}>
-                                You can add prices, durations, and more detailed services later in the settings.
-                            </p>
+                            <p className={styles.hint}>You can add prices, durations, and more details later in Settings.</p>
                         </div>
-                        
-                        <button type="submit" className={styles.loginBtn} style={{ marginTop: 'var(--space-4)' }}>
-                            Go to Dashboard
-                        </button>
-                    </form>
-                )}
 
-                {step === 1 && !otpSent && (
-                    <div style={{ textAlign: 'center', marginTop: 'var(--space-6)', fontSize: 'var(--text-sm)' }}>
-                        <span style={{ color: 'var(--text-secondary)' }}>Already have an account?</span>{' '}
-                        <Link href="/login" style={{ color: 'var(--color-primary-600)', fontWeight: 'var(--font-medium)', textDecoration: 'none' }}>
-                            Log in
-                        </Link>
-                    </div>
+                        {/* Navigation */}
+                        <div className={styles.navRow}>
+                            <button type="button" className={styles.backBtn} onClick={() => setStep(2)}>
+                                <ArrowLeft size={16} /> Back
+                            </button>
+                            <button type="submit" className={styles.loginBtn} style={{ flex: 1 }}>
+                                Go to Dashboard
+                            </button>
+                        </div>
+                    </form>
                 )}
             </div>
         </div>

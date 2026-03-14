@@ -19,6 +19,7 @@ interface AuthContextType {
     user: User | null;
     requestOTP: (identifier: string) => Promise<{ success: boolean, type: 'email' | 'phone' }>;
     verifyOTP: (identifier: string, code: string, redirect?: boolean) => Promise<{ success: boolean, user?: User, error?: string }>;
+    updateUser: (data: Partial<User>) => void;
     logout: () => void;
     loading: boolean;
 }
@@ -92,6 +93,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { success: true, user: mockUser };
     };
 
+    const updateUser = (data: Partial<User>) => {
+        setUser(prev => {
+            if (!prev) return prev;
+            const updated = { ...prev, ...data };
+            localStorage.setItem('hagzy_user', JSON.stringify(updated));
+            return updated;
+        });
+    };
+
     const logout = () => {
         setUser(null);
         localStorage.removeItem('hagzy_user');
@@ -99,7 +109,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     return (
-        <AuthContext.Provider value={{ user, requestOTP, verifyOTP, logout, loading }}>
+        <AuthContext.Provider value={{ user, requestOTP, verifyOTP, updateUser, logout, loading }}>
             {!loading && children}
         </AuthContext.Provider>
     );
