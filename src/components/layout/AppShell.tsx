@@ -13,7 +13,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
     const { collapsed } = useSidebar();
     const pathname = usePathname();
 
-    const isPublicRoute = pathname === '/login' || pathname === '/onboarding' || pathname?.startsWith('/invite/');
+    const isPublicRoute = pathname === '/login' || pathname === '/onboarding' || pathname === '/forgot-password' || pathname?.startsWith('/invite/');
 
     if (isPublicRoute) {
         return <div style={{ minHeight: '100vh', background: 'var(--bg-secondary)' }}>{children}</div>;

@@ -17,8 +17,11 @@ export interface User {
 
 interface AuthContextType {
     user: User | null;
-    requestOTP: (identifier: string) => Promise<{ success: boolean, type: 'email' | 'phone' }>;
-    verifyOTP: (identifier: string, code: string, redirect?: boolean) => Promise<{ success: boolean, user?: User, error?: string }>;
+    login: (identifier: string, password: string) => Promise<{ success: boolean; user?: User; error?: string }>;
+    requestOTP: (identifier: string) => Promise<{ success: boolean; type: 'email' | 'phone' }>;
+    verifyOTP: (identifier: string, code: string, redirect?: boolean) => Promise<{ success: boolean; user?: User; error?: string }>;
+    forgotPassword: (identifier: string) => Promise<{ success: boolean; type: 'email' | 'phone' }>;
+    resetPassword: (identifier: string, code: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
     updateUser: (data: Partial<User>) => void;
     logout: () => void;
     loading: boolean;
@@ -34,6 +37,9 @@ export const MOCK_USERS: Record<string, User> = {
     'manager@hagzy.com': { id: 'U4', name: 'Shift Manager', email: 'manager@hagzy.com', role: 'manager', businessType: 'salon' },
     'staff@hagzy.com': { id: 'U5', name: 'Receptionist', email: 'staff@hagzy.com', role: 'staff', businessType: 'salon' },
 };
+
+// Mock password for demo — any password with 6+ characters works
+const MOCK_PASSWORD = 'password';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
@@ -52,45 +58,73 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     useEffect(() => {
         if (!loading) {
-            const isPublicRoute = pathname === '/login' || pathname === '/onboarding' || pathname.startsWith('/invite/');
+            const isPublicRoute = pathname === '/login' || pathname === '/onboarding' || pathname === '/forgot-password' || pathname.startsWith('/invite/');
             if (!user && !isPublicRoute) {
                 router.push('/login');
             } else if (user && pathname === '/login') {
-                router.push('/'); // Redirect to dashboard if logged in
+                router.push('/');
             }
         }
     }, [user, loading, pathname, router]);
 
+    const login = async (identifier: string, password: string) => {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        // For the demo, any password with 6+ characters works
+        if (password.length < 6) {
+            return { success: false, error: 'Invalid email/phone or password' };
+        }
+
+        const mockUser = MOCK_USERS[identifier] || MOCK_USERS['clinic@hagzy.com'];
+        setUser(mockUser);
+        localStorage.setItem('hagzy_user', JSON.stringify(mockUser));
+        router.push('/');
+        return { success: true, user: mockUser };
+    };
+
     const requestOTP = async (identifier: string) => {
-        // Simulate network delay
         await new Promise(resolve => setTimeout(resolve, 800));
-
-        // Basic detection for demo: if it has an '@', it's an email; otherwise assume phone.
         const type = identifier.includes('@') ? 'email' : 'phone';
-
-        // In a real app we'd dispatch the OTP here.
         console.log(`Mock OTP requested for ${type}: ${identifier}`);
         return { success: true, type } as const;
     };
 
     const verifyOTP = async (identifier: string, code: string, redirect = true) => {
-        // Simulate network delay
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-        // For the demo, "123456" is the magical successful code.
         if (code !== '123456') {
             return { success: false, error: 'Invalid verification code' };
         }
 
-        // Logic to get the right mock user based on the email. If they enter a random email, default to admin to appease the demo.
         const mockUser = MOCK_USERS[identifier] || MOCK_USERS['clinic@hagzy.com'];
-
         setUser(mockUser);
         localStorage.setItem('hagzy_user', JSON.stringify(mockUser));
         if (redirect) {
             router.push('/');
         }
         return { success: true, user: mockUser };
+    };
+
+    const forgotPassword = async (identifier: string) => {
+        await new Promise(resolve => setTimeout(resolve, 800));
+        const type = identifier.includes('@') ? 'email' : 'phone';
+        console.log(`Mock reset OTP sent to ${type}: ${identifier}`);
+        return { success: true, type } as const;
+    };
+
+    const resetPassword = async (identifier: string, code: string, newPassword: string) => {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        if (code !== '123456') {
+            return { success: false, error: 'Invalid verification code' };
+        }
+
+        if (newPassword.length < 6) {
+            return { success: false, error: 'Password must be at least 6 characters' };
+        }
+
+        console.log(`Mock password reset for: ${identifier}`);
+        return { success: true };
     };
 
     const updateUser = (data: Partial<User>) => {
@@ -109,7 +143,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     return (
-        <AuthContext.Provider value={{ user, requestOTP, verifyOTP, updateUser, logout, loading }}>
+        <AuthContext.Provider value={{ user, login, requestOTP, verifyOTP, forgotPassword, resetPassword, updateUser, logout, loading }}>
             {!loading && children}
         </AuthContext.Provider>
     );
