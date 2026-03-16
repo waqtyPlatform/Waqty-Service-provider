@@ -13,7 +13,7 @@ export default function LoginPage() {
     const { addToast } = useToast();
     const { t } = useTranslation();
 
-    const [identifier, setIdentifier] = useState('clinic@hagzy.com');
+    const [identifier, setIdentifier] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);

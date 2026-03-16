@@ -2,17 +2,41 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import { api } from '@/lib/api';
 
 export type UserRole = 'admin' | 'manager' | 'staff';
 export type BusinessType = 'clinic' | 'salon' | 'barber';
 
 export interface User {
     id: string;
+    uuid?: string;
     name: string;
     email: string;
+    phone?: string;
     role: UserRole;
     businessType: BusinessType;
+    active?: boolean;
+    blocked?: boolean;
+    banned?: boolean;
     isNewWorkspace?: boolean;
+}
+
+interface ProviderLoginResponse {
+    token: string;
+    token_type: string;
+    expires_in: number;
+    provider: {
+        uuid: string;
+        name: string;
+        email: string;
+        phone: string;
+        code: string | null;
+        active: boolean;
+        blocked: boolean;
+        banned: boolean;
+        created_at: string;
+        updated_at: string;
+    };
 }
 
 interface AuthContextType {
@@ -50,8 +74,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     useEffect(() => {
         // Hydrate from localStorage
         const storedUser = localStorage.getItem('hagzy_user');
-        if (storedUser) {
+        const storedToken = localStorage.getItem('hagzy_token');
+        if (storedUser && storedToken) {
             Promise.resolve().then(() => setUser(JSON.parse(storedUser)));
+        } else {
+            // Clear partial state if token or user is missing
+            localStorage.removeItem('hagzy_user');
+            localStorage.removeItem('hagzy_token');
         }
         Promise.resolve().then(() => setLoading(false));
     }, []);
@@ -68,18 +97,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, [user, loading, pathname, router]);
 
     const login = async (identifier: string, password: string) => {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        try {
+            const res = await api.post<ProviderLoginResponse>('/api/provider/auth/login', {
+                email: identifier,
+                password,
+            });
 
-        // For the demo, any password with 6+ characters works
-        if (password.length < 6) {
-            return { success: false, error: 'Invalid email/phone or password' };
+            if (res.success && res.data) {
+                const { token, provider } = res.data;
+
+                // Store JWT token
+                localStorage.setItem('hagzy_token', token);
+
+                // Map provider data to User
+                const loggedInUser: User = {
+                    id: provider.uuid,
+                    uuid: provider.uuid,
+                    name: provider.name,
+                    email: provider.email,
+                    phone: provider.phone,
+                    role: 'admin',
+                    businessType: 'salon',
+                    active: provider.active,
+                    blocked: provider.blocked,
+                    banned: provider.banned,
+                };
+
+                setUser(loggedInUser);
+                localStorage.setItem('hagzy_user', JSON.stringify(loggedInUser));
+                router.push('/');
+                return { success: true, user: loggedInUser };
+            }
+
+            return { success: false, error: res.message || 'Login failed' };
+        } catch (err: unknown) {
+            const error = err as { message?: string; status?: number };
+            return { success: false, error: error.message || 'Invalid email or password' };
         }
-
-        const mockUser = MOCK_USERS[identifier] || MOCK_USERS['clinic@hagzy.com'];
-        setUser(mockUser);
-        localStorage.setItem('hagzy_user', JSON.stringify(mockUser));
-        router.push('/');
-        return { success: true, user: mockUser };
     };
 
     const requestOTP = async (identifier: string) => {
@@ -136,7 +190,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
     };
 
-    const logout = () => {
+    const logout = async () => {
+        try {
+            await api.post('/api/provider/auth/logout', {});
+        } catch {
+            // Ignore logout API errors — clear local state regardless
+        }
+        localStorage.removeItem('hagzy_token');
         setUser(null);
         localStorage.removeItem('hagzy_user');
         router.push('/login');

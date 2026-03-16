@@ -6,6 +6,7 @@ import {
     Search, Filter, Calendar, Download, CreditCard, Banknote,
     FileText, Eye,
     Plus, Edit, Trash2, Star, Smartphone,
+    AlertCircle, Shirt, Wrench, Droplet,
 } from 'lucide-react';
 import { Button, Select, Badge, Modal, useToast, SlideOver } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -14,6 +15,13 @@ import CommissionsPage from '@/app/employees/commissions/page';
 import CommissionSettingsPage from '@/app/employees/commission-settings/page';
 
 /* ─── Mock Data ──────────────────────────────────────────────────── */
+
+interface DeductionDetail {
+    label: string;
+    amount: number;
+    type: 'attendance' | 'uniform' | 'equipment' | 'material' | 'custom';
+    date: string;
+}
 
 interface PaymentMethod {
     id: string;
@@ -24,13 +32,35 @@ interface PaymentMethod {
 }
 
 const employees = [
-    { id: 'EMP-001', name: 'Sara Ahmed', dept: 'Hair Care', position: 'Senior Stylist', baseSalary: 8000, commission: 2600, bonus: 1000, deductions: 500 },
-    { id: 'EMP-002', name: 'Nora Ali', dept: 'Skincare', position: 'Aesthetician', baseSalary: 7000, commission: 1880, bonus: 600, deductions: 450 },
-    { id: 'EMP-003', name: 'Mona Zein', dept: 'Skincare', position: 'Laser Tech', baseSalary: 7500, commission: 1650, bonus: 0, deductions: 480 },
-    { id: 'EMP-004', name: 'Layla Hassan', dept: 'Nails', position: 'Nail Artist', baseSalary: 5500, commission: 920, bonus: 0, deductions: 350 },
-    { id: 'EMP-005', name: 'Reem Mohamed', dept: 'Spa', position: 'Therapist', baseSalary: 6000, commission: 720, bonus: 300, deductions: 380 },
-    { id: 'EMP-006', name: 'Huda Farouk', dept: 'Hair Care', position: 'Colorist', baseSalary: 6500, commission: 1100, bonus: 0, deductions: 420 },
-    { id: 'EMP-007', name: 'Dina Samir', dept: 'Reception', position: 'Front Desk', baseSalary: 4500, commission: 0, bonus: 200, deductions: 280 },
+    { id: 'EMP-001', name: 'Sara Ahmed', dept: 'Hair Care', position: 'Senior Stylist', baseSalary: 8000, commission: 2600, bonus: 1000, deductions: 500, deductionDetails: [
+        { label: 'Late arrival penalty', amount: 120, type: 'attendance' as const, date: 'Mar 3, Mar 9' },
+        { label: 'Absence deduction', amount: 200, type: 'attendance' as const, date: 'Mar 14' },
+        { label: 'Material wastage', amount: 180, type: 'material' as const, date: 'Mar 7' },
+    ]},
+    { id: 'EMP-002', name: 'Nora Ali', dept: 'Skincare', position: 'Aesthetician', baseSalary: 7000, commission: 1880, bonus: 600, deductions: 450, deductionDetails: [
+        { label: 'Late arrival penalty', amount: 150, type: 'attendance' as const, date: 'Mar 5, Mar 11' },
+        { label: 'Uniform replacement', amount: 300, type: 'uniform' as const, date: 'Mar 2' },
+    ]},
+    { id: 'EMP-003', name: 'Mona Zein', dept: 'Skincare', position: 'Laser Tech', baseSalary: 7500, commission: 1650, bonus: 0, deductions: 480, deductionDetails: [
+        { label: 'Equipment damage', amount: 280, type: 'equipment' as const, date: 'Mar 8' },
+        { label: 'Late arrival penalty', amount: 200, type: 'attendance' as const, date: 'Mar 4, Mar 10, Mar 13' },
+    ]},
+    { id: 'EMP-004', name: 'Layla Hassan', dept: 'Nails', position: 'Nail Artist', baseSalary: 5500, commission: 920, bonus: 0, deductions: 350, deductionDetails: [
+        { label: 'Late arrival penalty', amount: 100, type: 'attendance' as const, date: 'Mar 6' },
+        { label: 'Material wastage', amount: 250, type: 'material' as const, date: 'Mar 12' },
+    ]},
+    { id: 'EMP-005', name: 'Reem Mohamed', dept: 'Spa', position: 'Therapist', baseSalary: 6000, commission: 720, bonus: 300, deductions: 380, deductionDetails: [
+        { label: 'Absence deduction', amount: 200, type: 'attendance' as const, date: 'Mar 7' },
+        { label: 'Uniform replacement', amount: 180, type: 'uniform' as const, date: 'Mar 1' },
+    ]},
+    { id: 'EMP-006', name: 'Huda Farouk', dept: 'Hair Care', position: 'Colorist', baseSalary: 6500, commission: 1100, bonus: 0, deductions: 420, deductionDetails: [
+        { label: 'Late arrival penalty', amount: 120, type: 'attendance' as const, date: 'Mar 2, Mar 9' },
+        { label: 'Equipment damage', amount: 300, type: 'equipment' as const, date: 'Mar 11' },
+    ]},
+    { id: 'EMP-007', name: 'Dina Samir', dept: 'Reception', position: 'Front Desk', baseSalary: 4500, commission: 0, bonus: 200, deductions: 280, deductionDetails: [
+        { label: 'Late arrival penalty', amount: 80, type: 'attendance' as const, date: 'Mar 5' },
+        { label: 'Material wastage', amount: 200, type: 'material' as const, date: 'Mar 10' },
+    ]},
 ];
 
 const initialPaymentMethods: Record<string, PaymentMethod[]> = {
@@ -106,6 +136,17 @@ export default function PayrollPage() {
     // Slips state
     const [selectedSlip, setSelectedSlip] = useState<typeof employees[0] | null>(null);
 
+    // Deductions state
+    const [addedDeductions, setAddedDeductions] = useState<Record<string, DeductionDetail[]>>({});
+    const [showAddDeduction, setShowAddDeduction] = useState(false);
+    const [deductionForm, setDeductionForm] = useState({ empId: '', type: 'attendance' as DeductionDetail['type'], label: 'Late arrival penalty', amount: '', date: '' });
+
+    const getEmpDeductions = (empId: string): DeductionDetail[] => [
+        ...(employees.find(e => e.id === empId)?.deductionDetails || []),
+        ...(addedDeductions[empId] || []),
+    ];
+    const getEmpTotalDeductions = (empId: string) => getEmpDeductions(empId).reduce((sum, d) => sum + d.amount, 0);
+
     // Payment Methods state
     const [paymentMethods, setPaymentMethods] = useState<Record<string, PaymentMethod[]>>(initialPaymentMethods);
     const [pmEmpId, setPmEmpId] = useState<string | null>(null);
@@ -157,32 +198,62 @@ export default function PayrollPage() {
         return <DollarSign size={14} />;
     };
 
+    const getDeductionIcon = (type: string) => {
+        switch (type) {
+            case 'attendance': return AlertCircle;
+            case 'uniform': return Shirt;
+            case 'equipment': return Wrench;
+            case 'material': return Droplet;
+            case 'custom': return AlertCircle;
+            default: return AlertCircle;
+        }
+    };
+
+    const deductionTypeColor = (type: string) => {
+        switch (type) {
+            case 'attendance': return { bg: '#FEF3C7', color: '#B45309' };
+            case 'uniform': return { bg: '#DBEAFE', color: '#2563EB' };
+            case 'equipment': return { bg: '#FEE2E2', color: '#DC2626' };
+            case 'material': return { bg: '#E0E7FF', color: '#4338CA' };
+            case 'custom': return { bg: 'var(--bg-secondary)', color: 'var(--text-secondary)' };
+            default: return { bg: '#FEE2E2', color: '#DC2626' };
+        }
+    };
+
     /* ─── Summary Logic ──────────────────────────────────────── */
 
     const summaryData = useMemo(() => {
-        let data = employees.map(e => ({
-            ...e,
-            netPay: e.baseSalary + e.commission + e.bonus - e.deductions,
-            status: payrollStatus[e.id] || 'Pending',
-        }));
+        let data = employees.map(e => {
+            const totalDed = getEmpTotalDeductions(e.id);
+            return {
+                ...e,
+                deductions: totalDed,
+                deductionDetails: getEmpDeductions(e.id),
+                netPay: e.baseSalary + e.commission + e.bonus - totalDed,
+                status: payrollStatus[e.id] || 'Pending',
+            };
+        });
         if (statusFilter !== 'all') data = data.filter(d => d.status.toLowerCase() === statusFilter);
         if (searchSummary) data = data.filter(d => d.name.toLowerCase().includes(searchSummary.toLowerCase()));
         return data;
-    }, [payrollStatus, statusFilter, searchSummary]);
+    }, [payrollStatus, statusFilter, searchSummary, addedDeductions]);
 
     const totals = useMemo(() => {
-        const all = employees.map(e => ({ ...e, netPay: e.baseSalary + e.commission + e.bonus - e.deductions }));
+        const all = employees.map(e => {
+            const totalDed = getEmpTotalDeductions(e.id);
+            return { ...e, netPay: e.baseSalary + e.commission + e.bonus - totalDed, deductions: totalDed };
+        });
         return {
             payroll: all.reduce((s, e) => s + e.netPay, 0),
             commissions: all.reduce((s, e) => s + e.commission, 0),
             bonuses: all.reduce((s, e) => s + e.bonus, 0),
             deductions: all.reduce((s, e) => s + e.deductions, 0),
         };
-    }, []);
+    }, [addedDeductions]);
 
     const handlePay = (empId: string) => {
         const emp = employees.find(e => e.id === empId)!;
-        const net = emp.baseSalary + emp.commission + emp.bonus - emp.deductions;
+        const net = emp.baseSalary + emp.commission + emp.bonus - getEmpTotalDeductions(empId);
         const pm = getDefaultPm(empId);
         setPayrollStatus(prev => ({ ...prev, [empId]: 'Paid' }));
         const newPayout = {
@@ -207,7 +278,7 @@ export default function PayrollPage() {
         const newPayouts: typeof initialPayoutHistory = [];
         pending.forEach(emp => {
             updates[emp.id] = 'Paid';
-            const net = emp.baseSalary + emp.commission + emp.bonus - emp.deductions;
+            const net = emp.baseSalary + emp.commission + emp.bonus - getEmpTotalDeductions(emp.id);
             newPayouts.push({
                 id: `PO-${generateId()}-${emp.id}`,
                 date: new Date().toISOString().slice(0, 10),
@@ -222,6 +293,33 @@ export default function PayrollPage() {
         setPayrollStatus(prev => ({ ...prev, ...updates }));
         setPayoutHistory(prev => [...newPayouts, ...prev]);
         addToast('success', `${t('payroll.toastProcessed')}${pending.length}${t('payroll.toastProcessedSuffix')}`);
+    };
+
+    const defaultLabelForType = (type: DeductionDetail['type']) => {
+        switch (type) {
+            case 'attendance': return 'Late arrival penalty';
+            case 'uniform': return 'Uniform replacement';
+            case 'equipment': return 'Equipment damage';
+            case 'material': return 'Material wastage';
+            case 'custom': return '';
+        }
+    };
+
+    const handleAddDeduction = () => {
+        if (!deductionForm.empId || !deductionForm.label || !deductionForm.amount || !deductionForm.date) return;
+        const detail: DeductionDetail = {
+            label: deductionForm.label,
+            amount: Number(deductionForm.amount),
+            type: deductionForm.type,
+            date: deductionForm.date,
+        };
+        setAddedDeductions(prev => ({
+            ...prev,
+            [deductionForm.empId]: [...(prev[deductionForm.empId] || []), detail],
+        }));
+        setShowAddDeduction(false);
+        setDeductionForm({ empId: '', type: 'attendance', label: 'Late arrival penalty', amount: '', date: '' });
+        addToast('success', t('payroll.toastDeductionAdded'));
     };
 
     /* ─── History Logic ──────────────────────────────────────── */
@@ -303,6 +401,7 @@ export default function PayrollPage() {
                             <input placeholder={t('payroll.searchEmp')} value={searchSummary} onChange={e => setSearchSummary(e.target.value)}
                                 style={{ ...(lang === 'ar' ? { paddingRight: 32 } : { paddingLeft: 32 }), height: 38, width: 200, border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)', textAlign: lang === 'ar' ? 'right' : 'left' }} />
                         </div>
+                        <Button variant="outline" onClick={() => setShowAddDeduction(true)}><MinusCircle size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('payroll.addDeduction')}</Button>
                         <Button variant="primary" onClick={handleProcessAll} className={lang === 'ar' ? 'mr-2' : 'ml-2'}><CheckCircle size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('payroll.processAll')}</Button>
                     </div>
 
@@ -443,7 +542,8 @@ export default function PayrollPage() {
                                 </tr></thead>
                                 <tbody>
                                     {employees.map(emp => {
-                                        const net = emp.baseSalary + emp.commission + emp.bonus - emp.deductions;
+                                        const slipDed = getEmpTotalDeductions(emp.id);
+                                        const net = emp.baseSalary + emp.commission + emp.bonus - slipDed;
                                         return (
                                             <tr key={emp.id} onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-secondary)'} onMouseLeave={e => e.currentTarget.style.background = ''} style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
                                                 <td style={{ ...s.td, fontWeight: 'var(--font-medium)' }}>
@@ -454,7 +554,7 @@ export default function PayrollPage() {
                                                 <td style={s.td}>{emp.baseSalary.toLocaleString()}</td>
                                                 <td style={s.td}>{emp.commission > 0 ? emp.commission.toLocaleString() : '—'}</td>
                                                 <td style={s.td}>{emp.bonus > 0 ? emp.bonus.toLocaleString() : '—'}</td>
-                                                <td style={{ ...s.td, color: 'var(--color-error)' }}>-{emp.deductions.toLocaleString()}</td>
+                                                <td style={{ ...s.td, color: 'var(--color-error)' }}>-{slipDed.toLocaleString()}</td>
                                                 <td style={{ ...s.td, fontWeight: 'var(--font-bold)' }}>{net.toLocaleString()} {t('payroll.egp')}</td>
                                                 <td style={s.td}>
                                                     <div style={{ display: 'flex', gap: 'var(--space-2)', flexDirection: lang === 'ar' ? 'row-reverse' : 'row', justifyContent: lang === 'ar' ? 'flex-end' : 'flex-start' }}>
@@ -475,7 +575,9 @@ export default function PayrollPage() {
             {/* ═══ PAY CONFIRMATION MODAL ═══ */}
             {confirmPay && (() => {
                 const emp = employees.find(e => e.id === confirmPay)!;
-                const net = emp.baseSalary + emp.commission + emp.bonus - emp.deductions;
+                const empDeductions = getEmpDeductions(confirmPay);
+                const empTotalDed = getEmpTotalDeductions(confirmPay);
+                const net = emp.baseSalary + emp.commission + emp.bonus - empTotalDed;
                 return (
                     <Modal open onClose={() => setConfirmPay(null)} title={t('payroll.confirmPayout')}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
@@ -487,7 +589,22 @@ export default function PayrollPage() {
                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>{t('payroll.colBase')}</span><span>{emp.baseSalary.toLocaleString()} {t('payroll.egp')}</span></div>
                                 {emp.commission > 0 && <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>{t('payroll.colCommission')}</span><span>{emp.commission.toLocaleString()} {t('payroll.egp')}</span></div>}
                                 {emp.bonus > 0 && <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>{t('payroll.colBonus')}</span><span>{emp.bonus.toLocaleString()} {t('payroll.egp')}</span></div>}
-                                <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-error)' }}><span>{t('payroll.colDeductions')}</span><span>-{emp.deductions.toLocaleString()} {t('payroll.egp')}</span></div>
+                                <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-error)', marginBottom: 'var(--space-2)' }}><span>{t('payroll.colDeductions')}</span><span>-{empTotalDed.toLocaleString()} {t('payroll.egp')}</span></div>
+                                    {empDeductions.map((d, i) => {
+                                        const Icon = getDeductionIcon(d.type);
+                                        const colors = deductionTypeColor(d.type);
+                                        return (
+                                            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-1) 0', paddingLeft: lang === 'ar' ? 0 : 'var(--space-3)', paddingRight: lang === 'ar' ? 'var(--space-3)' : 0 }}>
+                                                <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}>
+                                                    <span style={{ width: 20, height: 20, borderRadius: 'var(--radius-sm)', background: colors.bg, color: colors.color, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon size={11} /></span>
+                                                    <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>{t(`payroll.deductLabel.${d.label.toLowerCase().replace(/\s+/g, '_')}`) !== `payroll.deductLabel.${d.label.toLowerCase().replace(/\s+/g, '_')}` ? t(`payroll.deductLabel.${d.label.toLowerCase().replace(/\s+/g, '_')}`) : d.label}</span>
+                                                </span>
+                                                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-error)' }}>-{d.amount.toLocaleString()} {t('payroll.egp')}</span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'var(--font-bold)', borderTop: '1px solid var(--border-color)', paddingTop: 'var(--space-2)', marginTop: 'var(--space-1)' }}><span>{t('payroll.colNetPay')}</span><span>{net.toLocaleString()} {t('payroll.egp')}</span></div>
                             </div>
                             <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('payroll.paymentTo')} {(() => { const pm = getDefaultPm(confirmPay); return pm ? `${pm.type === 'Bank Transfer' ? t('payroll.typeBankTrans') : pm.type === 'Cash' ? t('payroll.typeCashVal') : pm.type === 'Mobile Wallet' ? t('payroll.typeWalletVal') : pm.type === 'Check' ? t('payroll.typeCheckVal') : pm.type} — ${pm.label} ${pm.details}` : t('payroll.noMethodSet'); })()}</div>
@@ -500,10 +617,55 @@ export default function PayrollPage() {
                 );
             })()}
 
+            {/* ═══ ADD DEDUCTION MODAL ═══ */}
+            {showAddDeduction && (
+                <Modal open onClose={() => setShowAddDeduction(false)} title={t('payroll.addDeductionTitle')}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
+                        <div>
+                            <label style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', display: 'block', marginBottom: 4 }}>{t('payroll.selectEmployee')}</label>
+                            <select value={deductionForm.empId} onChange={e => setDeductionForm(p => ({ ...p, empId: e.target.value }))} style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}>
+                                <option value="">{t('payroll.selectEmployee')}</option>
+                                {employees.map(e => <option key={e.id} value={e.id}>{e.name} ({e.id})</option>)}
+                            </select>
+                        </div>
+                        <div>
+                            <label style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', display: 'block', marginBottom: 4 }}>{t('payroll.colType')}</label>
+                            <select value={deductionForm.type} onChange={e => { const type = e.target.value as DeductionDetail['type']; setDeductionForm(p => ({ ...p, type, label: defaultLabelForType(type) })); }} style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}>
+                                <option value="attendance">{t('payroll.deductType.attendance')}</option>
+                                <option value="uniform">{t('payroll.deductType.uniform')}</option>
+                                <option value="equipment">{t('payroll.deductType.equipment')}</option>
+                                <option value="material">{t('payroll.deductType.material')}</option>
+                                <option value="custom">{t('payroll.deductType.custom')}</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', display: 'block', marginBottom: 4 }}>{t('payroll.deductLabel.label')}</label>
+                            <input value={deductionForm.label} onChange={e => setDeductionForm(p => ({ ...p, label: e.target.value }))} placeholder={deductionForm.type === 'custom' ? t('payroll.deductLabel.customPlaceholder') : ''} style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }} />
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
+                            <div>
+                                <label style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', display: 'block', marginBottom: 4 }}>{t('payroll.deductionAmount')}</label>
+                                <input type="number" min="0" value={deductionForm.amount} onChange={e => setDeductionForm(p => ({ ...p, amount: e.target.value }))} placeholder="0" style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }} />
+                            </div>
+                            <div>
+                                <label style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', display: 'block', marginBottom: 4 }}>{t('payroll.deductionDate')}</label>
+                                <input value={deductionForm.date} onChange={e => setDeductionForm(p => ({ ...p, date: e.target.value }))} placeholder="Mar 15" style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }} />
+                            </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: lang === 'ar' ? 'flex-start' : 'flex-end', flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}>
+                            <Button variant="outline" onClick={() => setShowAddDeduction(false)}>{t('payroll.btnCancel')}</Button>
+                            <Button variant="primary" onClick={handleAddDeduction} disabled={!deductionForm.empId || !deductionForm.label || !deductionForm.amount || !deductionForm.date}><MinusCircle size={16} className={lang === 'ar' ? 'ml-1' : 'mr-1'} /> {t('payroll.addDeduction')}</Button>
+                        </div>
+                    </div>
+                </Modal>
+            )}
+
             {/* ═══ PAY SLIP SLIDEOVER ═══ */}
             {selectedSlip && (() => {
                 const emp = selectedSlip;
-                const net = emp.baseSalary + emp.commission + emp.bonus - emp.deductions;
+                const slipDeductions = getEmpDeductions(emp.id);
+                const slipTotalDed = getEmpTotalDeductions(emp.id);
+                const net = emp.baseSalary + emp.commission + emp.bonus - slipTotalDed;
                 return (
                     <SlideOver open onClose={() => setSelectedSlip(null)} title={t('payroll.slipTitle')}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
@@ -538,11 +700,24 @@ export default function PayrollPage() {
                             {/* Deductions */}
                             <div style={s.slipSection}>
                                 <div style={{ ...s.slipLabel as React.CSSProperties, textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('payroll.slipDeductions')}</div>
-                                <div style={{ ...s.slipRow as React.CSSProperties, flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}><span>{t('payroll.slipSocial')}</span><span style={{ color: 'var(--color-error)' }}>-{Math.round(emp.deductions * 0.6).toLocaleString()} {t('payroll.egp')}</span></div>
-                                <div style={{ ...s.slipRow as React.CSSProperties, flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}><span>{t('payroll.slipTax')}</span><span style={{ color: 'var(--color-error)' }}>-{Math.round(emp.deductions * 0.3).toLocaleString()} {t('payroll.egp')}</span></div>
-                                <div style={{ ...s.slipRow as React.CSSProperties, flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}><span>{t('payroll.slipOther')}</span><span style={{ color: 'var(--color-error)' }}>-{Math.round(emp.deductions * 0.1).toLocaleString()} {t('payroll.egp')}</span></div>
+                                {slipDeductions.map((d, i) => {
+                                    const Icon = getDeductionIcon(d.type);
+                                    const colors = deductionTypeColor(d.type);
+                                    return (
+                                        <div key={i} style={{ ...s.slipRow as React.CSSProperties, flexDirection: lang === 'ar' ? 'row-reverse' : 'row', alignItems: 'center' }}>
+                                            <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}>
+                                                <span style={{ width: 24, height: 24, borderRadius: 'var(--radius-md)', background: colors.bg, color: colors.color, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Icon size={13} /></span>
+                                                <span style={{ display: 'flex', flexDirection: 'column' }}>
+                                                    <span>{t(`payroll.deductLabel.${d.label.toLowerCase().replace(/\s+/g, '_')}`) !== `payroll.deductLabel.${d.label.toLowerCase().replace(/\s+/g, '_')}` ? t(`payroll.deductLabel.${d.label.toLowerCase().replace(/\s+/g, '_')}`) : d.label}</span>
+                                                    <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{d.date}</span>
+                                                </span>
+                                            </span>
+                                            <span style={{ color: 'var(--color-error)' }}>-{d.amount.toLocaleString()} {t('payroll.egp')}</span>
+                                        </div>
+                                    );
+                                })}
                                 <div style={{ ...s.slipRow, fontWeight: 'var(--font-semibold)', color: 'var(--color-error)', flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}>
-                                    <span>{t('payroll.slipTotalDeduct')}</span><span>-{emp.deductions.toLocaleString()} {t('payroll.egp')}</span>
+                                    <span>{t('payroll.slipTotalDeduct')}</span><span>-{slipTotalDed.toLocaleString()} {t('payroll.egp')}</span>
                                 </div>
                             </div>
 
