@@ -6,13 +6,14 @@ import {
     Search, Filter, Calendar, Download, CreditCard, Banknote,
     FileText, Eye,
     Plus, Edit, Trash2, Star, Smartphone,
-    AlertCircle, Shirt, Wrench, Droplet,
+    AlertCircle, Shirt, Wrench, Droplet, Paperclip,
 } from 'lucide-react';
 import { Button, Select, Badge, Modal, useToast, SlideOver } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
 import SubTabs from '@/components/SubTabs';
 import CommissionsPage from '@/app/employees/commissions/page';
 import CommissionSettingsPage from '@/app/employees/commission-settings/page';
+import DeductionsPage from '@/app/employees/deductions/page';
 
 /* ─── Mock Data ──────────────────────────────────────────────────── */
 
@@ -21,6 +22,8 @@ interface DeductionDetail {
     amount: number;
     type: 'attendance' | 'uniform' | 'equipment' | 'material' | 'custom';
     date: string;
+    datetime?: string;
+    attachment?: { name: string; url: string } | null;
 }
 
 interface PaymentMethod {
@@ -136,15 +139,18 @@ export default function PayrollPage() {
     // Slips state
     const [selectedSlip, setSelectedSlip] = useState<typeof employees[0] | null>(null);
 
-    // Deductions state
-    const [addedDeductions, setAddedDeductions] = useState<Record<string, DeductionDetail[]>>({});
+    // Deductions state — all deductions (mock + added) in one state
+    const [allDeductions, setAllDeductions] = useState<Record<string, DeductionDetail[]>>(() => {
+        const initial: Record<string, DeductionDetail[]> = {};
+        employees.forEach(e => { initial[e.id] = [...e.deductionDetails]; });
+        return initial;
+    });
     const [showAddDeduction, setShowAddDeduction] = useState(false);
-    const [deductionForm, setDeductionForm] = useState({ empId: '', type: 'attendance' as DeductionDetail['type'], label: 'Late arrival penalty', amount: '', date: '' });
+    const [deductionForm, setDeductionForm] = useState({ empId: '', type: 'attendance' as DeductionDetail['type'], label: 'Late arrival penalty', amount: '', date: '', datetime: '', attachment: null as { name: string; url: string } | null });
+    const [expandedDeductions, setExpandedDeductions] = useState<string | null>(null);
+    const [editingDeduction, setEditingDeduction] = useState<{ empId: string; index: number } | null>(null);
 
-    const getEmpDeductions = (empId: string): DeductionDetail[] => [
-        ...(employees.find(e => e.id === empId)?.deductionDetails || []),
-        ...(addedDeductions[empId] || []),
-    ];
+    const getEmpDeductions = (empId: string): DeductionDetail[] => allDeductions[empId] || [];
     const getEmpTotalDeductions = (empId: string) => getEmpDeductions(empId).reduce((sum, d) => sum + d.amount, 0);
 
     // Payment Methods state
@@ -236,7 +242,7 @@ export default function PayrollPage() {
         if (statusFilter !== 'all') data = data.filter(d => d.status.toLowerCase() === statusFilter);
         if (searchSummary) data = data.filter(d => d.name.toLowerCase().includes(searchSummary.toLowerCase()));
         return data;
-    }, [payrollStatus, statusFilter, searchSummary, addedDeductions]);
+    }, [payrollStatus, statusFilter, searchSummary, allDeductions]);
 
     const totals = useMemo(() => {
         const all = employees.map(e => {
@@ -249,7 +255,7 @@ export default function PayrollPage() {
             bonuses: all.reduce((s, e) => s + e.bonus, 0),
             deductions: all.reduce((s, e) => s + e.deductions, 0),
         };
-    }, [addedDeductions]);
+    }, [allDeductions]);
 
     const handlePay = (empId: string) => {
         const emp = employees.find(e => e.id === empId)!;
@@ -305,6 +311,8 @@ export default function PayrollPage() {
         }
     };
 
+    const resetDeductionForm = () => setDeductionForm({ empId: '', type: 'attendance', label: 'Late arrival penalty', amount: '', date: '', datetime: '', attachment: null });
+
     const handleAddDeduction = () => {
         if (!deductionForm.empId || !deductionForm.label || !deductionForm.amount || !deductionForm.date) return;
         const detail: DeductionDetail = {
@@ -312,14 +320,60 @@ export default function PayrollPage() {
             amount: Number(deductionForm.amount),
             type: deductionForm.type,
             date: deductionForm.date,
+            datetime: deductionForm.datetime || undefined,
+            attachment: deductionForm.attachment,
         };
-        setAddedDeductions(prev => ({
+        setAllDeductions(prev => ({
             ...prev,
             [deductionForm.empId]: [...(prev[deductionForm.empId] || []), detail],
         }));
         setShowAddDeduction(false);
-        setDeductionForm({ empId: '', type: 'attendance', label: 'Late arrival penalty', amount: '', date: '' });
+        resetDeductionForm();
         addToast('success', t('payroll.toastDeductionAdded'));
+    };
+
+    const handleEditDeduction = () => {
+        if (!editingDeduction || !deductionForm.label || !deductionForm.amount || !deductionForm.date) return;
+        const { empId, index } = editingDeduction;
+        setAllDeductions(prev => {
+            const updated = [...(prev[empId] || [])];
+            updated[index] = {
+                label: deductionForm.label,
+                amount: Number(deductionForm.amount),
+                type: deductionForm.type,
+                date: deductionForm.date,
+                datetime: deductionForm.datetime || undefined,
+                attachment: deductionForm.attachment,
+            };
+            return { ...prev, [empId]: updated };
+        });
+        setEditingDeduction(null);
+        setShowAddDeduction(false);
+        resetDeductionForm();
+        addToast('success', t('payroll.toastDeductionUpdated'));
+    };
+
+    const handleDeleteDeduction = (empId: string, index: number) => {
+        setAllDeductions(prev => {
+            const updated = [...(prev[empId] || [])];
+            updated.splice(index, 1);
+            return { ...prev, [empId]: updated };
+        });
+        addToast('success', t('payroll.toastDeductionDeleted'));
+    };
+
+    const openEditDeduction = (empId: string, index: number, deduction: DeductionDetail) => {
+        setEditingDeduction({ empId, index });
+        setDeductionForm({
+            empId,
+            type: deduction.type,
+            label: deduction.label,
+            amount: String(deduction.amount),
+            date: deduction.date,
+            datetime: deduction.datetime || '',
+            attachment: deduction.attachment || null,
+        });
+        setShowAddDeduction(true);
     };
 
     /* ─── History Logic ──────────────────────────────────────── */
@@ -346,6 +400,7 @@ export default function PayrollPage() {
 
     const outerTabs = [
         { key: 'payroll', label: t('empLayout.tabPayroll'), icon: <Wallet size={14} /> },
+        { key: 'deductions', label: t('empLayout.tabDeductions'), icon: <MinusCircle size={14} /> },
         { key: 'commissions', label: t('empLayout.tabCommissions'), icon: <Award size={14} /> },
         { key: 'commSettings', label: t('empLayout.tabCommSettings'), icon: <CreditCard size={14} /> },
     ];
@@ -422,7 +477,8 @@ export default function PayrollPage() {
                                 </tr></thead>
                                 <tbody>
                                     {summaryData.map(emp => (
-                                        <tr key={emp.id} style={{ cursor: 'pointer', textAlign: lang === 'ar' ? 'right' : 'left' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-secondary)'} onMouseLeave={e => e.currentTarget.style.background = ''}>
+                                        <React.Fragment key={emp.id}>
+                                        <tr style={{ cursor: 'pointer', textAlign: lang === 'ar' ? 'right' : 'left' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-secondary)'} onMouseLeave={e => e.currentTarget.style.background = ''}>
                                             <td style={{ ...s.td, fontWeight: 'var(--font-medium)' }}>
                                                 <div>{emp.name}</div>
                                                 <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{emp.dept} · {emp.id}</div>
@@ -430,7 +486,18 @@ export default function PayrollPage() {
                                             <td style={s.td}>{emp.baseSalary.toLocaleString()} {t('payroll.egp')}</td>
                                             <td style={s.td}>{emp.commission > 0 ? `${emp.commission.toLocaleString()} ${t('payroll.egp')}` : '—'}</td>
                                             <td style={s.td}>{emp.bonus > 0 ? `${emp.bonus.toLocaleString()} ${t('payroll.egp')}` : '—'}</td>
-                                            <td style={{ ...s.td, color: 'var(--color-error)' }}>-{emp.deductions.toLocaleString()} {t('payroll.egp')}</td>
+                                            <td style={{ ...s.td, color: 'var(--color-error)' }}>
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); setExpandedDeductions(expandedDeductions === emp.id ? null : emp.id); }}
+                                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-error)', fontWeight: 'var(--font-medium)', fontSize: 'var(--text-sm)', display: 'flex', alignItems: 'center', gap: 4, padding: 0 }}
+                                                    title={t('payroll.viewBreakdown')}
+                                                >
+                                                    -{emp.deductions.toLocaleString()} {t('payroll.egp')}
+                                                    <svg width="12" height="12" viewBox="0 0 12 12" style={{ transform: expandedDeductions === emp.id ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>
+                                                        <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                                                    </svg>
+                                                </button>
+                                            </td>
                                             <td style={{ ...s.td, fontWeight: 'var(--font-bold)' }}>{emp.netPay.toLocaleString()} {t('payroll.egp')}</td>
                                             <td style={s.td}>
                                                 {(() => {
@@ -452,6 +519,57 @@ export default function PayrollPage() {
                                                 )}
                                             </td>
                                         </tr>
+                                        {expandedDeductions === emp.id && (
+                                            <tr>
+                                                <td colSpan={9} style={{ padding: 0, background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)' }}>
+                                                    <div style={{ padding: 'var(--space-4) var(--space-6)', direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
+                                                        <div style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-3)', textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                                            {t('payroll.deductionBreakdown')} — {emp.name}
+                                                        </div>
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                                                            {emp.deductionDetails.map((d, i) => {
+                                                                const Icon = getDeductionIcon(d.type);
+                                                                const colors = deductionTypeColor(d.type);
+                                                                return (
+                                                                    <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--space-2) var(--space-3)', background: 'var(--bg-primary)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)', flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}>
+                                                                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}>
+                                                                            <span style={{ width: 28, height: 28, borderRadius: 'var(--radius-md)', background: colors.bg, color: colors.color, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                                                                <Icon size={14} />
+                                                                            </span>
+                                                                            <div style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                                                                <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', color: 'var(--text-primary)' }}>
+                                                                                    {t(`payroll.deductLabel.${d.label.toLowerCase().replace(/\s+/g, '_')}`) !== `payroll.deductLabel.${d.label.toLowerCase().replace(/\s+/g, '_')}` ? t(`payroll.deductLabel.${d.label.toLowerCase().replace(/\s+/g, '_')}`) : d.label}
+                                                                                </div>
+                                                                                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}>
+                                                                                    <span>{t(`payroll.deductType.${d.type}`)}</span>
+                                                                                    <span>·</span>
+                                                                                    <span>{d.date}</span>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}>
+                                                                            <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)', color: 'var(--color-error)' }}>-{d.amount.toLocaleString()} {t('payroll.egp')}</span>
+                                                                            <div style={{ display: 'flex', gap: 2 }}>
+                                                                                <button onClick={() => openEditDeduction(emp.id, i, d)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--text-tertiary)', borderRadius: 'var(--radius-sm)' }} title={t('payroll.editDeduction')}><Edit size={13} /></button>
+                                                                                <button onClick={() => handleDeleteDeduction(emp.id, i)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--color-error)', borderRadius: 'var(--radius-sm)' }} title={t('payroll.deleteDeduction')}><Trash2 size={13} /></button>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                            {emp.deductionDetails.length === 0 && (
+                                                                <div style={{ textAlign: 'center', padding: 'var(--space-3)', color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)' }}>{t('payroll.noDeductions')}</div>
+                                                            )}
+                                                        </div>
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 'var(--space-3)', paddingTop: 'var(--space-3)', borderTop: '1px solid var(--border-color)', fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-sm)', flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}>
+                                                            <span>{t('payroll.slipTotalDeduct')}</span>
+                                                            <span style={{ color: 'var(--color-error)' }}>-{emp.deductions.toLocaleString()} {t('payroll.egp')}</span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )}
+                                        </React.Fragment>
                                     ))}
                                     {summaryData.length === 0 && (
                                         <tr><td colSpan={9} style={{ ...s.td, textAlign: 'center', padding: 'var(--space-8)', color: 'var(--text-tertiary)' }}>{t('payroll.emptySummary')}</td></tr>
@@ -619,11 +737,11 @@ export default function PayrollPage() {
 
             {/* ═══ ADD DEDUCTION MODAL ═══ */}
             {showAddDeduction && (
-                <Modal open onClose={() => setShowAddDeduction(false)} title={t('payroll.addDeductionTitle')}>
+                <Modal open onClose={() => { setShowAddDeduction(false); setEditingDeduction(null); resetDeductionForm(); }} title={editingDeduction ? t('payroll.editDeduction') : t('payroll.addDeductionTitle')}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
                         <div>
                             <label style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', display: 'block', marginBottom: 4 }}>{t('payroll.selectEmployee')}</label>
-                            <select value={deductionForm.empId} onChange={e => setDeductionForm(p => ({ ...p, empId: e.target.value }))} style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}>
+                            <select value={deductionForm.empId} onChange={e => setDeductionForm(p => ({ ...p, empId: e.target.value }))} disabled={!!editingDeduction} style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)', opacity: editingDeduction ? 0.6 : 1 }}>
                                 <option value="">{t('payroll.selectEmployee')}</option>
                                 {employees.map(e => <option key={e.id} value={e.id}>{e.name} ({e.id})</option>)}
                             </select>
@@ -649,12 +767,39 @@ export default function PayrollPage() {
                             </div>
                             <div>
                                 <label style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', display: 'block', marginBottom: 4 }}>{t('payroll.deductionDate')}</label>
-                                <input value={deductionForm.date} onChange={e => setDeductionForm(p => ({ ...p, date: e.target.value }))} placeholder="Mar 15" style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }} />
+                                <input type="date" value={deductionForm.date} onChange={e => setDeductionForm(p => ({ ...p, date: e.target.value }))} style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }} />
+                            </div>
+                        </div>
+                        <div>
+                            <label style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', display: 'block', marginBottom: 4 }}>{t('payroll.deductionDateTime')}</label>
+                            <input type="datetime-local" value={deductionForm.datetime} onChange={e => setDeductionForm(p => ({ ...p, datetime: e.target.value }))} style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }} />
+                        </div>
+                        <div>
+                            <label style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', display: 'block', marginBottom: 4 }}>{t('payroll.deductionAttachment')}</label>
+                            <div style={{ border: '1px dashed var(--border-color)', borderRadius: 'var(--radius-md)', padding: 'var(--space-3)', textAlign: 'center', cursor: 'pointer', background: 'var(--bg-secondary)', position: 'relative' }}>
+                                {deductionForm.attachment ? (
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-2)' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                            <FileText size={16} color="var(--color-primary-600)" />
+                                            <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}>{deductionForm.attachment.name}</span>
+                                        </div>
+                                        <button onClick={() => setDeductionForm(p => ({ ...p, attachment: null }))} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-error)', padding: 2 }}><Trash2 size={14} /></button>
+                                    </div>
+                                ) : (
+                                    <label style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                                        <Plus size={20} color="var(--text-tertiary)" />
+                                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{t('payroll.uploadAttachment')}</span>
+                                        <input type="file" accept="image/*,.pdf,.doc,.docx" style={{ display: 'none' }} onChange={e => {
+                                            const file = e.target.files?.[0];
+                                            if (file) setDeductionForm(p => ({ ...p, attachment: { name: file.name, url: URL.createObjectURL(file) } }));
+                                        }} />
+                                    </label>
+                                )}
                             </div>
                         </div>
                         <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: lang === 'ar' ? 'flex-start' : 'flex-end', flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}>
-                            <Button variant="outline" onClick={() => setShowAddDeduction(false)}>{t('payroll.btnCancel')}</Button>
-                            <Button variant="primary" onClick={handleAddDeduction} disabled={!deductionForm.empId || !deductionForm.label || !deductionForm.amount || !deductionForm.date}><MinusCircle size={16} className={lang === 'ar' ? 'ml-1' : 'mr-1'} /> {t('payroll.addDeduction')}</Button>
+                            <Button variant="outline" onClick={() => { setShowAddDeduction(false); setEditingDeduction(null); resetDeductionForm(); }}>{t('payroll.btnCancel')}</Button>
+                            <Button variant="primary" onClick={editingDeduction ? handleEditDeduction : handleAddDeduction} disabled={!deductionForm.empId || !deductionForm.label || !deductionForm.amount || !deductionForm.date}><MinusCircle size={16} className={lang === 'ar' ? 'ml-1' : 'mr-1'} /> {editingDeduction ? t('payroll.btnSaveChanges') : t('payroll.addDeduction')}</Button>
                         </div>
                     </div>
                 </Modal>
@@ -802,6 +947,7 @@ export default function PayrollPage() {
             })()}
                     </>
                 ),
+                deductions: <DeductionsPage />,
                 commissions: <CommissionsPage />,
                 commSettings: <CommissionSettingsPage />,
             }} />
