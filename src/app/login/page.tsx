@@ -111,10 +111,6 @@ export default function LoginPage() {
                     </button>
                 </form>
 
-                <div className={styles.tip} style={{ marginTop: 'var(--space-6)' }}>
-                    {t('auth.demoTipLogin')}
-                </div>
-
                 <div style={{ textAlign: 'center', marginTop: 'var(--space-6)', fontSize: 'var(--text-sm)' }}>
                     <span style={{ color: 'var(--text-secondary)' }}>{t('auth.noWorkspace')}</span>{' '}
                     <Link href="/onboarding" style={{ color: 'var(--color-primary-600)', fontWeight: 'var(--font-medium)', textDecoration: 'none' }}>
