@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth, BusinessType } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui';
 import { useRouter } from 'next/navigation';
@@ -62,6 +62,8 @@ export default function OnboardingPage() {
     const [step, setStep] = useState(1);
     const [substep, setSubstep] = useState<'identifier' | 'otp' | 'name'>('identifier');
     const [isLoading, setIsLoading] = useState(false);
+    const [animDir, setAnimDir] = useState<'forward' | 'back'>('forward');
+    const [animKey, setAnimKey] = useState(0);
 
     // Step 1: Account
     const [identifier, setIdentifier] = useState('');
@@ -83,6 +85,19 @@ export default function OnboardingPage() {
     const [selectedServices, setSelectedServices] = useState<string[]>([]);
     const [customService, setCustomService] = useState('');
 
+    // Refs for auto-focus
+    const identifierRef = useRef<HTMLInputElement>(null);
+    const nameRef = useRef<HTMLInputElement>(null);
+
+    // Auto-focus on substep change
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (substep === 'identifier') identifierRef.current?.focus();
+            if (substep === 'name') nameRef.current?.focus();
+        }, 100);
+        return () => clearTimeout(timer);
+    }, [substep]);
+
     // Countdown timer for OTP resend
     useEffect(() => {
         let timer: NodeJS.Timeout;
@@ -92,6 +107,19 @@ export default function OnboardingPage() {
         return () => clearInterval(timer);
     }, [substep, countdown]);
 
+    // Animate transitions
+    const goForward = useCallback((nextStep: number) => {
+        setAnimDir('forward');
+        setAnimKey(k => k + 1);
+        setStep(nextStep);
+    }, []);
+
+    const goBack = useCallback((prevStep: number) => {
+        setAnimDir('back');
+        setAnimKey(k => k + 1);
+        setStep(prevStep);
+    }, []);
+
     // ── Step 1 Handlers ──
     const handleRequestOTP = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -100,6 +128,8 @@ export default function OnboardingPage() {
         try {
             const res = await requestOTP(identifier);
             if (res.success) {
+                setAnimDir('forward');
+                setAnimKey(k => k + 1);
                 setSubstep('otp');
                 setCountdown(60);
                 addToast('success', res.type === 'email' ? 'Verification code sent to your email' : 'Verification code sent via WhatsApp');
@@ -123,6 +153,8 @@ export default function OnboardingPage() {
                 setOtpCode(['', '', '', '', '', '']);
             } else {
                 addToast('success', 'Identity verified!');
+                setAnimDir('forward');
+                setAnimKey(k => k + 1);
                 setSubstep('name');
             }
         } catch {
@@ -135,7 +167,7 @@ export default function OnboardingPage() {
     const handleNameSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!fullName.trim()) return addToast('error', 'Please enter your name');
-        setStep(2);
+        goForward(2);
     };
 
     // ── Step 2 Handlers ──
@@ -149,7 +181,7 @@ export default function OnboardingPage() {
 
         // Pre-select all suggested services
         setSelectedServices([...(suggestedServices[selectedBusinessType] || [])]);
-        setStep(3);
+        goForward(3);
     };
 
     const handlePinLocation = () => {
@@ -207,6 +239,20 @@ export default function OnboardingPage() {
         }
     };
 
+    const handleOtpPaste = (e: React.ClipboardEvent) => {
+        e.preventDefault();
+        const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+        if (pasted.length > 0) {
+            const newCode = [...otpCode];
+            for (let i = 0; i < pasted.length && i < 6; i++) {
+                newCode[i] = pasted[i];
+            }
+            setOtpCode(newCode);
+            const focusIdx = Math.min(pasted.length, 5);
+            document.getElementById(`signup-otp-${focusIdx}`)?.focus();
+        }
+    };
+
     const toggleService = (service: string) => {
         setSelectedServices(prev =>
             prev.includes(service) ? prev.filter(s => s !== service) : [...prev, service]
@@ -236,6 +282,8 @@ export default function OnboardingPage() {
         2: 'Help us customize your workspace',
         3: 'Select the services you offer — you can edit these anytime',
     };
+
+    const formAnimClass = animDir === 'forward' ? styles.formAnimateForward : styles.formAnimateBack;
 
     return (
         <div className={styles.page}>
@@ -269,7 +317,7 @@ export default function OnboardingPage() {
 
                 {/* 1a: Email / Phone */}
                 {step === 1 && substep === 'identifier' && (
-                    <form className={styles.form} onSubmit={handleRequestOTP}>
+                    <form key={`s1a-${animKey}`} className={`${styles.form} ${formAnimClass}`} onSubmit={handleRequestOTP}>
                         <div className={styles.inputGroup}>
                             <label className={styles.label}>Email or Phone Number</label>
                             <div className={styles.inputWithIcon}>
@@ -277,6 +325,7 @@ export default function OnboardingPage() {
                                     {identifier.includes('@') ? <Mail size={18} /> : <Smartphone size={18} />}
                                 </div>
                                 <input
+                                    ref={identifierRef}
                                     type="text"
                                     className={styles.loginInput}
                                     style={{ paddingInlineStart: 44 }}
@@ -303,9 +352,9 @@ export default function OnboardingPage() {
 
                 {/* 1b: OTP */}
                 {step === 1 && substep === 'otp' && (
-                    <form className={styles.form} onSubmit={handleVerifyOTP}>
+                    <form key={`s1b-${animKey}`} className={`${styles.form} ${formAnimClass}`} onSubmit={handleVerifyOTP}>
                         <div className={styles.inputGroup}>
-                            <label className={styles.label} style={{ textAlign: 'center' }}>Enter 6-digit Code</label>
+                            <label className={styles.label} style={{ textAlign: 'center', justifyContent: 'center' }}>Enter 6-digit Code</label>
                             <div className={styles.otpRow}>
                                 {otpCode.map((digit, idx) => (
                                     <input
@@ -318,6 +367,7 @@ export default function OnboardingPage() {
                                         value={digit}
                                         onChange={(e) => handleOtpChange(idx, e.target.value)}
                                         onKeyDown={(e) => handleOtpKeyDown(idx, e)}
+                                        onPaste={idx === 0 ? handleOtpPaste : undefined}
                                         className={`${styles.otpInput} ${digit ? styles.otpInputFilled : ''}`}
                                         autoFocus={idx === 0}
                                     />
@@ -332,7 +382,7 @@ export default function OnboardingPage() {
                             <button
                                 type="button"
                                 disabled={countdown > 0}
-                                onClick={handleRequestOTP as any}
+                                onClick={handleRequestOTP as React.MouseEventHandler}
                                 className={styles.resendBtn}
                                 style={{ opacity: countdown > 0 ? 0.5 : 1, cursor: countdown > 0 ? 'not-allowed' : 'pointer' }}
                             >
@@ -347,7 +397,7 @@ export default function OnboardingPage() {
 
                 {/* 1c: Name */}
                 {step === 1 && substep === 'name' && (
-                    <form className={styles.form} onSubmit={handleNameSubmit}>
+                    <form key={`s1c-${animKey}`} className={`${styles.form} ${formAnimClass}`} onSubmit={handleNameSubmit}>
                         <div className={styles.inputGroup}>
                             <label className={styles.label}>Your Full Name</label>
                             <div className={styles.inputWithIcon}>
@@ -355,6 +405,7 @@ export default function OnboardingPage() {
                                     <User size={18} />
                                 </div>
                                 <input
+                                    ref={nameRef}
                                     type="text"
                                     className={styles.loginInput}
                                     style={{ paddingInlineStart: 44 }}
@@ -374,7 +425,7 @@ export default function OnboardingPage() {
 
                 {/* ════════ STEP 2: BUSINESS ════════ */}
                 {step === 2 && (
-                    <form className={styles.form} onSubmit={handleBusinessSubmit}>
+                    <form key={`s2-${animKey}`} className={`${styles.form} ${formAnimClass}`} onSubmit={handleBusinessSubmit}>
                         {/* Business Type Cards */}
                         <div className={styles.inputGroup}>
                             <label className={styles.label}>Business Type</label>
@@ -389,6 +440,11 @@ export default function OnboardingPage() {
                                             className={`${styles.businessCard} ${isActive ? styles.businessCardActive : ''}`}
                                             onClick={() => setSelectedBusinessType(bt.value)}
                                         >
+                                            {isActive && (
+                                                <div className={styles.businessCardCheck}>
+                                                    <Check size={12} />
+                                                </div>
+                                            )}
                                             <div className={`${styles.businessCardIcon} ${isActive ? styles.businessCardIconActive : ''}`}>
                                                 <Icon size={22} />
                                             </div>
@@ -511,7 +567,7 @@ export default function OnboardingPage() {
 
                         {/* Navigation */}
                         <div className={styles.navRow}>
-                            <button type="button" className={styles.backBtn} onClick={() => setStep(1)}>
+                            <button type="button" className={styles.backBtn} onClick={() => goBack(1)}>
                                 <ArrowLeft size={16} /> Back
                             </button>
                             <button type="submit" className={styles.loginBtn} style={{ flex: 1 }}>
@@ -523,11 +579,14 @@ export default function OnboardingPage() {
 
                 {/* ════════ STEP 3: SERVICES ════════ */}
                 {step === 3 && (
-                    <form className={styles.form} onSubmit={handleFinishSetup}>
+                    <form key={`s3-${animKey}`} className={`${styles.form} ${formAnimClass}`} onSubmit={handleFinishSetup}>
                         {/* Suggested services (pre-checked) */}
                         <div className={styles.inputGroup}>
                             <label className={styles.label}>
                                 Suggested for your {selectedBusinessType === 'clinic' ? 'clinic' : selectedBusinessType === 'salon' ? 'salon' : 'barbershop'}
+                                {selectedServices.length > 0 && (
+                                    <span className={styles.serviceCount}>{selectedServices.length}</span>
+                                )}
                             </label>
                             <div className={styles.serviceChips}>
                                 {(suggestedServices[selectedBusinessType as string] || []).map((service) => {
@@ -603,7 +662,7 @@ export default function OnboardingPage() {
 
                         {/* Navigation */}
                         <div className={styles.navRow}>
-                            <button type="button" className={styles.backBtn} onClick={() => setStep(2)}>
+                            <button type="button" className={styles.backBtn} onClick={() => goBack(2)}>
                                 <ArrowLeft size={16} /> Back
                             </button>
                             <button type="submit" className={styles.loginBtn} style={{ flex: 1 }}>
