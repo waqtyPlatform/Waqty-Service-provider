@@ -112,9 +112,16 @@
 }
 
 /* Table */
+.tableScroll {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
 .dataTable {
     width: 100%;
     border-collapse: collapse;
+    min-width: 600px;
 }
 
 .dataTable th {
@@ -184,4 +191,51 @@
 .actions {
     display: flex;
     gap: var(--space-2);
+}
+
+/* ── Responsive ── */
+@media (max-width: 767px) {
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-3);
+    }
+
+    .kpiRow {
+        grid-template-columns: 1fr;
+    }
+
+    .card {
+        border-radius: var(--radius-lg);
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .dataTable {
+        min-width: 500px;
+    }
+
+    .dataTable th,
+    .dataTable td {
+        padding: var(--space-2) var(--space-3);
+        font-size: var(--text-xs);
+    }
+
+    .safeName {
+        gap: var(--space-2);
+    }
+
+    .safeIcon {
+        width: 28px;
+        height: 28px;
+    }
+
+    .kpiCard {
+        padding: var(--space-4);
+    }
+
+    .kpiIcon {
+        width: 36px;
+        height: 36px;
+    }
 }

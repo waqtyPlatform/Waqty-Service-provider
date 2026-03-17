@@ -19,7 +19,7 @@
 }
 
 /* Dark mode adjustment for sticky header background */
-:global([data-theme="dark"]) .stickyHeader {
+:global([data-theme='dark']) .stickyHeader {
     background-color: rgba(31, 41, 55, 0.95);
     /* bg-secondary dark with opacity */
 }
@@ -112,7 +112,9 @@
     display: flex;
     align-items: center;
     gap: var(--space-4);
-    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    transition:
+        transform var(--transition-fast),
+        box-shadow var(--transition-fast);
 }
 
 .kpiCard:hover {
@@ -220,4 +222,43 @@
 .reportCardDesc {
     font-size: var(--text-sm);
     color: var(--text-tertiary);
+}
+
+/* ── Responsive ── */
+@media (max-width: 767px) {
+    .headerContent {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-3);
+    }
+
+    .tabsScrollContainer {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        scrollbar-width: none;
+    }
+
+    .tabsScrollContainer::-webkit-scrollbar {
+        display: none;
+    }
+
+    .kpiGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .kpiCard {
+        padding: var(--space-4);
+    }
+
+    .reportsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .chartContainer {
+        height: 220px;
+    }
+
+    .chartCard {
+        padding: var(--space-4);
+    }
 }
