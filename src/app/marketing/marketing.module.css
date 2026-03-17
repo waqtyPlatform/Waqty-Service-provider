@@ -317,9 +317,16 @@
     overflow: hidden;
 }
 
+.tableScroll {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
 .dataTable {
     width: 100%;
     border-collapse: collapse;
+    min-width: 700px;
 }
 
 .dataTable th {
@@ -493,8 +500,8 @@
 }
 
 .channelEmail {
-    background: #EDE9FE;
-    color: #7C3AED;
+    background: #ede9fe;
+    color: #7c3aed;
 }
 
 @media (max-width: 1023px) {

@@ -57,7 +57,9 @@
     color: var(--text-secondary);
     background: none;
     cursor: pointer;
-    transition: border-color var(--transition-fast), color var(--transition-fast);
+    transition:
+        border-color var(--transition-fast),
+        color var(--transition-fast);
 }
 
 .btnOutline:hover {
@@ -89,7 +91,9 @@
     margin-bottom: -2px;
     text-decoration: none;
     white-space: nowrap;
-    transition: color var(--transition-fast), border-color var(--transition-fast);
+    transition:
+        color var(--transition-fast),
+        border-color var(--transition-fast);
 }
 
 .tab:hover {
@@ -191,7 +195,9 @@
     font-size: var(--text-sm);
     color: var(--text-primary);
     outline: none;
-    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    transition:
+        border-color var(--transition-fast),
+        box-shadow var(--transition-fast);
 }
 
 .input:focus {
@@ -337,4 +343,66 @@
 .actionBtn:hover {
     background: var(--bg-tertiary);
     color: var(--text-primary);
+}
+
+/* ── Responsive ── */
+@media (max-width: 1023px) {
+    .controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .searchWrap {
+        max-width: none;
+    }
+}
+
+@media (max-width: 767px) {
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-3);
+    }
+
+    .summaryGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .card {
+        border-radius: var(--radius-lg);
+        margin-inline: calc(-1 * var(--space-4));
+        border-inline: none;
+    }
+
+    .tableResponsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .dataTable {
+        min-width: 600px;
+    }
+
+    .dataTable th,
+    .dataTable td,
+    .th,
+    .td {
+        padding: var(--space-2) var(--space-3);
+        font-size: var(--text-xs);
+    }
+
+    .pag {
+        flex-direction: column;
+        gap: var(--space-2);
+        align-items: center;
+    }
+
+    .tabs {
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .tabs::-webkit-scrollbar {
+        display: none;
+    }
 }

@@ -122,10 +122,44 @@
 }
 
 @media (max-width: 768px) {
-
     .header,
     .filtersBar {
         flex-direction: column;
         align-items: stretch;
+    }
+}
+
+@media (max-width: 767px) {
+    .tableCard {
+        border-radius: var(--radius-lg);
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin-inline: calc(-1 * var(--space-4));
+        border-inline: none;
+    }
+
+    .chartContainer {
+        height: 280px;
+        padding: var(--space-4);
+    }
+
+    .filterItem {
+        width: 100%;
+    }
+
+    .filterItem select,
+    .filterItem input {
+        width: 100%;
+    }
+
+    .actions {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .tableHeader {
+        flex-direction: column;
+        gap: var(--space-2);
+        align-items: flex-start;
     }
 }

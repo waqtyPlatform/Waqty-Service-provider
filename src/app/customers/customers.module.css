@@ -17,7 +17,7 @@
     /* Moved border here for consistency */
 }
 
-:global([data-theme="dark"]) .stickyHeader {
+:global([data-theme='dark']) .stickyHeader {
     background-color: rgba(31, 41, 55, 0.95);
 }
 
@@ -58,7 +58,9 @@
     border-bottom: 2px solid transparent;
     text-decoration: none;
     white-space: nowrap;
-    transition: color 0.2s, border-color 0.2s;
+    transition:
+        color 0.2s,
+        border-color 0.2s;
 }
 
 .tab:hover {
@@ -158,9 +160,16 @@
     overflow: visible;
 }
 
+.tableScroll {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
 .dataTable {
     width: 100%;
     border-collapse: collapse;
+    min-width: 700px;
 }
 
 .dataTable th {
@@ -209,8 +218,8 @@
 }
 
 .groupVIP {
-    background: #FEF3C7;
-    color: #B45309;
+    background: #fef3c7;
+    color: #b45309;
 }
 
 .groupRegular {
@@ -331,4 +340,89 @@
 
 .btnPrimary:hover {
     background: var(--color-primary-600);
+}
+
+/* ── Mobile Responsive ── */
+@media (max-width: 767px) {
+    .headerContent {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-3);
+    }
+
+    .headerActions {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .headerActions .btnPrimary,
+    .headerActions .btnOutline {
+        flex: 1;
+        justify-content: center;
+        min-width: 0;
+        font-size: var(--text-xs);
+        padding: var(--space-2) var(--space-3);
+    }
+
+    .tabsScrollContainer {
+        margin-inline: calc(-1 * var(--space-4));
+        padding-inline: var(--space-4);
+    }
+
+    .controls {
+        flex-direction: column;
+        gap: var(--space-3);
+    }
+
+    .searchWrapper {
+        max-width: 100%;
+    }
+
+    .selectFilter {
+        width: 100%;
+    }
+
+    .kpiRow {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-3);
+    }
+
+    .kpiCard {
+        padding: var(--space-3);
+        gap: var(--space-3);
+    }
+
+    .kpiIcon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .kpiValue {
+        font-size: var(--text-xl);
+    }
+
+    .tableCard {
+        margin-inline: calc(-1 * var(--space-4));
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+    }
+
+    .dataTable th,
+    .dataTable td {
+        padding: var(--space-3) var(--space-2);
+        font-size: var(--text-xs);
+    }
+
+    .pagination {
+        flex-direction: column;
+        gap: var(--space-3);
+        text-align: center;
+    }
+}
+
+@media (max-width: 479px) {
+    .kpiRow {
+        grid-template-columns: 1fr;
+    }
 }

@@ -97,8 +97,15 @@
     overflow: hidden;
 }
 
+.tableScroll {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
 .dataTable {
     width: 100%;
+    min-width: 700px;
 }
 
 .dataTable th {
@@ -173,8 +180,8 @@
 }
 
 .typeAdvance {
-    background: #EDE9FE;
-    color: #7C3AED;
+    background: #ede9fe;
+    color: #7c3aed;
 }
 
 .amountPositive {
@@ -272,5 +279,35 @@
 @media (max-width: 767px) {
     .kpiRow {
         grid-template-columns: 1fr;
+    }
+
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-3);
+    }
+
+    .tableCard {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border-radius: var(--radius-lg);
+        margin-inline: calc(-1 * var(--space-4));
+        border-inline: none;
+    }
+
+    .dataTable {
+        min-width: 600px;
+    }
+
+    .dataTable th,
+    .dataTable td {
+        padding: var(--space-2) var(--space-3);
+        font-size: var(--text-xs);
+    }
+
+    .pagination {
+        flex-direction: column;
+        gap: var(--space-2);
+        align-items: center;
     }
 }

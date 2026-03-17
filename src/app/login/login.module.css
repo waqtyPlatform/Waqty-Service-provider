@@ -183,3 +183,15 @@
     padding: var(--space-3);
     border-radius: var(--radius-md);
 }
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+    .container {
+        padding: var(--space-6);
+        border-radius: var(--radius-xl);
+    }
+
+    .page {
+        padding: var(--space-3);
+    }
+}
