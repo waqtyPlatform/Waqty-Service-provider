@@ -82,9 +82,7 @@ const getNavigation = (
         {
             label: t('sidebar.returns'),
             icon: <RotateCcw size={20} />,
-            children: [
-                { label: t('sidebar.returns'), href: '/returns' },
-            ],
+            children: [{ label: t('sidebar.returns'), href: '/returns' }],
         },
         {
             label: customersLabel,
@@ -170,7 +168,7 @@ const getNavigation = (
     return fullNav;
 };
 
-export default function Sidebar() {
+function SidebarInner() {
     const { collapsed, toggleSidebar, mobileOpen, setMobileOpen } = useSidebar();
     const { user } = useAuth();
     const pathname = usePathname();
@@ -181,17 +179,13 @@ export default function Sidebar() {
     const [expandedItems, setExpandedItems] = useState<string[]>(() => {
         // Auto-expand the section that matches current path
         const matched = navigation.find(
-            (item) =>
-                item.href === pathname ||
-                item.children?.some((child) => pathname.startsWith(child.href))
+            item => item.href === pathname || item.children?.some(child => pathname.startsWith(child.href))
         );
         return matched ? [matched.label] : [];
     });
 
     const toggleExpand = (label: string) => {
-        setExpandedItems((prev) =>
-            prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label]
-        );
+        setExpandedItems(prev => (prev.includes(label) ? prev.filter(l => l !== label) : [...prev, label]));
     };
 
     const isActive = (href: string) => {
@@ -224,16 +218,12 @@ export default function Sidebar() {
     return (
         <>
             {/* Mobile overlay */}
-            {mobileOpen && (
-                <div
-                    className={styles.overlay}
-                    onClick={() => setMobileOpen(false)}
-                />
-            )}
+            {mobileOpen && <div className={styles.overlay} onClick={() => setMobileOpen(false)} />}
 
             <aside
-                className={`${styles.sidebar} ${collapsed ? styles.collapsed : ''} ${mobileOpen ? styles.mobileOpen : ''
-                    }`}
+                className={`${styles.sidebar} ${collapsed ? styles.collapsed : ''} ${
+                    mobileOpen ? styles.mobileOpen : ''
+                }`}
             >
                 {/* Header */}
                 <div className={styles.header}>
@@ -243,20 +233,12 @@ export default function Sidebar() {
                             <span className={styles.logoText}>Hagzy</span>
                         </Link>
                     ) : (
-                        <button
-                            className={styles.logoIconBtn}
-                            onClick={toggleSidebar}
-                            aria-label="Expand sidebar"
-                        >
+                        <button className={styles.logoIconBtn} onClick={toggleSidebar} aria-label="Expand sidebar">
                             <div className={styles.logoIcon}>H</div>
                         </button>
                     )}
                     {!collapsed && (
-                        <button
-                            className={styles.collapseBtn}
-                            onClick={toggleSidebar}
-                            aria-label="Collapse sidebar"
-                        >
+                        <button className={styles.collapseBtn} onClick={toggleSidebar} aria-label="Collapse sidebar">
                             <ChevronLeft size={18} />
                         </button>
                     )}
@@ -272,31 +254,27 @@ export default function Sidebar() {
                 {/* Navigation */}
                 <nav className={styles.nav}>
                     <ul className={styles.navList}>
-                        {navigation.map((item) => {
+                        {navigation.map(item => {
                             const hasChildren = !!item.children;
                             const isExpanded = expandedItems.includes(item.label);
                             const itemActive = item.href
                                 ? isActive(item.href)
-                                : item.children?.some((child) => isActive(child.href));
+                                : item.children?.some(child => isActive(child.href));
 
                             return (
                                 <li key={item.label} className={styles.navItem}>
                                     {item.href ? (
                                         <Link
                                             href={item.href}
-                                            className={`${styles.navLink} ${itemActive ? styles.active : ''
-                                                }`}
+                                            className={`${styles.navLink} ${itemActive ? styles.active : ''}`}
                                             title={collapsed ? item.label : undefined}
                                         >
                                             <span className={styles.navIcon}>{item.icon}</span>
-                                            {!collapsed && (
-                                                <span className={styles.navLabel}>{item.label}</span>
-                                            )}
+                                            {!collapsed && <span className={styles.navLabel}>{item.label}</span>}
                                         </Link>
                                     ) : (
                                         <button
-                                            className={`${styles.navLink} ${itemActive ? styles.active : ''
-                                                }`}
+                                            className={`${styles.navLink} ${itemActive ? styles.active : ''}`}
                                             onClick={() => {
                                                 if (collapsed) {
                                                     toggleSidebar();
@@ -314,8 +292,9 @@ export default function Sidebar() {
                                                 <>
                                                     <span className={styles.navLabel}>{item.label}</span>
                                                     <span
-                                                        className={`${styles.chevron} ${isExpanded ? styles.chevronOpen : ''
-                                                            }`}
+                                                        className={`${styles.chevron} ${
+                                                            isExpanded ? styles.chevronOpen : ''
+                                                        }`}
                                                     >
                                                         <ChevronDown size={16} />
                                                     </span>
@@ -327,12 +306,13 @@ export default function Sidebar() {
                                     {/* Sub-navigation */}
                                     {hasChildren && isExpanded && !collapsed && (
                                         <ul className={styles.subNav}>
-                                            {item.children!.map((child) => (
+                                            {item.children!.map(child => (
                                                 <li key={child.href}>
                                                     <Link
                                                         href={child.href}
-                                                        className={`${styles.subNavLink} ${isActive(child.href) ? styles.subActive : ''
-                                                            }`}
+                                                        className={`${styles.subNavLink} ${
+                                                            isActive(child.href) ? styles.subActive : ''
+                                                        }`}
                                                     >
                                                         <span className={styles.subDot} />
                                                         {child.label}
@@ -347,12 +327,13 @@ export default function Sidebar() {
                                         <div className={styles.tooltip}>
                                             <span className={styles.tooltipTitle}>{item.label}</span>
                                             <ul className={styles.tooltipList}>
-                                                {item.children!.map((child) => (
+                                                {item.children!.map(child => (
                                                     <li key={child.href}>
                                                         <Link
                                                             href={child.href}
-                                                            className={`${styles.tooltipLink} ${isActive(child.href) ? styles.tooltipActive : ''
-                                                                }`}
+                                                            className={`${styles.tooltipLink} ${
+                                                                isActive(child.href) ? styles.tooltipActive : ''
+                                                            }`}
                                                         >
                                                             {child.label}
                                                         </Link>
@@ -370,3 +351,6 @@ export default function Sidebar() {
         </>
     );
 }
+
+const Sidebar = React.memo(SidebarInner);
+export default Sidebar;

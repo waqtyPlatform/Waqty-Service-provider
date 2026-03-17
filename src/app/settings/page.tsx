@@ -44,7 +44,7 @@ export default function SettingsPage() {
         setTimeout(() => setSaved(false), 2000);
     };
 
-    const handleChange = (field: keyof typeof settings, value: any) => {
+    const handleChange = (field: keyof typeof settings, value: string | number | boolean) => {
         setLocalSettings(prev => ({ ...prev, [field]: value }));
         setSaved(false);
     };
@@ -95,7 +95,9 @@ export default function SettingsPage() {
             {/* Branding Card */}
             <div className={styles.card}>
                 <div className={styles.cardTitle}>Branding</div>
-                <div className={styles.cardDesc}>Upload your business logo and banner image. These appear on your booking page and invoices.</div>
+                <div className={styles.cardDesc}>
+                    Upload your business logo and banner image. These appear on your booking page and invoices.
+                </div>
 
                 <div className={styles.brandingRow}>
                     {/* Logo Upload */}
@@ -104,16 +106,26 @@ export default function SettingsPage() {
                         <div
                             className={`${styles.uploadZone} ${styles.uploadZoneLogo}`}
                             onClick={() => logoInputRef.current?.click()}
-                            onDrop={(e) => handleDrop(e, 'logo')}
+                            onDrop={e => handleDrop(e, 'logo')}
                             onDragOver={preventDefault}
                             onDragEnter={preventDefault}
                         >
                             {logo ? (
                                 <>
-                                    <img src={logo} alt="Logo" className={styles.uploadPreviewLogo} />
+                                    <img
+                                        src={logo}
+                                        alt="Logo"
+                                        className={styles.uploadPreviewLogo}
+                                        loading="lazy"
+                                        decoding="async"
+                                    />
                                     <button
                                         className={styles.uploadRemove}
-                                        onClick={(e) => { e.stopPropagation(); setLogo(null); setSaved(false); }}
+                                        onClick={e => {
+                                            e.stopPropagation();
+                                            setLogo(null);
+                                            setSaved(false);
+                                        }}
                                     >
                                         <X size={14} />
                                     </button>
@@ -131,7 +143,7 @@ export default function SettingsPage() {
                             type="file"
                             accept="image/png,image/jpeg,image/webp"
                             style={{ display: 'none' }}
-                            onChange={(e) => handleImageUpload(e, 'logo')}
+                            onChange={e => handleImageUpload(e, 'logo')}
                         />
                     </div>
 
@@ -141,16 +153,26 @@ export default function SettingsPage() {
                         <div
                             className={`${styles.uploadZone} ${styles.uploadZoneBanner}`}
                             onClick={() => bannerInputRef.current?.click()}
-                            onDrop={(e) => handleDrop(e, 'banner')}
+                            onDrop={e => handleDrop(e, 'banner')}
                             onDragOver={preventDefault}
                             onDragEnter={preventDefault}
                         >
                             {banner ? (
                                 <>
-                                    <img src={banner} alt="Banner" className={styles.uploadPreviewBanner} />
+                                    <img
+                                        src={banner}
+                                        alt="Banner"
+                                        className={styles.uploadPreviewBanner}
+                                        loading="lazy"
+                                        decoding="async"
+                                    />
                                     <button
                                         className={styles.uploadRemove}
-                                        onClick={(e) => { e.stopPropagation(); setBanner(null); setSaved(false); }}
+                                        onClick={e => {
+                                            e.stopPropagation();
+                                            setBanner(null);
+                                            setSaved(false);
+                                        }}
                                     >
                                         <X size={14} />
                                     </button>
@@ -159,7 +181,9 @@ export default function SettingsPage() {
                                 <div className={styles.uploadPlaceholder}>
                                     <Upload size={28} />
                                     <span>Upload Banner</span>
-                                    <span className={styles.uploadHint}>Recommended: 1200 x 300px, PNG or JPG up to 2MB</span>
+                                    <span className={styles.uploadHint}>
+                                        Recommended: 1200 x 300px, PNG or JPG up to 2MB
+                                    </span>
                                 </div>
                             )}
                         </div>
@@ -168,7 +192,7 @@ export default function SettingsPage() {
                             type="file"
                             accept="image/png,image/jpeg,image/webp"
                             style={{ display: 'none' }}
-                            onChange={(e) => handleImageUpload(e, 'banner')}
+                            onChange={e => handleImageUpload(e, 'banner')}
                         />
                     </div>
                 </div>
@@ -184,42 +208,42 @@ export default function SettingsPage() {
                         <Input
                             label={t('settings.bizName')}
                             value={localSettings.businessName}
-                            onChange={(e) => handleChange('businessName', e.target.value)}
+                            onChange={e => handleChange('businessName', e.target.value)}
                         />
                     </div>
                     <div className={styles.field}>
                         <Input
                             label={t('settings.legalName')}
                             value={localSettings.legalName}
-                            onChange={(e) => handleChange('legalName', e.target.value)}
+                            onChange={e => handleChange('legalName', e.target.value)}
                         />
                     </div>
                     <div className={styles.field}>
                         <Input
                             label={t('settings.crNumber')}
                             value={localSettings.crNumber}
-                            onChange={(e) => handleChange('crNumber', e.target.value)}
+                            onChange={e => handleChange('crNumber', e.target.value)}
                         />
                     </div>
                     <div className={styles.field}>
                         <Input
                             label={t('settings.vatNumber')}
                             value={localSettings.vatNumber}
-                            onChange={(e) => handleChange('vatNumber', e.target.value)}
+                            onChange={e => handleChange('vatNumber', e.target.value)}
                         />
                     </div>
                     <div className={styles.field}>
                         <Textarea
                             label={t('settings.address')}
                             value={localSettings.address}
-                            onChange={(e) => handleChange('address', e.target.value)}
+                            onChange={e => handleChange('address', e.target.value)}
                         />
                     </div>
                     <div className={styles.field}>
                         <Input
                             label={t('settings.phone')}
                             value={localSettings.phone}
-                            onChange={(e) => handleChange('phone', e.target.value)}
+                            onChange={e => handleChange('phone', e.target.value)}
                         />
                     </div>
                     <div className={styles.field}>
@@ -227,7 +251,7 @@ export default function SettingsPage() {
                             label={t('settings.email')}
                             type="email"
                             value={localSettings.email}
-                            onChange={(e) => handleChange('email', e.target.value)}
+                            onChange={e => handleChange('email', e.target.value)}
                         />
                     </div>
                 </div>
@@ -246,7 +270,7 @@ export default function SettingsPage() {
                         </div>
                         <Switch
                             checked={localSettings.allowOnlineBooking}
-                            onChange={(c) => handleChange('allowOnlineBooking', c)}
+                            onChange={c => handleChange('allowOnlineBooking', c)}
                         />
                     </div>
 
@@ -255,10 +279,7 @@ export default function SettingsPage() {
                             <span className={styles.switchTitle}>{t('settings.walkIn')}</span>
                             <span className={styles.switchDesc}>{t('settings.walkInDesc')}</span>
                         </div>
-                        <Switch
-                            checked={localSettings.allowWalkIn}
-                            onChange={(c) => handleChange('allowWalkIn', c)}
-                        />
+                        <Switch checked={localSettings.allowWalkIn} onChange={c => handleChange('allowWalkIn', c)} />
                     </div>
 
                     <div className={styles.switchRow}>
@@ -268,7 +289,7 @@ export default function SettingsPage() {
                         </div>
                         <Switch
                             checked={localSettings.requireDeposit}
-                            onChange={(c) => handleChange('requireDeposit', c)}
+                            onChange={c => handleChange('requireDeposit', c)}
                         />
                     </div>
 
@@ -279,7 +300,7 @@ export default function SettingsPage() {
                         </div>
                         <Switch
                             checked={localSettings.sendSmsReminders}
-                            onChange={(c) => handleChange('sendSmsReminders', c)}
+                            onChange={c => handleChange('sendSmsReminders', c)}
                         />
                     </div>
 
@@ -288,10 +309,7 @@ export default function SettingsPage() {
                             <span className={styles.switchTitle}>{t('settings.autoConfirm')}</span>
                             <span className={styles.switchDesc}>{t('settings.autoConfirmDesc')}</span>
                         </div>
-                        <Switch
-                            checked={localSettings.autoConfirm}
-                            onChange={(c) => handleChange('autoConfirm', c)}
-                        />
+                        <Switch checked={localSettings.autoConfirm} onChange={c => handleChange('autoConfirm', c)} />
                     </div>
 
                     <div className={styles.field}>
@@ -299,7 +317,7 @@ export default function SettingsPage() {
                             label={t('settings.defaultGap')}
                             type="number"
                             value={localSettings.defaultGap}
-                            onChange={(e) => handleChange('defaultGap', parseInt(e.target.value) || 0)}
+                            onChange={e => handleChange('defaultGap', parseInt(e.target.value) || 0)}
                             hint={t('settings.defaultGapHint')}
                             style={{ maxWidth: 200 }}
                             dir="ltr"
@@ -310,7 +328,7 @@ export default function SettingsPage() {
                             label={t('settings.cancelWindow')}
                             type="number"
                             value={localSettings.cancellationWindow}
-                            onChange={(e) => handleChange('cancellationWindow', parseInt(e.target.value) || 0)}
+                            onChange={e => handleChange('cancellationWindow', parseInt(e.target.value) || 0)}
                             hint={t('settings.cancelWindowHint')}
                             style={{ maxWidth: 200 }}
                             dir="ltr"
@@ -321,7 +339,15 @@ export default function SettingsPage() {
 
             <div className={styles.actions}>
                 <Button onClick={handleSave} style={{ width: '100%', maxWidth: '200px' }}>
-                    {saved ? <><Check size={16} /> {t('settings.saved')}</> : <><Save size={16} /> {t('settings.saveChanges')}</>}
+                    {saved ? (
+                        <>
+                            <Check size={16} /> {t('settings.saved')}
+                        </>
+                    ) : (
+                        <>
+                            <Save size={16} /> {t('settings.saveChanges')}
+                        </>
+                    )}
                 </Button>
             </div>
         </div>
