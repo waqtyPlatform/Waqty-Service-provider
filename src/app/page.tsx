@@ -419,7 +419,7 @@ export default function DashboardPage() {
                                                 fontSize: '12px',
                                                 padding: '4px 8px',
                                             }}
-                                            formatter={(val: number | string) => [`${val}`, 'Value']}
+                                            formatter={val => [`${val ?? ''}`, 'Value']}
                                             labelFormatter={() => ''}
                                         />
                                     </AreaChart>
@@ -548,7 +548,7 @@ export default function DashboardPage() {
                                             border: '1px solid var(--border-color)',
                                             boxShadow: 'var(--shadow-md)',
                                         }}
-                                        formatter={(val: number | string, name: string) => [val, name]}
+                                        formatter={val => [`${val ?? ''}`, '']}
                                     />
                                 </PieChart>
                             </ResponsiveContainer>
