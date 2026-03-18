@@ -419,7 +419,7 @@ export default function DashboardPage() {
                                                 fontSize: '12px',
                                                 padding: '4px 8px',
                                             }}
-                                            formatter={(val: number | string) => [`${val}`, 'Value']}
+                                            formatter={val => [`${val ?? ''}`, 'Value']}
                                             labelFormatter={() => ''}
                                         />
                                     </AreaChart>
