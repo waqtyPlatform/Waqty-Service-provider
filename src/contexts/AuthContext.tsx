@@ -43,9 +43,17 @@ interface AuthContextType {
     user: User | null;
     login: (identifier: string, password: string) => Promise<{ success: boolean; user?: User; error?: string }>;
     requestOTP: (identifier: string) => Promise<{ success: boolean; type: 'email' | 'phone' }>;
-    verifyOTP: (identifier: string, code: string, redirect?: boolean) => Promise<{ success: boolean; user?: User; error?: string }>;
+    verifyOTP: (
+        identifier: string,
+        code: string,
+        redirect?: boolean
+    ) => Promise<{ success: boolean; user?: User; error?: string }>;
     forgotPassword: (identifier: string) => Promise<{ success: boolean; type: 'email' | 'phone' }>;
-    resetPassword: (identifier: string, code: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
+    resetPassword: (
+        identifier: string,
+        code: string,
+        newPassword: string
+    ) => Promise<{ success: boolean; error?: string }>;
     updateUser: (data: Partial<User>) => void;
     logout: () => void;
     loading: boolean;
@@ -55,11 +63,41 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Mock Users for Demo
 export const MOCK_USERS: Record<string, User> = {
-    'clinic@hagzy.com': { id: 'U1', name: 'Dr. Admin', email: 'clinic@hagzy.com', role: 'admin', businessType: 'clinic' },
-    'salon@hagzy.com': { id: 'U2', name: 'Salon Admin', email: 'salon@hagzy.com', role: 'admin', businessType: 'salon' },
-    'barber@hagzy.com': { id: 'U3', name: 'Barber Admin', email: 'barber@hagzy.com', role: 'admin', businessType: 'barber' },
-    'manager@hagzy.com': { id: 'U4', name: 'Shift Manager', email: 'manager@hagzy.com', role: 'manager', businessType: 'salon' },
-    'staff@hagzy.com': { id: 'U5', name: 'Receptionist', email: 'staff@hagzy.com', role: 'staff', businessType: 'salon' },
+    'clinic@hagzy.com': {
+        id: 'U1',
+        name: 'Dr. Admin',
+        email: 'clinic@hagzy.com',
+        role: 'admin',
+        businessType: 'clinic',
+    },
+    'salon@hagzy.com': {
+        id: 'U2',
+        name: 'Salon Admin',
+        email: 'salon@hagzy.com',
+        role: 'admin',
+        businessType: 'salon',
+    },
+    'barber@hagzy.com': {
+        id: 'U3',
+        name: 'Barber Admin',
+        email: 'barber@hagzy.com',
+        role: 'admin',
+        businessType: 'barber',
+    },
+    'manager@hagzy.com': {
+        id: 'U4',
+        name: 'Shift Manager',
+        email: 'manager@hagzy.com',
+        role: 'manager',
+        businessType: 'salon',
+    },
+    'staff@hagzy.com': {
+        id: 'U5',
+        name: 'Receptionist',
+        email: 'staff@hagzy.com',
+        role: 'staff',
+        businessType: 'salon',
+    },
 };
 
 // Mock password for demo — any password with 6+ characters works
@@ -71,23 +109,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const router = useRouter();
     const pathname = usePathname();
 
+    // Helper to set/clear middleware cookie marker
+    const setAuthCookie = (loggedIn: boolean, role?: string) => {
+        if (loggedIn) {
+            document.cookie = `hagzy_logged_in=true;path=/;max-age=${60 * 60 * 24 * 30};SameSite=Lax`;
+            if (role) {
+                document.cookie = `hagzy_auth=${JSON.stringify({ token: true, role })};path=/;max-age=${60 * 60 * 24 * 30};SameSite=Lax`;
+            }
+        } else {
+            document.cookie = 'hagzy_logged_in=;path=/;max-age=0';
+            document.cookie = 'hagzy_auth=;path=/;max-age=0';
+        }
+    };
+
     useEffect(() => {
-        // Hydrate from localStorage
+        // Hydrate from localStorage — use queueMicrotask to avoid synchronous setState in effect
         const storedUser = localStorage.getItem('hagzy_user');
         const storedToken = localStorage.getItem('hagzy_token');
         if (storedUser && storedToken) {
-            Promise.resolve().then(() => setUser(JSON.parse(storedUser)));
+            const parsed = JSON.parse(storedUser);
+            queueMicrotask(() => {
+                setUser(parsed);
+                setAuthCookie(true, parsed.role);
+                setLoading(false);
+            });
         } else {
             // Clear partial state if token or user is missing
             localStorage.removeItem('hagzy_user');
             localStorage.removeItem('hagzy_token');
+            setAuthCookie(false);
+            queueMicrotask(() => setLoading(false));
         }
-        Promise.resolve().then(() => setLoading(false));
     }, []);
 
     useEffect(() => {
         if (!loading) {
-            const isPublicRoute = pathname === '/login' || pathname === '/onboarding' || pathname === '/forgot-password' || pathname.startsWith('/invite/');
+            const isPublicRoute =
+                pathname === '/login' ||
+                pathname === '/onboarding' ||
+                pathname === '/forgot-password' ||
+                pathname.startsWith('/invite/');
             if (!user && !isPublicRoute) {
                 router.push('/login');
             } else if (user && pathname === '/login') {
@@ -125,6 +186,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
                 setUser(loggedInUser);
                 localStorage.setItem('hagzy_user', JSON.stringify(loggedInUser));
+                setAuthCookie(true, loggedInUser.role);
                 router.push('/');
                 return { success: true, user: loggedInUser };
             }
@@ -153,6 +215,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const mockUser = MOCK_USERS[identifier] || MOCK_USERS['clinic@hagzy.com'];
         setUser(mockUser);
         localStorage.setItem('hagzy_user', JSON.stringify(mockUser));
+        setAuthCookie(true, mockUser.role);
         if (redirect) {
             router.push('/');
         }
@@ -199,11 +262,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.removeItem('hagzy_token');
         setUser(null);
         localStorage.removeItem('hagzy_user');
+        setAuthCookie(false);
         router.push('/login');
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, requestOTP, verifyOTP, forgotPassword, resetPassword, updateUser, logout, loading }}>
+        <AuthContext.Provider
+            value={{ user, login, requestOTP, verifyOTP, forgotPassword, resetPassword, updateUser, logout, loading }}
+        >
             {!loading && children}
         </AuthContext.Provider>
     );

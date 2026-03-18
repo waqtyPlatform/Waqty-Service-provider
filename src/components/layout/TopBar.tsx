@@ -3,44 +3,23 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSidebar } from './SidebarContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { useSettings } from '@/contexts/SettingsContext';
-import {
-    Search,
-    Bell,
-    Moon,
-    Sun,
-    Menu,
-    ChevronDown,
-    User,
-    LogOut,
-    Settings,
-    Building2,
-    Languages,
-} from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { Search, Bell, Moon, Sun, Menu, ChevronDown, User, LogOut, Settings, Building2, Languages } from 'lucide-react';
 import styles from './TopBar.module.css';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useTheme } from '@/contexts/ThemeContext';
 
-export default function TopBar() {
+function TopBarInner() {
     const { setMobileOpen } = useSidebar();
     const { user, logout } = useAuth();
-    const { settings, updateSettings } = useSettings();
-    const [theme, setTheme] = useState<'light' | 'dark'>('light');
+    const { language, toggleLanguage } = useLanguage();
+    const { resolvedTheme, toggleTheme } = useTheme();
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const [branchMenuOpen, setBranchMenuOpen] = useState(false);
     const [searchFocused, setSearchFocused] = useState(false);
     const userMenuRef = useRef<HTMLDivElement>(null);
     const branchMenuRef = useRef<HTMLDivElement>(null);
     const { t } = useTranslation();
-
-    const toggleTheme = () => {
-        const newTheme = theme === 'light' ? 'dark' : 'light';
-        setTheme(newTheme);
-        document.documentElement.setAttribute('data-theme', newTheme);
-    };
-
-    const toggleLanguage = () => {
-        updateSettings({ language: settings.language === 'en' ? 'ar' : 'en' });
-    };
 
     // Close menus on outside click
     useEffect(() => {
@@ -71,20 +50,13 @@ export default function TopBar() {
     return (
         <header className={styles.topbar}>
             {/* Mobile menu button */}
-            <button
-                className={styles.mobileMenuBtn}
-                onClick={() => setMobileOpen(true)}
-                aria-label="Open menu"
-            >
+            <button className={styles.mobileMenuBtn} onClick={() => setMobileOpen(true)} aria-label="Open menu">
                 <Menu size={22} />
             </button>
 
             {/* Branch Selector */}
             <div className={styles.branchSelector} ref={branchMenuRef}>
-                <button
-                    className={styles.branchBtn}
-                    onClick={() => setBranchMenuOpen(!branchMenuOpen)}
-                >
+                <button className={styles.branchBtn} onClick={() => setBranchMenuOpen(!branchMenuOpen)}>
                     <Building2 size={16} />
                     <span>{t('branch.main')}</span>
                     <ChevronDown size={14} />
@@ -122,12 +94,8 @@ export default function TopBar() {
             {/* Right Actions */}
             <div className={styles.actions}>
                 {/* Theme toggle */}
-                <button
-                    className={styles.iconBtn}
-                    onClick={toggleTheme}
-                    aria-label="Toggle theme"
-                >
-                    {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+                <button className={styles.iconBtn} onClick={toggleTheme} aria-label="Toggle theme">
+                    {resolvedTheme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
                 </button>
 
                 {/* Language Toggle */}
@@ -135,10 +103,10 @@ export default function TopBar() {
                     className={styles.iconBtn}
                     onClick={toggleLanguage}
                     aria-label="Toggle language"
-                    title={settings.language === 'en' ? t('user.switchAr') : t('user.switchEn')}
+                    title={language === 'en' ? t('user.switchAr') : t('user.switchEn')}
                 >
                     <Languages size={20} />
-                    <span style={{ fontSize: '12px', fontWeight: 'bold' }}>{settings.language === 'en' ? 'ع' : 'EN'}</span>
+                    <span style={{ fontSize: '12px', fontWeight: 'bold' }}>{language === 'en' ? 'ع' : 'EN'}</span>
                 </button>
 
                 {/* Notifications */}
@@ -149,14 +117,13 @@ export default function TopBar() {
 
                 {/* User Menu */}
                 <div className={styles.userMenu} ref={userMenuRef}>
-                    <button
-                        className={styles.userBtn}
-                        onClick={() => setUserMenuOpen(!userMenuOpen)}
-                    >
+                    <button className={styles.userBtn} onClick={() => setUserMenuOpen(!userMenuOpen)}>
                         <div className={styles.userAvatar}>{user?.name?.charAt(0) || '?'}</div>
                         <div className={styles.userInfo}>
                             <span className={styles.userName}>{user?.name || t('user.loading')}</span>
-                            <span className={styles.userRole} style={{ textTransform: 'capitalize' }}>{user?.role || t('user.guest')}</span>
+                            <span className={styles.userRole} style={{ textTransform: 'capitalize' }}>
+                                {user?.role || t('user.guest')}
+                            </span>
                         </div>
                         <ChevronDown size={14} />
                     </button>
@@ -182,3 +149,6 @@ export default function TopBar() {
         </header>
     );
 }
+
+const TopBar = React.memo(TopBarInner);
+export default TopBar;

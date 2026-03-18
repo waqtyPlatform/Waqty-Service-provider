@@ -52,7 +52,7 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [settings, setSettings] = useState<SettingsState>(defaultSettings);
-    const [isLoaded, setIsLoaded] = useState(false);
+    const [_isLoaded, setIsLoaded] = useState(false);
 
     // Load from localStorage on mount
     useEffect(() => {
@@ -68,17 +68,11 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         }
     }, []);
 
-    // Sync language with HTML document
-    useEffect(() => {
-        if (typeof document !== 'undefined') {
-            document.documentElement.lang = settings.language === 'ar' ? 'ar-EG' : 'en';
-            document.documentElement.dir = settings.language === 'ar' ? 'rtl' : 'ltr';
-        }
-    }, [settings.language]);
+    // Language sync is now handled by LanguageContext
 
     // Update settings wrapper
     const updateSettings = (newSettings: Partial<SettingsState>) => {
-        setSettings((prev) => {
+        setSettings(prev => {
             const updated = { ...prev, ...newSettings };
             try {
                 localStorage.setItem('hagzy_settings', JSON.stringify(updated));
@@ -94,7 +88,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         localStorage.removeItem('hagzy_settings');
     };
 
-    // Prevent hydration mismatch by rendering children only after load (optional, 
+    // Prevent hydration mismatch by rendering children only after load (optional,
     // but for settings usually fine to render defaults or loading state)
     // For dashboard, immediate render with defaults is often acceptable to avoid flicker
 
