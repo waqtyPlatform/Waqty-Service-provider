@@ -62,7 +62,7 @@ export default function SafesPage() {
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [selectedSafe, setSelectedSafe] = useState<{
-        id: string;
+        id: number;
         name: string;
         branch: string;
         balance: number;

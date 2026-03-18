@@ -548,7 +548,7 @@ export default function DashboardPage() {
                                             border: '1px solid var(--border-color)',
                                             boxShadow: 'var(--shadow-md)',
                                         }}
-                                        formatter={(val: number | string, name: string) => [val, name]}
+                                        formatter={val => [`${val ?? ''}`, '']}
                                     />
                                 </PieChart>
                             </ResponsiveContainer>
