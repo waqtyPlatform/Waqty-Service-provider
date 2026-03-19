@@ -134,14 +134,54 @@ export const businessSettingsSchema = z.object({
 export type BusinessSettingsFormData = z.infer<typeof businessSettingsSchema>;
 
 // ── Branch Settings ──────────────────────────────────────
-export const branchSchema = z.object({
-    name: z.string().min(1, 'Branch name is required').max(100),
-    address: z.string().min(1, 'Address is required'),
-    phone: z.string().min(8, 'Phone is too short'),
-    manager: z.string().optional(),
-    isActive: z.boolean().default(true),
-});
+export const branchSchema = z
+    .object({
+        name: z.string().min(1, 'Branch name is required').max(100),
+        address: z.string().min(1, 'Address is required'),
+        phone: z.string().min(8, 'Phone is too short'),
+        manager: z.string().optional(),
+        isActive: z.boolean().default(true),
+        email: z.string().email('Enter a valid email'),
+        password: z.string().min(6, 'Password must be at least 6 characters'),
+        confirmPassword: z.string(),
+    })
+    .refine(data => data.password === data.confirmPassword, {
+        message: 'Passwords do not match',
+        path: ['confirmPassword'],
+    });
 export type BranchFormData = z.infer<typeof branchSchema>;
+
+export const branchEditSchema = z
+    .object({
+        name: z.string().min(1, 'Branch name is required').max(100),
+        address: z.string().min(1, 'Address is required'),
+        phone: z.string().min(8, 'Phone is too short'),
+        manager: z.string().optional(),
+        isActive: z.boolean().default(true),
+        email: z.string().email('Enter a valid email'),
+        password: z.string().min(6, 'Password must be at least 6 characters').optional().or(z.literal('')),
+        confirmPassword: z.string().optional().or(z.literal('')),
+    })
+    .refine(
+        data => {
+            if (data.password && data.password !== data.confirmPassword) return false;
+            return true;
+        },
+        {
+            message: 'Passwords do not match',
+            path: ['confirmPassword'],
+        }
+    );
+
+export const branchResetPasswordSchema = z
+    .object({
+        newPassword: z.string().min(6, 'Password must be at least 6 characters'),
+        confirmPassword: z.string(),
+    })
+    .refine(data => data.newPassword === data.confirmPassword, {
+        message: 'Passwords do not match',
+        path: ['confirmPassword'],
+    });
 
 // ── Promo Code ───────────────────────────────────────────
 export const promoCodeSchema = z

@@ -764,6 +764,38 @@ const translations: Translations = {
         en: 'Are you sure you want to delete the branch? All employees and bookings currently tied to this branch will need to be reassigned.',
         ar: 'هل أنت متأكد أنك تريد حذف الفرع؟ سيتعين إعادة تعيين جميع الموظفين والحجوزات المرتبطة به حاليًا.',
     },
+    'settings.branches.email': { en: 'Email', ar: 'البريد الإلكتروني' },
+    'settings.branches.branchEmail': { en: 'Branch Email', ar: 'بريد الفرع الإلكتروني' },
+    'settings.branches.branchPassword': { en: 'Branch Password', ar: 'كلمة مرور الفرع' },
+    'settings.branches.confirmPassword': { en: 'Confirm Password', ar: 'تأكيد كلمة المرور' },
+    'settings.branches.resetPassword': { en: 'Reset Password', ar: 'إعادة تعيين كلمة المرور' },
+    'settings.branches.credentialsSection': { en: 'Branch Login Credentials', ar: 'بيانات دخول الفرع' },
+    'settings.branches.passwordHint': {
+        en: 'Leave empty to keep current password',
+        ar: 'اتركه فارغًا للإبقاء على كلمة المرور الحالية',
+    },
+    'settings.branches.passwordResetSuccess': {
+        en: 'Password reset successfully',
+        ar: 'تم إعادة تعيين كلمة المرور بنجاح',
+    },
+    'settings.branches.newPassword': { en: 'New Password', ar: 'كلمة المرور الجديدة' },
+    'settings.branches.resetPasswordFor': { en: 'Reset password for', ar: 'إعادة تعيين كلمة المرور لـ' },
+    'settings.branches.passwordsDoNotMatch': { en: 'Passwords do not match', ar: 'كلمات المرور غير متطابقة' },
+    'settings.branches.passwordTooShort': {
+        en: 'Password must be at least 6 characters',
+        ar: 'يجب أن تكون كلمة المرور 6 أحرف على الأقل',
+    },
+    'settings.branches.mainBranch': { en: 'Main Branch', ar: 'الفرع الرئيسي' },
+    'settings.branches.active': { en: 'Active', ar: 'نشط' },
+    'settings.branches.disabled': { en: 'Disabled', ar: 'معطل' },
+    'settings.branches.branchEnabled': { en: 'Branch enabled', ar: 'تم تفعيل الفرع' },
+    'settings.branches.branchDisabled': { en: 'Branch disabled', ar: 'تم تعطيل الفرع' },
+    'onboarding.branchAuth': { en: 'Set up branch login credentials', ar: 'إعداد بيانات دخول الفرع' },
+    'onboarding.branchAuthHint': {
+        en: 'This allows this branch to log in independently',
+        ar: 'يسمح لهذا الفرع بتسجيل الدخول بشكل مستقل',
+    },
+    'onboarding.branchAuthOptional': { en: 'Optional', ar: 'اختياري' },
 
     // Settings Resources Page
     'settings.resources.title': { en: 'Resources & Rooms', ar: 'الموارد والغرف' },
