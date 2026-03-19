@@ -1,14 +1,21 @@
 import { z } from 'zod';
 
+// ── Egyptian Phone Validation ───────────────────────────
+// Matches: 01XXXXXXXXX (11 digits starting with 01)
+// Prefixes: 010, 011, 012, 015
+export const EGYPT_PHONE_REGEX = /^01[0125]\d{8}$/;
+export const isEgyptianPhone = (val: string) => EGYPT_PHONE_REGEX.test(val.replace(/[\s\-()]/g, ''));
+
 // ── Login ────────────────────────────────────────────────
 export const loginSchema = z.object({
     identifier: z
         .string()
         .min(1, 'Email or phone is required')
-        .refine(
-            val => (val.includes('@') ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val) : val.length >= 8),
-            'Enter a valid email or phone number'
-        ),
+        .refine(val => {
+            const cleaned = val.replace(/[\s\-()]/g, '');
+            if (val.includes('@')) return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+            return EGYPT_PHONE_REGEX.test(cleaned);
+        }, 'Enter a valid email or Egyptian phone number (01XXXXXXXXX)'),
     password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 export type LoginFormData = z.infer<typeof loginSchema>;
@@ -18,10 +25,11 @@ export const forgotPasswordSchema = z.object({
     identifier: z
         .string()
         .min(1, 'Email or phone is required')
-        .refine(
-            val => (val.includes('@') ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val) : val.length >= 8),
-            'Enter a valid email or phone number'
-        ),
+        .refine(val => {
+            const cleaned = val.replace(/[\s\-()]/g, '');
+            if (val.includes('@')) return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+            return EGYPT_PHONE_REGEX.test(cleaned);
+        }, 'Enter a valid email or Egyptian phone number (01XXXXXXXXX)'),
 });
 export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 
@@ -138,7 +146,13 @@ export const branchSchema = z
     .object({
         name: z.string().min(1, 'Branch name is required').max(100),
         address: z.string().min(1, 'Address is required'),
-        phone: z.string().min(8, 'Phone is too short'),
+        phone: z
+            .string()
+            .min(1, 'Phone is required')
+            .refine(
+                val => EGYPT_PHONE_REGEX.test(val.replace(/[\s\-()]/g, '')),
+                'Enter a valid Egyptian phone number (01XXXXXXXXX)'
+            ),
         manager: z.string().optional(),
         isActive: z.boolean().default(true),
         email: z.string().email('Enter a valid email'),
@@ -155,7 +169,13 @@ export const branchEditSchema = z
     .object({
         name: z.string().min(1, 'Branch name is required').max(100),
         address: z.string().min(1, 'Address is required'),
-        phone: z.string().min(8, 'Phone is too short'),
+        phone: z
+            .string()
+            .min(1, 'Phone is required')
+            .refine(
+                val => EGYPT_PHONE_REGEX.test(val.replace(/[\s\-()]/g, '')),
+                'Enter a valid Egyptian phone number (01XXXXXXXXX)'
+            ),
         manager: z.string().optional(),
         isActive: z.boolean().default(true),
         email: z.string().email('Enter a valid email'),

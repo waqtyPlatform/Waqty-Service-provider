@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Mail, Smartphone, ArrowRight, Lock, Eye, EyeOff, RefreshCw } from 'lucide-react';
 import { useToast } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
+import { isEgyptianPhone } from '@/lib/validations';
 import styles from './login.module.css';
 
 export default function LoginPage() {
@@ -21,6 +22,16 @@ export default function LoginPage() {
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!identifier.trim()) return addToast('error', t('auth.errorEmpty'));
+        // Validate Egyptian phone if not email
+        if (!identifier.includes('@')) {
+            if (!isEgyptianPhone(identifier)) {
+                return addToast('error', 'Enter a valid Egyptian phone number (01XXXXXXXXX)');
+            }
+        } else {
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier)) {
+                return addToast('error', 'Enter a valid email address');
+            }
+        }
         if (!password.trim()) return addToast('error', t('auth.errorPasswordEmpty'));
 
         setIsLoading(true);
@@ -54,16 +65,32 @@ export default function LoginPage() {
                     <div className={styles.inputGroup}>
                         <label className={styles.label}>{t('auth.lblIdentifier')}</label>
                         <div style={{ position: 'relative' }}>
-                            <div style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }}>
+                            <div
+                                style={{
+                                    position: 'absolute',
+                                    left: 16,
+                                    top: '50%',
+                                    transform: 'translateY(-50%)',
+                                    color: 'var(--text-tertiary)',
+                                }}
+                            >
                                 {identifier.includes('@') ? <Mail size={18} /> : <Smartphone size={18} />}
                             </div>
                             <input
                                 type="text"
                                 className={styles.loginInput}
-                                style={{ width: '100%', height: 48, paddingLeft: 44, paddingRight: 16, borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)', fontSize: 'var(--text-base)' }}
+                                style={{
+                                    width: '100%',
+                                    height: 48,
+                                    paddingLeft: 44,
+                                    paddingRight: 16,
+                                    borderRadius: 'var(--radius-lg)',
+                                    border: '1px solid var(--border-color)',
+                                    fontSize: 'var(--text-base)',
+                                }}
                                 placeholder={t('auth.phIdentifier')}
                                 value={identifier}
-                                onChange={(e) => setIdentifier(e.target.value)}
+                                onChange={e => setIdentifier(e.target.value)}
                                 autoFocus
                             />
                         </div>
@@ -74,38 +101,65 @@ export default function LoginPage() {
                             <label className={styles.label}>{t('auth.lblPassword')}</label>
                             <Link
                                 href="/forgot-password"
-                                style={{ fontSize: 'var(--text-xs)', color: 'var(--color-primary-600)', textDecoration: 'none', fontWeight: 'var(--font-medium)' }}
+                                style={{
+                                    fontSize: 'var(--text-xs)',
+                                    color: 'var(--color-primary-600)',
+                                    textDecoration: 'none',
+                                    fontWeight: 'var(--font-medium)',
+                                }}
                             >
                                 {t('auth.forgotPassword')}
                             </Link>
                         </div>
                         <div style={{ position: 'relative' }}>
-                            <div style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }}>
+                            <div
+                                style={{
+                                    position: 'absolute',
+                                    left: 16,
+                                    top: '50%',
+                                    transform: 'translateY(-50%)',
+                                    color: 'var(--text-tertiary)',
+                                }}
+                            >
                                 <Lock size={18} />
                             </div>
                             <input
                                 type={showPassword ? 'text' : 'password'}
                                 className={styles.loginInput}
-                                style={{ width: '100%', height: 48, paddingLeft: 44, paddingRight: 48, borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)', fontSize: 'var(--text-base)' }}
+                                style={{
+                                    width: '100%',
+                                    height: 48,
+                                    paddingLeft: 44,
+                                    paddingRight: 48,
+                                    borderRadius: 'var(--radius-lg)',
+                                    border: '1px solid var(--border-color)',
+                                    fontSize: 'var(--text-base)',
+                                }}
                                 placeholder={t('auth.phPassword')}
                                 value={password}
-                                onChange={(e) => setPassword(e.target.value)}
+                                onChange={e => setPassword(e.target.value)}
                             />
                             <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
-                                style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer', padding: 4 }}
+                                style={{
+                                    position: 'absolute',
+                                    right: 12,
+                                    top: '50%',
+                                    transform: 'translateY(-50%)',
+                                    background: 'none',
+                                    border: 'none',
+                                    color: 'var(--text-tertiary)',
+                                    cursor: 'pointer',
+                                    padding: 4,
+                                }}
                             >
                                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                             </button>
                         </div>
                     </div>
 
-                    <button
-                        type="submit"
-                        className={styles.loginBtn}
-                        disabled={isLoading}
-                    >
+                    <button type="submit" className={styles.loginBtn} disabled={isLoading}>
                         {isLoading ? <RefreshCw size={18} className="spin" /> : <ArrowRight size={18} />}
                         {isLoading ? t('auth.btnLoggingIn') : t('auth.btnLogin')}
                     </button>
@@ -113,7 +167,14 @@ export default function LoginPage() {
 
                 <div style={{ textAlign: 'center', marginTop: 'var(--space-6)', fontSize: 'var(--text-sm)' }}>
                     <span style={{ color: 'var(--text-secondary)' }}>{t('auth.noWorkspace')}</span>{' '}
-                    <Link href="/onboarding" style={{ color: 'var(--color-primary-600)', fontWeight: 'var(--font-medium)', textDecoration: 'none' }}>
+                    <Link
+                        href="/onboarding"
+                        style={{
+                            color: 'var(--color-primary-600)',
+                            fontWeight: 'var(--font-medium)',
+                            textDecoration: 'none',
+                        }}
+                    >
                         {t('auth.signUpHere')}
                     </Link>
                 </div>

@@ -4,9 +4,21 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { Mail, Smartphone, ArrowRight, ArrowLeft, ShieldCheck, Lock, Eye, EyeOff, RefreshCw, CheckCircle } from 'lucide-react';
+import {
+    Mail,
+    Smartphone,
+    ArrowRight,
+    ArrowLeft,
+    ShieldCheck,
+    Lock,
+    Eye,
+    EyeOff,
+    RefreshCw,
+    CheckCircle,
+} from 'lucide-react';
 import { useToast } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
+import { isEgyptianPhone } from '@/lib/validations';
 import styles from '../login/login.module.css';
 
 export default function ForgotPasswordPage() {
@@ -42,6 +54,16 @@ export default function ForgotPasswordPage() {
     const handleSendCode = async (e?: React.FormEvent) => {
         e?.preventDefault();
         if (!identifier.trim()) return addToast('error', t('auth.errorEmpty'));
+        // Validate Egyptian phone if not email
+        if (!identifier.includes('@')) {
+            if (!isEgyptianPhone(identifier)) {
+                return addToast('error', 'Enter a valid Egyptian phone number (01XXXXXXXXX)');
+            }
+        } else {
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier)) {
+                return addToast('error', 'Enter a valid email address');
+            }
+        }
 
         setIsLoading(true);
         try {
@@ -110,19 +132,31 @@ export default function ForgotPasswordPage() {
 
     const getTitle = () => {
         switch (step) {
-            case 'identifier': return t('auth.forgotPasswordTitle');
-            case 'verify': return t('auth.verifyIdentity');
-            case 'reset': return t('auth.resetPasswordTitle');
-            case 'success': return t('auth.passwordResetSuccess');
+            case 'identifier':
+                return t('auth.forgotPasswordTitle');
+            case 'verify':
+                return t('auth.verifyIdentity');
+            case 'reset':
+                return t('auth.resetPasswordTitle');
+            case 'success':
+                return t('auth.passwordResetSuccess');
         }
     };
 
     const getSubtitle = () => {
         switch (step) {
-            case 'identifier': return t('auth.forgotPasswordDesc');
-            case 'verify': return <>{t('auth.codeSentTo')} <bdi>{identifier}</bdi></>;
-            case 'reset': return t('auth.resetPasswordDesc');
-            case 'success': return t('auth.passwordResetSuccessDesc');
+            case 'identifier':
+                return t('auth.forgotPasswordDesc');
+            case 'verify':
+                return (
+                    <>
+                        {t('auth.codeSentTo')} <bdi>{identifier}</bdi>
+                    </>
+                );
+            case 'reset':
+                return t('auth.resetPasswordDesc');
+            case 'success':
+                return t('auth.passwordResetSuccessDesc');
         }
     };
 
@@ -143,16 +177,32 @@ export default function ForgotPasswordPage() {
                         <div className={styles.inputGroup}>
                             <label className={styles.label}>{t('auth.lblIdentifier')}</label>
                             <div style={{ position: 'relative' }}>
-                                <div style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }}>
+                                <div
+                                    style={{
+                                        position: 'absolute',
+                                        left: 16,
+                                        top: '50%',
+                                        transform: 'translateY(-50%)',
+                                        color: 'var(--text-tertiary)',
+                                    }}
+                                >
                                     {identifier.includes('@') ? <Mail size={18} /> : <Smartphone size={18} />}
                                 </div>
                                 <input
                                     type="text"
                                     className={styles.loginInput}
-                                    style={{ width: '100%', height: 48, paddingLeft: 44, paddingRight: 16, borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)', fontSize: 'var(--text-base)' }}
+                                    style={{
+                                        width: '100%',
+                                        height: 48,
+                                        paddingLeft: 44,
+                                        paddingRight: 16,
+                                        borderRadius: 'var(--radius-lg)',
+                                        border: '1px solid var(--border-color)',
+                                        fontSize: 'var(--text-base)',
+                                    }}
                                     placeholder={t('auth.phIdentifier')}
                                     value={identifier}
-                                    onChange={(e) => setIdentifier(e.target.value)}
+                                    onChange={e => setIdentifier(e.target.value)}
                                     autoFocus
                                 />
                             </div>
@@ -168,8 +218,17 @@ export default function ForgotPasswordPage() {
                 {step === 'verify' && (
                     <form className={styles.form} onSubmit={handleVerifyCode}>
                         <div className={styles.inputGroup}>
-                            <label className={styles.label} style={{ textAlign: 'center' }}>{t('auth.lblOtp')}</label>
-                            <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'center', marginTop: 'var(--space-2)' }}>
+                            <label className={styles.label} style={{ textAlign: 'center' }}>
+                                {t('auth.lblOtp')}
+                            </label>
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    gap: 'var(--space-2)',
+                                    justifyContent: 'center',
+                                    marginTop: 'var(--space-2)',
+                                }}
+                            >
                                 {otpCode.map((digit, idx) => (
                                     <input
                                         key={idx}
@@ -179,15 +238,20 @@ export default function ForgotPasswordPage() {
                                         pattern="[0-9]*"
                                         maxLength={1}
                                         value={digit}
-                                        onChange={(e) => handleOtpChange(idx, e.target.value)}
-                                        onKeyDown={(e) => handleOtpKeyDown(idx, e)}
+                                        onChange={e => handleOtpChange(idx, e.target.value)}
+                                        onKeyDown={e => handleOtpKeyDown(idx, e)}
                                         style={{
-                                            width: 44, height: 52, textAlign: 'center',
-                                            fontSize: 'var(--text-xl)', fontWeight: 'var(--font-bold)',
+                                            width: 44,
+                                            height: 52,
+                                            textAlign: 'center',
+                                            fontSize: 'var(--text-xl)',
+                                            fontWeight: 'var(--font-bold)',
                                             borderRadius: 'var(--radius-lg)',
                                             border: `1px solid ${digit ? 'var(--color-primary-500)' : 'var(--border-color)'}`,
-                                            background: 'var(--bg-primary)', color: 'var(--text-primary)',
-                                            outline: 'none', transition: 'border-color 0.2s',
+                                            background: 'var(--bg-primary)',
+                                            color: 'var(--text-primary)',
+                                            outline: 'none',
+                                            transition: 'border-color 0.2s',
                                         }}
                                         autoFocus={idx === 0}
                                     />
@@ -195,7 +259,11 @@ export default function ForgotPasswordPage() {
                             </div>
                         </div>
 
-                        <button type="submit" className={styles.loginBtn} disabled={isLoading || otpCode.join('').length < 6}>
+                        <button
+                            type="submit"
+                            className={styles.loginBtn}
+                            disabled={isLoading || otpCode.join('').length < 6}
+                        >
                             {isLoading ? <RefreshCw size={18} className="spin" /> : <ShieldCheck size={18} />}
                             {isLoading ? t('auth.btnVerifying') : t('auth.btnVerifyCode')}
                         </button>
@@ -206,13 +274,17 @@ export default function ForgotPasswordPage() {
                                 disabled={countdown > 0}
                                 onClick={() => handleSendCode()}
                                 style={{
-                                    background: 'none', border: 'none',
+                                    background: 'none',
+                                    border: 'none',
                                     color: countdown > 0 ? 'var(--text-tertiary)' : 'var(--color-primary-600)',
-                                    fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)',
-                                    cursor: countdown > 0 ? 'not-allowed' : 'pointer'
+                                    fontSize: 'var(--text-sm)',
+                                    fontWeight: 'var(--font-medium)',
+                                    cursor: countdown > 0 ? 'not-allowed' : 'pointer',
                                 }}
                             >
-                                {countdown > 0 ? `${t('auth.resendIn')} 0:${countdown.toString().padStart(2, '0')}` : t('auth.resendCode')}
+                                {countdown > 0
+                                    ? `${t('auth.resendIn')} 0:${countdown.toString().padStart(2, '0')}`
+                                    : t('auth.resendCode')}
                             </button>
                         </div>
                     </form>
@@ -223,22 +295,48 @@ export default function ForgotPasswordPage() {
                         <div className={styles.inputGroup}>
                             <label className={styles.label}>{t('auth.lblNewPassword')}</label>
                             <div style={{ position: 'relative' }}>
-                                <div style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }}>
+                                <div
+                                    style={{
+                                        position: 'absolute',
+                                        left: 16,
+                                        top: '50%',
+                                        transform: 'translateY(-50%)',
+                                        color: 'var(--text-tertiary)',
+                                    }}
+                                >
                                     <Lock size={18} />
                                 </div>
                                 <input
                                     type={showNewPassword ? 'text' : 'password'}
                                     className={styles.loginInput}
-                                    style={{ width: '100%', height: 48, paddingLeft: 44, paddingRight: 48, borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)', fontSize: 'var(--text-base)' }}
+                                    style={{
+                                        width: '100%',
+                                        height: 48,
+                                        paddingLeft: 44,
+                                        paddingRight: 48,
+                                        borderRadius: 'var(--radius-lg)',
+                                        border: '1px solid var(--border-color)',
+                                        fontSize: 'var(--text-base)',
+                                    }}
                                     placeholder={t('auth.phNewPassword')}
                                     value={newPassword}
-                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    onChange={e => setNewPassword(e.target.value)}
                                     autoFocus
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowNewPassword(!showNewPassword)}
-                                    style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer', padding: 4 }}
+                                    style={{
+                                        position: 'absolute',
+                                        right: 12,
+                                        top: '50%',
+                                        transform: 'translateY(-50%)',
+                                        background: 'none',
+                                        border: 'none',
+                                        color: 'var(--text-tertiary)',
+                                        cursor: 'pointer',
+                                        padding: 4,
+                                    }}
                                 >
                                     {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </button>
@@ -248,21 +346,47 @@ export default function ForgotPasswordPage() {
                         <div className={styles.inputGroup}>
                             <label className={styles.label}>{t('auth.lblConfirmPassword')}</label>
                             <div style={{ position: 'relative' }}>
-                                <div style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }}>
+                                <div
+                                    style={{
+                                        position: 'absolute',
+                                        left: 16,
+                                        top: '50%',
+                                        transform: 'translateY(-50%)',
+                                        color: 'var(--text-tertiary)',
+                                    }}
+                                >
                                     <Lock size={18} />
                                 </div>
                                 <input
                                     type={showConfirmPassword ? 'text' : 'password'}
                                     className={styles.loginInput}
-                                    style={{ width: '100%', height: 48, paddingLeft: 44, paddingRight: 48, borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)', fontSize: 'var(--text-base)' }}
+                                    style={{
+                                        width: '100%',
+                                        height: 48,
+                                        paddingLeft: 44,
+                                        paddingRight: 48,
+                                        borderRadius: 'var(--radius-lg)',
+                                        border: '1px solid var(--border-color)',
+                                        fontSize: 'var(--text-base)',
+                                    }}
                                     placeholder={t('auth.phConfirmPassword')}
                                     value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    onChange={e => setConfirmPassword(e.target.value)}
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                    style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer', padding: 4 }}
+                                    style={{
+                                        position: 'absolute',
+                                        right: 12,
+                                        top: '50%',
+                                        transform: 'translateY(-50%)',
+                                        background: 'none',
+                                        border: 'none',
+                                        color: 'var(--text-tertiary)',
+                                        cursor: 'pointer',
+                                        padding: 4,
+                                    }}
                                 >
                                     {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </button>
@@ -277,7 +401,14 @@ export default function ForgotPasswordPage() {
                 )}
 
                 {step === 'success' && (
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-6)' }}>
+                    <div
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: 'var(--space-6)',
+                        }}
+                    >
                         <CheckCircle size={56} style={{ color: 'var(--color-success-500)' }} />
                         <Link href="/login" style={{ width: '100%', textDecoration: 'none' }}>
                             <button type="button" className={styles.loginBtn}>
@@ -290,13 +421,29 @@ export default function ForgotPasswordPage() {
 
                 {step === 'verify' && (
                     <div className={styles.tip} style={{ marginTop: 'var(--space-6)' }}>
-                        <span>{t('auth.demoTipVerify')} <bdi><strong>123456</strong></bdi>.</span>
+                        <span>
+                            {t('auth.demoTipVerify')}{' '}
+                            <bdi>
+                                <strong>123456</strong>
+                            </bdi>
+                            .
+                        </span>
                     </div>
                 )}
 
                 {step !== 'success' && (
                     <div style={{ textAlign: 'center', marginTop: 'var(--space-6)', fontSize: 'var(--text-sm)' }}>
-                        <Link href="/login" style={{ color: 'var(--color-primary-600)', fontWeight: 'var(--font-medium)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 'var(--space-1)' }}>
+                        <Link
+                            href="/login"
+                            style={{
+                                color: 'var(--color-primary-600)',
+                                fontWeight: 'var(--font-medium)',
+                                textDecoration: 'none',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 'var(--space-1)',
+                            }}
+                        >
                             <ArrowLeft size={14} />
                             {t('auth.backToLogin')}
                         </Link>
