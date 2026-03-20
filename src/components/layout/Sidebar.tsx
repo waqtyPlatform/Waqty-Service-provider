@@ -134,6 +134,7 @@ const getNavigation = (
                 { label: t('sidebar.services'), href: '/settings/services' },
                 { label: t('sidebar.svcCategories'), href: '/settings/service-categories' },
                 { label: t('sidebar.svcEmployees'), href: '/settings/service-employees' },
+                { label: t('sidebar.svcPricing'), href: '/settings/service-pricing' },
                 { label: t('sidebar.hours'), href: '/settings/hours' },
                 { label: t('sidebar.resources'), href: '/settings/resources' },
                 { label: t('sidebar.paymentMethods'), href: '/settings/payment-methods' },

@@ -62,6 +62,7 @@ const translations: Translations = {
     'sidebar.shiftAutomations': { en: 'Shift Automations', ar: 'أتمتة الورديات' },
     'sidebar.svcCategories': { en: 'Service Categories', ar: 'تصنيفات الخدمات' },
     'sidebar.svcEmployees': { en: 'Service Employees', ar: 'موظفي الخدمات' },
+    'sidebar.svcPricing': { en: 'Service Pricing', ar: 'تسعير الخدمات' },
 
     // Employees Layout
     'empLayout.title': { en: 'Employees', ar: 'الموظفين' },
@@ -676,6 +677,35 @@ const translations: Translations = {
     'settings.tab.fpDevices': { en: 'FP Devices', ar: 'أجهزة البصمات' },
     'settings.tab.fpAreas': { en: 'FP Areas', ar: 'مناطق البصمات' },
     'settings.tab.pettyCash': { en: 'Petty Cash', ar: 'المصروفات النثرية' },
+    'settings.tab.servicePricing': { en: 'Service Pricing', ar: 'تسعير الخدمات' },
+
+    // Service Pricing Page
+    'servicePricing.title': { en: 'Service Pricing', ar: 'تسعير الخدمات' },
+    'servicePricing.desc': {
+        en: 'Set custom prices per branch, employee tier, or individual employee.',
+        ar: 'حدد أسعارًا مخصصة حسب الفرع أو مستوى الموظف أو الموظف الفردي.',
+    },
+    'servicePricing.tabBranch': { en: 'Branch Pricing', ar: 'تسعير الفروع' },
+    'servicePricing.tabTier': { en: 'Tier Pricing', ar: 'تسعير المستويات' },
+    'servicePricing.tabEmployee': { en: 'Employee Pricing', ar: 'تسعير الموظفين' },
+    'servicePricing.basePrice': { en: 'Base Price', ar: 'السعر الأساسي' },
+    'servicePricing.override': { en: 'Override', ar: 'تجاوز' },
+    'servicePricing.noOverride': { en: 'Base price', ar: 'السعر الأساسي' },
+    'servicePricing.selectBranch': { en: 'Select Branch', ar: 'اختر الفرع' },
+    'servicePricing.allBranches': { en: 'All Branches', ar: 'كل الفروع' },
+    'servicePricing.addOverride': { en: 'Add Override', ar: 'إضافة تسعير' },
+    'servicePricing.service': { en: 'Service', ar: 'الخدمة' },
+    'servicePricing.employee': { en: 'Employee', ar: 'الموظف' },
+    'servicePricing.branch': { en: 'Branch', ar: 'الفرع' },
+    'servicePricing.price': { en: 'Price', ar: 'السعر' },
+    'servicePricing.source.branchEmployee': { en: 'Branch + Employee', ar: 'فرع + موظف' },
+    'servicePricing.source.branchTier': { en: 'Branch + Tier', ar: 'فرع + مستوى' },
+    'servicePricing.source.branch': { en: 'Branch rate', ar: 'سعر الفرع' },
+    'servicePricing.source.employee': { en: 'Employee rate', ar: 'سعر الموظف' },
+    'servicePricing.source.tier': { en: 'Tier rate', ar: 'سعر المستوى' },
+    'servicePricing.source.base': { en: 'Base rate', ar: 'السعر الأساسي' },
+    'servicePricing.saved': { en: 'Pricing saved successfully', ar: 'تم حفظ التسعير بنجاح' },
+    'servicePricing.deleted': { en: 'Override removed', ar: 'تم إزالة التسعير' },
 
     // Settings General Page
     'settings.title': { en: 'Settings', ar: 'الإعدادات' },
