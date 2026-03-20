@@ -4,11 +4,31 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-    Building2, Clock, Palette, Bell, Shield, Globe,
-    CreditCard, FileText, Webhook, Database, Lock,
-    MapPin, Scissors, Monitor, ScrollText, Crown,
-    FolderTree, Users, Armchair, CalendarCog, Timer,
-    Fingerprint, MapPinned, Coins, ChevronDown,
+    Building2,
+    Clock,
+    Palette,
+    Bell,
+    Shield,
+    Globe,
+    CreditCard,
+    FileText,
+    Webhook,
+    Database,
+    Lock,
+    MapPin,
+    Scissors,
+    Monitor,
+    ScrollText,
+    Crown,
+    FolderTree,
+    Users,
+    Armchair,
+    CalendarCog,
+    Timer,
+    Fingerprint,
+    MapPinned,
+    Coins,
+    ChevronDown,
 } from 'lucide-react';
 import styles from './SettingsTabs.module.css';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -37,8 +57,17 @@ const categories: SettingsCategory[] = [
         labelKey: 'settings.cat.services',
         tabs: [
             { labelKey: 'settings.tab.services', href: '/settings/services', icon: <Scissors size={16} /> },
-            { labelKey: 'settings.tab.serviceCategories', href: '/settings/service-categories', icon: <FolderTree size={16} /> },
-            { labelKey: 'settings.tab.serviceEmployees', href: '/settings/service-employees', icon: <Users size={16} /> },
+            {
+                labelKey: 'settings.tab.serviceCategories',
+                href: '/settings/service-categories',
+                icon: <FolderTree size={16} />,
+            },
+            {
+                labelKey: 'settings.tab.serviceEmployees',
+                href: '/settings/service-employees',
+                icon: <Users size={16} />,
+            },
+            { labelKey: 'settings.tab.servicePricing', href: '/settings/service-pricing', icon: <Coins size={16} /> },
             { labelKey: 'settings.tab.resources', href: '/settings/resources', icon: <Armchair size={16} /> },
         ],
     },
@@ -54,16 +83,28 @@ const categories: SettingsCategory[] = [
     {
         labelKey: 'settings.cat.scheduling',
         tabs: [
-            { labelKey: 'settings.tab.diaryAutomations', href: '/settings/diary-automations', icon: <CalendarCog size={16} /> },
+            {
+                labelKey: 'settings.tab.diaryAutomations',
+                href: '/settings/diary-automations',
+                icon: <CalendarCog size={16} />,
+            },
             { labelKey: 'settings.tab.shifts', href: '/settings/shifts', icon: <CalendarCog size={16} /> },
-            { labelKey: 'settings.tab.shiftAutomations', href: '/settings/shift-automations', icon: <Timer size={16} /> },
+            {
+                labelKey: 'settings.tab.shiftAutomations',
+                href: '/settings/shift-automations',
+                icon: <Timer size={16} />,
+            },
         ],
     },
     {
         labelKey: 'settings.cat.hardware',
         tabs: [
             { labelKey: 'settings.tab.devices', href: '/settings/devices', icon: <Monitor size={16} /> },
-            { labelKey: 'settings.tab.fpDevices', href: '/settings/fingerprint-devices', icon: <Fingerprint size={16} /> },
+            {
+                labelKey: 'settings.tab.fpDevices',
+                href: '/settings/fingerprint-devices',
+                icon: <Fingerprint size={16} />,
+            },
             { labelKey: 'settings.tab.fpAreas', href: '/settings/fingerprint-areas', icon: <MapPinned size={16} /> },
         ],
     },
@@ -91,22 +132,18 @@ export default function SettingsTabs() {
         cat.tabs.some(tab => pathname === tab.href || (tab.href !== '/settings' && pathname.startsWith(tab.href)))
     );
 
-    const [expandedCats, setExpandedCats] = useState<number[]>(
-        activeCatIndex >= 0 ? [activeCatIndex] : [0]
-    );
+    const [expandedCats, setExpandedCats] = useState<number[]>(activeCatIndex >= 0 ? [activeCatIndex] : [0]);
 
     const toggleCategory = (index: number) => {
-        setExpandedCats(prev =>
-            prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]
-        );
+        setExpandedCats(prev => (prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]));
     };
 
     return (
         <nav className={styles.sidebar}>
             {categories.map((cat, catIdx) => {
                 const isExpanded = expandedCats.includes(catIdx);
-                const hasActive = cat.tabs.some(tab =>
-                    pathname === tab.href || (tab.href !== '/settings' && pathname.startsWith(tab.href))
+                const hasActive = cat.tabs.some(
+                    tab => pathname === tab.href || (tab.href !== '/settings' && pathname.startsWith(tab.href))
                 );
 
                 return (
@@ -124,8 +161,9 @@ export default function SettingsTabs() {
 
                         {isExpanded && (
                             <div className={styles.categoryItems}>
-                                {cat.tabs.map((tab) => {
-                                    const isActive = pathname === tab.href ||
+                                {cat.tabs.map(tab => {
+                                    const isActive =
+                                        pathname === tab.href ||
                                         (tab.href !== '/settings' && pathname.startsWith(tab.href + '/'));
                                     return (
                                         <Link

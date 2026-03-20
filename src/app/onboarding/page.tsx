@@ -25,9 +25,8 @@ import {
     Navigation,
     Briefcase,
     KeyRound,
-    ChevronDown,
-    ChevronUp,
 } from 'lucide-react';
+import { isEgyptianPhone } from '@/lib/validations';
 import styles from './onboarding.module.css';
 
 const egyptLocations: Record<string, string[]> = {
@@ -202,7 +201,6 @@ export default function OnboardingPage() {
     const [mapPinned, setMapPinned] = useState(false);
 
     // Step 2b: Branch Credentials (optional)
-    const [wantsBranchAuth, setWantsBranchAuth] = useState(false);
     const [branchEmail, setBranchEmail] = useState('');
     const [branchPassword, setBranchPassword] = useState('');
     const [showBranchPassword, setShowBranchPassword] = useState(false);
@@ -251,6 +249,8 @@ export default function OnboardingPage() {
         if (!email.trim()) return addToast('error', 'Please enter your email');
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return addToast('error', 'Please enter a valid email address');
         if (!phoneNumber.trim()) return addToast('error', 'Please enter your phone number');
+        if (!isEgyptianPhone(phoneNumber))
+            return addToast('error', 'Enter a valid Egyptian phone number (01XXXXXXXXX)');
         if (password.length < 6) return addToast('error', 'Password must be at least 6 characters');
         setIsLoading(true);
         try {
@@ -330,13 +330,11 @@ export default function OnboardingPage() {
         if (!city) return addToast('error', 'Please select your city');
         if (!street.trim()) return addToast('error', 'Please enter your street address');
 
-        // Validate branch credentials if opted in
-        if (wantsBranchAuth) {
-            if (!branchEmail.trim()) return addToast('error', 'Please enter a branch email');
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(branchEmail))
-                return addToast('error', 'Please enter a valid branch email');
-            if (branchPassword.length < 6) return addToast('error', 'Branch password must be at least 6 characters');
-        }
+        // Validate branch credentials (mandatory)
+        if (!branchEmail.trim()) return addToast('error', 'Please enter a branch email');
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(branchEmail))
+            return addToast('error', 'Please enter a valid branch email');
+        if (branchPassword.length < 6) return addToast('error', 'Branch password must be at least 6 characters');
 
         // Pre-select all suggested services
         setSelectedServices([...(suggestedServices[selectedBusinessType] || [])]);
@@ -374,7 +372,7 @@ export default function OnboardingPage() {
                 address: { street, building, floor },
                 mapPinned,
                 services: finalServices,
-                branchAuth: wantsBranchAuth ? { email: branchEmail, password: branchPassword } : null,
+                branchAuth: { email: branchEmail, password: branchPassword },
                 plan: 'trial',
                 trialStartDate: new Date().toISOString(),
                 completedAt: new Date().toISOString(),
@@ -774,125 +772,116 @@ export default function OnboardingPage() {
                             </div>
                         </div>
 
-                        {/* Branch Login Credentials (Optional) */}
+                        {/* Branch Login Credentials (Required) */}
                         <div className={styles.inputGroup}>
-                            <button
-                                type="button"
-                                onClick={() => setWantsBranchAuth(!wantsBranchAuth)}
+                            <div
                                 style={{
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: 10,
                                     width: '100%',
                                     padding: '12px 16px',
-                                    background: wantsBranchAuth
-                                        ? 'var(--color-primary-50, #f0f5ff)'
-                                        : 'var(--bg-secondary, #f9fafb)',
-                                    border: `1px solid ${wantsBranchAuth ? 'var(--color-primary-200, #c7d7fe)' : 'var(--border-color, #e5e7eb)'}`,
+                                    background: 'var(--color-primary-50, #f0f5ff)',
+                                    border: '1px solid var(--color-primary-200, #c7d7fe)',
                                     borderRadius: 'var(--radius-lg, 12px)',
-                                    cursor: 'pointer',
                                     fontSize: 'var(--text-sm, 14px)',
                                     fontWeight: 'var(--font-medium, 500)',
                                     color: 'var(--text-primary)',
-                                    transition: 'all 0.2s',
                                 }}
                             >
                                 <KeyRound
                                     size={18}
                                     style={{
-                                        color: wantsBranchAuth ? 'var(--color-primary-600)' : 'var(--text-tertiary)',
+                                        color: 'var(--color-primary-600)',
                                     }}
                                 />
-                                <span style={{ flex: 1, textAlign: 'start' }}>Set up branch login credentials</span>
+                                <span style={{ flex: 1, textAlign: 'start' }}>Branch login credentials</span>
                                 <span
                                     style={{
                                         fontSize: 11,
                                         padding: '2px 8px',
                                         borderRadius: 'var(--radius-full, 9999px)',
-                                        background: 'var(--bg-tertiary, #f3f4f6)',
-                                        color: 'var(--text-tertiary)',
+                                        background: 'var(--color-primary-100, #dbeafe)',
+                                        color: 'var(--color-primary-700, #3b5998)',
                                         fontWeight: 'var(--font-semibold, 600)',
                                     }}
                                 >
-                                    Optional
+                                    Required
                                 </span>
-                                {wantsBranchAuth ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                            </button>
+                            </div>
 
-                            {wantsBranchAuth && (
-                                <div
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: 'var(--space-3, 12px)',
+                                    marginTop: 'var(--space-3, 12px)',
+                                    padding: '16px',
+                                    background: 'var(--bg-secondary, #f9fafb)',
+                                    borderRadius: 'var(--radius-lg, 12px)',
+                                    border: '1px solid var(--border-color, #e5e7eb)',
+                                }}
+                            >
+                                <p
                                     style={{
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        gap: 'var(--space-3, 12px)',
-                                        marginTop: 'var(--space-3, 12px)',
-                                        padding: '16px',
-                                        background: 'var(--bg-secondary, #f9fafb)',
-                                        borderRadius: 'var(--radius-lg, 12px)',
-                                        border: '1px solid var(--border-color, #e5e7eb)',
+                                        fontSize: 'var(--text-xs, 12px)',
+                                        color: 'var(--text-tertiary)',
+                                        margin: 0,
                                     }}
                                 >
-                                    <p
-                                        style={{
-                                            fontSize: 'var(--text-xs, 12px)',
-                                            color: 'var(--text-tertiary)',
-                                            margin: 0,
-                                        }}
-                                    >
-                                        This allows this branch to log in independently
-                                    </p>
-                                    <div className={styles.inputGroup} style={{ marginBottom: 0 }}>
-                                        <label className={styles.label}>Branch Email</label>
-                                        <div className={styles.inputWithIcon}>
-                                            <div className={styles.inputIcon}>
-                                                <Mail size={18} />
-                                            </div>
-                                            <input
-                                                type="email"
-                                                className={styles.loginInput}
-                                                style={{ paddingInlineStart: 44 }}
-                                                placeholder="branch@business.com"
-                                                value={branchEmail}
-                                                onChange={e => setBranchEmail(e.target.value)}
-                                            />
+                                    This allows this branch to log in independently
+                                </p>
+                                <div className={styles.inputGroup} style={{ marginBottom: 0 }}>
+                                    <label className={styles.label}>Branch Email</label>
+                                    <div className={styles.inputWithIcon}>
+                                        <div className={styles.inputIcon}>
+                                            <Mail size={18} />
                                         </div>
-                                    </div>
-                                    <div className={styles.inputGroup} style={{ marginBottom: 0 }}>
-                                        <label className={styles.label}>Branch Password</label>
-                                        <div className={styles.inputWithIcon}>
-                                            <div className={styles.inputIcon}>
-                                                <Lock size={18} />
-                                            </div>
-                                            <input
-                                                type={showBranchPassword ? 'text' : 'password'}
-                                                className={styles.loginInput}
-                                                style={{ paddingInlineStart: 44, paddingInlineEnd: 44 }}
-                                                placeholder="Min. 6 characters"
-                                                value={branchPassword}
-                                                onChange={e => setBranchPassword(e.target.value)}
-                                            />
-                                            <button
-                                                type="button"
-                                                style={{
-                                                    position: 'absolute',
-                                                    right: 12,
-                                                    top: '50%',
-                                                    transform: 'translateY(-50%)',
-                                                    background: 'none',
-                                                    border: 'none',
-                                                    color: 'var(--text-tertiary)',
-                                                    cursor: 'pointer',
-                                                    padding: 4,
-                                                }}
-                                                onClick={() => setShowBranchPassword(!showBranchPassword)}
-                                                tabIndex={-1}
-                                            >
-                                                {showBranchPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                                            </button>
-                                        </div>
+                                        <input
+                                            type="email"
+                                            className={styles.loginInput}
+                                            style={{ paddingInlineStart: 44 }}
+                                            placeholder="branch@business.com"
+                                            value={branchEmail}
+                                            onChange={e => setBranchEmail(e.target.value)}
+                                        />
                                     </div>
                                 </div>
-                            )}
+                                <div className={styles.inputGroup} style={{ marginBottom: 0 }}>
+                                    <label className={styles.label}>Branch Password</label>
+                                    <div className={styles.inputWithIcon}>
+                                        <div className={styles.inputIcon}>
+                                            <Lock size={18} />
+                                        </div>
+                                        <input
+                                            type={showBranchPassword ? 'text' : 'password'}
+                                            className={styles.loginInput}
+                                            style={{ paddingInlineStart: 44, paddingInlineEnd: 44 }}
+                                            placeholder="Min. 6 characters"
+                                            value={branchPassword}
+                                            onChange={e => setBranchPassword(e.target.value)}
+                                        />
+                                        <button
+                                            type="button"
+                                            style={{
+                                                position: 'absolute',
+                                                right: 12,
+                                                top: '50%',
+                                                transform: 'translateY(-50%)',
+                                                background: 'none',
+                                                border: 'none',
+                                                color: 'var(--text-tertiary)',
+                                                cursor: 'pointer',
+                                                padding: 4,
+                                            }}
+                                            onClick={() => setShowBranchPassword(!showBranchPassword)}
+                                            tabIndex={-1}
+                                        >
+                                            {showBranchPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         {/* Navigation */}

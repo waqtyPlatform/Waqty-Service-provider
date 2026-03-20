@@ -4,14 +4,33 @@ import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui';
 import {
-    User, Search, Scissors, MapPin, FileText, Check, Plus, Trash2,
-    AlertTriangle, CheckCircle, Stethoscope, Heart, Pill, Phone, Shield,
-    Activity, ChevronDown, ChevronUp, UserCog, Calendar,
+    User,
+    Search,
+    Scissors,
+    MapPin,
+    FileText,
+    Check,
+    Plus,
+    Trash2,
+    AlertTriangle,
+    CheckCircle,
+    Stethoscope,
+    Heart,
+    Pill,
+    Phone,
+    Shield,
+    Activity,
+    ChevronDown,
+    ChevronUp,
+    UserCog,
+    Calendar,
 } from 'lucide-react';
 import BookingsTabs from '../BookingsTabs';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useAuth } from '@/contexts/AuthContext';
 import { isEmployeeOnShift, isEmployeeDuringBreak } from '@/lib/shiftData';
+import { resolveServicePrice } from '@/lib/priceResolver';
+import type { ServicePriceOverride } from '@/lib/priceResolver';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -29,6 +48,7 @@ interface Employee {
     name: string;
     role: string;
     color: string;
+    level?: string;
 }
 
 interface Room {
@@ -70,72 +90,113 @@ interface PatientForm {
 
 const SERVICES: Record<string, Service[]> = {
     barber: [
-        { id: 'B01', name: 'Classic Haircut',    duration: '30 min', durationMins: 30,  price: 80,  category: 'Cut'       },
-        { id: 'B02', name: 'Skin Fade',           duration: '45 min', durationMins: 45,  price: 120, category: 'Cut'       },
-        { id: 'B03', name: 'Beard Trim & Shape',  duration: '20 min', durationMins: 20,  price: 60,  category: 'Beard'     },
-        { id: 'B04', name: 'Hair & Beard Combo',  duration: '60 min', durationMins: 60,  price: 160, category: 'Combo'     },
-        { id: 'B05', name: 'Hot Towel Shave',     duration: '30 min', durationMins: 30,  price: 90,  category: 'Shave'     },
-        { id: 'B06', name: 'Keratin Smoothing',   duration: '90 min', durationMins: 90,  price: 350, category: 'Treatment' },
-        { id: 'B07', name: 'Kids Haircut',        duration: '20 min', durationMins: 20,  price: 50,  category: 'Cut'       },
+        { id: 'B01', name: 'Classic Haircut', duration: '30 min', durationMins: 30, price: 80, category: 'Cut' },
+        { id: 'B02', name: 'Skin Fade', duration: '45 min', durationMins: 45, price: 120, category: 'Cut' },
+        { id: 'B03', name: 'Beard Trim & Shape', duration: '20 min', durationMins: 20, price: 60, category: 'Beard' },
+        { id: 'B04', name: 'Hair & Beard Combo', duration: '60 min', durationMins: 60, price: 160, category: 'Combo' },
+        { id: 'B05', name: 'Hot Towel Shave', duration: '30 min', durationMins: 30, price: 90, category: 'Shave' },
+        {
+            id: 'B06',
+            name: 'Keratin Smoothing',
+            duration: '90 min',
+            durationMins: 90,
+            price: 350,
+            category: 'Treatment',
+        },
+        { id: 'B07', name: 'Kids Haircut', duration: '20 min', durationMins: 20, price: 50, category: 'Cut' },
     ],
     salon: [
-        { id: 'S01', name: 'Haircut & Styling',   duration: '45 min',  durationMins: 45,  price: 150, category: 'Hair'   },
-        { id: 'S02', name: 'Hair Coloring',       duration: '90 min',  durationMins: 90,  price: 400, category: 'Hair'   },
-        { id: 'S03', name: 'Keratin Treatment',   duration: '120 min', durationMins: 120, price: 500, category: 'Hair'   },
-        { id: 'S04', name: 'Classic Facial',      duration: '60 min',  durationMins: 60,  price: 200, category: 'Skin'   },
-        { id: 'S05', name: 'HydraFacial',         duration: '75 min',  durationMins: 75,  price: 450, category: 'Skin'   },
-        { id: 'S06', name: 'Gel Manicure',        duration: '45 min',  durationMins: 45,  price: 150, category: 'Nails'  },
-        { id: 'S07', name: 'Swedish Massage',     duration: '60 min',  durationMins: 60,  price: 300, category: 'Body'   },
-        { id: 'S08', name: 'Laser Hair Removal',  duration: '30 min',  durationMins: 30,  price: 250, category: 'Laser'  },
-        { id: 'S09', name: 'Bridal Makeup',       duration: '120 min', durationMins: 120, price: 800, category: 'Makeup' },
-        { id: 'S10', name: 'Eyelash Extensions',  duration: '90 min',  durationMins: 90,  price: 350, category: 'Lash'   },
+        { id: 'S01', name: 'Haircut & Styling', duration: '45 min', durationMins: 45, price: 150, category: 'Hair' },
+        { id: 'S02', name: 'Hair Coloring', duration: '90 min', durationMins: 90, price: 400, category: 'Hair' },
+        { id: 'S03', name: 'Keratin Treatment', duration: '120 min', durationMins: 120, price: 500, category: 'Hair' },
+        { id: 'S04', name: 'Classic Facial', duration: '60 min', durationMins: 60, price: 200, category: 'Skin' },
+        { id: 'S05', name: 'HydraFacial', duration: '75 min', durationMins: 75, price: 450, category: 'Skin' },
+        { id: 'S06', name: 'Gel Manicure', duration: '45 min', durationMins: 45, price: 150, category: 'Nails' },
+        { id: 'S07', name: 'Swedish Massage', duration: '60 min', durationMins: 60, price: 300, category: 'Body' },
+        { id: 'S08', name: 'Laser Hair Removal', duration: '30 min', durationMins: 30, price: 250, category: 'Laser' },
+        { id: 'S09', name: 'Bridal Makeup', duration: '120 min', durationMins: 120, price: 800, category: 'Makeup' },
+        { id: 'S10', name: 'Eyelash Extensions', duration: '90 min', durationMins: 90, price: 350, category: 'Lash' },
     ],
     clinic: [
-        { id: 'C01', name: 'General Consultation',   duration: '30 min', durationMins: 30, price: 200, category: 'Consultation' },
-        { id: 'C02', name: 'Follow-up Visit',        duration: '20 min', durationMins: 20, price: 120, category: 'Consultation' },
-        { id: 'C03', name: 'Dental Checkup',         duration: '45 min', durationMins: 45, price: 250, category: 'Dental'       },
-        { id: 'C04', name: 'Laser Session',          duration: '30 min', durationMins: 30, price: 400, category: 'Laser'        },
-        { id: 'C05', name: 'Botox Treatment',        duration: '45 min', durationMins: 45, price: 800, category: 'Aesthetic'    },
-        { id: 'C06', name: 'Dermatology Exam',       duration: '30 min', durationMins: 30, price: 300, category: 'Dermatology'  },
-        { id: 'C07', name: 'Physiotherapy Session',  duration: '60 min', durationMins: 60, price: 350, category: 'Physio'       },
-        { id: 'C08', name: 'Lab Tests',              duration: '20 min', durationMins: 20, price: 150, category: 'Lab'          },
+        {
+            id: 'C01',
+            name: 'General Consultation',
+            duration: '30 min',
+            durationMins: 30,
+            price: 200,
+            category: 'Consultation',
+        },
+        {
+            id: 'C02',
+            name: 'Follow-up Visit',
+            duration: '20 min',
+            durationMins: 20,
+            price: 120,
+            category: 'Consultation',
+        },
+        { id: 'C03', name: 'Dental Checkup', duration: '45 min', durationMins: 45, price: 250, category: 'Dental' },
+        { id: 'C04', name: 'Laser Session', duration: '30 min', durationMins: 30, price: 400, category: 'Laser' },
+        { id: 'C05', name: 'Botox Treatment', duration: '45 min', durationMins: 45, price: 800, category: 'Aesthetic' },
+        {
+            id: 'C06',
+            name: 'Dermatology Exam',
+            duration: '30 min',
+            durationMins: 30,
+            price: 300,
+            category: 'Dermatology',
+        },
+        {
+            id: 'C07',
+            name: 'Physiotherapy Session',
+            duration: '60 min',
+            durationMins: 60,
+            price: 350,
+            category: 'Physio',
+        },
+        { id: 'C08', name: 'Lab Tests', duration: '20 min', durationMins: 20, price: 150, category: 'Lab' },
     ],
 };
 
 const EMPLOYEES: Record<string, Employee[]> = {
     barber: [
-        { id: 'E01', name: 'Ahmed Fathy',  role: 'Master Barber',  color: '#3b82f6' },
-        { id: 'E02', name: 'Karim Saad',   role: 'Senior Barber',  color: '#8b5cf6' },
-        { id: 'E03', name: 'Omar Nasser',  role: 'Barber',         color: '#10b981' },
-        { id: 'E04', name: 'Hassan Ali',   role: 'Junior Barber',  color: '#f59e0b' },
+        { id: 'E01', name: 'Ahmed Fathy', role: 'Master Barber', color: '#3b82f6', level: 'Senior' },
+        { id: 'E02', name: 'Karim Saad', role: 'Senior Barber', color: '#8b5cf6', level: 'Senior' },
+        { id: 'E03', name: 'Omar Nasser', role: 'Barber', color: '#10b981', level: 'Mid' },
+        { id: 'E04', name: 'Hassan Ali', role: 'Junior Barber', color: '#f59e0b', level: 'Junior' },
     ],
     salon: [
-        { id: 'E01', name: 'Sara Ahmed',   role: 'Senior Stylist',   color: '#ec4899' },
-        { id: 'E02', name: 'Nora Ali',     role: 'Skin Specialist',  color: '#8b5cf6' },
-        { id: 'E03', name: 'Layla Hassan', role: 'Senior Therapist', color: '#10b981' },
-        { id: 'E04', name: 'Reem Mohamed', role: 'Massage Therapist',color: '#3b82f6' },
-        { id: 'E05', name: 'Hana Youssef', role: 'Nail Technician',  color: '#f59e0b' },
+        { id: 'E01', name: 'Sara Ahmed', role: 'Senior Stylist', color: '#ec4899', level: 'Senior' },
+        { id: 'E02', name: 'Nora Ali', role: 'Skin Specialist', color: '#8b5cf6', level: 'Senior' },
+        { id: 'E03', name: 'Layla Hassan', role: 'Senior Therapist', color: '#10b981', level: 'Senior' },
+        { id: 'E04', name: 'Reem Mohamed', role: 'Massage Therapist', color: '#3b82f6', level: 'Mid' },
+        { id: 'E05', name: 'Hana Youssef', role: 'Nail Technician', color: '#f59e0b', level: 'Junior' },
     ],
     clinic: [
-        { id: 'E01', name: 'Dr. Ahmed Kamal', role: 'General Physician',   color: '#3b82f6' },
-        { id: 'E02', name: 'Dr. Mona Taher',  role: 'Dermatologist',       color: '#8b5cf6' },
-        { id: 'E03', name: 'Dr. Yasser Nour', role: 'Dentist',             color: '#10b981' },
-        { id: 'E04', name: 'Dr. Rana Farid',  role: 'Physiotherapist',     color: '#f59e0b' },
-        { id: 'E05', name: 'Dr. Omar Sayed',  role: 'Aesthetic Specialist',color: '#ec4899' },
+        { id: 'E01', name: 'Dr. Ahmed Kamal', role: 'General Physician', color: '#3b82f6', level: 'Senior' },
+        { id: 'E02', name: 'Dr. Mona Taher', role: 'Dermatologist', color: '#8b5cf6', level: 'Senior' },
+        { id: 'E03', name: 'Dr. Yasser Nour', role: 'Dentist', color: '#10b981', level: 'Mid' },
+        { id: 'E04', name: 'Dr. Rana Farid', role: 'Physiotherapist', color: '#f59e0b', level: 'Mid' },
+        { id: 'E05', name: 'Dr. Omar Sayed', role: 'Aesthetic Specialist', color: '#ec4899', level: 'Senior' },
     ],
 };
 
 const ROOMS: Room[] = [
-    { id: 'R1', name: 'Room 1 – VIP'       },
-    { id: 'R2', name: 'Room 2 – Standard'  },
+    { id: 'R1', name: 'Room 1 – VIP' },
+    { id: 'R2', name: 'Room 2 – Standard' },
     { id: 'R3', name: 'Room 3 – Treatment' },
-    { id: 'R4', name: 'Room 4 – Laser'     },
+    { id: 'R4', name: 'Room 4 – Laser' },
 ];
 
 const CHRONIC_CONDITIONS = [
-    'Diabetes', 'Hypertension', 'Heart Disease', 'Asthma',
-    'Thyroid Disorder', 'Kidney Disease', 'Liver Disease',
-    'Cancer', 'Autoimmune Disease',
+    'Diabetes',
+    'Hypertension',
+    'Heart Disease',
+    'Asthma',
+    'Thyroid Disorder',
+    'Kidney Disease',
+    'Liver Disease',
+    'Cancer',
+    'Autoimmune Disease',
 ];
 
 const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
@@ -164,6 +225,26 @@ const ROOM_BUSY: Record<string, Record<string, string[]>> = {
     R4: { [TODAY]: ['11:00', '16:00', '16:30'] },
 };
 
+// Mock current branch — replace with auth context when API is ready
+const CURRENT_BRANCH_ID = '1';
+
+// Mock price overrides — replace with API data
+const PRICE_OVERRIDES: ServicePriceOverride[] = [
+    // Tier overrides (salon)
+    { id: 'to-1', serviceId: 'S01', pricingTier: 'Senior', price: 180 },
+    { id: 'to-2', serviceId: 'S01', pricingTier: 'Junior', price: 100 },
+    { id: 'to-3', serviceId: 'S02', pricingTier: 'Senior', price: 550 },
+    { id: 'to-4', serviceId: 'S03', pricingTier: 'Senior', price: 900 },
+    // Employee override
+    { id: 'eo-1', serviceId: 'S02', employeeId: 'E01', price: 520 },
+    // Tier overrides (barber)
+    { id: 'to-5', serviceId: 'B01', pricingTier: 'Senior', price: 80 },
+    { id: 'to-6', serviceId: 'B01', pricingTier: 'Junior', price: 40 },
+    // Tier overrides (clinic)
+    { id: 'to-7', serviceId: 'C01', pricingTier: 'Senior', price: 300 },
+    { id: 'to-8', serviceId: 'C05', pricingTier: 'Senior', price: 1000 },
+];
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function busySlotsInRange(
@@ -171,13 +252,13 @@ function busySlotsInRange(
     id: string,
     date: string,
     startTime: string,
-    durationMins: number,
+    durationMins: number
 ): string[] {
     const busy = map[id]?.[date] ?? [];
     const [sh, sm] = startTime.split(':').map(Number);
     const start = sh * 60 + sm;
     const end = start + durationMins;
-    return busy.filter((t) => {
+    return busy.filter(t => {
         const [th, tm] = t.split(':').map(Number);
         const tMin = th * 60 + tm;
         return tMin >= start && tMin < end;
@@ -199,81 +280,324 @@ function initItem(services: Service[], employees: Employee[], prev?: BookingItem
 
 const s: Record<string, React.CSSProperties> = {
     // Layout
-    page:      { display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' },
-    header:    { display: 'flex', alignItems: 'center', gap: 'var(--space-4)' },
-    h1:        { fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' },
-    formGrid:  { display: 'grid', gridTemplateColumns: '1fr 360px', gap: 'var(--space-6)', alignItems: 'start' },
-    col:       { display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' },
-    row2:      { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' },
-    row3:      { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 'var(--space-4)' },
+    page: { display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' },
+    header: { display: 'flex', alignItems: 'center', gap: 'var(--space-4)' },
+    h1: { fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' },
+    formGrid: { display: 'grid', gridTemplateColumns: '1fr 360px', gap: 'var(--space-6)', alignItems: 'start' },
+    col: { display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' },
+    row2: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' },
+    row3: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 'var(--space-4)' },
     // Cards
-    card:         { background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-xl)', padding: 'var(--space-6)' },
-    cardConflict: { background: 'var(--bg-primary)', border: '1px solid #f59e0b', borderRadius: 'var(--radius-xl)', padding: 'var(--space-6)' },
-    cardTitle:    { display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: 'var(--text-lg)', fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-5)', color: 'var(--text-primary)' },
-    summarySticky:{ position: 'sticky' as const, top: 'var(--space-5)' },
+    card: {
+        background: 'var(--bg-primary)',
+        border: '1px solid var(--border-color)',
+        borderRadius: 'var(--radius-xl)',
+        padding: 'var(--space-6)',
+    },
+    cardConflict: {
+        background: 'var(--bg-primary)',
+        border: '1px solid #f59e0b',
+        borderRadius: 'var(--radius-xl)',
+        padding: 'var(--space-6)',
+    },
+    cardTitle: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 'var(--space-2)',
+        fontSize: 'var(--text-lg)',
+        fontWeight: 'var(--font-semibold)',
+        marginBottom: 'var(--space-5)',
+        color: 'var(--text-primary)',
+    },
+    summarySticky: { position: 'sticky' as const, top: 'var(--space-5)' },
     // Fields
-    field:    { display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', marginBottom: 'var(--space-4)' },
-    label:    { fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', color: 'var(--text-primary)' },
-    input:    { height: 42, padding: '0 var(--space-4)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)', width: '100%' },
-    inputErr: { height: 42, padding: '0 var(--space-4)', border: '1px solid #ef4444', borderRadius: 'var(--radius-lg)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)', width: '100%' },
-    select:   { height: 42, padding: '0 var(--space-4)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)', width: '100%', cursor: 'pointer' },
-    selectErr:{ height: 42, padding: '0 var(--space-4)', border: '1px solid #ef4444', borderRadius: 'var(--radius-lg)', background: '#fef2f2', fontSize: 'var(--text-sm)', color: 'var(--text-primary)', width: '100%', cursor: 'pointer' },
-    textarea: { padding: 'var(--space-3) var(--space-4)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)', width: '100%', minHeight: 80, resize: 'vertical' as const },
+    field: { display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', marginBottom: 'var(--space-4)' },
+    label: { fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', color: 'var(--text-primary)' },
+    input: {
+        height: 42,
+        padding: '0 var(--space-4)',
+        border: '1px solid var(--border-color)',
+        borderRadius: 'var(--radius-lg)',
+        background: 'var(--bg-primary)',
+        fontSize: 'var(--text-sm)',
+        color: 'var(--text-primary)',
+        width: '100%',
+    },
+    inputErr: {
+        height: 42,
+        padding: '0 var(--space-4)',
+        border: '1px solid #ef4444',
+        borderRadius: 'var(--radius-lg)',
+        background: 'var(--bg-primary)',
+        fontSize: 'var(--text-sm)',
+        color: 'var(--text-primary)',
+        width: '100%',
+    },
+    select: {
+        height: 42,
+        padding: '0 var(--space-4)',
+        border: '1px solid var(--border-color)',
+        borderRadius: 'var(--radius-lg)',
+        background: 'var(--bg-primary)',
+        fontSize: 'var(--text-sm)',
+        color: 'var(--text-primary)',
+        width: '100%',
+        cursor: 'pointer',
+    },
+    selectErr: {
+        height: 42,
+        padding: '0 var(--space-4)',
+        border: '1px solid #ef4444',
+        borderRadius: 'var(--radius-lg)',
+        background: '#fef2f2',
+        fontSize: 'var(--text-sm)',
+        color: 'var(--text-primary)',
+        width: '100%',
+        cursor: 'pointer',
+    },
+    textarea: {
+        padding: 'var(--space-3) var(--space-4)',
+        border: '1px solid var(--border-color)',
+        borderRadius: 'var(--radius-lg)',
+        background: 'var(--bg-primary)',
+        fontSize: 'var(--text-sm)',
+        color: 'var(--text-primary)',
+        width: '100%',
+        minHeight: 80,
+        resize: 'vertical' as const,
+    },
     // Hints
-    hint:    { fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: 2 },
-    hintOk:  { fontSize: 'var(--text-xs)', color: '#10b981', marginTop: 2, display: 'flex', alignItems: 'center', gap: 4 },
-    hintErr: { fontSize: 'var(--text-xs)', color: '#ef4444', marginTop: 2, display: 'flex', alignItems: 'center', gap: 4 },
+    hint: { fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: 2 },
+    hintOk: {
+        fontSize: 'var(--text-xs)',
+        color: '#10b981',
+        marginTop: 2,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 4,
+    },
+    hintErr: {
+        fontSize: 'var(--text-xs)',
+        color: '#ef4444',
+        marginTop: 2,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 4,
+    },
     // Banners
-    bannerErr:  { display: 'flex', alignItems: 'flex-start', gap: 'var(--space-3)', padding: 'var(--space-3) var(--space-4)', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 'var(--radius-lg)', marginBottom: 'var(--space-4)', fontSize: 'var(--text-sm)', color: '#dc2626' },
-    bannerWarn: { display: 'flex', alignItems: 'flex-start', gap: 'var(--space-3)', padding: 'var(--space-3) var(--space-4)', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 'var(--radius-lg)', marginBottom: 'var(--space-4)', fontSize: 'var(--text-sm)', color: '#92400e' },
+    bannerErr: {
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: 'var(--space-3)',
+        padding: 'var(--space-3) var(--space-4)',
+        background: '#fef2f2',
+        border: '1px solid #fecaca',
+        borderRadius: 'var(--radius-lg)',
+        marginBottom: 'var(--space-4)',
+        fontSize: 'var(--text-sm)',
+        color: '#dc2626',
+    },
+    bannerWarn: {
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: 'var(--space-3)',
+        padding: 'var(--space-3) var(--space-4)',
+        background: '#fffbeb',
+        border: '1px solid #fde68a',
+        borderRadius: 'var(--radius-lg)',
+        marginBottom: 'var(--space-4)',
+        fontSize: 'var(--text-sm)',
+        color: '#92400e',
+    },
     // Summary rows
-    summaryRow:  { display: 'flex', justifyContent: 'space-between', padding: 'var(--space-3) 0', borderBottom: '1px solid var(--border-color)', fontSize: 'var(--text-sm)' },
-    summaryLabel:{ color: 'var(--text-tertiary)' },
-    summaryValue:{ fontWeight: 'var(--font-medium)', color: 'var(--text-primary)' },
-    totalRow:    { display: 'flex', justifyContent: 'space-between', padding: 'var(--space-4) 0', fontSize: 'var(--text-lg)', fontWeight: 'var(--font-bold)', marginTop: 'var(--space-2)' },
+    summaryRow: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        padding: 'var(--space-3) 0',
+        borderBottom: '1px solid var(--border-color)',
+        fontSize: 'var(--text-sm)',
+    },
+    summaryLabel: { color: 'var(--text-tertiary)' },
+    summaryValue: { fontWeight: 'var(--font-medium)', color: 'var(--text-primary)' },
+    totalRow: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        padding: 'var(--space-4) 0',
+        fontSize: 'var(--text-lg)',
+        fontWeight: 'var(--font-bold)',
+        marginTop: 'var(--space-2)',
+    },
     // Buttons
-    btnPrimary: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-2)', padding: 'var(--space-3)', background: 'var(--color-primary-500)', color: 'white', borderRadius: 'var(--radius-lg)', fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)', width: '100%', marginTop: 'var(--space-4)', cursor: 'pointer', border: 'none' },
-    btnOutline: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-2)', padding: 'var(--space-3)', background: 'transparent', border: '1px dashed var(--color-primary-500)', color: 'var(--color-primary-500)', borderRadius: 'var(--radius-lg)', fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)', width: '100%', cursor: 'pointer' },
-    btnGhost:   { background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', fontSize: 'var(--text-sm)' },
-    btnCollapse:{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, color: 'var(--color-primary-500)', fontSize: 'var(--text-xs)', fontWeight: 'var(--font-medium)', marginTop: 'var(--space-2)', padding: 0 },
+    btnPrimary: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 'var(--space-2)',
+        padding: 'var(--space-3)',
+        background: 'var(--color-primary-500)',
+        color: 'white',
+        borderRadius: 'var(--radius-lg)',
+        fontSize: 'var(--text-sm)',
+        fontWeight: 'var(--font-semibold)',
+        width: '100%',
+        marginTop: 'var(--space-4)',
+        cursor: 'pointer',
+        border: 'none',
+    },
+    btnOutline: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 'var(--space-2)',
+        padding: 'var(--space-3)',
+        background: 'transparent',
+        border: '1px dashed var(--color-primary-500)',
+        color: 'var(--color-primary-500)',
+        borderRadius: 'var(--radius-lg)',
+        fontSize: 'var(--text-sm)',
+        fontWeight: 'var(--font-semibold)',
+        width: '100%',
+        cursor: 'pointer',
+    },
+    btnGhost: {
+        background: 'none',
+        border: 'none',
+        cursor: 'pointer',
+        color: 'var(--text-secondary)',
+        fontSize: 'var(--text-sm)',
+    },
+    btnCollapse: {
+        background: 'none',
+        border: 'none',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 4,
+        color: 'var(--color-primary-500)',
+        fontSize: 'var(--text-xs)',
+        fontWeight: 'var(--font-medium)',
+        marginTop: 'var(--space-2)',
+        padding: 0,
+    },
     // Misc
-    badge:       { display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 'var(--radius-full)', fontSize: 'var(--text-xs)', fontWeight: 'var(--font-medium)' },
-    dot:         { width: 10, height: 10, borderRadius: '50%', flexShrink: 0, marginTop: 2 },
-    divider:     { borderTop: '1px dashed var(--border-color)', margin: 'var(--space-4) 0', paddingTop: 'var(--space-4)' },
-    availRow:    { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-2) 0', borderBottom: '1px dashed var(--border-color)', fontSize: 'var(--text-xs)' },
-    condGrid:    { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 'var(--space-2)', marginTop: 'var(--space-2)' },
-    painTrack:   { display: 'flex', gap: 4, marginTop: 'var(--space-2)', flexWrap: 'wrap' as const },
-    searchWrap:  { position: 'relative' as const, marginBottom: 'var(--space-4)' },
-    searchIcon:  { position: 'absolute' as const, left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' },
-    checkRow:    { display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-2)', cursor: 'pointer' },
-    checkLabel:  { fontSize: 'var(--text-sm)', color: 'var(--text-primary)', cursor: 'pointer' },
+    badge: {
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 4,
+        padding: '2px 8px',
+        borderRadius: 'var(--radius-full)',
+        fontSize: 'var(--text-xs)',
+        fontWeight: 'var(--font-medium)',
+    },
+    dot: { width: 10, height: 10, borderRadius: '50%', flexShrink: 0, marginTop: 2 },
+    divider: { borderTop: '1px dashed var(--border-color)', margin: 'var(--space-4) 0', paddingTop: 'var(--space-4)' },
+    availRow: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 'var(--space-2) 0',
+        borderBottom: '1px dashed var(--border-color)',
+        fontSize: 'var(--text-xs)',
+    },
+    condGrid: {
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr 1fr',
+        gap: 'var(--space-2)',
+        marginTop: 'var(--space-2)',
+    },
+    painTrack: { display: 'flex', gap: 4, marginTop: 'var(--space-2)', flexWrap: 'wrap' as const },
+    searchWrap: { position: 'relative' as const, marginBottom: 'var(--space-4)' },
+    searchIcon: {
+        position: 'absolute' as const,
+        left: 12,
+        top: '50%',
+        transform: 'translateY(-50%)',
+        color: 'var(--text-tertiary)',
+    },
+    checkRow: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 'var(--space-2)',
+        marginBottom: 'var(--space-2)',
+        cursor: 'pointer',
+    },
+    checkLabel: { fontSize: 'var(--text-sm)', color: 'var(--text-primary)', cursor: 'pointer' },
 };
 
 // ─── Small shared components ──────────────────────────────────────────────────
 
 function SlotHint({ empId, date, time, dur }: { empId: string; date: string; time: string; dur: number }) {
     const busy = busySlotsInRange(EMP_BUSY, empId, date, time, dur);
-    return busy.length > 0
-        ? <div style={s.hintErr}><AlertTriangle size={11} />Staff busy at: {busy.join(', ')}</div>
-        : <div style={s.hintOk}><CheckCircle size={11} />Staff available</div>;
+    return busy.length > 0 ? (
+        <div style={s.hintErr}>
+            <AlertTriangle size={11} />
+            Staff busy at: {busy.join(', ')}
+        </div>
+    ) : (
+        <div style={s.hintOk}>
+            <CheckCircle size={11} />
+            Staff available
+        </div>
+    );
 }
 
 function RoomHint({ roomId, date, time, dur }: { roomId: string; date: string; time: string; dur: number }) {
     if (!roomId) return <div style={s.hint}>Room will be auto-assigned</div>;
     const busy = busySlotsInRange(ROOM_BUSY, roomId, date, time, dur);
-    return busy.length > 0
-        ? <div style={s.hintErr}><AlertTriangle size={11} />Room occupied at: {busy.join(', ')}</div>
-        : <div style={s.hintOk}><CheckCircle size={11} />Room available</div>;
+    return busy.length > 0 ? (
+        <div style={s.hintErr}>
+            <AlertTriangle size={11} />
+            Room occupied at: {busy.join(', ')}
+        </div>
+    ) : (
+        <div style={s.hintOk}>
+            <CheckCircle size={11} />
+            Room available
+        </div>
+    );
 }
 
-function SectionHeader({ icon, label, open, onToggle, required }: {
-    icon: React.ReactNode; label: string; open: boolean;
-    onToggle: () => void; required?: boolean;
+function SectionHeader({
+    icon,
+    label,
+    open,
+    onToggle,
+    required,
+}: {
+    icon: React.ReactNode;
+    label: string;
+    open: boolean;
+    onToggle: () => void;
+    required?: boolean;
 }) {
     return (
-        <button onClick={onToggle} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: 'var(--space-2) 0', marginBottom: open ? 'var(--space-3)' : 0, color: 'var(--text-primary)' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)' }}>
-                {icon}{label}{required && <span style={{ color: '#ef4444', fontSize: 10 }}>*</span>}
+        <button
+            onClick={onToggle}
+            style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                width: '100%',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 'var(--space-2) 0',
+                marginBottom: open ? 'var(--space-3)' : 0,
+                color: 'var(--text-primary)',
+            }}
+        >
+            <span
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 'var(--space-2)',
+                    fontSize: 'var(--text-sm)',
+                    fontWeight: 'var(--font-semibold)',
+                }}
+            >
+                {icon}
+                {label}
+                {required && <span style={{ color: '#ef4444', fontSize: 10 }}>*</span>}
             </span>
             {open ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
         </button>
@@ -283,8 +607,15 @@ function SectionHeader({ icon, label, open, onToggle, required }: {
 // ─── ServiceBookingCard ───────────────────────────────────────────────────────
 
 function ServiceBookingCard({
-    item, index, services, employees, isClinic,
-    hasInternalConflict, onUpdate, onRemove, canRemove,
+    item,
+    index,
+    services,
+    employees,
+    isClinic,
+    hasInternalConflict,
+    onUpdate,
+    onRemove,
+    canRemove,
 }: {
     item: BookingItem;
     index: number;
@@ -298,8 +629,10 @@ function ServiceBookingCard({
 }) {
     const [showAvail, setShowAvail] = useState(false);
 
-    const empBusy  = busySlotsInRange(EMP_BUSY,  item.employee.id, item.date, item.time, item.service.durationMins);
-    const roomBusy = item.room ? busySlotsInRange(ROOM_BUSY, item.room, item.date, item.time, item.service.durationMins) : [];
+    const empBusy = busySlotsInRange(EMP_BUSY, item.employee.id, item.date, item.time, item.service.durationMins);
+    const roomBusy = item.room
+        ? busySlotsInRange(ROOM_BUSY, item.room, item.date, item.time, item.service.durationMins)
+        : [];
     const hasIssue = hasInternalConflict || empBusy.length > 0 || roomBusy.length > 0;
 
     const label = isClinic ? 'Appointment' : 'Service';
@@ -318,7 +651,19 @@ function ServiceBookingCard({
                     )}
                 </span>
                 {canRemove && (
-                    <button onClick={() => onRemove(item.id)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: 'var(--text-sm)' }}>
+                    <button
+                        onClick={() => onRemove(item.id)}
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            color: '#ef4444',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 4,
+                            fontSize: 'var(--text-sm)',
+                        }}
+                    >
                         <Trash2 size={15} /> Remove
                     </button>
                 )}
@@ -335,25 +680,69 @@ function ServiceBookingCard({
             <div style={s.row2}>
                 <div style={s.field}>
                     <label style={s.label}>{isClinic ? 'Service / Procedure' : 'Service'}</label>
-                    <select style={s.select} value={item.service.id}
-                        onChange={(e) => onUpdate(item.id, 'service', services.find(sv => sv.id === e.target.value) ?? services[0])}>
-                        {services.map((sv) => (
-                            <option key={sv.id} value={sv.id}>{sv.name} — {sv.price} EGP ({sv.duration})</option>
+                    <select
+                        style={s.select}
+                        value={item.service.id}
+                        onChange={e =>
+                            onUpdate(item.id, 'service', services.find(sv => sv.id === e.target.value) ?? services[0])
+                        }
+                    >
+                        {services.map(sv => (
+                            <option key={sv.id} value={sv.id}>
+                                {sv.name} — {sv.price} EGP ({sv.duration})
+                            </option>
                         ))}
                     </select>
-                    <span style={s.hint}>{item.service.category} · {item.service.duration}</span>
+                    {(() => {
+                        const resolved = resolveServicePrice(
+                            item.service,
+                            item.employee,
+                            CURRENT_BRANCH_ID,
+                            PRICE_OVERRIDES
+                        );
+                        return (
+                            <span style={s.hint}>
+                                {item.service.category} · {item.service.duration}
+                                {resolved.source !== 'base' && (
+                                    <span
+                                        style={{
+                                            marginLeft: 8,
+                                            color: 'var(--color-primary-500)',
+                                            fontWeight: 'var(--font-semibold)',
+                                        }}
+                                    >
+                                        → {resolved.price} EGP ({resolved.source})
+                                    </span>
+                                )}
+                            </span>
+                        );
+                    })()}
                 </div>
 
                 <div style={s.field}>
                     <label style={s.label}>{isClinic ? 'Doctor / Specialist' : 'Employee'}</label>
-                    <select style={hasInternalConflict ? s.selectErr : s.select} value={item.employee.id}
-                        onChange={(e) => onUpdate(item.id, 'employee', employees.find(em => em.id === e.target.value) ?? employees[0])}>
-                        {employees.map((em) => {
+                    <select
+                        style={hasInternalConflict ? s.selectErr : s.select}
+                        value={item.employee.id}
+                        onChange={e =>
+                            onUpdate(
+                                item.id,
+                                'employee',
+                                employees.find(em => em.id === e.target.value) ?? employees[0]
+                            )
+                        }
+                    >
+                        {employees.map(em => {
                             const busy = EMP_BUSY[em.id]?.[item.date]?.includes(item.time);
                             const offShift = !isEmployeeOnShift(em.id, em.role, item.date);
                             const onBreak = isEmployeeDuringBreak(em.id, em.role, item.date, item.time);
                             const prefix = offShift ? '⛔ ' : onBreak ? '☕ ' : busy ? '⚠ ' : '✓ ';
-                            return <option key={em.id} value={em.id}>{prefix}{em.name} — {em.role}</option>;
+                            return (
+                                <option key={em.id} value={em.id}>
+                                    {prefix}
+                                    {em.name} — {em.role}
+                                </option>
+                            );
                         })}
                     </select>
                     <span style={{ ...s.hint, display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
@@ -373,20 +762,36 @@ function ServiceBookingCard({
             <div style={s.row2}>
                 <div style={s.field}>
                     <label style={s.label}>Date</label>
-                    <input style={s.input} type="date" value={item.date}
-                        onChange={(e) => onUpdate(item.id, 'date', e.target.value)} />
+                    <input
+                        style={s.input}
+                        type="date"
+                        value={item.date}
+                        onChange={e => onUpdate(item.id, 'date', e.target.value)}
+                    />
                 </div>
 
                 <div style={s.field}>
                     <label style={s.label}>Time</label>
-                    <select style={empBusy.length > 0 ? s.selectErr : s.select} value={item.time}
-                        onChange={(e) => onUpdate(item.id, 'time', e.target.value)}>
-                        {TIME_SLOTS.map((ts) => {
+                    <select
+                        style={empBusy.length > 0 ? s.selectErr : s.select}
+                        value={item.time}
+                        onChange={e => onUpdate(item.id, 'time', e.target.value)}
+                    >
+                        {TIME_SLOTS.map(ts => {
                             const busy = EMP_BUSY[item.employee.id]?.[item.date]?.includes(ts);
-                            return <option key={ts} value={ts}>{busy ? `⚠ ${ts} (busy)` : ts}</option>;
+                            return (
+                                <option key={ts} value={ts}>
+                                    {busy ? `⚠ ${ts} (busy)` : ts}
+                                </option>
+                            );
                         })}
                     </select>
-                    <SlotHint empId={item.employee.id} date={item.date} time={item.time} dur={item.service.durationMins} />
+                    <SlotHint
+                        empId={item.employee.id}
+                        date={item.date}
+                        time={item.time}
+                        dur={item.service.durationMins}
+                    />
                 </div>
             </div>
 
@@ -398,8 +803,15 @@ function ServiceBookingCard({
                     {showAvail ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                 </button>
                 {showAvail && (
-                    <div style={{ marginTop: 'var(--space-3)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-3)' }}>
-                        {employees.map((em) => {
+                    <div
+                        style={{
+                            marginTop: 'var(--space-3)',
+                            background: 'var(--bg-secondary)',
+                            borderRadius: 'var(--radius-lg)',
+                            padding: 'var(--space-3)',
+                        }}
+                    >
+                        {employees.map(em => {
                             const busy = EMP_BUSY[em.id]?.[item.date]?.includes(item.time) ?? false;
                             return (
                                 <div key={em.id} style={s.availRow}>
@@ -408,7 +820,13 @@ function ServiceBookingCard({
                                         <strong>{em.name}</strong>
                                         <span style={{ color: 'var(--text-tertiary)' }}>— {em.role}</span>
                                     </span>
-                                    <span style={{ ...s.badge, background: busy ? '#fef2f2' : '#f0fdf4', color: busy ? '#dc2626' : '#16a34a' }}>
+                                    <span
+                                        style={{
+                                            ...s.badge,
+                                            background: busy ? '#fef2f2' : '#f0fdf4',
+                                            color: busy ? '#dc2626' : '#16a34a',
+                                        }}
+                                    >
                                         {busy ? '● Busy' : '● Available'}
                                     </span>
                                 </div>
@@ -424,12 +842,19 @@ function ServiceBookingCard({
                     <MapPin size={14} style={{ display: 'inline', marginRight: 4 }} />
                     Room
                 </label>
-                <select style={roomBusy.length > 0 ? s.selectErr : s.select} value={item.room}
-                    onChange={(e) => onUpdate(item.id, 'room', e.target.value)}>
+                <select
+                    style={roomBusy.length > 0 ? s.selectErr : s.select}
+                    value={item.room}
+                    onChange={e => onUpdate(item.id, 'room', e.target.value)}
+                >
                     <option value="">Auto-assign</option>
-                    {ROOMS.map((r) => {
+                    {ROOMS.map(r => {
                         const occ = ROOM_BUSY[r.id]?.[item.date]?.includes(item.time);
-                        return <option key={r.id} value={r.id}>{occ ? `⚠ ${r.name} (occupied)` : `✓ ${r.name}`}</option>;
+                        return (
+                            <option key={r.id} value={r.id}>
+                                {occ ? `⚠ ${r.name} (occupied)` : `✓ ${r.name}`}
+                            </option>
+                        );
                     })}
                 </select>
                 <RoomHint roomId={item.room} date={item.date} time={item.time} dur={item.service.durationMins} />
@@ -440,13 +865,24 @@ function ServiceBookingCard({
 
 // ─── PatientIntakeForm ────────────────────────────────────────────────────────
 
-function PatientIntakeForm({ form, onChange, onConditionToggle, t }: {
+function PatientIntakeForm({
+    form,
+    onChange,
+    onConditionToggle,
+    t,
+}: {
     form: PatientForm;
     onChange: (field: keyof PatientForm, value: string | boolean | string[]) => void;
     onConditionToggle: (cond: string) => void;
     t: (key: string) => string;
 }) {
-    const [sections, setSections] = useState({ personal: true, medical: true, visit: true, emergency: false, insurance: false });
+    const [sections, setSections] = useState({
+        personal: true,
+        medical: true,
+        visit: true,
+        emergency: false,
+        insurance: false,
+    });
     const toggle = (k: keyof typeof sections) => setSections(prev => ({ ...prev, [k]: !prev[k] }));
 
     return (
@@ -460,18 +896,34 @@ function PatientIntakeForm({ form, onChange, onConditionToggle, t }: {
             </p>
 
             {/* Personal Information */}
-            <SectionHeader icon={<User size={15} />} label="Personal Information" open={sections.personal} onToggle={() => toggle('personal')} />
+            <SectionHeader
+                icon={<User size={15} />}
+                label="Personal Information"
+                open={sections.personal}
+                onToggle={() => toggle('personal')}
+            />
             {sections.personal && (
                 <div style={{ marginBottom: 'var(--space-4)' }}>
                     <div style={s.row3}>
                         <div style={s.field}>
                             <label style={s.label}>Age</label>
-                            <input style={s.input} type="number" min={0} max={150} placeholder="Years"
-                                value={form.age} onChange={(e) => onChange('age', e.target.value)} />
+                            <input
+                                style={s.input}
+                                type="number"
+                                min={0}
+                                max={150}
+                                placeholder="Years"
+                                value={form.age}
+                                onChange={e => onChange('age', e.target.value)}
+                            />
                         </div>
                         <div style={s.field}>
                             <label style={s.label}>Gender</label>
-                            <select style={s.select} value={form.gender} onChange={(e) => onChange('gender', e.target.value)}>
+                            <select
+                                style={s.select}
+                                value={form.gender}
+                                onChange={e => onChange('gender', e.target.value)}
+                            >
                                 <option value="">Select…</option>
                                 <option value="male">Male</option>
                                 <option value="female">Female</option>
@@ -481,9 +933,17 @@ function PatientIntakeForm({ form, onChange, onConditionToggle, t }: {
                         </div>
                         <div style={s.field}>
                             <label style={s.label}>Blood Type</label>
-                            <select style={s.select} value={form.bloodType} onChange={(e) => onChange('bloodType', e.target.value)}>
+                            <select
+                                style={s.select}
+                                value={form.bloodType}
+                                onChange={e => onChange('bloodType', e.target.value)}
+                            >
                                 <option value="">Unknown</option>
-                                {BLOOD_TYPES.map(bt => <option key={bt} value={bt}>{bt}</option>)}
+                                {BLOOD_TYPES.map(bt => (
+                                    <option key={bt} value={bt}>
+                                        {bt}
+                                    </option>
+                                ))}
                             </select>
                         </div>
                     </div>
@@ -493,28 +953,42 @@ function PatientIntakeForm({ form, onChange, onConditionToggle, t }: {
             <div style={s.divider} />
 
             {/* Medical History */}
-            <SectionHeader icon={<Heart size={15} />} label="Medical History" open={sections.medical} onToggle={() => toggle('medical')} />
+            <SectionHeader
+                icon={<Heart size={15} />}
+                label="Medical History"
+                open={sections.medical}
+                onToggle={() => toggle('medical')}
+            />
             {sections.medical && (
                 <div style={{ marginBottom: 'var(--space-4)' }}>
                     <div style={s.field}>
                         <label style={s.checkRow}>
-                            <input type="checkbox" checked={form.hasAllergies}
-                                onChange={(e) => onChange('hasAllergies', e.target.checked)} />
+                            <input
+                                type="checkbox"
+                                checked={form.hasAllergies}
+                                onChange={e => onChange('hasAllergies', e.target.checked)}
+                            />
                             <span style={s.checkLabel}>Patient has known allergies</span>
                         </label>
                         {form.hasAllergies && (
-                            <textarea style={{ ...s.textarea, minHeight: 60 }}
+                            <textarea
+                                style={{ ...s.textarea, minHeight: 60 }}
                                 placeholder="List allergies (e.g. Penicillin, Latex, Ibuprofen)..."
-                                value={form.allergies} onChange={(e) => onChange('allergies', e.target.value)} />
+                                value={form.allergies}
+                                onChange={e => onChange('allergies', e.target.value)}
+                            />
                         )}
                     </div>
                     <div style={s.field}>
                         <label style={s.label}>Chronic Conditions</label>
                         <div style={s.condGrid}>
-                            {CHRONIC_CONDITIONS.map((cond) => (
+                            {CHRONIC_CONDITIONS.map(cond => (
                                 <label key={cond} style={s.checkRow}>
-                                    <input type="checkbox" checked={form.chronicConditions.includes(cond)}
-                                        onChange={() => onConditionToggle(cond)} />
+                                    <input
+                                        type="checkbox"
+                                        checked={form.chronicConditions.includes(cond)}
+                                        onChange={() => onConditionToggle(cond)}
+                                    />
                                     <span style={s.checkLabel}>{cond}</span>
                                 </label>
                             ))}
@@ -522,16 +996,25 @@ function PatientIntakeForm({ form, onChange, onConditionToggle, t }: {
                     </div>
                     <div style={s.row2}>
                         <div style={s.field}>
-                            <label style={s.label}><Pill size={13} style={{ display: 'inline', marginRight: 4 }} />Current Medications</label>
-                            <textarea style={{ ...s.textarea, minHeight: 60 }}
+                            <label style={s.label}>
+                                <Pill size={13} style={{ display: 'inline', marginRight: 4 }} />
+                                Current Medications
+                            </label>
+                            <textarea
+                                style={{ ...s.textarea, minHeight: 60 }}
                                 placeholder="Medications and dosages..."
-                                value={form.currentMedications} onChange={(e) => onChange('currentMedications', e.target.value)} />
+                                value={form.currentMedications}
+                                onChange={e => onChange('currentMedications', e.target.value)}
+                            />
                         </div>
                         <div style={s.field}>
                             <label style={s.label}>Previous Surgeries / Procedures</label>
-                            <textarea style={{ ...s.textarea, minHeight: 60 }}
+                            <textarea
+                                style={{ ...s.textarea, minHeight: 60 }}
                                 placeholder="Previous surgeries, major procedures..."
-                                value={form.previousProcedures} onChange={(e) => onChange('previousProcedures', e.target.value)} />
+                                value={form.previousProcedures}
+                                onChange={e => onChange('previousProcedures', e.target.value)}
+                            />
                         </div>
                     </div>
                 </div>
@@ -540,29 +1023,50 @@ function PatientIntakeForm({ form, onChange, onConditionToggle, t }: {
             <div style={s.divider} />
 
             {/* Current Visit */}
-            <SectionHeader icon={<Activity size={15} />} label="Current Visit" open={sections.visit} onToggle={() => toggle('visit')} required />
+            <SectionHeader
+                icon={<Activity size={15} />}
+                label="Current Visit"
+                open={sections.visit}
+                onToggle={() => toggle('visit')}
+                required
+            />
             {sections.visit && (
                 <div style={{ marginBottom: 'var(--space-4)' }}>
                     <div style={s.field}>
-                        <label style={s.label}>Chief Complaint / Reason for Visit <span style={{ color: '#ef4444' }}>*</span></label>
-                        <input style={form.chiefComplaint ? s.input : s.inputErr}
+                        <label style={s.label}>
+                            Chief Complaint / Reason for Visit <span style={{ color: '#ef4444' }}>*</span>
+                        </label>
+                        <input
+                            style={form.chiefComplaint ? s.input : s.inputErr}
                             placeholder="Main reason for today's visit..."
-                            value={form.chiefComplaint} onChange={(e) => onChange('chiefComplaint', e.target.value)} />
+                            value={form.chiefComplaint}
+                            onChange={e => onChange('chiefComplaint', e.target.value)}
+                        />
                         {!form.chiefComplaint && (
-                            <span style={s.hintErr}><AlertTriangle size={11} /> Required</span>
+                            <span style={s.hintErr}>
+                                <AlertTriangle size={11} /> Required
+                            </span>
                         )}
                     </div>
                     <div style={s.field}>
                         <label style={s.label}>{t('bookings.medicalNotes') || 'Symptoms Description'}</label>
-                        <textarea style={s.textarea}
-                            placeholder={t('bookings.medicalNotesPlaceholder') || "Describe the patient's symptoms in detail..."}
-                            value={form.symptoms} onChange={(e) => onChange('symptoms', e.target.value)} />
+                        <textarea
+                            style={s.textarea}
+                            placeholder={
+                                t('bookings.medicalNotesPlaceholder') || "Describe the patient's symptoms in detail..."
+                            }
+                            value={form.symptoms}
+                            onChange={e => onChange('symptoms', e.target.value)}
+                        />
                     </div>
                     <div style={s.row3}>
                         <div style={s.field}>
                             <label style={s.label}>Duration of Symptoms</label>
-                            <select style={s.select} value={form.symptomsDuration}
-                                onChange={(e) => onChange('symptomsDuration', e.target.value)}>
+                            <select
+                                style={s.select}
+                                value={form.symptomsDuration}
+                                onChange={e => onChange('symptomsDuration', e.target.value)}
+                            >
                                 <option value="">Select…</option>
                                 <option value="today">Today</option>
                                 <option value="2-3days">2–3 days</option>
@@ -576,9 +1080,11 @@ function PatientIntakeForm({ form, onChange, onConditionToggle, t }: {
                         </div>
                         <div style={s.field}>
                             <label style={s.label}>Evaluated Before?</label>
-                            <select style={s.select}
+                            <select
+                                style={s.select}
                                 value={form.evaluatedBefore ? 'yes' : 'no'}
-                                onChange={(e) => onChange('evaluatedBefore', e.target.value === 'yes')}>
+                                onChange={e => onChange('evaluatedBefore', e.target.value === 'yes')}
+                            >
                                 <option value="no">No — first time</option>
                                 <option value="yes">Yes — follow-up</option>
                             </select>
@@ -587,8 +1093,31 @@ function PatientIntakeForm({ form, onChange, onConditionToggle, t }: {
                             <label style={s.label}>Pain Level (0–10)</label>
                             <div style={s.painTrack}>
                                 {Array.from({ length: 11 }, (_, i) => (
-                                    <button key={i} onClick={() => onChange('painLevel', String(i))}
-                                        style={{ width: 28, height: 28, borderRadius: '50%', border: form.painLevel === String(i) ? '2px solid var(--color-primary-500)' : '1px solid var(--border-color)', background: form.painLevel === String(i) ? (i <= 3 ? '#dcfce7' : i <= 6 ? '#fef3c7' : '#fee2e2') : 'var(--bg-secondary)', cursor: 'pointer', fontSize: 'var(--text-xs)', fontWeight: 'var(--font-semibold)', color: 'var(--text-primary)' }}>
+                                    <button
+                                        key={i}
+                                        onClick={() => onChange('painLevel', String(i))}
+                                        style={{
+                                            width: 28,
+                                            height: 28,
+                                            borderRadius: '50%',
+                                            border:
+                                                form.painLevel === String(i)
+                                                    ? '2px solid var(--color-primary-500)'
+                                                    : '1px solid var(--border-color)',
+                                            background:
+                                                form.painLevel === String(i)
+                                                    ? i <= 3
+                                                        ? '#dcfce7'
+                                                        : i <= 6
+                                                          ? '#fef3c7'
+                                                          : '#fee2e2'
+                                                    : 'var(--bg-secondary)',
+                                            cursor: 'pointer',
+                                            fontSize: 'var(--text-xs)',
+                                            fontWeight: 'var(--font-semibold)',
+                                            color: 'var(--text-primary)',
+                                        }}
+                                    >
                                         {i}
                                     </button>
                                 ))}
@@ -601,24 +1130,40 @@ function PatientIntakeForm({ form, onChange, onConditionToggle, t }: {
             <div style={s.divider} />
 
             {/* Emergency Contact */}
-            <SectionHeader icon={<Phone size={15} />} label="Emergency Contact" open={sections.emergency} onToggle={() => toggle('emergency')} />
+            <SectionHeader
+                icon={<Phone size={15} />}
+                label="Emergency Contact"
+                open={sections.emergency}
+                onToggle={() => toggle('emergency')}
+            />
             {sections.emergency && (
                 <div style={{ marginBottom: 'var(--space-4)' }}>
                     <div style={s.row3}>
                         <div style={s.field}>
                             <label style={s.label}>Contact Name</label>
-                            <input style={s.input} placeholder="Full name"
-                                value={form.emergencyName} onChange={(e) => onChange('emergencyName', e.target.value)} />
+                            <input
+                                style={s.input}
+                                placeholder="Full name"
+                                value={form.emergencyName}
+                                onChange={e => onChange('emergencyName', e.target.value)}
+                            />
                         </div>
                         <div style={s.field}>
                             <label style={s.label}>Phone</label>
-                            <input style={s.input} placeholder="+20 1XX XXX XXXX"
-                                value={form.emergencyPhone} onChange={(e) => onChange('emergencyPhone', e.target.value)} />
+                            <input
+                                style={s.input}
+                                placeholder="+20 1XX XXX XXXX"
+                                value={form.emergencyPhone}
+                                onChange={e => onChange('emergencyPhone', e.target.value)}
+                            />
                         </div>
                         <div style={s.field}>
                             <label style={s.label}>Relationship</label>
-                            <select style={s.select} value={form.emergencyRelation}
-                                onChange={(e) => onChange('emergencyRelation', e.target.value)}>
+                            <select
+                                style={s.select}
+                                value={form.emergencyRelation}
+                                onChange={e => onChange('emergencyRelation', e.target.value)}
+                            >
                                 <option value="">Select…</option>
                                 <option value="spouse">Spouse</option>
                                 <option value="parent">Parent</option>
@@ -635,18 +1180,31 @@ function PatientIntakeForm({ form, onChange, onConditionToggle, t }: {
             <div style={s.divider} />
 
             {/* Insurance */}
-            <SectionHeader icon={<Shield size={15} />} label="Insurance (Optional)" open={sections.insurance} onToggle={() => toggle('insurance')} />
+            <SectionHeader
+                icon={<Shield size={15} />}
+                label="Insurance (Optional)"
+                open={sections.insurance}
+                onToggle={() => toggle('insurance')}
+            />
             {sections.insurance && (
                 <div style={s.row2}>
                     <div style={s.field}>
                         <label style={s.label}>Insurance Provider</label>
-                        <input style={s.input} placeholder="e.g. Allianz, AXA..."
-                            value={form.insuranceProvider} onChange={(e) => onChange('insuranceProvider', e.target.value)} />
+                        <input
+                            style={s.input}
+                            placeholder="e.g. Allianz, AXA..."
+                            value={form.insuranceProvider}
+                            onChange={e => onChange('insuranceProvider', e.target.value)}
+                        />
                     </div>
                     <div style={s.field}>
                         <label style={s.label}>Policy Number</label>
-                        <input style={s.input} placeholder="Policy / card number"
-                            value={form.insurancePolicyNo} onChange={(e) => onChange('insurancePolicyNo', e.target.value)} />
+                        <input
+                            style={s.input}
+                            placeholder="Policy / card number"
+                            value={form.insurancePolicyNo}
+                            onChange={e => onChange('insurancePolicyNo', e.target.value)}
+                        />
                     </div>
                 </div>
             )}
@@ -656,7 +1214,14 @@ function PatientIntakeForm({ form, onChange, onConditionToggle, t }: {
 
 // ─── BookingSummary ───────────────────────────────────────────────────────────
 
-function BookingSummary({ items, clientName, discount, conflicts, onConfirm, t }: {
+function BookingSummary({
+    items,
+    clientName,
+    discount,
+    conflicts,
+    onConfirm,
+    t,
+}: {
     items: BookingItem[];
     clientName: string;
     discount: number;
@@ -664,8 +1229,11 @@ function BookingSummary({ items, clientName, discount, conflicts, onConfirm, t }
     onConfirm: () => void;
     t: (key: string) => string;
 }) {
-    const subtotal = items.reduce((sum, i) => sum + i.service.price, 0);
-    const discountAmt = subtotal * discount / 100;
+    const subtotal = items.reduce((sum, i) => {
+        const resolved = resolveServicePrice(i.service, i.employee, CURRENT_BRANCH_ID, PRICE_OVERRIDES);
+        return sum + resolved.price;
+    }, 0);
+    const discountAmt = (subtotal * discount) / 100;
     const total = subtotal - discountAmt;
     const hasConflict = conflicts.size > 0;
 
@@ -675,38 +1243,83 @@ function BookingSummary({ items, clientName, discount, conflicts, onConfirm, t }
         <div style={s.summarySticky}>
             {/* Totals card */}
             <div style={s.card}>
-                <div style={s.cardTitle}><FileText size={18} /> {t('bookings.summary')}</div>
+                <div style={s.cardTitle}>
+                    <FileText size={18} /> {t('bookings.summary')}
+                </div>
 
                 <div style={s.summaryRow}>
                     <span style={s.summaryLabel}>{t('bookings.client')}</span>
                     <span style={s.summaryValue}>{clientName || t('bookings.walkIn')}</span>
                 </div>
 
-                {items.map((item) => (
-                    <div key={item.id} style={{ padding: 'var(--space-2) 0', borderBottom: '1px dashed var(--border-color)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)' }}>
-                            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                {conflicts.has(item.id) && <AlertTriangle size={12} color="#ef4444" />}
-                                {item.service.name}
-                            </span>
-                            <span>{item.service.price} EGP</span>
-                        </div>
-                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                            <span style={{ ...s.dot, background: item.employee.color }} />
-                            {item.employee.name}
-                        </div>
-                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: 2 }}>
-                            <Calendar size={10} style={{ display: 'inline', marginRight: 3 }} />
-                            {item.date} {item.time} · {item.service.duration}
-                        </div>
-                        {item.room && (
-                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: 2 }}>
-                                <MapPin size={10} style={{ display: 'inline', marginRight: 3 }} />
-                                {ROOMS.find(r => r.id === item.room)?.name ?? item.room}
+                {items.map(item => {
+                    const resolved = resolveServicePrice(
+                        item.service,
+                        item.employee,
+                        CURRENT_BRANCH_ID,
+                        PRICE_OVERRIDES
+                    );
+                    return (
+                        <div
+                            key={item.id}
+                            style={{ padding: 'var(--space-2) 0', borderBottom: '1px dashed var(--border-color)' }}
+                        >
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    marginBottom: 4,
+                                    fontSize: 'var(--text-sm)',
+                                    fontWeight: 'var(--font-medium)',
+                                }}
+                            >
+                                <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                    {conflicts.has(item.id) && <AlertTriangle size={12} color="#ef4444" />}
+                                    {item.service.name}
+                                </span>
+                                <span>
+                                    {resolved.source !== 'base' && (
+                                        <span
+                                            style={{
+                                                textDecoration: 'line-through',
+                                                color: 'var(--text-tertiary)',
+                                                marginRight: 6,
+                                                fontSize: 'var(--text-xs)',
+                                            }}
+                                        >
+                                            {item.service.price}
+                                        </span>
+                                    )}
+                                    {resolved.price} EGP
+                                </span>
                             </div>
-                        )}
-                    </div>
-                ))}
+                            <div
+                                style={{
+                                    fontSize: 'var(--text-xs)',
+                                    color: 'var(--text-secondary)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 4,
+                                }}
+                            >
+                                <span style={{ ...s.dot, background: item.employee.color }} />
+                                {item.employee.name}
+                            </div>
+                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: 2 }}>
+                                <Calendar size={10} style={{ display: 'inline', marginRight: 3 }} />
+                                {item.date} {item.time} · {item.service.duration}
+                            </div>
+                            {item.room && (
+                                <div
+                                    style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: 2 }}
+                                >
+                                    <MapPin size={10} style={{ display: 'inline', marginRight: 3 }} />
+                                    {ROOMS.find(r => r.id === item.room)?.name ?? item.room}
+                                </div>
+                            )}
+                        </div>
+                    );
+                })}
 
                 <div style={{ ...s.summaryRow, marginTop: 'var(--space-2)' }}>
                     <span style={s.summaryLabel}>Subtotal</span>
@@ -726,7 +1339,9 @@ function BookingSummary({ items, clientName, discount, conflicts, onConfirm, t }
                 {hasConflict && (
                     <div style={{ ...s.bannerWarn, margin: '0 0 var(--space-3)' }}>
                         <AlertTriangle size={14} style={{ flexShrink: 0, marginTop: 1 }} />
-                        <span>Resolve {conflicts.size / 2} conflict{conflicts.size / 2 > 1 ? 's' : ''} before confirming.</span>
+                        <span>
+                            Resolve {conflicts.size / 2} conflict{conflicts.size / 2 > 1 ? 's' : ''} before confirming.
+                        </span>
                     </div>
                 )}
 
@@ -737,19 +1352,63 @@ function BookingSummary({ items, clientName, discount, conflicts, onConfirm, t }
 
             {/* Assigned staff card */}
             <div style={{ ...s.card, marginTop: 'var(--space-4)' }}>
-                <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-3)', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                <div
+                    style={{
+                        fontSize: 'var(--text-sm)',
+                        fontWeight: 'var(--font-semibold)',
+                        marginBottom: 'var(--space-3)',
+                        color: 'var(--text-primary)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 'var(--space-2)',
+                    }}
+                >
                     <UserCog size={15} /> Assigned Staff
                 </div>
-                {uniqueStaff.map((emp) => (
-                    <div key={emp.id} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
-                        <div style={{ width: 28, height: 28, borderRadius: 'var(--radius-full)', background: emp.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 11, fontWeight: 'bold', flexShrink: 0 }}>
-                            {emp.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                {uniqueStaff.map(emp => (
+                    <div
+                        key={emp.id}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 'var(--space-2)',
+                            marginBottom: 'var(--space-2)',
+                        }}
+                    >
+                        <div
+                            style={{
+                                width: 28,
+                                height: 28,
+                                borderRadius: 'var(--radius-full)',
+                                background: emp.color,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: 'white',
+                                fontSize: 11,
+                                fontWeight: 'bold',
+                                flexShrink: 0,
+                            }}
+                        >
+                            {emp.name
+                                .split(' ')
+                                .map(n => n[0])
+                                .join('')
+                                .slice(0, 2)}
                         </div>
                         <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)' }}>{emp.name}</div>
+                            <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)' }}>
+                                {emp.name}
+                            </div>
                             <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{emp.role}</div>
                         </div>
-                        <span style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--font-medium)', color: 'var(--color-primary-500)' }}>
+                        <span
+                            style={{
+                                fontSize: 'var(--text-xs)',
+                                fontWeight: 'var(--font-medium)',
+                                color: 'var(--color-primary-500)',
+                            }}
+                        >
                             {items.filter(i => i.employee.id === emp.id).length}×
                         </span>
                     </div>
@@ -769,25 +1428,34 @@ export default function NewBookingPage() {
 
     const businessType = (user?.businessType ?? 'salon') as 'barber' | 'salon' | 'clinic';
     const isClinic = businessType === 'clinic';
-    const services  = SERVICES[businessType]  ?? SERVICES.salon;
+    const services = SERVICES[businessType] ?? SERVICES.salon;
     const employees = EMPLOYEES[businessType] ?? EMPLOYEES.salon;
 
     // ── State ──
     const [items, setItems] = useState<BookingItem[]>([initItem(services, employees)]);
-    const [clientName,  setClientName]  = useState('');
+    const [clientName, setClientName] = useState('');
     const [clientPhone, setClientPhone] = useState('');
     const [discount, setDiscount] = useState(0);
-    const [notes,    setNotes]    = useState('');
+    const [notes, setNotes] = useState('');
     const [patient, setPatient] = useState<PatientForm>({
-        age: '', gender: '', bloodType: '',
-        hasAllergies: false, allergies: '',
+        age: '',
+        gender: '',
+        bloodType: '',
+        hasAllergies: false,
+        allergies: '',
         chronicConditions: [],
-        currentMedications: '', previousProcedures: '',
-        chiefComplaint: '', symptoms: '',
-        symptomsDuration: '', painLevel: '0',
+        currentMedications: '',
+        previousProcedures: '',
+        chiefComplaint: '',
+        symptoms: '',
+        symptomsDuration: '',
+        painLevel: '0',
         evaluatedBefore: false,
-        emergencyName: '', emergencyPhone: '', emergencyRelation: '',
-        insuranceProvider: '', insurancePolicyNo: '',
+        emergencyName: '',
+        emergencyPhone: '',
+        emergencyRelation: '',
+        insuranceProvider: '',
+        insurancePolicyNo: '',
     });
 
     // ── Conflict detection ──
@@ -795,13 +1463,19 @@ export default function NewBookingPage() {
         const set = new Set<string>();
         for (let i = 0; i < items.length; i++) {
             for (let j = i + 1; j < items.length; j++) {
-                const a = items[i], b = items[j];
+                const a = items[i],
+                    b = items[j];
                 if (a.employee.id !== b.employee.id || a.date !== b.date) continue;
                 const [ah, am] = a.time.split(':').map(Number);
                 const [bh, bm] = b.time.split(':').map(Number);
-                const aS = ah * 60 + am, aE = aS + a.service.durationMins;
-                const bS = bh * 60 + bm, bE = bS + b.service.durationMins;
-                if (aS < bE && bS < aE) { set.add(a.id); set.add(b.id); }
+                const aS = ah * 60 + am,
+                    aE = aS + a.service.durationMins;
+                const bS = bh * 60 + bm,
+                    bE = bS + b.service.durationMins;
+                if (aS < bE && bS < aE) {
+                    set.add(a.id);
+                    set.add(b.id);
+                }
             }
         }
         return set;
@@ -811,7 +1485,7 @@ export default function NewBookingPage() {
     const addItem = () => setItems(prev => [...prev, initItem(services, employees, prev[prev.length - 1])]);
     const removeItem = (id: string) => setItems(prev => prev.filter(i => i.id !== id));
     const updateItem = (id: string, field: keyof BookingItem, value: string | Service | Employee) =>
-        setItems(prev => prev.map(i => i.id === id ? { ...i, [field]: value } : i));
+        setItems(prev => prev.map(i => (i.id === id ? { ...i, [field]: value } : i)));
     const updatePatient = (field: keyof PatientForm, value: string | boolean | string[]) =>
         setPatient(prev => ({ ...prev, [field]: value }));
     const toggleCondition = (cond: string) =>
@@ -824,13 +1498,16 @@ export default function NewBookingPage() {
 
     const handleConfirm = () => {
         if (!clientName.trim() || !clientPhone.trim()) {
-            addToast('error', t('bookings.reqFields')); return;
+            addToast('error', t('bookings.reqFields'));
+            return;
         }
         if (conflicts.size > 0) {
-            addToast('error', 'Resolve scheduling conflicts before confirming.'); return;
+            addToast('error', 'Resolve scheduling conflicts before confirming.');
+            return;
         }
         if (isClinic && !patient.chiefComplaint.trim()) {
-            addToast('error', 'Reason for visit is required for clinic appointments.'); return;
+            addToast('error', 'Reason for visit is required for clinic appointments.');
+            return;
         }
         addToast('success', `${t('bookings.confirmSuccess')} ${clientName}`);
         router.push('/bookings');
@@ -844,9 +1521,19 @@ export default function NewBookingPage() {
 
             {/* Header */}
             <div style={s.header}>
-                <button style={s.btnGhost} onClick={() => router.push('/bookings')}>← Back</button>
+                <button style={s.btnGhost} onClick={() => router.push('/bookings')}>
+                    ← Back
+                </button>
                 <h1 style={s.h1}>{t('bookings.newBooking')}</h1>
-                <span style={{ ...s.badge, background: 'var(--bg-secondary)', color: 'var(--text-secondary)', marginLeft: 8, border: '1px solid var(--border-color)' }}>
+                <span
+                    style={{
+                        ...s.badge,
+                        background: 'var(--bg-secondary)',
+                        color: 'var(--text-secondary)',
+                        marginLeft: 8,
+                        border: '1px solid var(--border-color)',
+                    }}
+                >
                     {businessLabel}
                 </span>
             </div>
@@ -856,9 +1543,8 @@ export default function NewBookingPage() {
                 <div style={s.bannerErr}>
                     <AlertTriangle size={16} style={{ flexShrink: 0, marginTop: 1 }} />
                     <div>
-                        <strong>Scheduling conflict detected.</strong>
-                        {' '}One or more services are assigned to the same staff member at overlapping times.
-                        Please adjust the times or assign different staff.
+                        <strong>Scheduling conflict detected.</strong> One or more services are assigned to the same
+                        staff member at overlapping times. Please adjust the times or assign different staff.
                     </div>
                 </div>
             )}
@@ -868,18 +1554,29 @@ export default function NewBookingPage() {
                 <div style={s.col}>
                     {/* Client */}
                     <div style={s.card}>
-                        <div style={s.cardTitle}><User size={18} /> {t('bookings.client')}</div>
+                        <div style={s.cardTitle}>
+                            <User size={18} /> {t('bookings.client')}
+                        </div>
                         <div style={s.searchWrap}>
                             <Search size={16} style={s.searchIcon} />
-                            <input style={{ ...s.input, paddingInlineStart: 36 }}
+                            <input
+                                style={{ ...s.input, paddingInlineStart: 36 }}
                                 placeholder={t('bookings.searchClient')}
-                                value={clientName} onChange={(e) => setClientName(e.target.value)} />
+                                value={clientName}
+                                onChange={e => setClientName(e.target.value)}
+                            />
                         </div>
                         <div style={s.row2}>
                             <div style={s.field}>
-                                <label style={s.label}>{t('bookings.phone')} <span style={{ color: '#ef4444' }}>*</span></label>
-                                <input style={s.input} placeholder="+20 1XX XXX XXXX"
-                                    value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} />
+                                <label style={s.label}>
+                                    {t('bookings.phone')} <span style={{ color: '#ef4444' }}>*</span>
+                                </label>
+                                <input
+                                    style={s.input}
+                                    placeholder="+20 1XX XXX XXXX"
+                                    value={clientPhone}
+                                    onChange={e => setClientPhone(e.target.value)}
+                                />
                             </div>
                             <div style={s.field}>
                                 <label style={s.label}>{t('bookings.email')}</label>
@@ -906,23 +1603,36 @@ export default function NewBookingPage() {
 
                     <button style={s.btnOutline} onClick={addItem}>
                         <Plus size={16} />
-                        {isClinic ? 'Add Another Appointment' : t('bookings.addAnotherService') || 'Add Another Service'}
+                        {isClinic
+                            ? 'Add Another Appointment'
+                            : t('bookings.addAnotherService') || 'Add Another Service'}
                     </button>
 
                     {/* Notes & discount */}
                     <div style={s.card}>
-                        <div style={s.cardTitle}><FileText size={18} /> {t('bookings.additionalDetails')}</div>
+                        <div style={s.cardTitle}>
+                            <FileText size={18} /> {t('bookings.additionalDetails')}
+                        </div>
                         <div style={s.row2}>
                             <div style={s.field}>
                                 <label style={s.label}>{t('bookings.discount')}</label>
-                                <input style={s.input} type="number" min={0} max={100}
-                                    value={discount} onChange={(e) => setDiscount(Number(e.target.value))} />
+                                <input
+                                    style={s.input}
+                                    type="number"
+                                    min={0}
+                                    max={100}
+                                    value={discount}
+                                    onChange={e => setDiscount(Number(e.target.value))}
+                                />
                             </div>
                             <div style={s.field}>
                                 <label style={s.label}>{t('bookings.notes')}</label>
-                                <textarea style={{ ...s.textarea, minHeight: 42 }}
+                                <textarea
+                                    style={{ ...s.textarea, minHeight: 42 }}
                                     placeholder={t('bookings.notesPlaceholder')}
-                                    value={notes} onChange={(e) => setNotes(e.target.value)} />
+                                    value={notes}
+                                    onChange={e => setNotes(e.target.value)}
+                                />
                             </div>
                         </div>
                     </div>
