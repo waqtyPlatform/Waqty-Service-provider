@@ -26,7 +26,7 @@ import {
     Bell,
     Target,
     CheckCircle,
-    XCircle
+    XCircle,
 } from 'lucide-react';
 import {
     Tabs,
@@ -39,7 +39,7 @@ import {
     Modal,
     Input,
     Select,
-    DropdownMenu
+    DropdownMenu,
 } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
 import {
@@ -49,7 +49,7 @@ import {
     YAxis,
     CartesianGrid,
     Tooltip as RechartsTooltip,
-    ResponsiveContainer
+    ResponsiveContainer,
 } from 'recharts';
 import styles from './page.module.css';
 
@@ -58,6 +58,7 @@ const employee = {
     id: 'EMP-001',
     name: 'Sarah Ahmed',
     position: 'Senior Stylist',
+    level: 'Senior',
     department: 'Hair Styling',
     email: 'sarah.ahmed@hagzy.app',
     phone: '+20 100 123 4567',
@@ -69,8 +70,8 @@ const employee = {
         revenue: '45,200',
         appointments: 124,
         retention: '85%',
-        rating: 4.8
-    }
+        rating: 4.8,
+    },
 };
 
 const schedule = [
@@ -98,12 +99,40 @@ const recentActivity = [
     { time: 'Feb 15', title: 'Performance Review', description: 'Rated 4.9/5 by Manager.' },
 ];
 
-const modules = ['dashboard', 'sales', 'transactions', 'returns', 'customers', 'employees', 'marketing', 'reports', 'settings'];
+const modules = [
+    'dashboard',
+    'sales',
+    'transactions',
+    'returns',
+    'customers',
+    'employees',
+    'marketing',
+    'reports',
+    'settings',
+];
 
 const employeeReviews = [
-    { id: '1', customer: 'Fatima Al-Rashid', rating: 5, date: 'Mar 20, 2026', comment: 'Sara is an amazing stylist! The best hair coloring I\'ve ever had.' },
-    { id: '2', customer: 'Aisha Mohammed', rating: 4, date: 'Mar 26, 2026', comment: 'Very professional. Took a bit longer than expected, but great results.' },
-    { id: '3', customer: 'Huda Saleh', rating: 5, date: 'Mar 25, 2026', comment: 'Always a pleasure getting my hair done here.' },
+    {
+        id: '1',
+        customer: 'Fatima Al-Rashid',
+        rating: 5,
+        date: 'Mar 20, 2026',
+        comment: "Sara is an amazing stylist! The best hair coloring I've ever had.",
+    },
+    {
+        id: '2',
+        customer: 'Aisha Mohammed',
+        rating: 4,
+        date: 'Mar 26, 2026',
+        comment: 'Very professional. Took a bit longer than expected, but great results.',
+    },
+    {
+        id: '3',
+        customer: 'Huda Saleh',
+        rating: 5,
+        date: 'Mar 25, 2026',
+        comment: 'Always a pleasure getting my hair done here.',
+    },
 ];
 
 export default function EmployeeProfilePage({ params }: { params: Promise<{ id: string }> }) {
@@ -132,8 +161,13 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
 
     // Task 09: Notification Preferences (read-only mirror of employee app settings)
     const [notifPrefs] = useState({
-        newBookings: true, cancellations: true, reminders: true,
-        shiftReminders: false, newReviews: true, payslipAvailable: true, announcements: false,
+        newBookings: true,
+        cancellations: true,
+        reminders: true,
+        shiftReminders: false,
+        newReviews: true,
+        payslipAvailable: true,
+        announcements: false,
     });
 
     const [empServices, setEmpServices] = useState([
@@ -158,7 +192,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
         email: 'sarah.ahmed@hagzy.app',
         role: 'employee',
         jobTitle: 'Senior Stylist',
-        branch: 'Downtown'
+        branch: 'Downtown',
     });
 
     const handleActionClick = (action: string) => {
@@ -219,39 +253,100 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
 
                 {/* Task 06: Target Progress Card */}
                 {(() => {
-                    const revTarget = 10000; const revAchieved = 7420;
-                    const bkTarget = 120; const bkAchieved = 84;
+                    const revTarget = 10000;
+                    const revAchieved = 7420;
+                    const bkTarget = 120;
+                    const bkAchieved = 84;
                     const revPct = Math.min(200, Math.round((revAchieved / revTarget) * 100));
                     const bkPct = Math.min(200, Math.round((bkAchieved / bkTarget) * 100));
                     const tierMultiplier = revPct >= 150 ? 2.0 : revPct >= 120 ? 1.5 : 1.0;
                     const baseBonus = 1000;
                     const projBonus = Math.round(baseBonus * tierMultiplier * (revPct / 100));
-                    const barColor = (pct: number) => pct >= 150 ? 'var(--color-primary-500)' : pct >= 120 ? '#f59e0b' : pct >= 100 ? '#22c55e' : 'var(--color-gray-300)';
+                    const barColor = (pct: number) =>
+                        pct >= 150
+                            ? 'var(--color-primary-500)'
+                            : pct >= 120
+                              ? '#f59e0b'
+                              : pct >= 100
+                                ? '#22c55e'
+                                : 'var(--color-gray-300)';
                     return (
                         <div className={styles.card} style={{ marginTop: 'var(--space-4)' }}>
                             <div className={styles.cardHeader}>
-                                <span className={styles.cardTitle}><Target size={18} style={{ marginRight: 6 }} /> Target Progress</span>
+                                <span className={styles.cardTitle}>
+                                    <Target size={18} style={{ marginRight: 6 }} /> Target Progress
+                                </span>
                             </div>
-                            <div className={styles.cardBody} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                            <div
+                                className={styles.cardBody}
+                                style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}
+                            >
                                 {[
-                                    { label: 'Revenue Target', achieved: revAchieved.toLocaleString() + ' EGP', target: revTarget.toLocaleString() + ' EGP', pct: revPct },
-                                    { label: 'Bookings Target', achieved: bkAchieved + ' appts', target: bkTarget + ' appts', pct: bkPct },
+                                    {
+                                        label: 'Revenue Target',
+                                        achieved: revAchieved.toLocaleString() + ' EGP',
+                                        target: revTarget.toLocaleString() + ' EGP',
+                                        pct: revPct,
+                                    },
+                                    {
+                                        label: 'Bookings Target',
+                                        achieved: bkAchieved + ' appts',
+                                        target: bkTarget + ' appts',
+                                        pct: bkPct,
+                                    },
                                 ].map(bar => (
                                     <div key={bar.label}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-sm)', marginBottom: 6 }}>
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                fontSize: 'var(--text-sm)',
+                                                marginBottom: 6,
+                                            }}
+                                        >
                                             <span style={{ fontWeight: 'var(--font-medium)' }}>{bar.label}</span>
-                                            <span style={{ color: 'var(--text-secondary)' }}>{bar.achieved} / {bar.target} ({bar.pct}%)</span>
+                                            <span style={{ color: 'var(--text-secondary)' }}>
+                                                {bar.achieved} / {bar.target} ({bar.pct}%)
+                                            </span>
                                         </div>
-                                        <div style={{ height: 8, borderRadius: 4, background: 'var(--bg-secondary)', overflow: 'hidden' }}>
-                                            <div style={{ height: '100%', width: `${Math.min(100, bar.pct)}%`, background: barColor(bar.pct), borderRadius: 4, transition: 'width 0.4s' }} />
+                                        <div
+                                            style={{
+                                                height: 8,
+                                                borderRadius: 4,
+                                                background: 'var(--bg-secondary)',
+                                                overflow: 'hidden',
+                                            }}
+                                        >
+                                            <div
+                                                style={{
+                                                    height: '100%',
+                                                    width: `${Math.min(100, bar.pct)}%`,
+                                                    background: barColor(bar.pct),
+                                                    borderRadius: 4,
+                                                    transition: 'width 0.4s',
+                                                }}
+                                            />
                                         </div>
                                     </div>
                                 ))}
-                                <div style={{ padding: 'var(--space-3)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', fontSize: 'var(--text-sm)' }}>
+                                <div
+                                    style={{
+                                        padding: 'var(--space-3)',
+                                        background: 'var(--bg-secondary)',
+                                        borderRadius: 'var(--radius-lg)',
+                                        fontSize: 'var(--text-sm)',
+                                    }}
+                                >
                                     <div style={{ color: 'var(--text-secondary)', marginBottom: 4 }}>
-                                        At {revPct}% → <strong>Base bonus (1×)</strong>&nbsp;|&nbsp;Reach 120% → 1.5×&nbsp;|&nbsp;Reach 150% → 2×
+                                        At {revPct}% → <strong>Base bonus (1×)</strong>&nbsp;|&nbsp;Reach 120% →
+                                        1.5×&nbsp;|&nbsp;Reach 150% → 2×
                                     </div>
-                                    <div style={{ fontWeight: 'var(--font-semibold)', color: 'var(--color-primary-600)' }}>
+                                    <div
+                                        style={{
+                                            fontWeight: 'var(--font-semibold)',
+                                            color: 'var(--color-primary-600)',
+                                        }}
+                                    >
                                         Estimated bonus at current pace: {projBonus.toLocaleString()} EGP
                                     </div>
                                 </div>
@@ -262,7 +357,10 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
 
                 <div className={styles.card} style={{ marginTop: 'var(--space-6)' }}>
                     <div className={styles.cardHeader}>
-                        <span className={styles.cardTitle}><TrendingUp size={18} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('empProfile.perfAnalytics')}</span>
+                        <span className={styles.cardTitle}>
+                            <TrendingUp size={18} className={lang === 'ar' ? 'ml-2' : 'mr-2'} />{' '}
+                            {t('empProfile.perfAnalytics')}
+                        </span>
                     </div>
                     <div className={styles.cardBody} style={{ height: '300px', paddingTop: 'var(--space-4)' }}>
                         <ResponsiveContainer width="100%" height="100%">
@@ -273,14 +371,36 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                                         <stop offset="95%" stopColor="var(--color-primary-500)" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
-                                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }} />
-                                <YAxis orientation={lang === 'ar' ? 'right' : 'left'} axisLine={false} tickLine={false} tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }} tickFormatter={(val) => `${val / 1000}k`} />
+                                <XAxis
+                                    dataKey="month"
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }}
+                                />
+                                <YAxis
+                                    orientation={lang === 'ar' ? 'right' : 'left'}
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }}
+                                    tickFormatter={val => `${val / 1000}k`}
+                                />
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
                                 <RechartsTooltip
-                                    contentStyle={{ borderRadius: '8px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}
+                                    contentStyle={{
+                                        borderRadius: '8px',
+                                        border: '1px solid var(--border-color)',
+                                        boxShadow: 'var(--shadow-md)',
+                                    }}
                                     formatter={(value: number | string | undefined) => [`${value || 0} EGP`, 'Revenue']}
                                 />
-                                <Area type="monotone" dataKey="revenue" stroke="var(--color-primary-500)" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" />
+                                <Area
+                                    type="monotone"
+                                    dataKey="revenue"
+                                    stroke="var(--color-primary-500)"
+                                    strokeWidth={3}
+                                    fillOpacity={1}
+                                    fill="url(#colorRevenue)"
+                                />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>
@@ -288,7 +408,10 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
 
                 <div className={styles.card}>
                     <div className={styles.cardHeader}>
-                        <span className={styles.cardTitle}><Clock size={18} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('empProfile.recentActivity')}</span>
+                        <span className={styles.cardTitle}>
+                            <Clock size={18} className={lang === 'ar' ? 'ml-2' : 'mr-2'} />{' '}
+                            {t('empProfile.recentActivity')}
+                        </span>
                     </div>
                     <div className={styles.cardBody}>
                         <Timeline events={recentActivity} />
@@ -300,7 +423,9 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                 <div className={styles.card}>
                     <div className={styles.cardHeader}>
                         <span className={styles.cardTitle}>{t('empProfile.assignedServ')}</span>
-                        <Button variant="ghost" size="sm" iconOnly onClick={() => setIsEditServicesOpen(true)}><Edit size={14} /></Button>
+                        <Button variant="ghost" size="sm" iconOnly onClick={() => setIsEditServicesOpen(true)}>
+                            <Edit size={14} />
+                        </Button>
                     </div>
                     <div className={styles.cardBody}>
                         <div className={styles.serviceList}>
@@ -317,30 +442,59 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                 {/* Task 02: Mobile App Access Card */}
                 <div className={styles.card}>
                     <div className={styles.cardHeader}>
-                        <span className={styles.cardTitle}><Smartphone size={16} style={{ marginRight: 6 }} />Mobile App Access</span>
+                        <span className={styles.cardTitle}>
+                            <Smartphone size={16} style={{ marginRight: 6 }} />
+                            Mobile App Access
+                        </span>
                     </div>
                     <div className={styles.cardBody}>
                         <div style={{ marginBottom: 'var(--space-3)' }}>
-                            <span style={{
-                                display: 'inline-flex', alignItems: 'center', gap: 4,
-                                padding: '2px 8px', borderRadius: 'var(--radius-full)',
-                                fontSize: 12, fontWeight: 'var(--font-semibold)',
-                                background: pinSet ? 'var(--color-success-light)' : 'var(--color-gray-100)',
-                                color: pinSet ? 'var(--color-success)' : 'var(--color-gray-500)',
-                            }}>
-                                {pinSet ? <><CheckCircle size={11} /> App Access: Active</> : 'App Access: Not Configured'}
+                            <span
+                                style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: 4,
+                                    padding: '2px 8px',
+                                    borderRadius: 'var(--radius-full)',
+                                    fontSize: 12,
+                                    fontWeight: 'var(--font-semibold)',
+                                    background: pinSet ? 'var(--color-success-light)' : 'var(--color-gray-100)',
+                                    color: pinSet ? 'var(--color-success)' : 'var(--color-gray-500)',
+                                }}
+                            >
+                                {pinSet ? (
+                                    <>
+                                        <CheckCircle size={11} /> App Access: Active
+                                    </>
+                                ) : (
+                                    'App Access: Not Configured'
+                                )}
                             </span>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-                            <Button size="sm" variant="outline" fullWidth onClick={() => { setPinValue(''); setPinConfirm(''); setIsPinModalOpen(true); }}>
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                fullWidth
+                                onClick={() => {
+                                    setPinValue('');
+                                    setPinConfirm('');
+                                    setIsPinModalOpen(true);
+                                }}
+                            >
                                 <Lock size={14} style={{ marginRight: 6 }} /> Set PIN
                             </Button>
-                            <Button size="sm" variant="outline" fullWidth onClick={() => {
-                                const token = Math.random().toString(36).substring(7);
-                                const link = `${window.location.origin}/invite/${token}?phone=${encodeURIComponent(employee.phone)}&role=staff`;
-                                navigator.clipboard.writeText(link);
-                                addToast('success', 'App invite link copied to clipboard');
-                            }}>
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                fullWidth
+                                onClick={() => {
+                                    const token = Math.random().toString(36).substring(7);
+                                    const link = `${window.location.origin}/invite/${token}?phone=${encodeURIComponent(employee.phone)}&role=staff`;
+                                    navigator.clipboard.writeText(link);
+                                    addToast('success', 'App invite link copied to clipboard');
+                                }}
+                            >
                                 <Copy size={14} style={{ marginRight: 6 }} /> Send App Invite
                             </Button>
                         </div>
@@ -355,7 +509,16 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
                     <span className={styles.cardTitle}>{t('empProfile.weeklySchedule')}</span>
-                    <Button variant="outline" size="sm" onClick={() => { setEditableSchedule(schedule.map(d => ({ ...d }))); setIsScheduleEditOpen(true); }}>{t('empProfile.editSchedule')}</Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                            setEditableSchedule(schedule.map(d => ({ ...d })));
+                            setIsScheduleEditOpen(true);
+                        }}
+                    >
+                        {t('empProfile.editSchedule')}
+                    </Button>
                 </div>
                 <div className={styles.cardBody}>
                     <div className={styles.scheduleGrid}>
@@ -366,11 +529,19 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                                     <div className={styles.dayOff}>{t('empProfile.dayOff')}</div>
                                 ) : (
                                     <div className={styles.dayTime}>
-                                        {day.start}<br />
-                                        {t('empProfile.to')}<br />
+                                        {day.start}
+                                        <br />
+                                        {t('empProfile.to')}
+                                        <br />
                                         {day.end}
                                         {day.breakStart && (
-                                            <div style={{ fontSize: '10px', color: 'var(--color-warning)', marginTop: '4px' }}>
+                                            <div
+                                                style={{
+                                                    fontSize: '10px',
+                                                    color: 'var(--color-warning)',
+                                                    marginTop: '4px',
+                                                }}
+                                            >
                                                 {t('empProfile.break')} {day.breakStart} – {day.breakEnd}
                                             </div>
                                         )}
@@ -393,23 +564,63 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                 {employeeReviews.length > 0 ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                         {employeeReviews.map(review => (
-                            <div key={review.id} style={{ padding: 'var(--space-4)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', background: 'var(--bg-secondary)' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-2)' }}>
+                            <div
+                                key={review.id}
+                                style={{
+                                    padding: 'var(--space-4)',
+                                    border: '1px solid var(--border-color)',
+                                    borderRadius: 'var(--radius-lg)',
+                                    background: 'var(--bg-secondary)',
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'flex-start',
+                                        marginBottom: 'var(--space-2)',
+                                    }}
+                                >
                                     <div>
                                         <div style={{ fontWeight: 'var(--font-semibold)' }}>{review.customer}</div>
-                                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{review.date}</div>
+                                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
+                                            {review.date}
+                                        </div>
                                     </div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '2px', color: 'var(--color-warning)' }}>
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '2px',
+                                                color: 'var(--color-warning)',
+                                            }}
+                                        >
                                             <Star size={14} fill="currentColor" />
-                                            <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-bold)', color: 'var(--text-primary)' }}>{review.rating}.0</span>
+                                            <span
+                                                style={{
+                                                    fontSize: 'var(--text-sm)',
+                                                    fontWeight: 'var(--font-bold)',
+                                                    color: 'var(--text-primary)',
+                                                }}
+                                            >
+                                                {review.rating}.0
+                                            </span>
                                         </div>
-                                        <Button variant="ghost" size="sm" onClick={() => handleReportReview(review.id)} style={{ color: 'var(--color-error)' }} iconOnly>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => handleReportReview(review.id)}
+                                            style={{ color: 'var(--color-error)' }}
+                                            iconOnly
+                                        >
                                             <Flag size={14} />
                                         </Button>
                                     </div>
                                 </div>
-                                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>{review.comment}</p>
+                                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
+                                    {review.comment}
+                                </p>
                             </div>
                         ))}
                     </div>
@@ -441,25 +652,67 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
             <div className={styles.mainPanel}>
                 <div className={styles.card}>
                     <div className={styles.cardHeader}>
-                        <span className={styles.cardTitle}><Bell size={18} style={{ marginRight: 6 }} /> Notification Preferences</span>
-                        <Badge color="neutral">{enabledCount}/{notifItems.length} enabled</Badge>
+                        <span className={styles.cardTitle}>
+                            <Bell size={18} style={{ marginRight: 6 }} /> Notification Preferences
+                        </span>
+                        <Badge color="neutral">
+                            {enabledCount}/{notifItems.length} enabled
+                        </Badge>
                     </div>
-                    <div className={styles.cardBody} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                    <div
+                        className={styles.cardBody}
+                        style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}
+                    >
                         {notifItems.map(item => (
-                            <div key={item.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--space-3)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', background: 'var(--bg-secondary)' }}>
-                                <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)' }}>{item.label}</span>
-                                <span style={{
-                                    display: 'inline-flex', alignItems: 'center', gap: 4,
-                                    padding: '2px 10px', borderRadius: 'var(--radius-full)',
-                                    fontSize: 12, fontWeight: 'var(--font-semibold)',
-                                    background: notifPrefs[item.key] ? 'var(--color-success-light)' : 'var(--color-gray-100)',
-                                    color: notifPrefs[item.key] ? 'var(--color-success)' : 'var(--color-gray-500)',
-                                }}>
-                                    {notifPrefs[item.key] ? <><CheckCircle size={11} /> On</> : <><XCircle size={11} /> Off</>}
+                            <div
+                                key={item.key}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    padding: 'var(--space-3)',
+                                    border: '1px solid var(--border-color)',
+                                    borderRadius: 'var(--radius-lg)',
+                                    background: 'var(--bg-secondary)',
+                                }}
+                            >
+                                <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)' }}>
+                                    {item.label}
+                                </span>
+                                <span
+                                    style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: 4,
+                                        padding: '2px 10px',
+                                        borderRadius: 'var(--radius-full)',
+                                        fontSize: 12,
+                                        fontWeight: 'var(--font-semibold)',
+                                        background: notifPrefs[item.key]
+                                            ? 'var(--color-success-light)'
+                                            : 'var(--color-gray-100)',
+                                        color: notifPrefs[item.key] ? 'var(--color-success)' : 'var(--color-gray-500)',
+                                    }}
+                                >
+                                    {notifPrefs[item.key] ? (
+                                        <>
+                                            <CheckCircle size={11} /> On
+                                        </>
+                                    ) : (
+                                        <>
+                                            <XCircle size={11} /> Off
+                                        </>
+                                    )}
                                 </span>
                             </div>
                         ))}
-                        <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: 'var(--space-2)' }}>
+                        <p
+                            style={{
+                                fontSize: 'var(--text-xs)',
+                                color: 'var(--text-tertiary)',
+                                marginTop: 'var(--space-2)',
+                            }}
+                        >
                             Employee controls these settings from their mobile app — changes sync automatically.
                         </p>
                     </div>
@@ -484,27 +737,61 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                             <h1>
                                 {employee.name}
                                 <Badge color="primary">{employee.position}</Badge>
+                                <Badge color="neutral">{employee.level}</Badge>
                             </h1>
                             <div className={styles.meta}>
-                                <span className={styles.metaItem}><Briefcase size={14} className={lang === 'ar' ? 'ml-1' : 'mr-1'} /> {employee.department}</span>
-                                <span className={styles.metaItem}><User size={14} className={lang === 'ar' ? 'ml-1' : 'mr-1'} /> ID: <span dir="ltr">{employee.id}</span></span>
+                                <span className={styles.metaItem}>
+                                    <Briefcase size={14} className={lang === 'ar' ? 'ml-1' : 'mr-1'} />{' '}
+                                    {employee.department}
+                                </span>
+                                <span className={styles.metaItem}>
+                                    <User size={14} className={lang === 'ar' ? 'ml-1' : 'mr-1'} /> ID:{' '}
+                                    <span dir="ltr">{employee.id}</span>
+                                </span>
                                 <Badge color="success">{t('empProfile.activeBadge')}</Badge>
                             </div>
                         </div>
                     </div>
                     <div className={styles.actions}>
                         <DropdownMenu
-                            trigger={<Button variant="outline" iconOnly><MoreHorizontal size={20} /></Button>}
+                            trigger={
+                                <Button variant="outline" iconOnly>
+                                    <MoreHorizontal size={20} />
+                                </Button>
+                            }
                             align={lang === 'ar' ? 'left' : 'right'}
                             items={[
-                                { label: t('empProfile.managePermBtn'), icon: <Shield size={16} />, onClick: () => handleActionClick('Manage Permissions') },
-                                { label: t('empProfile.viewLogBtn'), icon: <Activity size={16} />, onClick: () => handleActionClick('View Activity Log') },
-                                { label: t('empProfile.resetPwdBtn'), icon: <Lock size={16} />, onClick: () => handleActionClick('Reset Password') },
-                                { label: t('empProfile.suspendBtn'), icon: <Clock size={16} />, onClick: () => handleActionClick('Suspend Account') },
-                                { label: t('empProfile.deleteBtn'), icon: <Trash2 size={16} />, onClick: () => handleActionClick('Delete Employee'), destructive: true },
+                                {
+                                    label: t('empProfile.managePermBtn'),
+                                    icon: <Shield size={16} />,
+                                    onClick: () => handleActionClick('Manage Permissions'),
+                                },
+                                {
+                                    label: t('empProfile.viewLogBtn'),
+                                    icon: <Activity size={16} />,
+                                    onClick: () => handleActionClick('View Activity Log'),
+                                },
+                                {
+                                    label: t('empProfile.resetPwdBtn'),
+                                    icon: <Lock size={16} />,
+                                    onClick: () => handleActionClick('Reset Password'),
+                                },
+                                {
+                                    label: t('empProfile.suspendBtn'),
+                                    icon: <Clock size={16} />,
+                                    onClick: () => handleActionClick('Suspend Account'),
+                                },
+                                {
+                                    label: t('empProfile.deleteBtn'),
+                                    icon: <Trash2 size={16} />,
+                                    onClick: () => handleActionClick('Delete Employee'),
+                                    destructive: true,
+                                },
                             ]}
                         />
-                        <Button variant="outline" onClick={() => handleActionClick('Edit Profile')}><Edit size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('empProfile.editAction')}</Button>
+                        <Button variant="outline" onClick={() => handleActionClick('Edit Profile')}>
+                            <Edit size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('empProfile.editAction')}
+                        </Button>
                     </div>
                 </div>
 
@@ -518,7 +805,9 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                         <span className={styles.statLabel}>{t('empProfile.joinedLabel')}</span>
                     </div>
                     <div className={styles.statItem}>
-                        <span className={styles.statValue} dir="ltr">{employee.phone}</span>
+                        <span className={styles.statValue} dir="ltr">
+                            {employee.phone}
+                        </span>
                         <span className={styles.statLabel}>{t('empProfile.phoneLabel')}</span>
                     </div>
                 </div>
@@ -557,13 +846,13 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                             label={t('empProfile.lblFName')}
                             placeholder="Sarah"
                             value={editEmp.fname}
-                            onChange={(e) => setEditEmp({ ...editEmp, fname: e.target.value })}
+                            onChange={e => setEditEmp({ ...editEmp, fname: e.target.value })}
                         />
                         <Input
                             label={t('empProfile.lblLName')}
                             placeholder="Ahmed"
                             value={editEmp.lname}
-                            onChange={(e) => setEditEmp({ ...editEmp, lname: e.target.value })}
+                            onChange={e => setEditEmp({ ...editEmp, lname: e.target.value })}
                         />
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
@@ -571,14 +860,14 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                             label={t('empProfile.lblPhone')}
                             placeholder="+20 100 123 4567"
                             value={editEmp.phone}
-                            onChange={(e) => setEditEmp({ ...editEmp, phone: e.target.value })}
+                            onChange={e => setEditEmp({ ...editEmp, phone: e.target.value })}
                         />
                         <Input
                             label={t('empProfile.lblEmail')}
                             type="email"
                             placeholder="sarah.ahmed@hagzy.app"
                             value={editEmp.email}
-                            onChange={(e) => setEditEmp({ ...editEmp, email: e.target.value })}
+                            onChange={e => setEditEmp({ ...editEmp, email: e.target.value })}
                         />
                     </div>
 
@@ -587,7 +876,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                     <Select
                         label={t('empProfile.lblRole')}
                         value={editEmp.role}
-                        onChange={(e) => setEditEmp({ ...editEmp, role: e.target.value })}
+                        onChange={e => setEditEmp({ ...editEmp, role: e.target.value })}
                         options={[
                             { value: 'admin', label: 'Admin (Full Access)' },
                             { value: 'manager', label: 'Manager (Branch Access)' },
@@ -599,7 +888,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                         <Select
                             label={t('empProfile.lblJobTitle')}
                             value={editEmp.jobTitle}
-                            onChange={(e) => setEditEmp({ ...editEmp, jobTitle: e.target.value })}
+                            onChange={e => setEditEmp({ ...editEmp, jobTitle: e.target.value })}
                             options={[
                                 { value: 'Senior Stylist', label: 'Senior Stylist' },
                                 { value: 'Junior Stylist', label: 'Junior Stylist' },
@@ -609,7 +898,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                         <Select
                             label={t('empProfile.lblBranch')}
                             value={editEmp.branch}
-                            onChange={(e) => setEditEmp({ ...editEmp, branch: e.target.value })}
+                            onChange={e => setEditEmp({ ...editEmp, branch: e.target.value })}
                             options={[
                                 { value: 'Downtown', label: 'Downtown' },
                                 { value: 'Mall of Arabia', label: 'Mall of Arabia' },
@@ -618,69 +907,237 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                         />
                     </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
-                        <Button variant="outline" onClick={() => setIsEditOpen(false)}>{t('empProfile.btnCancel')}</Button>
+                    <div
+                        style={{
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            gap: 'var(--space-3)',
+                            marginTop: 'var(--space-4)',
+                        }}
+                    >
+                        <Button variant="outline" onClick={() => setIsEditOpen(false)}>
+                            {t('empProfile.btnCancel')}
+                        </Button>
                         <Button onClick={handleSaveEdit}>{t('empProfile.btnSave')}</Button>
                     </div>
                 </div>
             </Modal>
 
             {/* Manage Permissions Modal */}
-            <Modal open={isPermissionsOpen} onClose={() => setIsPermissionsOpen(false)} title={t('empProfile.permTitle')}>
+            <Modal
+                open={isPermissionsOpen}
+                onClose={() => setIsPermissionsOpen(false)}
+                title={t('empProfile.permTitle')}
+            >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                     <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)' }}>
-                        {t('empProfile.permDesc1')}<strong>{employee.name}</strong>{t('empProfile.permDesc2')}
+                        {t('empProfile.permDesc1')}
+                        <strong>{employee.name}</strong>
+                        {t('empProfile.permDesc2')}
                     </p>
-                    <div style={{ border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
+                    <div
+                        style={{
+                            border: '1px solid var(--border-color)',
+                            borderRadius: 'var(--radius-lg)',
+                            overflow: 'hidden',
+                        }}
+                    >
                         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                             <thead style={{ background: 'var(--bg-secondary)' }}>
                                 <tr>
-                                    <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: lang === 'ar' ? 'right' : 'left', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>{t('empProfile.colMod')}</th>
-                                    <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>{t('empProfile.colView')}</th>
-                                    <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>{t('empProfile.colCreate')}</th>
-                                    <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>{t('empProfile.colEdit')}</th>
-                                    <th style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', fontSize: 12, fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', borderBottom: '1px solid var(--border-color)' }}>{t('empProfile.colDel')}</th>
+                                    <th
+                                        style={{
+                                            padding: 'var(--space-2) var(--space-3)',
+                                            textAlign: lang === 'ar' ? 'right' : 'left',
+                                            fontSize: 12,
+                                            fontWeight: 'var(--font-semibold)',
+                                            color: 'var(--text-tertiary)',
+                                            borderBottom: '1px solid var(--border-color)',
+                                        }}
+                                    >
+                                        {t('empProfile.colMod')}
+                                    </th>
+                                    <th
+                                        style={{
+                                            padding: 'var(--space-2) var(--space-3)',
+                                            textAlign: 'center',
+                                            fontSize: 12,
+                                            fontWeight: 'var(--font-semibold)',
+                                            color: 'var(--text-tertiary)',
+                                            borderBottom: '1px solid var(--border-color)',
+                                        }}
+                                    >
+                                        {t('empProfile.colView')}
+                                    </th>
+                                    <th
+                                        style={{
+                                            padding: 'var(--space-2) var(--space-3)',
+                                            textAlign: 'center',
+                                            fontSize: 12,
+                                            fontWeight: 'var(--font-semibold)',
+                                            color: 'var(--text-tertiary)',
+                                            borderBottom: '1px solid var(--border-color)',
+                                        }}
+                                    >
+                                        {t('empProfile.colCreate')}
+                                    </th>
+                                    <th
+                                        style={{
+                                            padding: 'var(--space-2) var(--space-3)',
+                                            textAlign: 'center',
+                                            fontSize: 12,
+                                            fontWeight: 'var(--font-semibold)',
+                                            color: 'var(--text-tertiary)',
+                                            borderBottom: '1px solid var(--border-color)',
+                                        }}
+                                    >
+                                        {t('empProfile.colEdit')}
+                                    </th>
+                                    <th
+                                        style={{
+                                            padding: 'var(--space-2) var(--space-3)',
+                                            textAlign: 'center',
+                                            fontSize: 12,
+                                            fontWeight: 'var(--font-semibold)',
+                                            color: 'var(--text-tertiary)',
+                                            borderBottom: '1px solid var(--border-color)',
+                                        }}
+                                    >
+                                        {t('empProfile.colDel')}
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {modules.map(m => (
                                     <tr key={m}>
-                                        <td style={{ padding: 'var(--space-2) var(--space-3)', fontSize: 13, borderBottom: '1px solid var(--border-color)' }}>{t(`modules.${m}`)}</td>
-                                        <td style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', borderBottom: '1px solid var(--border-color)' }}><input type="checkbox" defaultChecked={m === 'dashboard' || m === 'sales'} /></td>
-                                        <td style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', borderBottom: '1px solid var(--border-color)' }}><input type="checkbox" defaultChecked={m === 'sales'} /></td>
-                                        <td style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', borderBottom: '1px solid var(--border-color)' }}><input type="checkbox" defaultChecked={false} /></td>
-                                        <td style={{ padding: 'var(--space-2) var(--space-3)', textAlign: 'center', borderBottom: '1px solid var(--border-color)' }}><input type="checkbox" defaultChecked={false} /></td>
+                                        <td
+                                            style={{
+                                                padding: 'var(--space-2) var(--space-3)',
+                                                fontSize: 13,
+                                                borderBottom: '1px solid var(--border-color)',
+                                            }}
+                                        >
+                                            {t(`modules.${m}`)}
+                                        </td>
+                                        <td
+                                            style={{
+                                                padding: 'var(--space-2) var(--space-3)',
+                                                textAlign: 'center',
+                                                borderBottom: '1px solid var(--border-color)',
+                                            }}
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                defaultChecked={m === 'dashboard' || m === 'sales'}
+                                            />
+                                        </td>
+                                        <td
+                                            style={{
+                                                padding: 'var(--space-2) var(--space-3)',
+                                                textAlign: 'center',
+                                                borderBottom: '1px solid var(--border-color)',
+                                            }}
+                                        >
+                                            <input type="checkbox" defaultChecked={m === 'sales'} />
+                                        </td>
+                                        <td
+                                            style={{
+                                                padding: 'var(--space-2) var(--space-3)',
+                                                textAlign: 'center',
+                                                borderBottom: '1px solid var(--border-color)',
+                                            }}
+                                        >
+                                            <input type="checkbox" defaultChecked={false} />
+                                        </td>
+                                        <td
+                                            style={{
+                                                padding: 'var(--space-2) var(--space-3)',
+                                                textAlign: 'center',
+                                                borderBottom: '1px solid var(--border-color)',
+                                            }}
+                                        >
+                                            <input type="checkbox" defaultChecked={false} />
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
-                        <Button variant="outline" onClick={() => setIsPermissionsOpen(false)}>{t('empProfile.btnCancel')}</Button>
-                        <Button onClick={() => { setIsPermissionsOpen(false); addToast('success', t('empProfile.toastPermSec')); }}>{t('empProfile.btnSavePerm')}</Button>
+                    <div
+                        style={{
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            gap: 'var(--space-3)',
+                            marginTop: 'var(--space-4)',
+                        }}
+                    >
+                        <Button variant="outline" onClick={() => setIsPermissionsOpen(false)}>
+                            {t('empProfile.btnCancel')}
+                        </Button>
+                        <Button
+                            onClick={() => {
+                                setIsPermissionsOpen(false);
+                                addToast('success', t('empProfile.toastPermSec'));
+                            }}
+                        >
+                            {t('empProfile.btnSavePerm')}
+                        </Button>
                     </div>
                 </div>
             </Modal>
 
             {/* View Activity Log Modal */}
             <Modal open={isActivityOpen} onClose={() => setIsActivityOpen(false)} title={t('empProfile.actModalTitle')}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', maxHeight: '60vh', overflowY: 'auto' }}>
+                <div
+                    style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 'var(--space-4)',
+                        maxHeight: '60vh',
+                        overflowY: 'auto',
+                    }}
+                >
                     <Timeline events={recentActivity} />
                     <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 'var(--space-2)' }}>
-                        <Button variant="outline" onClick={() => setIsActivityOpen(false)}>{t('empProfile.btnClose')}</Button>
+                        <Button variant="outline" onClick={() => setIsActivityOpen(false)}>
+                            {t('empProfile.btnClose')}
+                        </Button>
                     </div>
                 </div>
             </Modal>
 
             {/* Reset Password Modal */}
-            <Modal open={isResetPasswordOpen} onClose={() => setIsResetPasswordOpen(false)} title={t('empProfile.resPwdTitle')}>
+            <Modal
+                open={isResetPasswordOpen}
+                onClose={() => setIsResetPasswordOpen(false)}
+                title={t('empProfile.resPwdTitle')}
+            >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                     <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)' }}>
-                        {t('empProfile.resPwdDesc1')}<strong>{employee.name}</strong>{t('empProfile.resPwdDesc2')}<strong>{employee.email}</strong>.
+                        {t('empProfile.resPwdDesc1')}
+                        <strong>{employee.name}</strong>
+                        {t('empProfile.resPwdDesc2')}
+                        <strong>{employee.email}</strong>.
                     </p>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
-                        <Button variant="outline" onClick={() => setIsResetPasswordOpen(false)}>{t('empProfile.btnCancel')}</Button>
-                        <Button onClick={() => { setIsResetPasswordOpen(false); addToast('success', t('empProfile.toastPwdSec')); }}>{t('empProfile.btnConfirmReset')}</Button>
+                    <div
+                        style={{
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            gap: 'var(--space-3)',
+                            marginTop: 'var(--space-4)',
+                        }}
+                    >
+                        <Button variant="outline" onClick={() => setIsResetPasswordOpen(false)}>
+                            {t('empProfile.btnCancel')}
+                        </Button>
+                        <Button
+                            onClick={() => {
+                                setIsResetPasswordOpen(false);
+                                addToast('success', t('empProfile.toastPwdSec'));
+                            }}
+                        >
+                            {t('empProfile.btnConfirmReset')}
+                        </Button>
                     </div>
                 </div>
             </Modal>
@@ -689,11 +1146,30 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
             <Modal open={isSuspendOpen} onClose={() => setIsSuspendOpen(false)} title={t('empProfile.suspTitle')}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                     <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)' }}>
-                        {t('empProfile.suspDesc1')}<strong>{employee.name}</strong>{t('empProfile.suspDesc2')}
+                        {t('empProfile.suspDesc1')}
+                        <strong>{employee.name}</strong>
+                        {t('empProfile.suspDesc2')}
                     </p>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
-                        <Button variant="outline" onClick={() => setIsSuspendOpen(false)}>{t('empProfile.btnCancel')}</Button>
-                        <Button variant="destructive" onClick={() => { setIsSuspendOpen(false); addToast('error', t('empProfile.toastSuspSec')); }}>{t('empProfile.suspendBtn')}</Button>
+                    <div
+                        style={{
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            gap: 'var(--space-3)',
+                            marginTop: 'var(--space-4)',
+                        }}
+                    >
+                        <Button variant="outline" onClick={() => setIsSuspendOpen(false)}>
+                            {t('empProfile.btnCancel')}
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={() => {
+                                setIsSuspendOpen(false);
+                                addToast('error', t('empProfile.toastSuspSec'));
+                            }}
+                        >
+                            {t('empProfile.suspendBtn')}
+                        </Button>
                     </div>
                 </div>
             </Modal>
@@ -702,29 +1178,62 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
             <Modal open={isDeleteOpen} onClose={() => setIsDeleteOpen(false)} title={t('empProfile.delTitleModal')}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                     <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)' }}>
-                        {t('empProfile.delDesc1')}<strong>{employee.name}</strong>{t('empProfile.delDesc2')}
+                        {t('empProfile.delDesc1')}
+                        <strong>{employee.name}</strong>
+                        {t('empProfile.delDesc2')}
                     </p>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
-                        <Button variant="outline" onClick={() => setIsDeleteOpen(false)}>{t('empProfile.btnCancel')}</Button>
-                        <Button variant="destructive" onClick={() => { setIsDeleteOpen(false); addToast('error', t('empProfile.toastDelSec')); }}>{t('empProfile.btnDelPerm')}</Button>
+                    <div
+                        style={{
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            gap: 'var(--space-3)',
+                            marginTop: 'var(--space-4)',
+                        }}
+                    >
+                        <Button variant="outline" onClick={() => setIsDeleteOpen(false)}>
+                            {t('empProfile.btnCancel')}
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={() => {
+                                setIsDeleteOpen(false);
+                                addToast('error', t('empProfile.toastDelSec'));
+                            }}
+                        >
+                            {t('empProfile.btnDelPerm')}
+                        </Button>
                     </div>
                 </div>
             </Modal>
 
             {/* Edit Assigned Services Modal */}
-            <Modal open={isEditServicesOpen} onClose={() => setIsEditServicesOpen(false)} title={t('empProfile.editServTitle')}>
+            <Modal
+                open={isEditServicesOpen}
+                onClose={() => setIsEditServicesOpen(false)}
+                title={t('empProfile.editServTitle')}
+            >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                     <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)' }}>
                         {t('empProfile.servDesc')}
                     </p>
 
                     {/* Add New Service Row */}
-                    <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center', background: 'var(--bg-secondary)', padding: 'var(--space-3)', borderRadius: 'var(--radius-lg)', marginBottom: 'var(--space-4)' }}>
+                    <div
+                        style={{
+                            display: 'flex',
+                            gap: 'var(--space-2)',
+                            alignItems: 'center',
+                            background: 'var(--bg-secondary)',
+                            padding: 'var(--space-3)',
+                            borderRadius: 'var(--radius-lg)',
+                            marginBottom: 'var(--space-4)',
+                        }}
+                    >
                         <div style={{ flex: 1 }}>
                             <Select
                                 options={availableServices}
                                 value={newServiceSelection}
-                                onChange={(e) => setNewServiceSelection(e.target.value)}
+                                onChange={e => setNewServiceSelection(e.target.value)}
                             />
                         </div>
                         <Button
@@ -741,18 +1250,55 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                         </Button>
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', maxHeight: '50vh', overflowY: 'auto', ...(lang === 'ar' ? { paddingLeft: 'var(--space-1)', marginLeft: '-var(--space-1)' } : { paddingRight: 'var(--space-1)', marginRight: '-var(--space-1)' }) }}>
+                    <div
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 'var(--space-3)',
+                            maxHeight: '50vh',
+                            overflowY: 'auto',
+                            ...(lang === 'ar'
+                                ? { paddingLeft: 'var(--space-1)', marginLeft: '-var(--space-1)' }
+                                : { paddingRight: 'var(--space-1)', marginRight: '-var(--space-1)' }),
+                        }}
+                    >
                         {empServices.map((s, idx) => (
-                            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', padding: 'var(--space-3)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)' }}>
+                            <div
+                                key={idx}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 'var(--space-3)',
+                                    padding: 'var(--space-3)',
+                                    background: 'var(--bg-secondary)',
+                                    borderRadius: 'var(--radius-md)',
+                                }}
+                            >
                                 <div style={{ flex: 1, fontWeight: 'var(--font-medium)', fontSize: 'var(--text-sm)' }}>
                                     {s.name}
                                 </div>
                                 <div style={{ position: 'relative', width: '80px' }}>
                                     <Input
                                         defaultValue={s.commission.replace('%', '')}
-                                        style={lang === 'ar' ? { textAlign: 'left', paddingLeft: '22px' } : { textAlign: 'right', paddingRight: '22px' }}
+                                        style={
+                                            lang === 'ar'
+                                                ? { textAlign: 'left', paddingLeft: '22px' }
+                                                : { textAlign: 'right', paddingRight: '22px' }
+                                        }
                                     />
-                                    <span style={{ position: 'absolute', ...(lang === 'ar' ? { left: '10px' } : { right: '10px' }), top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)', pointerEvents: 'none' }}>%</span>
+                                    <span
+                                        style={{
+                                            position: 'absolute',
+                                            ...(lang === 'ar' ? { left: '10px' } : { right: '10px' }),
+                                            top: '50%',
+                                            transform: 'translateY(-50%)',
+                                            color: 'var(--text-tertiary)',
+                                            fontSize: 'var(--text-sm)',
+                                            pointerEvents: 'none',
+                                        }}
+                                    >
+                                        %
+                                    </span>
                                 </div>
                                 <Button
                                     variant="ghost"
@@ -765,9 +1311,25 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                             </div>
                         ))}
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
-                        <Button variant="outline" onClick={() => setIsEditServicesOpen(false)}>{t('empProfile.btnCancel')}</Button>
-                        <Button onClick={() => { setIsEditServicesOpen(false); addToast('success', t('empProfile.toastServSec')); }}>{t('empProfile.btnSaveServ')}</Button>
+                    <div
+                        style={{
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            gap: 'var(--space-3)',
+                            marginTop: 'var(--space-4)',
+                        }}
+                    >
+                        <Button variant="outline" onClick={() => setIsEditServicesOpen(false)}>
+                            {t('empProfile.btnCancel')}
+                        </Button>
+                        <Button
+                            onClick={() => {
+                                setIsEditServicesOpen(false);
+                                addToast('success', t('empProfile.toastServSec'));
+                            }}
+                        >
+                            {t('empProfile.btnSaveServ')}
+                        </Button>
                     </div>
                 </div>
             </Modal>
@@ -776,7 +1338,8 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
             <Modal open={isPinModalOpen} onClose={() => setIsPinModalOpen(false)} title="Set Employee PIN">
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                     <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)' }}>
-                        Set a 6-digit PIN for <strong>{employee.name}</strong>. They can use this PIN to log into the Hagzy Employee App.
+                        Set a 6-digit PIN for <strong>{employee.name}</strong>. They can use this PIN to log into the
+                        Hagzy Employee App.
                     </p>
                     <Input
                         label="New PIN (6 digits)"
@@ -784,7 +1347,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                         maxLength={6}
                         placeholder="••••••"
                         value={pinValue}
-                        onChange={(e) => setPinValue(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                        onChange={e => setPinValue(e.target.value.replace(/\D/g, '').slice(0, 6))}
                     />
                     <Input
                         label="Confirm PIN"
@@ -792,10 +1355,19 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                         maxLength={6}
                         placeholder="••••••"
                         value={pinConfirm}
-                        onChange={(e) => setPinConfirm(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                        onChange={e => setPinConfirm(e.target.value.replace(/\D/g, '').slice(0, 6))}
                     />
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
-                        <Button variant="outline" onClick={() => setIsPinModalOpen(false)}>Cancel</Button>
+                    <div
+                        style={{
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            gap: 'var(--space-3)',
+                            marginTop: 'var(--space-2)',
+                        }}
+                    >
+                        <Button variant="outline" onClick={() => setIsPinModalOpen(false)}>
+                            Cancel
+                        </Button>
                         <Button
                             disabled={pinValue.length < 6 || pinValue !== pinConfirm}
                             onClick={() => {
@@ -813,35 +1385,85 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
             </Modal>
 
             {/* Edit Schedule Modal */}
-            <Modal open={isScheduleEditOpen} onClose={() => setIsScheduleEditOpen(false)} title={t('empProfile.editSchedTitle')}>
+            <Modal
+                open={isScheduleEditOpen}
+                onClose={() => setIsScheduleEditOpen(false)}
+                title={t('empProfile.editSchedTitle')}
+            >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                     <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)' }}>
                         {t('empProfile.schedDesc')}
                     </p>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', maxHeight: '50vh', overflowY: 'auto' }}>
+                    <div
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 'var(--space-3)',
+                            maxHeight: '50vh',
+                            overflowY: 'auto',
+                        }}
+                    >
                         {editableSchedule.map((day, i) => (
-                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', padding: 'var(--space-3)', background: day.off ? 'var(--color-gray-50)' : 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)' }}>
-                                <div style={{ width: 90, fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-sm)', color: day.off ? 'var(--text-tertiary)' : 'var(--text-primary)' }}>{day.day}</div>
-                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', opacity: day.off ? 0.4 : 1 }}>
+                            <div
+                                key={i}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 'var(--space-3)',
+                                    padding: 'var(--space-3)',
+                                    background: day.off ? 'var(--color-gray-50)' : 'var(--bg-secondary)',
+                                    borderRadius: 'var(--radius-lg)',
+                                    border: '1px solid var(--border-color)',
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        width: 90,
+                                        fontWeight: 'var(--font-semibold)',
+                                        fontSize: 'var(--text-sm)',
+                                        color: day.off ? 'var(--text-tertiary)' : 'var(--text-primary)',
+                                    }}
+                                >
+                                    {day.day}
+                                </div>
+                                <div
+                                    style={{
+                                        flex: 1,
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: 'var(--space-2)',
+                                        opacity: day.off ? 0.4 : 1,
+                                    }}
+                                >
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', width: 40 }}>{t('empProfile.lblShift')}</span>
+                                        <span
+                                            style={{
+                                                fontSize: 'var(--text-xs)',
+                                                color: 'var(--text-tertiary)',
+                                                width: 40,
+                                            }}
+                                        >
+                                            {t('empProfile.lblShift')}
+                                        </span>
                                         <Input
                                             type="time"
                                             value={day.off ? '' : day.start.replace(/ AM| PM/g, '')}
                                             disabled={day.off}
-                                            onChange={(e) => {
+                                            onChange={e => {
                                                 const updated = [...editableSchedule];
                                                 updated[i] = { ...updated[i], start: e.target.value };
                                                 setEditableSchedule(updated);
                                             }}
                                             style={{ flex: 1 }}
                                         />
-                                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{t('empProfile.to')}</span>
+                                        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
+                                            {t('empProfile.to')}
+                                        </span>
                                         <Input
                                             type="time"
                                             value={day.off ? '' : day.end.replace(/ AM| PM/g, '')}
                                             disabled={day.off}
-                                            onChange={(e) => {
+                                            onChange={e => {
                                                 const updated = [...editableSchedule];
                                                 updated[i] = { ...updated[i], end: e.target.value };
                                                 setEditableSchedule(updated);
@@ -851,24 +1473,35 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                                     </div>
                                     {!day.off && (
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                                            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-warning)', width: 40, fontWeight: 'var(--font-medium)' }}>{t('empProfile.break').replace(':', '')}</span>
+                                            <span
+                                                style={{
+                                                    fontSize: 'var(--text-xs)',
+                                                    color: 'var(--color-warning)',
+                                                    width: 40,
+                                                    fontWeight: 'var(--font-medium)',
+                                                }}
+                                            >
+                                                {t('empProfile.break').replace(':', '')}
+                                            </span>
                                             <Input
                                                 type="time"
                                                 value={day.breakStart?.replace(/ AM| PM/g, '') || ''}
                                                 placeholder="—"
-                                                onChange={(e) => {
+                                                onChange={e => {
                                                     const updated = [...editableSchedule];
                                                     updated[i] = { ...updated[i], breakStart: e.target.value };
                                                     setEditableSchedule(updated);
                                                 }}
                                                 style={{ flex: 1 }}
                                             />
-                                            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{t('empProfile.to')}</span>
+                                            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
+                                                {t('empProfile.to')}
+                                            </span>
                                             <Input
                                                 type="time"
                                                 value={day.breakEnd?.replace(/ AM| PM/g, '') || ''}
                                                 placeholder="—"
-                                                onChange={(e) => {
+                                                onChange={e => {
                                                     const updated = [...editableSchedule];
                                                     updated[i] = { ...updated[i], breakEnd: e.target.value };
                                                     setEditableSchedule(updated);
@@ -878,13 +1511,30 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                                         </div>
                                     )}
                                 </div>
-                                <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                                <label
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 'var(--space-1)',
+                                        fontSize: 'var(--text-xs)',
+                                        color: 'var(--text-tertiary)',
+                                        cursor: 'pointer',
+                                        whiteSpace: 'nowrap',
+                                    }}
+                                >
                                     <input
                                         type="checkbox"
                                         checked={day.off}
-                                        onChange={(e) => {
+                                        onChange={e => {
                                             const updated = [...editableSchedule];
-                                            updated[i] = { ...updated[i], off: e.target.checked, start: e.target.checked ? '-' : '10:00 AM', end: e.target.checked ? '-' : '08:00 PM', breakStart: '', breakEnd: '' };
+                                            updated[i] = {
+                                                ...updated[i],
+                                                off: e.target.checked,
+                                                start: e.target.checked ? '-' : '10:00 AM',
+                                                end: e.target.checked ? '-' : '08:00 PM',
+                                                breakStart: '',
+                                                breakEnd: '',
+                                            };
                                             setEditableSchedule(updated);
                                         }}
                                     />
@@ -893,9 +1543,25 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                             </div>
                         ))}
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
-                        <Button variant="outline" onClick={() => setIsScheduleEditOpen(false)}>{t('empProfile.btnCancel')}</Button>
-                        <Button onClick={() => { setIsScheduleEditOpen(false); addToast('success', t('empProfile.toastSchedSec')); }}>{t('empProfile.btnSaveSched')}</Button>
+                    <div
+                        style={{
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            gap: 'var(--space-3)',
+                            marginTop: 'var(--space-4)',
+                        }}
+                    >
+                        <Button variant="outline" onClick={() => setIsScheduleEditOpen(false)}>
+                            {t('empProfile.btnCancel')}
+                        </Button>
+                        <Button
+                            onClick={() => {
+                                setIsScheduleEditOpen(false);
+                                addToast('success', t('empProfile.toastSchedSec'));
+                            }}
+                        >
+                            {t('empProfile.btnSaveSched')}
+                        </Button>
                     </div>
                 </div>
             </Modal>

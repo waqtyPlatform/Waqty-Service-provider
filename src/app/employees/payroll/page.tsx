@@ -59,8 +59,9 @@ const employees = [
         name: 'Sara Ahmed',
         dept: 'Hair Care',
         position: 'Senior Stylist',
+        level: 'Senior',
         baseSalary: 8000,
-        commission: 2600,
+        commission: 2693.2, // Reflects resolved pricing: Hair Coloring 520×12 @10% + Keratin 900×5 @12%
         bonus: 1000,
         deductions: 500,
         deductionDetails: [
@@ -74,6 +75,7 @@ const employees = [
         name: 'Nora Ali',
         dept: 'Skincare',
         position: 'Aesthetician',
+        level: 'Mid',
         baseSalary: 7000,
         commission: 1880,
         bonus: 600,
@@ -88,6 +90,7 @@ const employees = [
         name: 'Mona Zein',
         dept: 'Skincare',
         position: 'Laser Tech',
+        level: 'Mid',
         baseSalary: 7500,
         commission: 1650,
         bonus: 0,
@@ -102,6 +105,7 @@ const employees = [
         name: 'Layla Hassan',
         dept: 'Nails',
         position: 'Nail Artist',
+        level: 'Junior',
         baseSalary: 5500,
         commission: 920,
         bonus: 0,
@@ -116,6 +120,7 @@ const employees = [
         name: 'Reem Mohamed',
         dept: 'Spa',
         position: 'Therapist',
+        level: 'Senior',
         baseSalary: 6000,
         commission: 720,
         bonus: 300,
@@ -1991,7 +1996,8 @@ export default function PayrollPage() {
                                                             color: 'var(--text-secondary)',
                                                         }}
                                                     >
-                                                        {emp.dept} · {emp.position}
+                                                        {emp.dept} · {emp.position} ·{' '}
+                                                        {(emp as typeof emp & { level?: string }).level || 'Entry'}
                                                     </div>
                                                 </div>
                                                 <div

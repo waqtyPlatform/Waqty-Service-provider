@@ -46,7 +46,10 @@ const bookings = [
         time: '09:00',
         service: 'Hair Coloring',
         employee: 'Sara Ahmed',
-        value: 400,
+        employeeLevel: 'Senior',
+        value: 520,
+        basePrice: 450,
+        priceSource: 'tier',
         status: 'confirmed',
         payment: 'paid',
         payMethod: 'Card',
@@ -60,7 +63,10 @@ const bookings = [
         time: '09:30',
         service: 'Keratin Treatment',
         employee: 'Nora Ali',
-        value: 500,
+        employeeLevel: 'Mid',
+        value: 800,
+        basePrice: 800,
+        priceSource: 'base',
         status: 'arrived',
         payment: 'paid',
         payMethod: 'Cash',
@@ -74,7 +80,10 @@ const bookings = [
         time: '10:00',
         service: 'Classic Facial',
         employee: 'Layla Hassan',
+        employeeLevel: 'Mid',
         value: 200,
+        basePrice: 200,
+        priceSource: 'base',
         status: 'completed',
         payment: 'paid',
         payMethod: 'Card',
@@ -88,7 +97,10 @@ const bookings = [
         time: '10:30',
         service: 'Gel Manicure',
         employee: 'Hana Youssef',
-        value: 150,
+        employeeLevel: 'Junior',
+        value: 130,
+        basePrice: 150,
+        priceSource: 'tier',
         status: 'unconfirmed',
         payment: 'unpaid',
         payMethod: '—',
@@ -102,7 +114,10 @@ const bookings = [
         time: '11:00',
         service: 'Swedish Massage',
         employee: 'Reem Mohamed',
-        value: 300,
+        employeeLevel: 'Senior',
+        value: 350,
+        basePrice: 350,
+        priceSource: 'base',
         status: 'confirmed',
         payment: 'partial',
         payMethod: 'Cash',
@@ -116,7 +131,10 @@ const bookings = [
         time: '12:00',
         service: 'HydraFacial',
         employee: 'Nora Ali',
-        value: 450,
+        employeeLevel: 'Mid',
+        value: 600,
+        basePrice: 600,
+        priceSource: 'base',
         status: 'waitingPay',
         payment: 'unpaid',
         payMethod: '—',
@@ -130,7 +148,10 @@ const bookings = [
         time: '14:00',
         service: 'Olaplex Treatment',
         employee: 'Sara Ahmed',
+        employeeLevel: 'Senior',
         value: 350,
+        basePrice: 350,
+        priceSource: 'base',
         status: 'workDone',
         payment: 'paid',
         payMethod: 'Card',
@@ -144,7 +165,10 @@ const bookings = [
         time: '16:00',
         service: 'Laser Hair Removal',
         employee: 'Layla Hassan',
+        employeeLevel: 'Mid',
         value: 250,
+        basePrice: 250,
+        priceSource: 'base',
         status: 'cancelled',
         payment: 'unpaid',
         payMethod: '—',
@@ -158,7 +182,10 @@ const bookings = [
         time: '09:00',
         service: 'Haircut & Styling',
         employee: 'Hana Youssef',
-        value: 150,
+        employeeLevel: 'Junior',
+        value: 100,
+        basePrice: 120,
+        priceSource: 'tier',
         status: 'completed',
         payment: 'paid',
         payMethod: 'Cash',
@@ -172,7 +199,10 @@ const bookings = [
         time: '10:00',
         service: 'Pedicure',
         employee: 'Reem Mohamed',
-        value: 120,
+        employeeLevel: 'Senior',
+        value: 180,
+        basePrice: 180,
+        priceSource: 'base',
         status: 'noShow',
         payment: 'unpaid',
         payMethod: '—',
@@ -401,7 +431,36 @@ export default function BookingListPage() {
                                         </td>
                                         <td>{b.service}</td>
                                         <td>{b.employee}</td>
-                                        <td style={{ fontWeight: 'var(--font-semibold)' }}>{b.value} EGP</td>
+                                        <td style={{ fontWeight: 'var(--font-semibold)' }}>
+                                            {b.priceSource !== 'base' && (
+                                                <span
+                                                    style={{
+                                                        textDecoration: 'line-through',
+                                                        color: 'var(--text-tertiary)',
+                                                        fontSize: 'var(--text-xs)',
+                                                        marginRight: 4,
+                                                    }}
+                                                >
+                                                    {b.basePrice}
+                                                </span>
+                                            )}
+                                            {b.value} EGP
+                                            {b.priceSource !== 'base' && (
+                                                <span
+                                                    style={{
+                                                        marginLeft: 4,
+                                                        padding: '1px 5px',
+                                                        borderRadius: 'var(--radius-full)',
+                                                        fontSize: 10,
+                                                        fontWeight: 600,
+                                                        background: 'var(--color-primary-50, #eff6ff)',
+                                                        color: 'var(--color-primary-600)',
+                                                    }}
+                                                >
+                                                    {b.priceSource}
+                                                </span>
+                                            )}
+                                        </td>
                                         <td>
                                             <span className={`${styles.statusBadge} ${statusConfig[b.status]?.class}`}>
                                                 {statusConfig[b.status] ? t(statusConfig[b.status].labelKey) : b.status}
