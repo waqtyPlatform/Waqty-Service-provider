@@ -24,32 +24,56 @@ import {
     Eye,
     Send,
     CheckCircle2,
-    Clock
+    Clock,
 } from 'lucide-react';
-import {
-    Tabs,
-    Button,
-    Badge,
-    Timeline,
-    EmptyState,
-    useToast,
-    Modal,
-    Input,
-    Textarea
-} from '@/components/ui';
+import { Tabs, Button, Badge, Timeline, EmptyState, useToast, Modal, Input, Textarea } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
 import styles from './page.module.css';
 
 // Mock Data
 const clientReviews = [
-    { id: '1', author: 'Fatima Al-Rashid', target: 'Sara Ahmed', role: 'Employee', rating: 5, date: 'Mar 16, 2026', comment: 'Sara is amazing! Best hair coloring I ever had.', type: 'by_customer' },
-    { id: '2', author: 'Nora Ali', target: 'Fatima Al-Rashid', role: 'Customer', rating: 4, date: 'Mar 25, 2026', comment: 'Client was slightly late, but otherwise very pleasant.', type: 'about_customer' }
+    {
+        id: '1',
+        author: 'Fatima Al-Rashid',
+        target: 'Sara Ahmed',
+        role: 'Employee',
+        rating: 5,
+        date: 'Mar 16, 2026',
+        comment: 'Sara is amazing! Best hair coloring I ever had.',
+        type: 'by_customer',
+    },
+    {
+        id: '2',
+        author: 'Nora Ali',
+        target: 'Fatima Al-Rashid',
+        role: 'Customer',
+        rating: 4,
+        date: 'Mar 25, 2026',
+        comment: 'Client was slightly late, but otherwise very pleasant.',
+        type: 'about_customer',
+    },
 ];
 
 // Task 05: Staff Notes (internal employee notes about client)
 const initialStaffNotes = [
-    { id: '1', employee: 'Sara Ahmed', employeeAvatar: 'SA', service: 'Hair Coloring', date: 'Mar 21, 2026', rating: 5, note: 'Client has sensitive scalp — used sulfate-free products. Very cooperative and communicates well. Great client to work with.' },
-    { id: '2', employee: 'Nora Ali', employeeAvatar: 'NA', service: 'Facial', date: 'Mar 14, 2026', rating: 3, note: 'Client arrived 15 minutes late which compressed the session. Requested lower pressure throughout. Should allocate extra buffer time.' },
+    {
+        id: '1',
+        employee: 'Sara Ahmed',
+        employeeAvatar: 'SA',
+        service: 'Hair Coloring',
+        date: 'Mar 21, 2026',
+        rating: 5,
+        note: 'Client has sensitive scalp — used sulfate-free products. Very cooperative and communicates well. Great client to work with.',
+    },
+    {
+        id: '2',
+        employee: 'Nora Ali',
+        employeeAvatar: 'NA',
+        service: 'Facial',
+        date: 'Mar 14, 2026',
+        rating: 3,
+        note: 'Client arrived 15 minutes late which compressed the session. Requested lower pressure throughout. Should allocate extra buffer time.',
+    },
 ];
 
 const client = {
@@ -67,14 +91,14 @@ const client = {
         allergies: ['Latex'],
         conditions: ['Mild Asthma'],
         medications: ['Albuterol (as needed)'],
-        generalNotes: 'Prefers quiet sessions. Very sensitive scalp.'
+        generalNotes: 'Prefers quiet sessions. Very sensitive scalp.',
     },
     stats: {
         visits: 47,
         spend: '12,400',
         points: 850,
-        lastVisit: '2 days ago'
-    }
+        lastVisit: '2 days ago',
+    },
 };
 
 // Task 07: Customer preference tags
@@ -93,14 +117,40 @@ const PREF_COLORS: Record<string, { bg: string; color: string }> = {
 };
 
 const timelineEvents = [
-    { time: 'Mar 19, 2026', title: 'Completed Appointment', description: 'Hair Coloring with Sarah Ahmed. Paid 1,200 EGP.' },
+    {
+        time: 'Mar 19, 2026',
+        title: 'Completed Appointment',
+        description: 'Hair Coloring with Sarah Ahmed. Paid 1,200 EGP.',
+    },
     { time: 'Mar 17, 2026', title: 'Service Add-on', description: 'Added Deep Conditioning. Paid 450 EGP.' },
     { time: 'Mar 22, 2026', title: 'Missed Appointment', description: 'No-show for Manicure. Marked by Reception.' },
 ];
 
 const bookings = [
-    { id: 1042, date: 'Mar 14, 2026', time: '10:00 AM', service: 'Hair Coloring', employee: 'Sarah Ahmed', status: 'completed', price: 1200 },
-    { id: 1055, date: 'Mar 18, 2026', time: '02:00 PM', service: 'Keratin Treatment', employee: 'Nora Ali', status: 'confirmed', price: 2500 },
+    {
+        id: 1042,
+        date: 'Mar 14, 2026',
+        time: '10:00 AM',
+        service: 'Hair Coloring',
+        employee: 'Sarah Ahmed',
+        employeeLevel: 'Senior',
+        status: 'completed',
+        price: 520,
+        basePrice: 450,
+        priceSource: 'tier',
+    },
+    {
+        id: 1055,
+        date: 'Mar 18, 2026',
+        time: '02:00 PM',
+        service: 'Keratin Treatment',
+        employee: 'Nora Ali',
+        employeeLevel: 'Mid',
+        status: 'confirmed',
+        price: 800,
+        basePrice: 800,
+        priceSource: 'base',
+    },
 ];
 
 const sales = [
@@ -109,13 +159,39 @@ const sales = [
 ];
 
 const medicalFiles = [
-    { id: '1', name: 'Dermatology_Consult_Notes.pdf', type: 'PDF', size: '2.4 MB', date: 'Mar 16, 2026', uploader: 'Dr. Sarah Ahmed' },
-    { id: '2', name: 'Before_Treatment_Skin.jpg', type: 'Image', size: '4.1 MB', date: 'Mar 23, 2026', uploader: 'Fatima Al-Rashid' }
+    {
+        id: '1',
+        name: 'Dermatology_Consult_Notes.pdf',
+        type: 'PDF',
+        size: '2.4 MB',
+        date: 'Mar 16, 2026',
+        uploader: 'Dr. Sarah Ahmed',
+    },
+    {
+        id: '2',
+        name: 'Before_Treatment_Skin.jpg',
+        type: 'Image',
+        size: '4.1 MB',
+        date: 'Mar 23, 2026',
+        uploader: 'Fatima Al-Rashid',
+    },
 ];
 
 const intakeForms = [
-    { id: '1', name: 'Initial Health Intake Questionnaire', status: 'Completed', dateCompleted: 'Mar 16, 2026', relatedBooking: null },
-    { id: '2', name: 'Laser Hair Removal Consent Form', status: 'Pending', dateCompleted: null, relatedBooking: '#1055' }
+    {
+        id: '1',
+        name: 'Initial Health Intake Questionnaire',
+        status: 'Completed',
+        dateCompleted: 'Mar 16, 2026',
+        relatedBooking: null,
+    },
+    {
+        id: '2',
+        name: 'Laser Hair Removal Consent Form',
+        status: 'Pending',
+        dateCompleted: null,
+        relatedBooking: '#1055',
+    },
 ];
 
 export default function CustomerProfilePage({ params }: { params: Promise<{ id: string }> }) {
@@ -126,7 +202,11 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
     const [activeTab, setActiveTab] = useState('overview');
     const [reviewsFilter, setReviewsFilter] = useState<'all' | 'by_customer' | 'about_customer'>('all');
     const [staffNotes, setStaffNotes] = useState(initialStaffNotes);
-    const [preferences, setPreferences] = useState<string[]>(['Sensitive scalp', 'Latex allergy', 'Prefers morning slots']);
+    const [preferences, setPreferences] = useState<string[]>([
+        'Sensitive scalp',
+        'Latex allergy',
+        'Prefers morning slots',
+    ]);
     const [showPrefPopover, setShowPrefPopover] = useState(false);
     const [customPref, setCustomPref] = useState('');
 
@@ -153,13 +233,15 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
         addToast('success', t('custProfile.formSent') || 'Intake form sent successfully');
     };
 
-
     const renderOverview = () => (
         <div className={styles.content}>
             <div className={styles.mainPanel}>
                 <div className={styles.card}>
                     <div className={styles.cardHeader}>
-                        <span className={styles.cardTitle}><Calendar size={18} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('custProfile.recentTimeline')}</span>
+                        <span className={styles.cardTitle}>
+                            <Calendar size={18} className={lang === 'ar' ? 'ml-2' : 'mr-2'} />{' '}
+                            {t('custProfile.recentTimeline')}
+                        </span>
                     </div>
                     <div className={styles.cardBody}>
                         <Timeline events={timelineEvents} />
@@ -168,33 +250,68 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
 
                 <div className={styles.card}>
                     <div className={styles.cardHeader}>
-                        <span className={styles.cardTitle}><AlertCircle size={18} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('custProfile.medicalNotes') || 'Medical & Notes'}</span>
-                        <Button variant="ghost" size="sm" iconOnly onClick={() => setIsMedicalModalOpen(true)}><Edit size={14} /></Button>
+                        <span className={styles.cardTitle}>
+                            <AlertCircle size={18} className={lang === 'ar' ? 'ml-2' : 'mr-2'} />{' '}
+                            {t('custProfile.medicalNotes') || 'Medical & Notes'}
+                        </span>
+                        <Button variant="ghost" size="sm" iconOnly onClick={() => setIsMedicalModalOpen(true)}>
+                            <Edit size={14} />
+                        </Button>
                     </div>
                     <div className={styles.cardBody}>
                         {currentMedical.allergies.length > 0 && (
-                            <div style={{ padding: 'var(--space-3)', background: 'var(--color-warning-light)', color: 'var(--color-warning-dark)', borderRadius: 'var(--radius-md)', display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-4)' }}>
+                            <div
+                                style={{
+                                    padding: 'var(--space-3)',
+                                    background: 'var(--color-warning-light)',
+                                    color: 'var(--color-warning-dark)',
+                                    borderRadius: 'var(--radius-md)',
+                                    display: 'flex',
+                                    gap: 'var(--space-2)',
+                                    marginBottom: 'var(--space-4)',
+                                }}
+                            >
                                 <AlertCircle size={16} style={{ flexShrink: 0, marginTop: 2 }} />
-                                <span style={{ fontSize: 'var(--text-sm)' }}><strong>{t('custProfile.allergyAlert') || 'Allergies:'}</strong> {currentMedical.allergies.join(', ')}</span>
+                                <span style={{ fontSize: 'var(--text-sm)' }}>
+                                    <strong>{t('custProfile.allergyAlert') || 'Allergies:'}</strong>{' '}
+                                    {currentMedical.allergies.join(', ')}
+                                </span>
                             </div>
                         )}
-                        
+
                         {(currentMedical.conditions.length > 0 || currentMedical.medications.length > 0) && (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', marginBottom: 'var(--space-4)' }}>
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: 'var(--space-2)',
+                                    marginBottom: 'var(--space-4)',
+                                }}
+                            >
                                 {currentMedical.conditions.length > 0 && (
                                     <div style={{ fontSize: 'var(--text-sm)' }}>
-                                        <strong style={{ color: 'var(--text-secondary)' }}>Conditions:</strong> {currentMedical.conditions.join(', ')}
+                                        <strong style={{ color: 'var(--text-secondary)' }}>Conditions:</strong>{' '}
+                                        {currentMedical.conditions.join(', ')}
                                     </div>
                                 )}
                                 {currentMedical.medications.length > 0 && (
                                     <div style={{ fontSize: 'var(--text-sm)' }}>
-                                        <strong style={{ color: 'var(--text-secondary)' }}>Medications:</strong> {currentMedical.medications.join(', ')}
+                                        <strong style={{ color: 'var(--text-secondary)' }}>Medications:</strong>{' '}
+                                        {currentMedical.medications.join(', ')}
                                     </div>
                                 )}
                             </div>
                         )}
 
-                        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', lineHeight: 1.5, borderTop: '1px solid var(--border-color)', paddingTop: 'var(--space-3)' }}>
+                        <p
+                            style={{
+                                fontSize: 'var(--text-sm)',
+                                color: 'var(--text-secondary)',
+                                lineHeight: 1.5,
+                                borderTop: '1px solid var(--border-color)',
+                                paddingTop: 'var(--space-3)',
+                            }}
+                        >
                             {currentMedical.generalNotes || 'No general notes available.'}
                         </p>
                     </div>
@@ -205,42 +322,75 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                     onClose={() => setIsMedicalModalOpen(false)}
                     title="Edit Medical & Notes"
                     footer={
-                        <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end', width: '100%' }}>
-                            <Button variant="outline" onClick={() => setIsMedicalModalOpen(false)}>Cancel</Button>
+                        <div
+                            style={{
+                                display: 'flex',
+                                gap: 'var(--space-2)',
+                                justifyContent: 'flex-end',
+                                width: '100%',
+                            }}
+                        >
+                            <Button variant="outline" onClick={() => setIsMedicalModalOpen(false)}>
+                                Cancel
+                            </Button>
                             <Button onClick={handleSaveMedical}>Save Changes</Button>
                         </div>
                     }
                 >
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                         <div className={styles.inputGroup}>
-                            <Input 
-                                label="Allergies (comma separated)" 
+                            <Input
+                                label="Allergies (comma separated)"
                                 value={editedMedical.allergies.join(', ')}
-                                onChange={(e) => setEditedMedical({ ...editedMedical, allergies: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
+                                onChange={e =>
+                                    setEditedMedical({
+                                        ...editedMedical,
+                                        allergies: e.target.value
+                                            .split(',')
+                                            .map(s => s.trim())
+                                            .filter(Boolean),
+                                    })
+                                }
                                 placeholder="e.g., Latex, Penicillin"
                             />
                         </div>
                         <div className={styles.inputGroup}>
-                            <Input 
-                                label="Chronic Conditions" 
+                            <Input
+                                label="Chronic Conditions"
                                 value={editedMedical.conditions.join(', ')}
-                                onChange={(e) => setEditedMedical({ ...editedMedical, conditions: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
+                                onChange={e =>
+                                    setEditedMedical({
+                                        ...editedMedical,
+                                        conditions: e.target.value
+                                            .split(',')
+                                            .map(s => s.trim())
+                                            .filter(Boolean),
+                                    })
+                                }
                                 placeholder="e.g., Asthma, Diabetes"
                             />
                         </div>
                         <div className={styles.inputGroup}>
-                            <Input 
-                                label="Current Medications" 
+                            <Input
+                                label="Current Medications"
                                 value={editedMedical.medications.join(', ')}
-                                onChange={(e) => setEditedMedical({ ...editedMedical, medications: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
+                                onChange={e =>
+                                    setEditedMedical({
+                                        ...editedMedical,
+                                        medications: e.target.value
+                                            .split(',')
+                                            .map(s => s.trim())
+                                            .filter(Boolean),
+                                    })
+                                }
                                 placeholder="e.g., Albuterol"
                             />
                         </div>
                         <div className={styles.inputGroup}>
-                            <Textarea 
-                                label="General Notes" 
+                            <Textarea
+                                label="General Notes"
                                 value={editedMedical.generalNotes}
-                                onChange={(e) => setEditedMedical({ ...editedMedical, generalNotes: e.target.value })}
+                                onChange={e => setEditedMedical({ ...editedMedical, generalNotes: e.target.value })}
                                 placeholder="Add any operational or behavioral notes here..."
                                 rows={4}
                             />
@@ -258,15 +408,30 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                         <div className={styles.infoGrid} style={{ gridTemplateColumns: '1fr', gap: 'var(--space-4)' }}>
                             <div className={styles.infoItem}>
                                 <span className={styles.infoLabel}>{t('custProfile.lblPhone')}</span>
-                                <span className={styles.infoValue} style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Phone size={14} /> {client.phone}</span>
+                                <span
+                                    className={styles.infoValue}
+                                    style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+                                >
+                                    <Phone size={14} /> {client.phone}
+                                </span>
                             </div>
                             <div className={styles.infoItem}>
                                 <span className={styles.infoLabel}>{t('custProfile.lblEmail')}</span>
-                                <span className={styles.infoValue} style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Mail size={14} /> {client.email}</span>
+                                <span
+                                    className={styles.infoValue}
+                                    style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+                                >
+                                    <Mail size={14} /> {client.email}
+                                </span>
                             </div>
                             <div className={styles.infoItem}>
                                 <span className={styles.infoLabel}>{t('custProfile.lblAddress')}</span>
-                                <span className={styles.infoValue} style={{ display: 'flex', alignItems: 'center', gap: 4 }}><MapPin size={14} /> {client.address}</span>
+                                <span
+                                    className={styles.infoValue}
+                                    style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+                                >
+                                    <MapPin size={14} /> {client.address}
+                                </span>
                             </div>
                             <div className={styles.infoItem}>
                                 <span className={styles.infoLabel}>{t('custProfile.lblDob')}</span>
@@ -279,7 +444,9 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                 <div className={styles.card}>
                     <div className={styles.cardHeader}>
                         <span className={styles.cardTitle}>{t('custProfile.tags')}</span>
-                        <Button variant="ghost" size="sm" iconOnly><Plus size={14} /></Button>
+                        <Button variant="ghost" size="sm" iconOnly>
+                            <Plus size={14} />
+                        </Button>
                     </div>
                     <div className={styles.cardBody}>
                         <div className={styles.tags}>
@@ -306,32 +473,116 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                                     const preset = PRESET_PREFERENCES.find(p => p.label === pref);
                                     const colors = preset ? PREF_COLORS[preset.category] : PREF_COLORS.service;
                                     return (
-                                        <span key={pref} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 10px', borderRadius: 'var(--radius-full)', fontSize: 12, fontWeight: 500, background: colors.bg, color: colors.color, cursor: 'default' }}>
+                                        <span
+                                            key={pref}
+                                            style={{
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: 4,
+                                                padding: '3px 10px',
+                                                borderRadius: 'var(--radius-full)',
+                                                fontSize: 12,
+                                                fontWeight: 500,
+                                                background: colors.bg,
+                                                color: colors.color,
+                                                cursor: 'default',
+                                            }}
+                                        >
                                             {pref}
-                                            <span style={{ cursor: 'pointer', fontWeight: 700, marginLeft: 2 }} onClick={() => setPreferences(p => p.filter(x => x !== pref))}>×</span>
+                                            <span
+                                                style={{ cursor: 'pointer', fontWeight: 700, marginLeft: 2 }}
+                                                onClick={() => setPreferences(p => p.filter(x => x !== pref))}
+                                            >
+                                                ×
+                                            </span>
                                         </span>
                                     );
                                 })}
                             </div>
                         ) : (
-                            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)' }}>No preferences added yet.</p>
+                            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)' }}>
+                                No preferences added yet.
+                            </p>
                         )}
                     </div>
                     {showPrefPopover && (
-                        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-lg)', padding: 'var(--space-3)', zIndex: 20 }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', marginBottom: 'var(--space-3)' }}>
+                        <div
+                            style={{
+                                position: 'absolute',
+                                top: '100%',
+                                left: 0,
+                                right: 0,
+                                background: 'var(--bg-primary)',
+                                border: '1px solid var(--border-color)',
+                                borderRadius: 'var(--radius-lg)',
+                                boxShadow: 'var(--shadow-lg)',
+                                padding: 'var(--space-3)',
+                                zIndex: 20,
+                            }}
+                        >
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: 'var(--space-2)',
+                                    marginBottom: 'var(--space-3)',
+                                }}
+                            >
                                 {PRESET_PREFERENCES.filter(p => !preferences.includes(p.label)).map(p => (
-                                    <button key={p.label} style={{ textAlign: 'left', padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)', border: 'none', background: 'var(--bg-secondary)', cursor: 'pointer', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}
-                                        onClick={() => { setPreferences(prev => [...prev, p.label]); setShowPrefPopover(false); }}>
+                                    <button
+                                        key={p.label}
+                                        style={{
+                                            textAlign: 'left',
+                                            padding: 'var(--space-2) var(--space-3)',
+                                            borderRadius: 'var(--radius-md)',
+                                            border: 'none',
+                                            background: 'var(--bg-secondary)',
+                                            cursor: 'pointer',
+                                            fontSize: 'var(--text-sm)',
+                                            color: 'var(--text-primary)',
+                                        }}
+                                        onClick={() => {
+                                            setPreferences(prev => [...prev, p.label]);
+                                            setShowPrefPopover(false);
+                                        }}
+                                    >
                                         {p.label}
                                     </button>
                                 ))}
                             </div>
                             <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-                                <input value={customPref} onChange={e => setCustomPref(e.target.value)} placeholder="Custom preference…"
-                                    style={{ flex: 1, height: 34, padding: '0 var(--space-3)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)' }} />
-                                <button style={{ padding: '0 var(--space-3)', borderRadius: 'var(--radius-md)', border: 'none', background: 'var(--color-primary-500)', color: 'white', cursor: 'pointer', fontSize: 'var(--text-sm)' }}
-                                    onClick={() => { if (customPref.trim()) { setPreferences(p => [...p, customPref.trim()]); setCustomPref(''); setShowPrefPopover(false); } }}>
+                                <input
+                                    value={customPref}
+                                    onChange={e => setCustomPref(e.target.value)}
+                                    placeholder="Custom preference…"
+                                    style={{
+                                        flex: 1,
+                                        height: 34,
+                                        padding: '0 var(--space-3)',
+                                        border: '1px solid var(--border-color)',
+                                        borderRadius: 'var(--radius-md)',
+                                        background: 'var(--bg-primary)',
+                                        fontSize: 'var(--text-sm)',
+                                    }}
+                                />
+                                <button
+                                    style={{
+                                        padding: '0 var(--space-3)',
+                                        borderRadius: 'var(--radius-md)',
+                                        border: 'none',
+                                        background: 'var(--color-primary-500)',
+                                        color: 'white',
+                                        cursor: 'pointer',
+                                        fontSize: 'var(--text-sm)',
+                                    }}
+                                    onClick={() => {
+                                        if (customPref.trim()) {
+                                            setPreferences(p => [...p, customPref.trim()]);
+                                            setCustomPref('');
+                                            setShowPrefPopover(false);
+                                        }
+                                    }}
+                                >
                                     Add
                                 </button>
                             </div>
@@ -370,13 +621,52 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                                         <td>#{b.id}</td>
                                         <td>
                                             <div style={{ fontWeight: 'var(--font-medium)' }}>{b.date}</div>
-                                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{b.time}</div>
+                                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
+                                                {b.time}
+                                            </div>
                                         </td>
                                         <td>{b.service}</td>
                                         <td>{b.employee}</td>
-                                        <td>{b.price} EGP</td>
                                         <td>
-                                            <Badge color={b.status === 'completed' ? 'success' : b.status === 'confirmed' ? 'primary' : 'neutral'}>
+                                            {b.priceSource !== 'base' && (
+                                                <span
+                                                    style={{
+                                                        textDecoration: 'line-through',
+                                                        color: 'var(--text-tertiary)',
+                                                        fontSize: 'var(--text-xs)',
+                                                        marginRight: 4,
+                                                    }}
+                                                >
+                                                    {b.basePrice}
+                                                </span>
+                                            )}
+                                            {b.price} EGP
+                                            {b.priceSource !== 'base' && (
+                                                <span
+                                                    style={{
+                                                        marginLeft: 4,
+                                                        padding: '1px 5px',
+                                                        borderRadius: 'var(--radius-full)',
+                                                        fontSize: 10,
+                                                        fontWeight: 600,
+                                                        background: 'var(--color-primary-50, #eff6ff)',
+                                                        color: 'var(--color-primary-600)',
+                                                    }}
+                                                >
+                                                    {b.priceSource}
+                                                </span>
+                                            )}
+                                        </td>
+                                        <td>
+                                            <Badge
+                                                color={
+                                                    b.status === 'completed'
+                                                        ? 'success'
+                                                        : b.status === 'confirmed'
+                                                          ? 'primary'
+                                                          : 'neutral'
+                                                }
+                                            >
                                                 {b.status}
                                             </Badge>
                                         </td>
@@ -389,7 +679,9 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                             <EmptyState
                                 icon={<Calendar size={32} color="var(--text-tertiary)" />}
                                 title={t('custProfile.noBookingsTitle') || 'No bookings found'}
-                                description={t('custProfile.noBookingsDesc') || 'This client has not made any bookings yet.'}
+                                description={
+                                    t('custProfile.noBookingsDesc') || 'This client has not made any bookings yet.'
+                                }
                             />
                         </div>
                     )}
@@ -423,7 +715,9 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                                         <td>{s.date}</td>
                                         <td>{s.items}</td>
                                         <td style={{ fontWeight: 'var(--font-bold)' }}>{s.total} EGP</td>
-                                        <td><Badge color="success">{s.status}</Badge></td>
+                                        <td>
+                                            <Badge color="success">{s.status}</Badge>
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -433,7 +727,9 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                             <EmptyState
                                 icon={<CreditCard size={32} color="var(--text-tertiary)" />}
                                 title={t('custProfile.noSalesTitle') || 'No purchase history'}
-                                description={t('custProfile.noSalesDesc') || 'This client has not made any purchases yet.'}
+                                description={
+                                    t('custProfile.noSalesDesc') || 'This client has not made any purchases yet.'
+                                }
                             />
                         </div>
                     )}
@@ -443,9 +739,8 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
     );
 
     const renderReviews = () => {
-        const filteredReviews = reviewsFilter === 'all'
-            ? clientReviews
-            : clientReviews.filter(r => r.type === reviewsFilter);
+        const filteredReviews =
+            reviewsFilter === 'all' ? clientReviews : clientReviews.filter(r => r.type === reviewsFilter);
 
         return (
             <div className={styles.mainPanel}>
@@ -479,25 +774,66 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                     {filteredReviews.length > 0 ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                             {filteredReviews.map(review => (
-                                <div key={review.id} style={{ padding: 'var(--space-4)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', background: 'var(--bg-secondary)' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-2)' }}>
+                                <div
+                                    key={review.id}
+                                    style={{
+                                        padding: 'var(--space-4)',
+                                        border: '1px solid var(--border-color)',
+                                        borderRadius: 'var(--radius-lg)',
+                                        background: 'var(--bg-secondary)',
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'flex-start',
+                                            marginBottom: 'var(--space-2)',
+                                        }}
+                                    >
                                         <div>
                                             <div style={{ fontWeight: 'var(--font-semibold)' }}>{review.author}</div>
                                             <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
-                                                {review.type === 'by_customer' ? `${t('custProfile.reviewed')} ${review.role}: ${review.target}` : `${t('custProfile.reviewedBy')} ${review.role}`} • {review.date}
+                                                {review.type === 'by_customer'
+                                                    ? `${t('custProfile.reviewed')} ${review.role}: ${review.target}`
+                                                    : `${t('custProfile.reviewedBy')} ${review.role}`}{' '}
+                                                • {review.date}
                                             </div>
                                         </div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '2px', color: 'var(--color-warning)' }}>
+                                            <div
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '2px',
+                                                    color: 'var(--color-warning)',
+                                                }}
+                                            >
                                                 <Star size={14} fill="currentColor" />
-                                                <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-bold)', color: 'var(--text-primary)' }}>{review.rating}.0</span>
+                                                <span
+                                                    style={{
+                                                        fontSize: 'var(--text-sm)',
+                                                        fontWeight: 'var(--font-bold)',
+                                                        color: 'var(--text-primary)',
+                                                    }}
+                                                >
+                                                    {review.rating}.0
+                                                </span>
                                             </div>
-                                            <Button variant="ghost" size="sm" onClick={() => handleReportReview(review.id)} style={{ color: 'var(--color-error)' }} iconOnly>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => handleReportReview(review.id)}
+                                                style={{ color: 'var(--color-error)' }}
+                                                iconOnly
+                                            >
                                                 <Flag size={14} />
                                             </Button>
                                         </div>
                                     </div>
-                                    <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>{review.comment}</p>
+                                    <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
+                                        {review.comment}
+                                    </p>
                                 </div>
                             ))}
                         </div>
@@ -519,8 +855,13 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
         <div className={styles.mainPanel}>
             <div className={styles.card} style={{ marginBottom: 'var(--space-6)' }}>
                 <div className={styles.cardHeader}>
-                    <span className={styles.cardTitle}>{t('custProfile.filesAttachments') || 'Medical File Attachments'}</span>
-                    <Button size="sm" onClick={handleUploadFile}><Upload size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('custProfile.btnUpload') || 'Upload File'}</Button>
+                    <span className={styles.cardTitle}>
+                        {t('custProfile.filesAttachments') || 'Medical File Attachments'}
+                    </span>
+                    <Button size="sm" onClick={handleUploadFile}>
+                        <Upload size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} />{' '}
+                        {t('custProfile.btnUpload') || 'Upload File'}
+                    </Button>
                 </div>
                 <div className="table-wrapper">
                     {medicalFiles.length > 0 ? (
@@ -538,8 +879,14 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                                 {medicalFiles.map(file => (
                                     <tr key={file.id}>
                                         <td>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                                                {file.type === 'PDF' ? <FileIcon size={16} color="var(--color-primary-500)" /> : <ImageIcon size={16} color="var(--color-primary-500)" />}
+                                            <div
+                                                style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}
+                                            >
+                                                {file.type === 'PDF' ? (
+                                                    <FileIcon size={16} color="var(--color-primary-500)" />
+                                                ) : (
+                                                    <ImageIcon size={16} color="var(--color-primary-500)" />
+                                                )}
                                                 <span style={{ fontWeight: 'var(--font-medium)' }}>{file.name}</span>
                                             </div>
                                         </td>
@@ -548,8 +895,12 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                                         <td style={{ color: 'var(--text-tertiary)' }}>{file.size}</td>
                                         <td>
                                             <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-                                                <Button variant="ghost" size="sm" iconOnly><Eye size={14} /></Button>
-                                                <Button variant="ghost" size="sm" iconOnly><Download size={14} /></Button>
+                                                <Button variant="ghost" size="sm" iconOnly>
+                                                    <Eye size={14} />
+                                                </Button>
+                                                <Button variant="ghost" size="sm" iconOnly>
+                                                    <Download size={14} />
+                                                </Button>
                                             </div>
                                         </td>
                                     </tr>
@@ -570,9 +921,15 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
 
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
-                    <span className={styles.cardTitle}>{t('custProfile.intakeForms') || 'Pre-Appointment Intake Forms & Consents'}</span>
-                    <Button size="sm" variant="outline" onClick={handleSendForm}><Send size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('custProfile.btnSendForm') || 'Send New Form'}</Button>
-                </div>                <div className="table-wrapper">
+                    <span className={styles.cardTitle}>
+                        {t('custProfile.intakeForms') || 'Pre-Appointment Intake Forms & Consents'}
+                    </span>
+                    <Button size="sm" variant="outline" onClick={handleSendForm}>
+                        <Send size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} />{' '}
+                        {t('custProfile.btnSendForm') || 'Send New Form'}
+                    </Button>
+                </div>{' '}
+                <div className="table-wrapper">
                     {intakeForms.length > 0 ? (
                         <table className="data-table">
                             <thead>
@@ -590,21 +947,47 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                                         <td style={{ fontWeight: 'var(--font-medium)' }}>{form.name}</td>
                                         <td>
                                             {form.status === 'Completed' ? (
-                                                <Badge color="success"><CheckCircle2 size={12} className="mr-1 inline-block" /> Completed</Badge>
+                                                <Badge color="success">
+                                                    <CheckCircle2 size={12} className="mr-1 inline-block" /> Completed
+                                                </Badge>
                                             ) : (
-                                                <Badge color="warning"><Clock size={12} className="mr-1 inline-block" /> Pending</Badge>
+                                                <Badge color="warning">
+                                                    <Clock size={12} className="mr-1 inline-block" /> Pending
+                                                </Badge>
                                             )}
                                         </td>
-                                        <td style={{ color: form.dateCompleted ? 'inherit' : 'var(--text-tertiary)' }}>{form.dateCompleted || 'N/A'}</td>
-                                        <td>{form.relatedBooking ? <span style={{ color: 'var(--color-primary-600)', fontWeight: 'var(--font-medium)', cursor: 'pointer' }}>{form.relatedBooking}</span> : '-'}</td>
+                                        <td style={{ color: form.dateCompleted ? 'inherit' : 'var(--text-tertiary)' }}>
+                                            {form.dateCompleted || 'N/A'}
+                                        </td>
+                                        <td>
+                                            {form.relatedBooking ? (
+                                                <span
+                                                    style={{
+                                                        color: 'var(--color-primary-600)',
+                                                        fontWeight: 'var(--font-medium)',
+                                                        cursor: 'pointer',
+                                                    }}
+                                                >
+                                                    {form.relatedBooking}
+                                                </span>
+                                            ) : (
+                                                '-'
+                                            )}
+                                        </td>
                                         <td>
                                             <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                                                 {form.status === 'Completed' ? (
-                                                    <Button variant="ghost" size="sm" iconOnly><Eye size={14} /></Button>
+                                                    <Button variant="ghost" size="sm" iconOnly>
+                                                        <Eye size={14} />
+                                                    </Button>
                                                 ) : (
-                                                    <Button variant="ghost" size="sm" iconOnly><Send size={14} /></Button>
+                                                    <Button variant="ghost" size="sm" iconOnly>
+                                                        <Send size={14} />
+                                                    </Button>
                                                 )}
-                                                <Button variant="ghost" size="sm" iconOnly><MoreHorizontal size={14} /></Button>
+                                                <Button variant="ghost" size="sm" iconOnly>
+                                                    <MoreHorizontal size={14} />
+                                                </Button>
                                             </div>
                                         </td>
                                     </tr>
@@ -616,7 +999,10 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                             <EmptyState
                                 icon={<FileText size={32} color="var(--text-tertiary)" />}
                                 title={t('custProfile.emptyFormsTitle') || 'No intake forms'}
-                                description={t('custProfile.emptyFormsDesc') || 'Send an intake form to this client before their appointment.'}
+                                description={
+                                    t('custProfile.emptyFormsDesc') ||
+                                    'Send an intake form to this client before their appointment.'
+                                }
                             />
                         </div>
                     )}
@@ -629,35 +1015,114 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
         <div className={styles.mainPanel}>
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
-                    <span className={styles.cardTitle}><MessageSquare size={18} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> Staff Notes</span>
-                    <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>Internal — not visible to client</span>
+                    <span className={styles.cardTitle}>
+                        <MessageSquare size={18} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> Staff Notes
+                    </span>
+                    <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
+                        Internal — not visible to client
+                    </span>
                 </div>
                 {staffNotes.length > 0 ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', padding: 'var(--space-4)' }}>
+                    <div
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 'var(--space-4)',
+                            padding: 'var(--space-4)',
+                        }}
+                    >
                         {staffNotes.map(note => (
-                            <div key={note.id} style={{ padding: 'var(--space-4)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', background: 'var(--bg-secondary)' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-3)' }}>
+                            <div
+                                key={note.id}
+                                style={{
+                                    padding: 'var(--space-4)',
+                                    border: '1px solid var(--border-color)',
+                                    borderRadius: 'var(--radius-lg)',
+                                    background: 'var(--bg-secondary)',
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'flex-start',
+                                        marginBottom: 'var(--space-3)',
+                                    }}
+                                >
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                                        <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--color-primary-100)', color: 'var(--color-primary-600)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 600 }}>
+                                        <div
+                                            style={{
+                                                width: 36,
+                                                height: 36,
+                                                borderRadius: '50%',
+                                                background: 'var(--color-primary-100)',
+                                                color: 'var(--color-primary-600)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                fontSize: 13,
+                                                fontWeight: 600,
+                                            }}
+                                        >
                                             {note.employeeAvatar}
                                         </div>
                                         <div>
-                                            <div style={{ fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-sm)' }}>Note from {note.employee}</div>
-                                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>After {note.service} • {note.date}</div>
+                                            <div
+                                                style={{
+                                                    fontWeight: 'var(--font-semibold)',
+                                                    fontSize: 'var(--text-sm)',
+                                                }}
+                                            >
+                                                Note from {note.employee}
+                                            </div>
+                                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
+                                                After {note.service} • {note.date}
+                                            </div>
                                         </div>
                                     </div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '2px', color: 'var(--color-warning)' }}>
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '2px',
+                                                color: 'var(--color-warning)',
+                                            }}
+                                        >
                                             <Star size={13} fill="currentColor" />
-                                            <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-bold)', color: 'var(--text-primary)' }}>{note.rating}</span>
+                                            <span
+                                                style={{
+                                                    fontSize: 'var(--text-sm)',
+                                                    fontWeight: 'var(--font-bold)',
+                                                    color: 'var(--text-primary)',
+                                                }}
+                                            >
+                                                {note.rating}
+                                            </span>
                                         </div>
-                                        <Button variant="ghost" size="sm" iconOnly style={{ color: 'var(--color-error)' }}
-                                            onClick={() => { setStaffNotes(prev => prev.filter(n => n.id !== note.id)); addToast('success', 'Note removed'); }}>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            iconOnly
+                                            style={{ color: 'var(--color-error)' }}
+                                            onClick={() => {
+                                                setStaffNotes(prev => prev.filter(n => n.id !== note.id));
+                                                addToast('success', 'Note removed');
+                                            }}
+                                        >
                                             <Flag size={13} />
                                         </Button>
                                     </div>
                                 </div>
-                                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', lineHeight: 1.6 }}>{note.note}</p>
+                                <p
+                                    style={{
+                                        fontSize: 'var(--text-sm)',
+                                        color: 'var(--text-secondary)',
+                                        lineHeight: 1.6,
+                                    }}
+                                >
+                                    {note.note}
+                                </p>
                             </div>
                         ))}
                     </div>
@@ -689,18 +1154,37 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                         <div className={styles.details}>
                             <h1>
                                 {client.name}
-                                {client.vip && <Star size={20} fill="var(--color-warning)" color="var(--color-warning)" className={lang === 'ar' ? 'mr-2' : 'ml-2'} />}
+                                {client.vip && (
+                                    <Star
+                                        size={20}
+                                        fill="var(--color-warning)"
+                                        color="var(--color-warning)"
+                                        className={lang === 'ar' ? 'mr-2' : 'ml-2'}
+                                    />
+                                )}
                             </h1>
                             <div className={styles.meta}>
-                                <span className={styles.metaItem}><User size={14} className={lang === 'ar' ? 'ml-1' : 'mr-1'} /> {t('custProfile.clientNum')}{client.id}</span>
-                                <span className={styles.metaItem}><Calendar size={14} className={lang === 'ar' ? 'ml-1' : 'mr-1'} /> {t('custProfile.joined')} {client.joined}</span>
+                                <span className={styles.metaItem}>
+                                    <User size={14} className={lang === 'ar' ? 'ml-1' : 'mr-1'} />{' '}
+                                    {t('custProfile.clientNum')}
+                                    {client.id}
+                                </span>
+                                <span className={styles.metaItem}>
+                                    <Calendar size={14} className={lang === 'ar' ? 'ml-1' : 'mr-1'} />{' '}
+                                    {t('custProfile.joined')} {client.joined}
+                                </span>
                                 <Badge color="success">{t('custProfile.activeBadge')}</Badge>
                             </div>
                         </div>
                     </div>
                     <div className={styles.actions}>
-                        <Button variant="outline" iconOnly><MoreHorizontal size={20} /></Button>
-                        <Button variant="outline"><Edit size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('custProfile.editProfile')}</Button>
+                        <Button variant="outline" iconOnly>
+                            <MoreHorizontal size={20} />
+                        </Button>
+                        <Button variant="outline">
+                            <Edit size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} />{' '}
+                            {t('custProfile.editProfile')}
+                        </Button>
                         <Button onClick={() => router.push('/bookings/new')}>
                             <Plus size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('custProfile.newBooking')}
                         </Button>
@@ -736,7 +1220,11 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                     { key: 'bookings', label: t('custProfile.tabBookings'), icon: <Calendar size={16} /> },
                     { key: 'sales', label: t('custProfile.tabSales'), icon: <CreditCard size={16} /> },
                     { key: 'reviews', label: t('custProfile.tabReviews'), icon: <MessageSquare size={16} /> },
-                    { key: 'staffNotes', label: `Staff Notes${staffNotes.length > 0 ? ` (${staffNotes.length})` : ''}`, icon: <MessageSquare size={16} /> },
+                    {
+                        key: 'staffNotes',
+                        label: `Staff Notes${staffNotes.length > 0 ? ` (${staffNotes.length})` : ''}`,
+                        icon: <MessageSquare size={16} />,
+                    },
                     { key: 'files', label: t('custProfile.tabFiles') || 'Files & Forms', icon: <FileText size={16} /> },
                 ]}
             />

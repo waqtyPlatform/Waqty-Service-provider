@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Coins, Save, Plus, Trash2, MapPin, Users, UserCog, Building2, Search } from 'lucide-react';
+import { Coins, Save, Plus, Trash2, Edit, MapPin, Users, UserCog, Building2, Search } from 'lucide-react';
 import { Button, Input, Select, Modal, Badge, useToast } from '@/components/ui';
 import styles from './page.module.css';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -64,8 +64,9 @@ export default function ServicePricingPage() {
     const [tierBranchFilter, setTierBranchFilter] = useState('');
 
     // ── Employee Tab State ──
-    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-    const [newOverride, setNewOverride] = useState({ serviceId: '', employeeId: '', branchId: '', price: '' });
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingOverrideId, setEditingOverrideId] = useState<string | null>(null);
+    const [formOverride, setFormOverride] = useState({ serviceId: '', employeeId: '', branchId: '', price: '' });
 
     const tabs = [
         { key: 'branch' as const, label: t('servicePricing.tabBranch'), icon: <Building2 size={15} /> },
@@ -144,23 +145,59 @@ export default function ServicePricingPage() {
         addToast('success', t('servicePricing.saved'));
     };
 
-    const handleAddEmployeeOverride = () => {
-        if (!newOverride.serviceId || !newOverride.employeeId || !newOverride.price) return;
-        const numVal = parseFloat(newOverride.price);
+    const openAddModal = () => {
+        setEditingOverrideId(null);
+        setFormOverride({ serviceId: '', employeeId: '', branchId: '', price: '' });
+        setIsModalOpen(true);
+    };
+
+    const openEditModal = (o: ServicePriceOverride) => {
+        setEditingOverrideId(o.id);
+        setFormOverride({
+            serviceId: o.serviceId,
+            employeeId: o.employeeId ?? '',
+            branchId: o.branchId ?? '',
+            price: String(o.price),
+        });
+        setIsModalOpen(true);
+    };
+
+    const handleSaveOverride = () => {
+        if (!formOverride.serviceId || !formOverride.employeeId || !formOverride.price) return;
+        const numVal = parseFloat(formOverride.price);
         if (isNaN(numVal) || numVal < 0) return;
 
-        setOverrides(prev => [
-            ...prev,
-            {
-                id: `eo-${Date.now()}`,
-                serviceId: newOverride.serviceId,
-                employeeId: newOverride.employeeId,
-                branchId: newOverride.branchId || undefined,
-                price: numVal,
-            },
-        ]);
-        setNewOverride({ serviceId: '', employeeId: '', branchId: '', price: '' });
-        setIsAddModalOpen(false);
+        if (editingOverrideId) {
+            // Update existing
+            setOverrides(prev =>
+                prev.map(o =>
+                    o.id === editingOverrideId
+                        ? {
+                              ...o,
+                              serviceId: formOverride.serviceId,
+                              employeeId: formOverride.employeeId,
+                              branchId: formOverride.branchId || undefined,
+                              price: numVal,
+                          }
+                        : o
+                )
+            );
+        } else {
+            // Add new
+            setOverrides(prev => [
+                ...prev,
+                {
+                    id: `eo-${Date.now()}`,
+                    serviceId: formOverride.serviceId,
+                    employeeId: formOverride.employeeId,
+                    branchId: formOverride.branchId || undefined,
+                    price: numVal,
+                },
+            ]);
+        }
+        setFormOverride({ serviceId: '', employeeId: '', branchId: '', price: '' });
+        setEditingOverrideId(null);
+        setIsModalOpen(false);
         addToast('success', t('servicePricing.saved'));
     };
 
@@ -347,7 +384,7 @@ export default function ServicePricingPage() {
                         <span className={styles.cardTitle}>
                             <UserCog size={18} /> {t('servicePricing.tabEmployee')}
                         </span>
-                        <Button size="sm" onClick={() => setIsAddModalOpen(true)}>
+                        <Button size="sm" onClick={openAddModal}>
                             <Plus size={14} /> {t('servicePricing.addOverride')}
                         </Button>
                     </div>
@@ -360,7 +397,7 @@ export default function ServicePricingPage() {
                                     <th>{t('servicePricing.branch')}</th>
                                     <th style={{ textAlign: 'center' }}>{t('servicePricing.basePrice')}</th>
                                     <th style={{ textAlign: 'center' }}>{t('servicePricing.override')}</th>
-                                    <th style={{ width: 60 }}></th>
+                                    <th style={{ width: 80 }}></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -423,12 +460,22 @@ export default function ServicePricingPage() {
                                                     {o.price} EGP
                                                 </td>
                                                 <td>
-                                                    <button
-                                                        className={styles.btnIcon}
-                                                        onClick={() => removeOverride(o.id)}
-                                                    >
-                                                        <Trash2 size={14} />
-                                                    </button>
+                                                    <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
+                                                        <button
+                                                            className={styles.btnIcon}
+                                                            onClick={() => openEditModal(o)}
+                                                            title="Edit"
+                                                        >
+                                                            <Edit size={14} />
+                                                        </button>
+                                                        <button
+                                                            className={styles.btnIcon}
+                                                            onClick={() => removeOverride(o.id)}
+                                                            title="Delete"
+                                                        >
+                                                            <Trash2 size={14} />
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         );
@@ -440,38 +487,62 @@ export default function ServicePricingPage() {
                 </div>
             )}
 
-            {/* ── Add Employee Override Modal ── */}
+            {/* ── Add/Edit Employee Override Modal ── */}
             <Modal
-                open={isAddModalOpen}
-                onClose={() => setIsAddModalOpen(false)}
-                title={t('servicePricing.addOverride')}
+                open={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                title={editingOverrideId ? 'Edit Override' : t('servicePricing.addOverride')}
                 footer={
                     <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
-                        <Button variant="ghost" onClick={() => setIsAddModalOpen(false)}>
+                        <Button variant="ghost" onClick={() => setIsModalOpen(false)}>
                             Cancel
                         </Button>
-                        <Button onClick={handleAddEmployeeOverride}>Save</Button>
+                        <Button onClick={handleSaveOverride}>Save</Button>
                     </div>
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Select
-                        label={t('servicePricing.service')}
-                        options={[
-                            { label: '— Select Service —', value: '' },
-                            ...services.map(s => ({ label: `${s.name} (${s.price} EGP)`, value: s.id })),
-                        ]}
-                        value={newOverride.serviceId}
-                        onChange={e => setNewOverride(prev => ({ ...prev, serviceId: e.target.value }))}
-                    />
+                    <div>
+                        <Select
+                            label={t('servicePricing.service')}
+                            options={[
+                                { label: '— Select Service —', value: '' },
+                                ...services.map(s => ({ label: `${s.name} (${s.price} EGP)`, value: s.id })),
+                            ]}
+                            value={formOverride.serviceId}
+                            onChange={e => setFormOverride(prev => ({ ...prev, serviceId: e.target.value }))}
+                        />
+                        {formOverride.serviceId &&
+                            (() => {
+                                const selectedService = services.find(s => s.id === formOverride.serviceId);
+                                return selectedService ? (
+                                    <div
+                                        style={{
+                                            marginTop: 'var(--space-2)',
+                                            padding: 'var(--space-2) var(--space-3)',
+                                            background: 'var(--color-primary-50)',
+                                            borderRadius: 'var(--radius-md)',
+                                            fontSize: 'var(--text-xs)',
+                                            color: 'var(--color-primary-600)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 'var(--space-2)',
+                                        }}
+                                    >
+                                        <Coins size={12} />
+                                        {t('servicePricing.basePrice')}: <strong>{selectedService.price} EGP</strong>
+                                    </div>
+                                ) : null;
+                            })()}
+                    </div>
                     <Select
                         label={t('servicePricing.employee')}
                         options={[
                             { label: '— Select Employee —', value: '' },
                             ...employees.map(e => ({ label: `${e.name} (${e.role})`, value: e.id })),
                         ]}
-                        value={newOverride.employeeId}
-                        onChange={e => setNewOverride(prev => ({ ...prev, employeeId: e.target.value }))}
+                        value={formOverride.employeeId}
+                        onChange={e => setFormOverride(prev => ({ ...prev, employeeId: e.target.value }))}
                     />
                     <Select
                         label={`${t('servicePricing.branch')} (optional)`}
@@ -479,16 +550,38 @@ export default function ServicePricingPage() {
                             { label: t('servicePricing.allBranches'), value: '' },
                             ...branches.map(b => ({ label: b.name, value: b.id })),
                         ]}
-                        value={newOverride.branchId}
-                        onChange={e => setNewOverride(prev => ({ ...prev, branchId: e.target.value }))}
+                        value={formOverride.branchId}
+                        onChange={e => setFormOverride(prev => ({ ...prev, branchId: e.target.value }))}
                     />
-                    <Input
-                        label={`${t('servicePricing.price')} (EGP)`}
-                        type="number"
-                        min="0"
-                        value={newOverride.price}
-                        onChange={e => setNewOverride(prev => ({ ...prev, price: e.target.value }))}
-                    />
+                    <div>
+                        <Input
+                            label={`${t('servicePricing.price')} (EGP)`}
+                            type="number"
+                            min="0"
+                            value={formOverride.price}
+                            onChange={e => setFormOverride(prev => ({ ...prev, price: e.target.value }))}
+                        />
+                        {formOverride.serviceId &&
+                            formOverride.price &&
+                            (() => {
+                                const selectedService = services.find(s => s.id === formOverride.serviceId);
+                                if (!selectedService) return null;
+                                const diff = parseFloat(formOverride.price) - selectedService.price;
+                                if (isNaN(diff) || diff === 0) return null;
+                                return (
+                                    <div
+                                        style={{
+                                            marginTop: 'var(--space-1)',
+                                            fontSize: 'var(--text-xs)',
+                                            color: diff > 0 ? 'var(--color-warning)' : '#10b981',
+                                        }}
+                                    >
+                                        {diff > 0 ? '+' : ''}
+                                        {diff} EGP vs base price
+                                    </div>
+                                );
+                            })()}
+                    </div>
                 </div>
             </Modal>
         </div>
