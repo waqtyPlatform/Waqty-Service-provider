@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { api } from '@/lib/api';
+import { authApi } from '@/lib/api';
 
 export type UserRole = 'admin' | 'manager' | 'staff';
 export type BusinessType = 'clinic' | 'salon' | 'barber';
@@ -48,7 +48,8 @@ interface AuthContextType {
         code: string,
         redirect?: boolean
     ) => Promise<{ success: boolean; user?: User; error?: string }>;
-    forgotPassword: (identifier: string) => Promise<{ success: boolean; type: 'email' | 'phone' }>;
+    forgotPassword: (identifier: string) => Promise<{ success: boolean; type: 'email' | 'phone'; error?: string }>;
+    verifyOtpCode: (email: string, otp: string) => Promise<{ success: boolean; valid?: boolean; error?: string }>;
     resetPassword: (
         identifier: string,
         code: string,
@@ -159,18 +160,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const login = async (identifier: string, password: string) => {
         try {
-            const res = await api.post<ProviderLoginResponse>('/api/provider/auth/login', {
-                email: identifier,
-                password,
-            });
+            const res = await authApi.login(identifier, password);
 
             if (res.success && res.data) {
                 const { token, provider } = res.data;
-
-                // Store JWT token
                 localStorage.setItem('hagzy_token', token);
 
-                // Map provider data to User
                 const loggedInUser: User = {
                     id: provider.uuid,
                     uuid: provider.uuid,
@@ -183,6 +178,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     blocked: provider.blocked,
                     banned: provider.banned,
                 };
+
+                // Enrich with profile data (category, etc.)
+                try {
+                    const profile = await authApi.me();
+                    if (profile.success && profile.data) {
+                        if (profile.data.category?.name) {
+                            const cat = profile.data.category.name.toLowerCase();
+                            if (cat.includes('clinic') || cat.includes('عيادة')) loggedInUser.businessType = 'clinic';
+                            else if (cat.includes('barber') || cat.includes('حلاق'))
+                                loggedInUser.businessType = 'barber';
+                            else loggedInUser.businessType = 'salon';
+                        }
+                    }
+                } catch {
+                    // Profile fetch is optional — proceed with defaults
+                }
 
                 setUser(loggedInUser);
                 localStorage.setItem('hagzy_user', JSON.stringify(loggedInUser));
@@ -223,25 +234,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const forgotPassword = async (identifier: string) => {
-        await new Promise(resolve => setTimeout(resolve, 800));
-        const type = identifier.includes('@') ? 'email' : 'phone';
-        console.log(`Mock reset OTP sent to ${type}: ${identifier}`);
-        return { success: true, type } as const;
+        try {
+            const res = await authApi.sendOtp(identifier);
+            if (res.success) {
+                const type = identifier.includes('@') ? 'email' : 'phone';
+                return { success: true, type } as const;
+            }
+            return { success: false, type: 'email' as const, error: res.message || 'Failed to send reset code' };
+        } catch (err: unknown) {
+            const error = err as { message?: string; status?: number };
+            if (error.status === 429)
+                return {
+                    success: false,
+                    type: 'email' as const,
+                    error: 'Too many attempts. Please wait and try again.',
+                };
+            return { success: false, type: 'email' as const, error: error.message || 'Failed to send reset code' };
+        }
+    };
+
+    const verifyOtpCode = async (email: string, otp: string) => {
+        try {
+            const res = await authApi.verifyOtp(email, otp);
+            if (res.success && res.data) {
+                return { success: true, valid: res.data.valid };
+            }
+            return { success: false, valid: false, error: res.message || 'Invalid code' };
+        } catch (err: unknown) {
+            const error = err as { message?: string };
+            return { success: false, valid: false, error: error.message || 'Invalid or expired code' };
+        }
     };
 
     const resetPassword = async (identifier: string, code: string, newPassword: string) => {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        if (code !== '123456') {
-            return { success: false, error: 'Invalid verification code' };
+        try {
+            const res = await authApi.resetPassword(identifier, code, newPassword);
+            if (res.success) return { success: true };
+            return { success: false, error: res.message || 'Failed to reset password' };
+        } catch (err: unknown) {
+            const error = err as { message?: string; status?: number };
+            if (error.status === 429) return { success: false, error: 'Too many attempts. Please wait and try again.' };
+            return { success: false, error: error.message || 'Failed to reset password' };
         }
-
-        if (newPassword.length < 6) {
-            return { success: false, error: 'Password must be at least 6 characters' };
-        }
-
-        console.log(`Mock password reset for: ${identifier}`);
-        return { success: true };
     };
 
     const updateUser = (data: Partial<User>) => {
@@ -255,7 +289,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const logout = async () => {
         try {
-            await api.post('/api/provider/auth/logout', {});
+            await authApi.logout();
         } catch {
             // Ignore logout API errors — clear local state regardless
         }
@@ -268,7 +302,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return (
         <AuthContext.Provider
-            value={{ user, login, requestOTP, verifyOTP, forgotPassword, resetPassword, updateUser, logout, loading }}
+            value={{
+                user,
+                login,
+                requestOTP,
+                verifyOTP,
+                forgotPassword,
+                verifyOtpCode,
+                resetPassword,
+                updateUser,
+                logout,
+                loading,
+            }}
         >
             {!loading && children}
         </AuthContext.Provider>
