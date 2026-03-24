@@ -348,7 +348,7 @@ export default function ReportsPage() {
                             <Tooltip
                                 cursor={{ fill: 'var(--bg-secondary)' }}
                                 contentStyle={{ borderRadius: 8, border: 'none', boxShadow: 'var(--shadow-lg)' }}
-                                formatter={(value: number) => [value, t('reports.kpiBookings')]}
+                                formatter={value => [value as number, t('reports.kpiBookings')]}
                                 labelFormatter={label => t(`reports.day${label}`) || label}
                             />
                             <Bar

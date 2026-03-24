@@ -391,7 +391,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                                         border: '1px solid var(--border-color)',
                                         boxShadow: 'var(--shadow-md)',
                                     }}
-                                    formatter={(value: number | string | undefined) => [`${value || 0} EGP`, 'Revenue']}
+                                    formatter={value => [`${value || 0} EGP`, 'Revenue']}
                                 />
                                 <Area
                                     type="monotone"
