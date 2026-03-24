@@ -241,8 +241,8 @@ export default function ReportsPage() {
                                 />
                                 <Tooltip
                                     contentStyle={{ borderRadius: 8, border: 'none', boxShadow: 'var(--shadow-lg)' }}
-                                    formatter={(value: number, name: string) => [
-                                        value,
+                                    formatter={(value, name) => [
+                                        value as number,
                                         t(name === 'Revenue' ? 'reports.revenue' : 'reports.expenses'),
                                     ]}
                                     labelFormatter={label => t(`reports.${label}`) || label}
