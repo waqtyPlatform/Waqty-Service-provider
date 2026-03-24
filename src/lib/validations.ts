@@ -230,18 +230,3 @@ export const promoCodeSchema = z
         }
     );
 export type PromoCodeFormData = z.infer<typeof promoCodeSchema>;
-
-// ── Service Price Override ──────────────────────────────
-export const servicePriceOverrideSchema = z
-    .object({
-        serviceId: z.string().min(1, 'Service is required'),
-        branchId: z.string().optional(),
-        employeeId: z.string().optional(),
-        pricingTier: z.string().optional(),
-        price: z.coerce.number().min(0, 'Price cannot be negative'),
-    })
-    .refine(data => !!(data.branchId || data.employeeId || data.pricingTier), {
-        message: 'At least one of branch, employee, or pricing tier must be specified',
-    })
-    .refine(data => !(data.employeeId && data.pricingTier), { message: 'Cannot set both employee and pricing tier' });
-export type ServicePriceOverrideFormData = z.infer<typeof servicePriceOverrideSchema>;

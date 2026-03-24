@@ -4,25 +4,13 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import {
-    Mail,
-    Smartphone,
-    ArrowRight,
-    ArrowLeft,
-    ShieldCheck,
-    Lock,
-    Eye,
-    EyeOff,
-    RefreshCw,
-    CheckCircle,
-} from 'lucide-react';
+import { Mail, ArrowRight, ArrowLeft, ShieldCheck, Lock, Eye, EyeOff, RefreshCw, CheckCircle } from 'lucide-react';
 import { useToast } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
-import { isEgyptianPhone } from '@/lib/validations';
 import styles from '../login/login.module.css';
 
 export default function ForgotPasswordPage() {
-    const { forgotPassword, resetPassword } = useAuth();
+    const { forgotPassword, verifyOtpCode, resetPassword } = useAuth();
     const { addToast } = useToast();
     const { t } = useTranslation();
     const router = useRouter();
@@ -30,7 +18,6 @@ export default function ForgotPasswordPage() {
     // Steps: 'identifier' -> 'verify' -> 'reset' -> 'success'
     const [step, setStep] = useState<'identifier' | 'verify' | 'reset' | 'success'>('identifier');
     const [identifier, setIdentifier] = useState('');
-    const [otpMethod, setOtpMethod] = useState<'email' | 'phone' | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
     // OTP
@@ -54,25 +41,19 @@ export default function ForgotPasswordPage() {
     const handleSendCode = async (e?: React.FormEvent) => {
         e?.preventDefault();
         if (!identifier.trim()) return addToast('error', t('auth.errorEmpty'));
-        // Validate Egyptian phone if not email
-        if (!identifier.includes('@')) {
-            if (!isEgyptianPhone(identifier)) {
-                return addToast('error', 'Enter a valid Egyptian phone number (01XXXXXXXXX)');
-            }
-        } else {
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier)) {
-                return addToast('error', 'Enter a valid email address');
-            }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier)) {
+            return addToast('error', 'Enter a valid email address');
         }
 
         setIsLoading(true);
         try {
             const res = await forgotPassword(identifier);
             if (res.success) {
-                setOtpMethod(res.type);
                 setStep('verify');
                 setCountdown(60);
-                addToast('success', res.type === 'email' ? t('auth.otpSentEmail') : t('auth.otpSentWhatsApp'));
+                addToast('success', t('auth.otpSentEmail'));
+            } else {
+                addToast('error', res.error || t('auth.errorRequest'));
             }
         } catch {
             addToast('error', t('auth.errorRequest'));
@@ -86,13 +67,25 @@ export default function ForgotPasswordPage() {
         const code = otpCode.join('');
         if (code.length < 6) return addToast('error', t('auth.error6Digits'));
 
-        // Just move to reset step — actual verification happens with resetPassword
-        setStep('reset');
+        setIsLoading(true);
+        try {
+            const res = await verifyOtpCode(identifier, code);
+            if (res.success && res.valid) {
+                setStep('reset');
+            } else {
+                addToast('error', res.error || 'Invalid or expired code');
+                setOtpCode(['', '', '', '', '', '']);
+            }
+        } catch {
+            addToast('error', 'Verification failed');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleResetPassword = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (newPassword.length < 6) return addToast('error', t('auth.errorPasswordMin'));
+        if (newPassword.length < 8) return addToast('error', t('auth.errorPasswordMin'));
         if (newPassword !== confirmPassword) return addToast('error', t('auth.errorPasswordMatch'));
 
         setIsLoading(true);
@@ -186,7 +179,7 @@ export default function ForgotPasswordPage() {
                                         color: 'var(--text-tertiary)',
                                     }}
                                 >
-                                    {identifier.includes('@') ? <Mail size={18} /> : <Smartphone size={18} />}
+                                    <Mail size={18} />
                                 </div>
                                 <input
                                     type="text"
@@ -416,18 +409,6 @@ export default function ForgotPasswordPage() {
                                 {t('auth.btnBackToLogin')}
                             </button>
                         </Link>
-                    </div>
-                )}
-
-                {step === 'verify' && (
-                    <div className={styles.tip} style={{ marginTop: 'var(--space-6)' }}>
-                        <span>
-                            {t('auth.demoTipVerify')}{' '}
-                            <bdi>
-                                <strong>123456</strong>
-                            </bdi>
-                            .
-                        </span>
                     </div>
                 )}
 
