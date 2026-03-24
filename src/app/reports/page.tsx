@@ -289,10 +289,7 @@ export default function ReportsPage() {
                                 </Pie>
                                 <Tooltip
                                     contentStyle={{ borderRadius: 8, border: 'none', boxShadow: 'var(--shadow-lg)' }}
-                                    formatter={(value: number, name: string) => [
-                                        `${value}%`,
-                                        t(`reports.srv${name}`) || name,
-                                    ]}
+                                    formatter={(value, name) => [`${value}%`, t(`reports.srv${name}`) || name]}
                                 />
                             </RPieChart>
                         </ResponsiveContainer>
