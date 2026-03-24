@@ -1,15 +1,36 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Coins, Save, Plus, Trash2, Edit, MapPin, Users, UserCog, Building2, Search } from 'lucide-react';
 import { Button, Input, Select, Modal, Badge, useToast } from '@/components/ui';
 import styles from './page.module.css';
 import { useTranslation } from '@/hooks/useTranslation';
 import type { ServicePriceOverride } from '@/lib/priceResolver';
+import { providerApi } from '@/lib/api';
 
-// ─── Mock Data ───────────────────────────────────────────────────────
+// ─── Data types ───────────────────────────────────────────────────────
 
-const services = [
+interface ServiceItem {
+    id: string;
+    name: string;
+    category: string;
+    price: number;
+}
+interface BranchItem {
+    id: string;
+    name: string;
+}
+interface EmployeeItem {
+    id: string;
+    name: string;
+    role: string;
+    level: string;
+    branch: string;
+}
+
+// ─── Fallback Mock Data ───────────────────────────────────────────────
+
+const fallbackServices: ServiceItem[] = [
     { id: '1', name: 'Hair Cut & Style', category: 'Hair', price: 120 },
     { id: '2', name: 'Hair Coloring', category: 'Hair', price: 450 },
     { id: '3', name: 'Keratin Treatment', category: 'Hair', price: 800 },
@@ -18,15 +39,13 @@ const services = [
     { id: '6', name: 'HydraFacial', category: 'Skin', price: 600 },
 ];
 
-const branches = [
+const fallbackBranches: BranchItem[] = [
     { id: '1', name: 'Downtown Branch' },
     { id: '2', name: 'Mall of Arabia' },
     { id: '3', name: 'New Cairo Branch' },
 ];
 
-const tiers = ['Senior', 'Mid', 'Junior', 'Entry'];
-
-const employees = [
+const fallbackEmployees: EmployeeItem[] = [
     { id: 'E001', name: 'Sarah Ahmed', role: 'Senior Stylist', level: 'Senior', branch: '1' },
     { id: 'E002', name: 'Nora Ali', role: 'Junior Stylist', level: 'Junior', branch: '1' },
     { id: 'E003', name: 'Mona Zein', role: 'Nail Technician', level: 'Mid', branch: '2' },
@@ -34,16 +53,14 @@ const employees = [
     { id: 'E005', name: 'Hana Youssef', role: 'Esthetician', level: 'Mid', branch: '3' },
 ];
 
-const initialOverrides: ServicePriceOverride[] = [
-    // Branch overrides
+const tiers = ['Senior', 'Mid', 'Junior', 'Entry']; // GAP: tiers map to pricing_groups in API, but API groups have free-form names
+
+const fallbackOverrides: ServicePriceOverride[] = [
     { id: 'bo-1', serviceId: '1', branchId: '2', price: 140 },
-    // Tier overrides
     { id: 'to-1', serviceId: '1', pricingTier: 'Senior', price: 150 },
     { id: 'to-2', serviceId: '1', pricingTier: 'Junior', price: 100 },
     { id: 'to-3', serviceId: '2', pricingTier: 'Senior', price: 500 },
-    // Employee overrides
     { id: 'eo-1', serviceId: '2', employeeId: 'E001', price: 520 },
-    // Branch + Tier
     { id: 'bt-1', serviceId: '1', branchId: '2', pricingTier: 'Senior', price: 170 },
 ];
 
@@ -53,12 +70,75 @@ export default function ServicePricingPage() {
     const { t } = useTranslation();
     const { addToast } = useToast();
 
+    const [services, setServices] = useState<ServiceItem[]>(fallbackServices);
+    const [branches, setBranches] = useState<BranchItem[]>(fallbackBranches);
+    const [employees, setEmployees] = useState<EmployeeItem[]>(fallbackEmployees);
     const [activeTab, setActiveTab] = useState<'branch' | 'tier' | 'employee'>('branch');
-    const [overrides, setOverrides] = useState<ServicePriceOverride[]>(initialOverrides);
+    const [overrides, setOverrides] = useState<ServicePriceOverride[]>(fallbackOverrides);
     const [search, setSearch] = useState('');
 
     // ── Branch Tab State ──
-    const [selectedBranchId, setSelectedBranchId] = useState(branches[0].id);
+    const [selectedBranchId, setSelectedBranchId] = useState('');
+
+    // Fetch real data from API
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            try {
+                const [svcRes, brRes, empRes, spRes] = await Promise.allSettled([
+                    providerApi.getServices(),
+                    providerApi.getBranches(),
+                    providerApi.getEmployees(),
+                    providerApi.getServicePrices(),
+                ]);
+                if (cancelled) return;
+
+                if (svcRes.status === 'fulfilled' && svcRes.value.success && svcRes.value.data?.length) {
+                    setServices(
+                        svcRes.value.data.map(s => ({
+                            id: s.uuid,
+                            name: s.name,
+                            category: s.sub_category?.name || 'Uncategorized',
+                            price: 0,
+                        }))
+                    );
+                }
+                if (brRes.status === 'fulfilled' && brRes.value.success && brRes.value.data?.length) {
+                    const br = brRes.value.data.map(b => ({ id: b.uuid, name: b.name }));
+                    setBranches(br);
+                    setSelectedBranchId(prev => prev || br[0].id);
+                }
+                if (empRes.status === 'fulfilled' && empRes.value.success && empRes.value.data?.length) {
+                    setEmployees(
+                        empRes.value.data.map(e => ({
+                            id: e.uuid,
+                            name: e.name,
+                            role: 'Staff',
+                            level: 'Mid',
+                            branch: e.branch_uuid,
+                        }))
+                    );
+                }
+                if (spRes.status === 'fulfilled' && spRes.value.success && spRes.value.data?.length) {
+                    setOverrides(
+                        spRes.value.data.map(sp => ({
+                            id: sp.uuid,
+                            serviceId: sp.service_uuid,
+                            branchId: sp.branch_uuid || undefined,
+                            employeeId: sp.employee_uuid || undefined,
+                            pricingTier: sp.pricing_group?.name || undefined,
+                            price: sp.price,
+                        }))
+                    );
+                }
+            } catch {
+                /* keep fallback */
+            }
+        })();
+        return () => {
+            cancelled = true;
+        };
+    }, []);
 
     // ── Tier Tab State ──
     const [tierBranchFilter, setTierBranchFilter] = useState('');
