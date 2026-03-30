@@ -19,6 +19,7 @@ import {
     Banknote,
     CreditCard as CardIcon,
     Wallet,
+    Timer,
 } from 'lucide-react';
 import { Button, Badge, Stepper, useToast } from '@/components/ui';
 import styles from './page.module.css';
@@ -112,6 +113,13 @@ const BOOKING_DATA = {
         total: 995.22,
         paid: 500,
         due: 495.22,
+    },
+    queue: {
+        number: 3,
+        totalToday: 8,
+        scheduledStart: '14:30',
+        expectedStart: '14:45',
+        delayMins: 15,
     },
     activityLog: [
         { label: 'Created', detail: 'by Receptionist', time: 'Feb 15, 10:00 AM' },
@@ -1016,6 +1024,119 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
 
                     {/* Side column */}
                     <div className={styles.sideCol}>
+                        {/* Expected Service Time */}
+                        <div className={styles.card}>
+                            <div className={styles.cardHeader}>
+                                <span className={styles.cardTitle}>
+                                    <Timer size={18} /> Expected Service Time
+                                </span>
+                                <Badge color="neutral" size="sm">
+                                    #{BOOKING_DATA.queue.number} of {BOOKING_DATA.queue.totalToday}
+                                </Badge>
+                            </div>
+                            <div className={styles.cardBody}>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 'var(--space-3)',
+                                        marginBottom: 'var(--space-3)',
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            width: 44,
+                                            height: 44,
+                                            borderRadius: 'var(--radius-lg)',
+                                            background: 'var(--color-primary-50)',
+                                            color: 'var(--color-primary-600)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            fontSize: 'var(--text-lg)',
+                                            fontWeight: 'var(--font-bold)',
+                                        }}
+                                    >
+                                        #{BOOKING_DATA.queue.number}
+                                    </div>
+                                    <div>
+                                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
+                                            Queue Position
+                                        </div>
+                                        <div style={{ fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-sm)' }}>
+                                            Appointment #{BOOKING_DATA.queue.number} of {BOOKING_DATA.queue.totalToday}{' '}
+                                            today
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: 'var(--space-2)',
+                                        padding: 'var(--space-3)',
+                                        background: 'var(--bg-secondary)',
+                                        borderRadius: 'var(--radius-lg)',
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                        }}
+                                    >
+                                        <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)' }}>
+                                            Expected Start
+                                        </span>
+                                        <span
+                                            style={{
+                                                fontSize: 'var(--text-lg)',
+                                                fontWeight: 'var(--font-bold)',
+                                                color: 'var(--color-primary-600)',
+                                            }}
+                                        >
+                                            {BOOKING_DATA.queue.expectedStart}
+                                        </span>
+                                    </div>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                        }}
+                                    >
+                                        <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)' }}>
+                                            Scheduled
+                                        </span>
+                                        <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
+                                            {BOOKING_DATA.queue.scheduledStart}
+                                        </span>
+                                    </div>
+                                    {BOOKING_DATA.queue.delayMins > 0 && (
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: 'var(--space-2)',
+                                                padding: 'var(--space-2)',
+                                                marginTop: 'var(--space-1)',
+                                                background: 'var(--color-warning-light)',
+                                                borderRadius: 'var(--radius-md)',
+                                                fontSize: 'var(--text-xs)',
+                                                color: 'var(--color-warning-dark, #92400e)',
+                                                fontWeight: 'var(--font-medium)',
+                                            }}
+                                        >
+                                            <AlertTriangle size={12} />+{BOOKING_DATA.queue.delayMins} min delay from
+                                            schedule
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
                         {/* Client */}
                         <div className={styles.card}>
                             <div className={styles.cardHeader}>
