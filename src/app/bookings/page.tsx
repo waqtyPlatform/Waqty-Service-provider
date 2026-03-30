@@ -112,6 +112,68 @@ const bookingBlocks: BookingBlock[] = [
     },
 ];
 
+// ─── Queue numbering & expected start time ──────────────────────────────────
+
+/** Compute daily queue numbers per employee (sorted by startSlot) */
+function computeQueueNumbers(blocks: BookingBlock[]): Map<BookingBlock, number> {
+    const map = new Map<BookingBlock, number>();
+    const byEmp = new Map<number, BookingBlock[]>();
+    for (const b of blocks) {
+        if (b.status === 'cancelled') continue;
+        const list = byEmp.get(b.empIndex) || [];
+        list.push(b);
+        byEmp.set(b.empIndex, list);
+    }
+    for (const [, list] of byEmp) {
+        list.sort((a, b) => a.startSlot - b.startSlot);
+        list.forEach((b, i) => map.set(b, i + 1));
+    }
+    return map;
+}
+
+/**
+ * Calculate expected start time for a booking block, considering preceding
+ * bookings for the same employee. Completed/cancelled blocks don't cause delay.
+ */
+function getExpectedStartTime(
+    block: BookingBlock,
+    allBlocks: BookingBlock[],
+    slots: string[]
+): { expected: string; scheduled: string; delayMins: number } {
+    const scheduled = slots[block.startSlot] || '09:00';
+    const empBlocks = allBlocks
+        .filter(b => b.empIndex === block.empIndex && b.status !== 'cancelled')
+        .sort((a, b) => a.startSlot - b.startSlot);
+
+    // Walk through preceding blocks and track cumulative end time
+    let runningEndMinutes = 0; // minutes from 09:00
+    for (const b of empBlocks) {
+        if (b === block) break;
+        const bScheduledStart = b.startSlot * 30; // minutes from 09:00
+        const bDuration = b.span * 30;
+
+        if (b.status === 'completed') {
+            // Completed on time — no delay contribution
+            runningEndMinutes = bScheduledStart + bDuration;
+        } else {
+            // Active/pending — takes full duration from max(scheduled, running)
+            const actualStart = Math.max(bScheduledStart, runningEndMinutes);
+            runningEndMinutes = actualStart + bDuration;
+        }
+    }
+
+    const scheduledMinutes = block.startSlot * 30;
+    const expectedMinutes = Math.max(scheduledMinutes, runningEndMinutes);
+    const delayMins = expectedMinutes - scheduledMinutes;
+
+    const baseHour = 9; // 09:00 start
+    const expectedH = Math.floor(expectedMinutes / 60) + baseHour;
+    const expectedM = expectedMinutes % 60;
+    const expected = `${String(expectedH).padStart(2, '0')}:${String(expectedM).padStart(2, '0')}`;
+
+    return { expected, scheduled, delayMins };
+}
+
 const statusBlockClass: Record<string, string> = {
     confirmed: styles.blockConfirmed,
     completed: styles.blockCompleted,
@@ -147,6 +209,9 @@ export default function BookingsCalendarPage() {
             })
             .catch(() => {});
     }, []);
+
+    // Compute queue numbers for all blocks
+    const queueMap = computeQueueNumbers(bookingBlocks);
 
     const goToday = () => setCurrentDate(new Date());
     const goPrev = () =>
@@ -279,6 +344,9 @@ export default function BookingsCalendarPage() {
                                                             if (block.id) router.push(`/bookings/${block.id}`);
                                                         }}
                                                     >
+                                                        <span className={styles.queueBadge}>
+                                                            #{queueMap.get(block) || '—'}
+                                                        </span>
                                                         <div className={styles.bookingBlockName}>{block.client}</div>
                                                         <div className={styles.bookingBlockService}>
                                                             {block.service}
@@ -319,23 +387,66 @@ export default function BookingsCalendarPage() {
                 {/* Side Panel */}
                 <div className={styles.sidePanel}>
                     {/* Next Appointment */}
-                    <div className={styles.sidePanelCard}>
-                        <div className={styles.sidePanelTitle}>
-                            <Clock size={16} /> {t('bookings.nextAppt')}
-                        </div>
-                        <div
-                            className={styles.nextApptCard}
-                            style={{ cursor: 'pointer' }}
-                            onClick={() => router.push('/bookings/BK-1040')}
-                        >
-                            <div className={styles.nextApptName}>Maryam Ibrahim</div>
-                            <div className={styles.nextApptService}>Olaplex Treatment</div>
-                            <div className={styles.nextApptTime}>
-                                <Clock size={12} /> 14:00 – 15:00
+                    {(() => {
+                        const nextBlock = bookingBlocks.find(b => b.id === 'BK-1040')!;
+                        const nextQueue = queueMap.get(nextBlock) || 0;
+                        const nextExpected = getExpectedStartTime(nextBlock, bookingBlocks, timeSlots);
+                        return (
+                            <div className={styles.sidePanelCard}>
+                                <div className={styles.sidePanelTitle}>
+                                    <Clock size={16} /> {t('bookings.nextAppt')}
+                                </div>
+                                <div
+                                    className={styles.nextApptCard}
+                                    style={{ cursor: 'pointer' }}
+                                    onClick={() => router.push('/bookings/BK-1040')}
+                                >
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 'var(--space-2)',
+                                            marginBottom: 'var(--space-1)',
+                                        }}
+                                    >
+                                        <span
+                                            style={{
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                minWidth: 22,
+                                                height: 22,
+                                                borderRadius: 'var(--radius-full)',
+                                                background: 'var(--color-primary-100)',
+                                                color: 'var(--color-primary-700)',
+                                                fontSize: 11,
+                                                fontWeight: 'var(--font-bold)',
+                                            }}
+                                        >
+                                            #{nextQueue}
+                                        </span>
+                                        <div className={styles.nextApptName}>Maryam Ibrahim</div>
+                                    </div>
+                                    <div className={styles.nextApptService}>Olaplex Treatment</div>
+                                    <div className={styles.nextApptTime}>
+                                        <Clock size={12} /> 14:00 – 15:00
+                                    </div>
+                                    <div className={styles.expectedTimeRow}>
+                                        <span>Expected start:</span>
+                                        <span className={styles.expectedTimeValue}>{nextExpected.expected}</span>
+                                        {nextExpected.delayMins > 0 && (
+                                            <span className={styles.delayBadge}>
+                                                <AlertTriangle size={10} /> +{nextExpected.delayMins}m
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div className={styles.countdown}>
+                                        {t('bookings.inMins').replace('%mins%', '23')}
+                                    </div>
+                                </div>
                             </div>
-                            <div className={styles.countdown}>{t('bookings.inMins').replace('%mins%', '23')}</div>
-                        </div>
-                    </div>
+                        );
+                    })()}
 
                     {/* Today's Summary */}
                     <div className={styles.sidePanelCard}>

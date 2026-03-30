@@ -209,6 +209,25 @@ const bookings = [
     },
 ];
 
+/** Compute daily queue number for each booking (grouped by date, sorted by time) */
+function computeListQueueNumbers(list: typeof bookings): Map<string, number> {
+    const map = new Map<string, number>();
+    const byDate = new Map<string, typeof bookings>();
+    for (const b of list) {
+        if (b.status === 'cancelled') continue;
+        const dateList = byDate.get(b.date) || [];
+        dateList.push(b);
+        byDate.set(b.date, dateList);
+    }
+    for (const [, dateList] of byDate) {
+        dateList.sort((a, b) => a.time.localeCompare(b.time));
+        dateList.forEach((b, i) => map.set(b.id, i + 1));
+    }
+    return map;
+}
+
+const listQueueNumbers = computeListQueueNumbers(bookings);
+
 function CancelConfirmModal({
     bookingId,
     onConfirm,
@@ -417,7 +436,29 @@ export default function BookingListPage() {
                                         style={{ cursor: 'pointer' }}
                                         onClick={() => router.push(`/bookings/${b.id}`)}
                                     >
-                                        <td className={styles.bookingId}>{b.id}</td>
+                                        <td className={styles.bookingId}>
+                                            {listQueueNumbers.has(b.id) && (
+                                                <span
+                                                    style={{
+                                                        display: 'inline-flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        minWidth: 20,
+                                                        height: 18,
+                                                        borderRadius: 'var(--radius-full)',
+                                                        background: 'var(--color-primary-50, #eff6ff)',
+                                                        color: 'var(--color-primary-600)',
+                                                        fontSize: 10,
+                                                        fontWeight: 700,
+                                                        marginRight: 4,
+                                                        padding: '0 4px',
+                                                    }}
+                                                >
+                                                    #{listQueueNumbers.get(b.id)}
+                                                </span>
+                                            )}
+                                            {b.id}
+                                        </td>
                                         <td>{b.branch}</td>
                                         <td style={{ fontWeight: 'var(--font-medium)' }}>{b.client}</td>
                                         <td style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
