@@ -9,11 +9,27 @@ import styles from './bookings.module.css';
 import BookingsTabs from './BookingsTabs';
 import { useTranslation } from '@/hooks/useTranslation';
 import { isEmployeeOnShift } from '@/lib/shiftData';
-import { providerApi, type Booking } from '@/lib/api';
+import { providerApi, type Booking, type Employee } from '@/lib/api';
 
-const employees = [
-    { name: 'Sara A.', initials: 'SA', color: '#8B5CF6', status: 'Available', empId: 'E001', role: 'Senior Stylist' },
-    { name: 'Nora A.', initials: 'NA', color: '#EC4899', status: 'In Session', empId: 'E002', role: 'Skin Specialist' },
+const fallbackEmployees = [
+    {
+        name: 'Sara A.',
+        initials: 'SA',
+        color: '#8B5CF6',
+        status: 'Available',
+        empId: 'E001',
+        role: 'Senior Stylist',
+        uuid: '',
+    },
+    {
+        name: 'Nora A.',
+        initials: 'NA',
+        color: '#EC4899',
+        status: 'In Session',
+        empId: 'E002',
+        role: 'Skin Specialist',
+        uuid: '',
+    },
     {
         name: 'Layla H.',
         initials: 'LH',
@@ -21,10 +37,84 @@ const employees = [
         status: 'Available',
         empId: 'E003',
         role: 'Senior Therapist',
+        uuid: '',
     },
-    { name: 'Reem M.', initials: 'RM', color: '#10B981', status: 'Break', empId: 'E005', role: 'Massage Therapist' },
-    { name: 'Hana Y.', initials: 'HY', color: '#F59E0B', status: 'Available', empId: 'E004', role: 'Nail Technician' },
+    {
+        name: 'Reem M.',
+        initials: 'RM',
+        color: '#10B981',
+        status: 'Break',
+        empId: 'E005',
+        role: 'Massage Therapist',
+        uuid: '',
+    },
+    {
+        name: 'Hana Y.',
+        initials: 'HY',
+        color: '#F59E0B',
+        status: 'Available',
+        empId: 'E004',
+        role: 'Nail Technician',
+        uuid: '',
+    },
 ];
+
+const empColors = ['#8B5CF6', '#EC4899', '#3B82F6', '#10B981', '#F59E0B', '#F97316', '#6366F1', '#14B8A6'];
+
+function mapApiEmployees(apiEmployees: Employee[]) {
+    return apiEmployees.map((emp, i) => ({
+        name: emp.name,
+        initials: emp.name
+            .split(' ')
+            .map(w => w[0])
+            .join('')
+            .slice(0, 2)
+            .toUpperCase(),
+        color: empColors[i % empColors.length],
+        status: 'Available', // GAP: API has no real-time employee availability status
+        empId: emp.uuid,
+        role: '', // GAP: API has no employee role/title/specialization
+        uuid: emp.uuid,
+    }));
+}
+
+/** Map API booking to calendar BookingBlock */
+function mapBookingToBlock(booking: Booking, employeeList: { uuid: string }[], slots: string[]): BookingBlock | null {
+    const empIndex = employeeList.findIndex(e => e.uuid === booking.employee_uuid);
+    if (empIndex === -1) return null; // employee not in current view
+
+    const startSlot = slots.findIndex(s => s === booking.start_time?.slice(0, 5));
+    if (startSlot === -1) return null; // outside displayed time range
+
+    let span = 2; // default 1h (2 slots)
+    if (booking.end_time && booking.start_time) {
+        const [sh, sm] = booking.start_time.split(':').map(Number);
+        const [eh, em] = booking.end_time.split(':').map(Number);
+        const durationMins = eh * 60 + em - (sh * 60 + sm);
+        span = Math.max(1, Math.round(durationMins / 30));
+    } else if (booking.service?.estimated_duration_minutes) {
+        span = Math.max(1, Math.round(booking.service.estimated_duration_minutes / 30));
+    }
+
+    // Map API status to UI status
+    const statusMap: Record<string, string> = {
+        pending: 'unconfirmed',
+        confirmed: 'confirmed',
+        completed: 'completed',
+        cancelled: 'cancelled',
+        no_show: 'cancelled',
+    };
+
+    return {
+        empIndex,
+        startSlot,
+        span,
+        client: booking.user?.name || 'Walk-in', // GAP: no client name if user is null
+        service: booking.service?.name || 'Service', // GAP: service name depends on eager-loading
+        status: statusMap[booking.status] || booking.status,
+        id: booking.uuid,
+    };
+}
 
 const timeSlots = [
     '09:00',
@@ -191,27 +281,52 @@ export default function BookingsCalendarPage() {
     const [calendarView, setCalendarView] = useState<'day' | 'week' | 'month'>('day');
     const [currentDate, setCurrentDate] = useState(new Date());
     const [apiBookings, setApiBookings] = useState<Booking[]>([]);
+    const [employees, setEmployees] = useState(fallbackEmployees);
+    const [blocks, setBlocks] = useState<BookingBlock[]>(bookingBlocks);
+    const [apiLoaded, setApiLoaded] = useState(false);
     const router = useRouter();
     const { t } = useTranslation();
 
-    // Fetch bookings from API for summary stats
-    // GAP: API returns flat list, no calendar-grid structure — calendar grid stays mock
-    // GAP: API has no date filter param, returns all bookings
-    // GAP: API has no create-booking endpoint for provider
-    // GAP: API has no revenue/payment data on bookings
+    // Fetch employees once
     useEffect(() => {
         providerApi
-            .getBookings()
+            .getEmployees()
             .then(res => {
-                if (res.success && res.data) {
-                    setApiBookings(res.data);
+                if (res.success && res.data && res.data.length > 0) {
+                    setEmployees(mapApiEmployees(res.data));
                 }
             })
             .catch(() => {});
     }, []);
 
+    // Fetch bookings for the selected date
+    // GAP: API has no create-booking endpoint for provider
+    // GAP: API has no revenue/payment data on bookings
+    // GAP: API has no real-time employee availability status (Available/In Session/Break)
+    // GAP: API booking has no employee role/title
+    useEffect(() => {
+        const dateStr = currentDate.toISOString().split('T')[0];
+        providerApi
+            .getBookings({ booking_date: dateStr, per_page: 100 })
+            .then(res => {
+                if (res.success && res.data) {
+                    setApiBookings(res.data);
+                    const mapped = res.data
+                        .map(b => mapBookingToBlock(b, employees, timeSlots))
+                        .filter((b): b is BookingBlock => b !== null);
+                    if (mapped.length > 0) {
+                        setBlocks(mapped);
+                        setApiLoaded(true);
+                    }
+                }
+            })
+            .catch(() => {
+                // Keep fallback data
+            });
+    }, [currentDate, employees]);
+
     // Compute queue numbers for all blocks
-    const queueMap = computeQueueNumbers(bookingBlocks);
+    const queueMap = computeQueueNumbers(blocks);
 
     const goToday = () => setCurrentDate(new Date());
     const goPrev = () =>
@@ -323,7 +438,7 @@ export default function BookingsCalendarPage() {
                                 <div key={time} className={styles.timeRow}>
                                     <div className={styles.timeLabel}>{time}</div>
                                     {employees.map((_, empIndex) => {
-                                        const block = bookingBlocks.find(
+                                        const block = blocks.find(
                                             b => b.empIndex === empIndex && b.startSlot === slotIndex
                                         );
 
@@ -388,9 +503,13 @@ export default function BookingsCalendarPage() {
                 <div className={styles.sidePanel}>
                     {/* Next Appointment */}
                     {(() => {
-                        const nextBlock = bookingBlocks.find(b => b.id === 'BK-1040')!;
+                        const activeBlocks = blocks.filter(b => b.status !== 'completed' && b.status !== 'cancelled');
+                        const nextBlock =
+                            activeBlocks.sort((a, b) => a.startSlot - b.startSlot)[0] ||
+                            blocks.find(b => b.id === 'BK-1040');
+                        if (!nextBlock) return null;
                         const nextQueue = queueMap.get(nextBlock) || 0;
-                        const nextExpected = getExpectedStartTime(nextBlock, bookingBlocks, timeSlots);
+                        const nextExpected = getExpectedStartTime(nextBlock, blocks, timeSlots);
                         return (
                             <div className={styles.sidePanelCard}>
                                 <div className={styles.sidePanelTitle}>
@@ -399,7 +518,7 @@ export default function BookingsCalendarPage() {
                                 <div
                                     className={styles.nextApptCard}
                                     style={{ cursor: 'pointer' }}
-                                    onClick={() => router.push('/bookings/BK-1040')}
+                                    onClick={() => router.push(`/bookings/${nextBlock.id}`)}
                                 >
                                     <div
                                         style={{
@@ -425,11 +544,12 @@ export default function BookingsCalendarPage() {
                                         >
                                             #{nextQueue}
                                         </span>
-                                        <div className={styles.nextApptName}>Maryam Ibrahim</div>
+                                        <div className={styles.nextApptName}>{nextBlock.client}</div>
                                     </div>
-                                    <div className={styles.nextApptService}>Olaplex Treatment</div>
+                                    <div className={styles.nextApptService}>{nextBlock.service}</div>
                                     <div className={styles.nextApptTime}>
-                                        <Clock size={12} /> 14:00 – 15:00
+                                        <Clock size={12} /> {timeSlots[nextBlock.startSlot]} –{' '}
+                                        {timeSlots[nextBlock.startSlot + nextBlock.span] || '21:00'}
                                     </div>
                                     <div className={styles.expectedTimeRow}>
                                         <span>Expected start:</span>
@@ -455,32 +575,24 @@ export default function BookingsCalendarPage() {
                         </div>
                         <div className={styles.summaryGrid}>
                             <div className={styles.summaryItem}>
-                                <div className={styles.summaryValue}>
-                                    {apiBookings.length > 0 ? apiBookings.length : 14}
-                                </div>
+                                <div className={styles.summaryValue}>{apiLoaded ? apiBookings.length : 14}</div>
                                 <div className={styles.summaryLabel}>{t('bookings.total')}</div>
                             </div>
                             <div className={styles.summaryItem}>
                                 <div className={styles.summaryValue} style={{ color: 'var(--status-confirmed)' }}>
-                                    {apiBookings.length > 0
-                                        ? apiBookings.filter(b => b.status === 'confirmed').length
-                                        : 8}
+                                    {apiLoaded ? apiBookings.filter(b => b.status === 'confirmed').length : 8}
                                 </div>
                                 <div className={styles.summaryLabel}>{t('bookings.confirmed')}</div>
                             </div>
                             <div className={styles.summaryItem}>
                                 <div className={styles.summaryValue} style={{ color: 'var(--status-completed)' }}>
-                                    {apiBookings.length > 0
-                                        ? apiBookings.filter(b => b.status === 'completed').length
-                                        : 3}
+                                    {apiLoaded ? apiBookings.filter(b => b.status === 'completed').length : 3}
                                 </div>
                                 <div className={styles.summaryLabel}>{t('bookings.completed')}</div>
                             </div>
                             <div className={styles.summaryItem}>
                                 <div className={styles.summaryValue} style={{ color: 'var(--status-cancelled)' }}>
-                                    {apiBookings.length > 0
-                                        ? apiBookings.filter(b => b.status === 'cancelled').length
-                                        : 1}
+                                    {apiLoaded ? apiBookings.filter(b => b.status === 'cancelled').length : 1}
                                 </div>
                                 <div className={styles.summaryLabel}>{t('bookings.cancelled')}</div>
                             </div>
@@ -500,7 +612,7 @@ export default function BookingsCalendarPage() {
                                     color: 'var(--color-primary-600)',
                                 }}
                             >
-                                4,280 EGP
+                                4,280 EGP {/* GAP: API has no revenue/payment data on bookings */}
                             </div>
                             <div
                                 style={{
@@ -509,7 +621,10 @@ export default function BookingsCalendarPage() {
                                     marginTop: 'var(--space-1)',
                                 }}
                             >
-                                {t('bookings.fromBookings').replace('%count%', '14')}
+                                {t('bookings.fromBookings').replace(
+                                    '%count%',
+                                    String(apiLoaded ? apiBookings.length : 14)
+                                )}
                             </div>
                         </div>
                     </div>

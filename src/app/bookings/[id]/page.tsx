@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
     Calendar,
@@ -24,6 +24,7 @@ import {
 import { Button, Badge, Stepper, useToast } from '@/components/ui';
 import styles from './page.module.css';
 import { useTranslation } from '@/hooks/useTranslation';
+import { providerApi, type Booking } from '@/lib/api';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -385,6 +386,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
     const { t, lang } = useTranslation();
     const router = useRouter();
 
+    const [apiBooking, setApiBooking] = useState<Booking | null>(null);
     const [status, setStatus] = useState<BookingStatus>(BOOKING_DATA.initialStatus);
     const [paid, setPaid] = useState(BOOKING_DATA.financials.paid);
     const [log, setLog] = useState(BOOKING_DATA.activityLog);
@@ -393,6 +395,65 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
     const [bookingItems, setBookingItems] = useState(BOOKING_DATA.items);
     const [assignTarget, setAssignTarget] = useState<number | null>(null);
     const [assignForm, setAssignForm] = useState({ employee: '', time: '', room: '' });
+
+    // Fetch booking from API if id looks like a UUID
+    useEffect(() => {
+        if (!id || id.startsWith('BK-') || id.startsWith('#')) return;
+        let cancelled = false;
+        (async () => {
+            try {
+                const res = await providerApi.getBooking(id);
+                if (!cancelled && res.success && res.data) {
+                    setApiBooking(res.data);
+                    // Map API status to UI status
+                    const statusMap: Record<string, BookingStatus> = {
+                        pending: 'draft',
+                        confirmed: 'confirmed',
+                        completed: 'completed',
+                        cancelled: 'cancelled',
+                        no_show: 'no_show',
+                    };
+                    setStatus(statusMap[res.data.status] || 'confirmed');
+                }
+            } catch {
+                // Keep fallback mock data
+            }
+        })();
+        return () => {
+            cancelled = true;
+        };
+    }, [id]);
+
+    // Derive display data from API or fallback
+    const displayData = apiBooking
+        ? {
+              id: apiBooking.uuid,
+              date: new Date(apiBooking.booking_date + 'T00:00:00').toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+              }),
+              time: apiBooking.start_time?.slice(0, 5) || '—',
+              client: {
+                  name: apiBooking.user?.name || 'Walk-in', // GAP: no client details if user is null
+                  phone: apiBooking.user?.phone || '—',
+                  email: apiBooking.user?.email || '—',
+                  avatar: (apiBooking.user?.name || 'W')
+                      .split(' ')
+                      .map(w => w[0])
+                      .join('')
+                      .slice(0, 2)
+                      .toUpperCase(),
+                  vip: false, // GAP: API has no VIP flag
+                  notes: '', // GAP: API has no client notes
+                  id: apiBooking.user?.uuid || '',
+              },
+              service: apiBooking.service?.name || 'Service',
+              employee: apiBooking.employee?.name || 'Unassigned',
+              branch: apiBooking.branch?.name || 'Main',
+              notes: apiBooking.notes || '',
+          }
+        : null;
 
     const due = Math.max(0, BOOKING_DATA.financials.total - paid);
     const currentStep = STEP_INDEX[status] ?? 1;
@@ -442,22 +503,36 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
         ]);
     };
 
+    const updateApiStatus = async (apiStatus: string) => {
+        if (apiBooking) {
+            try {
+                await providerApi.updateBookingStatus(apiBooking.uuid, apiStatus);
+            } catch {
+                // Status updated locally even if API fails
+            }
+        }
+    };
+
     const handleCheckIn = () => {
         setStatus('arrived');
         addLog('Client Arrived', 'Check-in completed');
         addToast('success', 'Client checked in successfully');
+        // GAP: API has no "arrived" status — only pending/confirmed/completed/cancelled/no_show
+        updateApiStatus('confirmed');
     };
 
     const handleStartService = () => {
         setStatus('inService');
         addLog('Service Started', 'In progress');
         addToast('success', 'Service started');
+        // GAP: API has no "inService" status
     };
 
     const handleComplete = () => {
         setStatus('completed');
         addLog('Service Completed', 'Awaiting payment');
         addToast('success', 'Booking marked as completed');
+        updateApiStatus('completed');
     };
 
     const handleCancel = (reason: string) => {
@@ -465,12 +540,14 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
         setShowCancel(false);
         addLog('Cancelled', reason.replace(/_/g, ' '));
         addToast('error', 'Booking cancelled');
+        updateApiStatus('cancelled');
     };
 
     const handleNoShow = () => {
         setStatus('no_show');
         addLog('No-Show', 'Marked by Reception');
         addToast('warning', 'Client marked as no-show');
+        updateApiStatus('no_show');
     };
 
     const handlePayment = (amount: number, method: string) => {
@@ -653,7 +730,8 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                 <div className={styles.header}>
                     <div className={styles.titleGroup}>
                         <div className={styles.subtitle}>
-                            <Calendar size={14} /> {BOOKING_DATA.date} • {BOOKING_DATA.time}
+                            <Calendar size={14} /> {displayData?.date || BOOKING_DATA.date} •{' '}
+                            {displayData?.time || BOOKING_DATA.time}
                         </div>
                         <h1>
                             {t('bk.lblBooking')} {id.startsWith('#') ? id : `#${id}`}
@@ -1147,28 +1225,32 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                     variant="ghost"
                                     size="sm"
                                     iconOnly
-                                    onClick={() => router.push(`/customers/${BOOKING_DATA.client.id}`)}
+                                    onClick={() =>
+                                        router.push(`/customers/${(displayData?.client || BOOKING_DATA.client).id}`)
+                                    }
                                 >
                                     <Edit size={14} />
                                 </Button>
                             </div>
                             <div className={styles.cardBody}>
                                 <div className={styles.clientHeader}>
-                                    <div className={styles.clientAvatar}>{BOOKING_DATA.client.avatar}</div>
+                                    <div className={styles.clientAvatar}>
+                                        {(displayData?.client || BOOKING_DATA.client).avatar}
+                                    </div>
                                     <div>
                                         <div style={{ fontWeight: 'var(--font-bold)', fontSize: 'var(--text-lg)' }}>
-                                            {BOOKING_DATA.client.name}
+                                            {(displayData?.client || BOOKING_DATA.client).name}
                                         </div>
                                         <div
                                             style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}
                                             dir="ltr"
                                         >
-                                            ID #{BOOKING_DATA.client.id}
+                                            ID #{(displayData?.client || BOOKING_DATA.client).id}
                                         </div>
                                     </div>
                                 </div>
 
-                                {BOOKING_DATA.client.vip && (
+                                {(displayData?.client || BOOKING_DATA.client).vip && (
                                     <div style={{ marginBottom: 'var(--space-4)' }}>
                                         <Badge color="amber">{t('bk.lblVipClient')}</Badge>
                                     </div>
@@ -1178,7 +1260,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                     <Phone size={14} className={styles.infoIcon} />
                                     <div className={styles.infoContent}>
                                         <a
-                                            href={`tel:${BOOKING_DATA.client.phone}`}
+                                            href={`tel:${(displayData?.client || BOOKING_DATA.client).phone}`}
                                             style={{
                                                 fontSize: 'var(--text-sm)',
                                                 color: 'var(--color-primary-500)',
@@ -1186,7 +1268,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                             }}
                                             dir="ltr"
                                         >
-                                            {BOOKING_DATA.client.phone}
+                                            {(displayData?.client || BOOKING_DATA.client).phone}
                                         </a>
                                     </div>
                                 </div>
@@ -1194,19 +1276,19 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                     <Mail size={14} className={styles.infoIcon} />
                                     <div className={styles.infoContent}>
                                         <a
-                                            href={`mailto:${BOOKING_DATA.client.email}`}
+                                            href={`mailto:${(displayData?.client || BOOKING_DATA.client).email}`}
                                             style={{
                                                 fontSize: 'var(--text-sm)',
                                                 color: 'var(--color-primary-500)',
                                                 textDecoration: 'none',
                                             }}
                                         >
-                                            {BOOKING_DATA.client.email}
+                                            {(displayData?.client || BOOKING_DATA.client).email}
                                         </a>
                                     </div>
                                 </div>
 
-                                {BOOKING_DATA.client.notes && (
+                                {(displayData?.client || BOOKING_DATA.client).notes && (
                                     <div
                                         style={{
                                             marginTop: 'var(--space-4)',
@@ -1219,7 +1301,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                         <strong style={{ color: 'var(--color-warning-dark)' }}>
                                             {t('bk.lblNote')}:
                                         </strong>{' '}
-                                        {BOOKING_DATA.client.notes}
+                                        {(displayData?.client || BOOKING_DATA.client).notes}
                                     </div>
                                 )}
                             </div>
