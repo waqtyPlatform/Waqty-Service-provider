@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DropdownMenu, useToast } from '@/components/ui';
 import { useRouter } from 'next/navigation';
 import {
@@ -18,6 +18,7 @@ import {
 import styles from '../bookings.module.css';
 import BookingsTabs from '../BookingsTabs';
 import { useTranslation } from '@/hooks/useTranslation';
+import { providerApi, type Booking } from '@/lib/api';
 
 const statusConfig: Record<string, { class: string; labelKey: string }> = {
     confirmed: { class: styles.statusConfirmed, labelKey: 'bk.stConfirmed' },
@@ -209,8 +210,56 @@ const bookings = [
     },
 ];
 
+interface ListBooking {
+    id: string;
+    branch: string;
+    client: string;
+    mobile: string;
+    date: string;
+    time: string;
+    service: string;
+    employee: string;
+    employeeLevel: string;
+    value: number;
+    basePrice: number;
+    priceSource: string;
+    status: string;
+    payment: string;
+    payMethod: string;
+}
+
+function mapApiToListBooking(b: Booking): ListBooking {
+    const dateObj = new Date(b.booking_date + 'T00:00:00');
+    const dateStr = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    // Map API status to UI status
+    const statusMap: Record<string, string> = {
+        pending: 'unconfirmed',
+        confirmed: 'confirmed',
+        completed: 'completed',
+        cancelled: 'cancelled',
+        no_show: 'noShow',
+    };
+    return {
+        id: b.uuid,
+        branch: b.branch?.name || 'Main', // GAP: branch name depends on eager-loading
+        client: b.user?.name || 'Walk-in', // GAP: no client info if user is null
+        mobile: b.user?.phone || '—', // GAP: no client phone if user is null
+        date: dateStr,
+        time: b.start_time?.slice(0, 5) || '—',
+        service: b.service?.name || 'Service', // GAP: service name depends on eager-loading
+        employee: b.employee?.name || 'Unassigned', // GAP: employee name depends on eager-loading
+        employeeLevel: '', // GAP: API has no employee level/tier
+        value: 0, // GAP: API has no price/payment data on bookings
+        basePrice: 0, // GAP: API has no price data
+        priceSource: 'base',
+        status: statusMap[b.status] || b.status,
+        payment: 'unpaid', // GAP: API has no payment status on bookings
+        payMethod: '—', // GAP: API has no payment method
+    };
+}
+
 /** Compute daily queue number for each booking (grouped by date, sorted by time) */
-function computeListQueueNumbers(list: typeof bookings): Map<string, number> {
+function computeListQueueNumbers(list: ListBooking[]): Map<string, number> {
     const map = new Map<string, number>();
     const byDate = new Map<string, typeof bookings>();
     for (const b of list) {
@@ -225,8 +274,6 @@ function computeListQueueNumbers(list: typeof bookings): Map<string, number> {
     }
     return map;
 }
-
-const listQueueNumbers = computeListQueueNumbers(bookings);
 
 function CancelConfirmModal({
     bookingId,
@@ -320,17 +367,52 @@ export default function BookingListPage() {
     const [statusFilter, setStatusFilter] = useState('all');
     const [paymentFilter, setPaymentFilter] = useState('all');
     const [currentPage, setCurrentPage] = useState(1);
-    const [rows, setRows] = useState(bookings);
+    const [rows, setRows] = useState<ListBooking[]>(bookings);
     const [cancelTarget, setCancelTarget] = useState<string | null>(null);
+    const [refreshKey, setRefreshKey] = useState(0);
     const router = useRouter();
     const { addToast } = useToast();
 
-    const confirmCancel = () => {
+    // Fetch bookings from API with graceful fallback
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            try {
+                const res = await providerApi.getBookings({ per_page: 100 });
+                if (!cancelled && res.success && res.data && res.data.length > 0) {
+                    setRows(res.data.map(mapApiToListBooking));
+                }
+            } catch {
+                // Keep fallback mock data
+            }
+        })();
+        return () => {
+            cancelled = true;
+        };
+    }, [refreshKey]);
+
+    const confirmCancel = async () => {
         if (!cancelTarget) return;
-        setRows(prev => prev.map(b => (b.id === cancelTarget ? { ...b, status: 'cancelled', payment: 'unpaid' } : b)));
-        addToast('error', `Booking ${cancelTarget} cancelled`);
+        // If UUID format (API booking), update via API
+        if (cancelTarget.includes('-') && cancelTarget.length > 10) {
+            try {
+                await providerApi.updateBookingStatus(cancelTarget, 'cancelled');
+                addToast('error', 'Booking cancelled');
+                setRefreshKey(k => k + 1);
+            } catch {
+                addToast('error', 'Failed to cancel booking');
+            }
+        } else {
+            // Fallback mock update
+            setRows(prev =>
+                prev.map(b => (b.id === cancelTarget ? { ...b, status: 'cancelled', payment: 'unpaid' } : b))
+            );
+            addToast('error', `Booking ${cancelTarget} cancelled`);
+        }
         setCancelTarget(null);
     };
+
+    const listQueueNumbers = computeListQueueNumbers(rows);
 
     const filtered = rows.filter(b => {
         const matchSearch =

@@ -273,10 +273,20 @@ export interface Booking {
     booking_date: string;
     start_time: string;
     end_time: string | null;
-    status: string;
+    status: string; // pending | confirmed | completed | cancelled | no_show
     notes: string | null;
     created_at: string;
     updated_at: string;
+}
+
+export interface BookingFilters {
+    status?: string;
+    branch_uuid?: string;
+    employee_uuid?: string;
+    booking_date?: string;
+    from_date?: string;
+    to_date?: string;
+    per_page?: number;
 }
 
 export interface AttendanceRecord {
@@ -405,7 +415,16 @@ export const providerApi = {
         api.delete(`/api/provider/pricing-groups/${uuid}/employees`),
 
     // Bookings
-    getBookings: () => api.get<Booking[]>('/api/provider/bookings'),
+    getBookings: (filters?: BookingFilters) => {
+        const params = new URLSearchParams();
+        if (filters) {
+            for (const [key, val] of Object.entries(filters)) {
+                if (val !== undefined && val !== null && val !== '') params.set(key, String(val));
+            }
+        }
+        const qs = params.toString();
+        return api.get<Booking[]>(`/api/provider/bookings${qs ? `?${qs}` : ''}`);
+    },
     getBooking: (uuid: string) => api.get<Booking>(`/api/provider/bookings/${uuid}`),
     updateBookingStatus: (uuid: string, status: string) =>
         api.patch(`/api/provider/bookings/${uuid}/status`, { status }),
