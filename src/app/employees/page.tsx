@@ -6,7 +6,7 @@ import { EmptyState, DropdownMenu, useToast, SlideOver, Modal, Input, Select, Bu
 import { useRouter } from 'next/navigation';
 import styles from './employees.module.css';
 import { useTranslation } from '@/hooks/useTranslation';
-import { providerApi, toInternationalPhone, type Employee } from '@/lib/api';
+import { providerApi, toInternationalPhone, getImageUrl, type Employee } from '@/lib/api';
 
 const AVATAR_COLORS = ['#8B5CF6', '#EC4899', '#3B82F6', '#10B981', '#F59E0B', '#6366F1', '#EF4444', '#14B8A6'];
 
@@ -340,8 +340,26 @@ export default function EmployeesPage() {
                             >
                                 <div className={styles.cardTop}>
                                     <div className={styles.userInfo}>
-                                        <div className={styles.avatar} style={{ background: emp.color }}>
-                                            {emp.avatar}
+                                        <div
+                                            className={styles.avatar}
+                                            style={{ background: emp.color, overflow: 'hidden', position: 'relative' }}
+                                        >
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img
+                                                src={getImageUrl('employees', emp.id)}
+                                                alt={emp.name}
+                                                style={{
+                                                    width: '100%',
+                                                    height: '100%',
+                                                    objectFit: 'cover',
+                                                    position: 'absolute',
+                                                    inset: 0,
+                                                }}
+                                                onError={e => {
+                                                    (e.target as HTMLImageElement).style.display = 'none';
+                                                }}
+                                            />
+                                            <span>{emp.avatar}</span>
                                         </div>
                                         <div>
                                             <div className={styles.name}>{emp.name}</div>

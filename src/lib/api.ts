@@ -301,6 +301,71 @@ export interface AttendanceRecord {
     created_at: string;
 }
 
+export interface AttendanceFilters {
+    employee_uuid?: string;
+    date_from?: string;
+    date_to?: string;
+    shift_date_uuid?: string;
+    per_page?: number;
+}
+
+export interface AvailableDatesFilters {
+    branch_uuid: string;
+    service_uuid: string;
+    employee_uuid: string;
+    month: string; // YYYY-MM
+}
+
+export interface AvailableSlotsFilters {
+    branch_uuid: string;
+    service_uuid: string;
+    employee_uuid: string;
+    date: string; // YYYY-MM-DD
+}
+
+export interface ServiceFilters {
+    provider_uuid?: string;
+    sub_category_uuid?: string;
+    search?: string;
+    per_page?: number;
+}
+
+export interface NearestServiceFilters extends ServiceFilters {
+    lat: number;
+    lng: number;
+    radius?: number;
+}
+
+export interface EmployeeFilters {
+    provider_uuid?: string;
+    search?: string;
+    per_page?: number;
+}
+
+export interface ResolvedPrice {
+    price: number;
+    currency?: string;
+}
+
+export interface EmployeeLoginResponse {
+    token: string;
+    token_type: string;
+    expires_in: number;
+    employee: Employee;
+}
+
+export interface EmployeeProfile {
+    uuid: string;
+    name: string;
+    email: string;
+    phone: string;
+    active: boolean;
+    blocked: boolean;
+    branch?: { uuid: string; name: string };
+    created_at: string;
+    updated_at: string;
+}
+
 // ── Phone Helper ────────────────────────────────────────
 
 export function toInternationalPhone(phone: string): string {
@@ -333,6 +398,12 @@ export const authApi = {
             new_password: newPassword,
             new_password_confirmation: newPassword,
         }),
+
+    register: (data: Record<string, unknown>) => api.post<ProviderLoginResponse>('/api/provider/auth/register', data),
+
+    verifyEmail: (email: string, otp: string) => api.post('/api/provider/auth/verify-email', { email, otp }),
+
+    resendVerificationOtp: (email: string) => api.post('/api/provider/auth/resend-verification-otp', { email }),
 };
 
 // ── Provider API ────────────────────────────────────────
@@ -430,22 +501,230 @@ export const providerApi = {
         api.patch(`/api/provider/bookings/${uuid}/status`, { status }),
 
     // Attendance
-    getAttendance: () => api.get<AttendanceRecord[]>('/api/provider/attendance'),
+    getAttendance: (filters?: AttendanceFilters) => {
+        const params = new URLSearchParams();
+        if (filters) {
+            for (const [key, val] of Object.entries(filters)) {
+                if (val !== undefined && val !== null && val !== '') params.set(key, String(val));
+            }
+        }
+        const qs = params.toString();
+        return api.get<AttendanceRecord[]>(`/api/provider/attendance${qs ? `?${qs}` : ''}`);
+    },
 };
 
 // ── Public API ──────────────────────────────────────────
 
 export const publicApi = {
+    // Categories
     getCategories: () => api.get<Category[]>('/api/public/categories'),
-
     getCategory: (uuid: string) => api.get<Category>(`/api/public/categories/${uuid}`),
 
+    // Subcategories
     getSubcategories: (categoryUuid: string) =>
         api.get<Subcategory[]>(`/api/public/categories/${categoryUuid}/subcategories`),
+    getAllSubcategories: () => api.get<Subcategory[]>('/api/public/subcategories'),
 
+    // Countries & Cities
     getCountries: () => api.get<Country[]>('/api/public/countries'),
-
     getCountry: (uuid: string) => api.get<Country>(`/api/public/countries/${uuid}`),
-
     getCities: () => api.get<City[]>('/api/public/cities'),
+
+    // Providers
+    getProviders: () => api.get<ProviderProfile[]>('/api/public/providers'),
+    getProvider: (uuid: string) => api.get<ProviderProfile>(`/api/public/providers/${uuid}`),
+
+    // Provider Branches
+    getProviderBranches: () => api.get<Branch[]>('/api/public/provider-branches'),
+    getProviderBranch: (uuid: string) => api.get<Branch>(`/api/public/provider-branches/${uuid}`),
+
+    // Employees
+    getEmployees: (filters?: EmployeeFilters) => {
+        const params = new URLSearchParams();
+        if (filters) {
+            for (const [key, val] of Object.entries(filters)) {
+                if (val !== undefined && val !== null && val !== '') params.set(key, String(val));
+            }
+        }
+        const qs = params.toString();
+        return api.get<Employee[]>(`/api/public/employees${qs ? `?${qs}` : ''}`);
+    },
+
+    // Services
+    getServicesAll: (filters?: ServiceFilters) => {
+        const params = new URLSearchParams();
+        if (filters) {
+            for (const [key, val] of Object.entries(filters)) {
+                if (val !== undefined && val !== null && val !== '') params.set(key, String(val));
+            }
+        }
+        const qs = params.toString();
+        return api.get<Service[]>(`/api/public/services/all${qs ? `?${qs}` : ''}`);
+    },
+    getServices: (filters?: ServiceFilters) => {
+        const params = new URLSearchParams();
+        if (filters) {
+            for (const [key, val] of Object.entries(filters)) {
+                if (val !== undefined && val !== null && val !== '') params.set(key, String(val));
+            }
+        }
+        const qs = params.toString();
+        return api.get<Service[]>(`/api/public/services${qs ? `?${qs}` : ''}`);
+    },
+    getNewestServices: (filters?: ServiceFilters) => {
+        const params = new URLSearchParams();
+        if (filters) {
+            for (const [key, val] of Object.entries(filters)) {
+                if (val !== undefined && val !== null && val !== '') params.set(key, String(val));
+            }
+        }
+        const qs = params.toString();
+        return api.get<Service[]>(`/api/public/services/newest${qs ? `?${qs}` : ''}`);
+    },
+    getNearestServices: (filters: NearestServiceFilters) => {
+        const params = new URLSearchParams();
+        for (const [key, val] of Object.entries(filters)) {
+            if (val !== undefined && val !== null && val !== '') params.set(key, String(val));
+        }
+        return api.get<Service[]>(`/api/public/services/nearest?${params.toString()}`);
+    },
+    getService: (uuid: string, providerUuid?: string, branchUuid?: string) => {
+        const params = new URLSearchParams();
+        if (providerUuid) params.set('provider_uuid', providerUuid);
+        if (branchUuid) params.set('branch_uuid', branchUuid);
+        const qs = params.toString();
+        return api.get<Service>(`/api/public/services/${uuid}${qs ? `?${qs}` : ''}`);
+    },
+
+    // Service Pricing
+    resolveServicePrice: (serviceUuid: string, branchUuid?: string, employeeUuid?: string) => {
+        const params = new URLSearchParams();
+        if (branchUuid) params.set('branch_uuid', branchUuid);
+        if (employeeUuid) params.set('employee_uuid', employeeUuid);
+        const qs = params.toString();
+        return api.get<ResolvedPrice>(`/api/public/service-pricing/services/${serviceUuid}/price${qs ? `?${qs}` : ''}`);
+    },
+
+    // Booking Availability
+    getAvailableDates: (filters: AvailableDatesFilters) => {
+        const params = new URLSearchParams();
+        for (const [key, val] of Object.entries(filters)) {
+            if (val !== undefined && val !== null && val !== '') params.set(key, String(val));
+        }
+        return api.get<string[]>(`/api/public/bookings/available-dates?${params.toString()}`);
+    },
+    getAvailableSlots: (filters: AvailableSlotsFilters) => {
+        const params = new URLSearchParams();
+        for (const [key, val] of Object.entries(filters)) {
+            if (val !== undefined && val !== null && val !== '') params.set(key, String(val));
+        }
+        return api.get<string[]>(`/api/public/bookings/available-slots?${params.toString()}`);
+    },
 };
+
+// ── Employee API ───────────────────────────────────────
+
+export const employeeApi = {
+    // Auth
+    login: (email: string, password: string) =>
+        api.post<EmployeeLoginResponse>('/api/employee/auth/login', { email, password }),
+    me: () => api.get<EmployeeProfile>('/api/employee/auth/me'),
+    logout: () => api.post('/api/employee/auth/logout', {}),
+    sendOtp: (email: string) => api.post('/api/employee/auth/send-otp', { email }),
+    verifyOtp: (email: string, otp: string) =>
+        api.post<VerifyOtpResponse>('/api/employee/auth/verify-otp', { email, otp }),
+    forgotPassword: (email: string) => api.post('/api/employee/auth/forgot-password', { email }),
+    resetPassword: (email: string, otp: string, newPassword: string) =>
+        api.post('/api/employee/auth/reset-password', {
+            email,
+            otp,
+            new_password: newPassword,
+            new_password_confirmation: newPassword,
+        }),
+    verifyEmail: (email: string, otp: string) => api.post('/api/employee/auth/verify-email', { email, otp }),
+    resendVerificationOtp: (email: string) => api.post('/api/employee/auth/resend-verification-otp', { email }),
+
+    // Profile
+    updateProfile: (data: Record<string, unknown>) => api.put<EmployeeProfile>('/api/employee/profile', data),
+    changePassword: (data: Record<string, unknown>) => api.put('/api/employee/change-password', data),
+
+    // Services
+    getServicesAll: (filters?: ServiceFilters) => {
+        const params = new URLSearchParams();
+        if (filters) {
+            for (const [key, val] of Object.entries(filters)) {
+                if (val !== undefined && val !== null && val !== '') params.set(key, String(val));
+            }
+        }
+        const qs = params.toString();
+        return api.get<Service[]>(`/api/employee/services/all${qs ? `?${qs}` : ''}`);
+    },
+    getServices: (filters?: ServiceFilters) => {
+        const params = new URLSearchParams();
+        if (filters) {
+            for (const [key, val] of Object.entries(filters)) {
+                if (val !== undefined && val !== null && val !== '') params.set(key, String(val));
+            }
+        }
+        const qs = params.toString();
+        return api.get<Service[]>(`/api/employee/services${qs ? `?${qs}` : ''}`);
+    },
+    getServicesWithPrices: (filters?: ServiceFilters) => {
+        const params = new URLSearchParams();
+        if (filters) {
+            for (const [key, val] of Object.entries(filters)) {
+                if (val !== undefined && val !== null && val !== '') params.set(key, String(val));
+            }
+        }
+        const qs = params.toString();
+        return api.get<Service[]>(`/api/employee/services/with-prices${qs ? `?${qs}` : ''}`);
+    },
+    getService: (uuid: string) => api.get<Service>(`/api/employee/services/${uuid}`),
+
+    // Service Pricing
+    resolveServicePrice: (serviceUuid: string) =>
+        api.get<ResolvedPrice>(`/api/employee/service-pricing/services/${serviceUuid}/price`),
+
+    // Shifts
+    getShifts: () => api.get<ShiftDate[]>('/api/employee/shifts'),
+    getShift: (uuid: string) => api.get<ShiftDate>(`/api/employee/shifts/${uuid}`),
+
+    // Attendance
+    checkIn: (data: { shift_date_uuid?: string; notes?: string }) =>
+        api.post<AttendanceRecord>('/api/employee/attendance/check-in', data as Record<string, unknown>),
+    checkOut: (data: { notes?: string }) =>
+        api.post<AttendanceRecord>('/api/employee/attendance/check-out', data as Record<string, unknown>),
+    getAttendance: (filters?: AttendanceFilters) => {
+        const params = new URLSearchParams();
+        if (filters) {
+            for (const [key, val] of Object.entries(filters)) {
+                if (val !== undefined && val !== null && val !== '') params.set(key, String(val));
+            }
+        }
+        const qs = params.toString();
+        return api.get<AttendanceRecord[]>(`/api/employee/attendance${qs ? `?${qs}` : ''}`);
+    },
+
+    // Bookings
+    getBookings: (filters?: BookingFilters & { today?: boolean; upcoming?: boolean }) => {
+        const params = new URLSearchParams();
+        if (filters) {
+            for (const [key, val] of Object.entries(filters)) {
+                if (val !== undefined && val !== null && val !== '') {
+                    params.set(key, val === true ? '1' : String(val));
+                }
+            }
+        }
+        const qs = params.toString();
+        return api.get<Booking[]>(`/api/employee/bookings${qs ? `?${qs}` : ''}`);
+    },
+    getBooking: (uuid: string) => api.get<Booking>(`/api/employee/bookings/${uuid}`),
+    updateBookingStatus: (uuid: string, status: string) =>
+        api.patch(`/api/employee/bookings/${uuid}/status`, { status }),
+};
+
+// ── Image URL Helper ───────────────────────────────────
+
+export function getImageUrl(type: string, uuid: string): string {
+    return `${API_BASE_URL}/api/images/${type}/${uuid}`;
+}

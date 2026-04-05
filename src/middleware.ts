@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 // ── Public routes that don't require authentication ──
-const PUBLIC_ROUTES = ['/login', '/forgot-password', '/onboarding'];
-const PUBLIC_PREFIXES = ['/invite/'];
+const PUBLIC_ROUTES = ['/login', '/forgot-password', '/onboarding', '/employee-portal/login'];
+const PUBLIC_PREFIXES = ['/invite/', '/employee-portal/'];
 
 // ── Role-based access control ──
 // Routes restricted to specific roles only

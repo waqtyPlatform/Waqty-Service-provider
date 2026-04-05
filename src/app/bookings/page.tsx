@@ -9,7 +9,7 @@ import styles from './bookings.module.css';
 import BookingsTabs from './BookingsTabs';
 import { useTranslation } from '@/hooks/useTranslation';
 import { isEmployeeOnShift } from '@/lib/shiftData';
-import { providerApi, type Booking, type Employee } from '@/lib/api';
+import { providerApi, getImageUrl, type Booking, type Employee } from '@/lib/api';
 
 const fallbackEmployees = [
     {
@@ -405,8 +405,28 @@ export default function BookingsCalendarPage() {
                             </div>
                             {employees.map(emp => (
                                 <div key={emp.name} className={styles.empColHeader}>
-                                    <div className={styles.empAvatar} style={{ background: emp.color }}>
-                                        {emp.initials}
+                                    <div
+                                        className={styles.empAvatar}
+                                        style={{ background: emp.color, overflow: 'hidden', position: 'relative' }}
+                                    >
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        {emp.uuid && (
+                                            <img
+                                                src={getImageUrl('employees', emp.uuid)}
+                                                alt={emp.name}
+                                                style={{
+                                                    width: '100%',
+                                                    height: '100%',
+                                                    objectFit: 'cover',
+                                                    position: 'absolute',
+                                                    inset: 0,
+                                                }}
+                                                onError={e => {
+                                                    (e.target as HTMLImageElement).style.display = 'none';
+                                                }}
+                                            />
+                                        )}
+                                        <span>{emp.initials}</span>
                                     </div>
                                     <div className={styles.empName}>{emp.name}</div>
                                     <div className={styles.empStatus}>{emp.status}</div>
