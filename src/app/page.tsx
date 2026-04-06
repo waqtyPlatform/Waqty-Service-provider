@@ -170,7 +170,7 @@ export default function DashboardPage() {
     };
 
     const profileSetupItems = [
-        { icon: <Image size={18} aria-hidden alt="" />, label: 'Add your logo', href: '/settings', color: '#7C3AED' },
+        { icon: <Image size={18} aria-hidden />, label: 'Add your logo', href: '/settings', color: '#7C3AED' },
         { icon: <Clock size={18} />, label: 'Set working hours', href: '/settings/hours', color: '#0EA5E9' },
         { icon: <UserCog size={18} />, label: 'Add team members', href: '/employees', color: '#F59E0B' },
         { icon: <Globe size={18} />, label: 'Add your services', href: '/settings/services', color: '#10B981' },
