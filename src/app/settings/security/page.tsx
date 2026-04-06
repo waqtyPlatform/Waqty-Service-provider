@@ -6,8 +6,18 @@ import { useTranslation } from '@/hooks/useTranslation';
 
 const cs: Record<string, React.CSSProperties> = {
     page: { display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' },
-    card: { background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-xl)', padding: 'var(--space-6)' },
-    cardTitle: { fontSize: 'var(--text-lg)', fontWeight: 'var(--font-semibold)', color: 'var(--text-primary)', marginBottom: 'var(--space-1)' },
+    card: {
+        background: 'var(--bg-primary)',
+        border: '1px solid var(--border-color)',
+        borderRadius: 'var(--radius-xl)',
+        padding: 'var(--space-6)',
+    },
+    cardTitle: {
+        fontSize: 'var(--text-lg)',
+        fontWeight: 'var(--font-semibold)',
+        color: 'var(--text-primary)',
+        marginBottom: 'var(--space-1)',
+    },
     cardDesc: { fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginBottom: 'var(--space-5)' },
 };
 
@@ -15,7 +25,7 @@ export default function SecuritySettingsPage() {
     const { t } = useTranslation();
     return (
         <div style={cs.page}>
-<div style={cs.card}>
+            <div style={cs.card}>
                 <div style={cs.cardTitle}>{t('settings.security.title')}</div>
                 <div style={cs.cardDesc}>{t('settings.security.desc')}</div>
 
@@ -35,7 +45,9 @@ export default function SecuritySettingsPage() {
                 </div>
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <Button onClick={() => alert(t('settings.security.saved') || 'Security settings saved!')}>{t('settings.security.saveChanges')}</Button>
+                <Button onClick={() => alert(t('settings.security.saved') || 'Security settings saved!')}>
+                    {t('settings.security.saveChanges')}
+                </Button>
             </div>
         </div>
     );

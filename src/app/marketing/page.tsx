@@ -380,7 +380,11 @@ export default function MarketingPage() {
                         onChange={e => setSearch(e.target.value)}
                     />
                 </div>
-                <select className={styles.selectFilter} value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+                <select
+                    className={styles.selectFilter}
+                    value={statusFilter}
+                    onChange={e => setStatusFilter(e.target.value)}
+                >
                     <option value="all">{t('marketing.filterAll')}</option>
                     <option value="active">{t('marketing.filterActive')}</option>
                     <option value="draft">{t('marketing.filterDraft')}</option>

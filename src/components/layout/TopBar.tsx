@@ -105,7 +105,7 @@ function TopBarInner() {
             setNotifOpen(false);
             setBranchMenuOpen(false);
         },
-        [router],
+        [router]
     );
 
     const branches = [
@@ -114,13 +114,10 @@ function TopBarInner() {
         { key: 'mall', label: t('branch.mall') },
     ];
 
-    const handleBranchSelect = useCallback(
-        (key: string) => {
-            setActiveBranch(key);
-            setBranchMenuOpen(false);
-        },
-        [],
-    );
+    const handleBranchSelect = useCallback((key: string) => {
+        setActiveBranch(key);
+        setBranchMenuOpen(false);
+    }, []);
 
     // Close menus on outside click
     useEffect(() => {
@@ -257,7 +254,10 @@ function TopBarInner() {
                                 ))}
                             </div>
                             <div className={styles.notifFooter}>
-                                <button className={styles.notifViewAll} onClick={() => navigateTo('/marketing/notifications')}>
+                                <button
+                                    className={styles.notifViewAll}
+                                    onClick={() => navigateTo('/marketing/notifications')}
+                                >
                                     {t('notifications.viewAll') || 'View all notifications'}
                                 </button>
                             </div>
