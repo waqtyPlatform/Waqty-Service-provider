@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { providerApi, type Booking, type Employee as ApiEmployee } from '@/lib/api';
 import {
     DollarSign,
     CalendarDays,
@@ -181,6 +182,74 @@ export default function DashboardPage() {
         },
     ];
 
+    // ── Real API data ──
+    const [apiBookings, setApiBookings] = useState<Booking[] | null>(null);
+    const [apiEmployees, setApiEmployees] = useState<ApiEmployee[] | null>(null);
+    const [_dashLoading, setDashLoading] = useState(true);
+
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                const monthStart = today.slice(0, 8) + '01';
+                const [bookingsRes, employeesRes] = await Promise.allSettled([
+                    providerApi.getBookings({ from_date: monthStart, to_date: today, per_page: 100 }),
+                    providerApi.getEmployees(),
+                ]);
+                if (cancelled) return;
+                if (bookingsRes.status === 'fulfilled' && bookingsRes.value.success && bookingsRes.value.data) {
+                    setApiBookings(bookingsRes.value.data);
+                }
+                if (employeesRes.status === 'fulfilled' && employeesRes.value.success && employeesRes.value.data) {
+                    setApiEmployees(employeesRes.value.data);
+                }
+            } catch {
+                // Fall back to mock data
+            } finally {
+                if (!cancelled) setDashLoading(false);
+            }
+        })();
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    // ── Compute booking status from real data ──
+    const liveBookingStatusData = React.useMemo(() => {
+        if (!apiBookings) return null;
+        const counts: Record<string, number> = {
+            confirmed: 0,
+            completed: 0,
+            pending: 0,
+            cancelled: 0,
+            no_show: 0,
+        };
+        for (const b of apiBookings) {
+            const status = b.status.toLowerCase();
+            if (status in counts) counts[status]++;
+        }
+        return [
+            { name: 'Confirmed', value: counts.confirmed, color: 'var(--status-confirmed)' },
+            { name: 'Completed', value: counts.completed, color: 'var(--status-completed)' },
+            { name: 'Pending', value: counts.pending, color: 'var(--status-unconfirmed)' },
+            { name: 'Cancelled', value: counts.cancelled, color: 'var(--status-cancelled)' },
+            { name: 'No-Show', value: counts.no_show, color: 'var(--status-no-show)' },
+        ].filter(d => d.value > 0);
+    }, [apiBookings]);
+
+    // ── Compute employee occupancy from real data ──
+    const liveOccupancyData = React.useMemo(() => {
+        if (!apiBookings || !apiEmployees) return null;
+        return apiEmployees.slice(0, 5).map(emp => {
+            const empBookings = apiBookings.filter(b => b.employee_uuid === emp.uuid);
+            const total = 9; // Approximate daily slots
+            const booked = Math.min(empBookings.length, total);
+            const pct = total > 0 ? Math.round((booked / total) * 100) : 0;
+            return { employee: emp.name, booked, total, pct };
+        });
+    }, [apiBookings, apiEmployees]);
+
     const businessType = user?.businessType || 'salon';
     const isClinic = businessType === 'clinic';
     const isBarber = businessType === 'barber';
@@ -213,6 +282,26 @@ export default function DashboardPage() {
 
     const currentKpiData = React.useMemo(() => {
         const m = getMultiplier(activeDate);
+
+        // If we have real booking data and viewing "Today" or "This Month", inject real values
+        if (apiBookings && activeDate === 'This Month') {
+            return kpiData.map(kpi => {
+                let value = formatNum(Math.round(parseInt(kpi.value.replace(/,/g, '')) * m));
+
+                if (kpi.label === 'Bookings') {
+                    value = formatNum(apiBookings.length);
+                }
+
+                return {
+                    ...kpi,
+                    value,
+                    sparkData: kpi.sparkData.map((d, i) => ({
+                        v: Math.round(d.v * (1 + (pseudoRandom(kpi.label + activeDate + i) * 0.2 - 0.1))),
+                    })),
+                };
+            });
+        }
+
         return kpiData.map(kpi => ({
             ...kpi,
             value: formatNum(Math.round(parseInt(kpi.value.replace(/,/g, '')) * m)),
@@ -220,9 +309,13 @@ export default function DashboardPage() {
                 v: Math.round(d.v * (1 + (pseudoRandom(kpi.label + activeDate + i) * 0.2 - 0.1))),
             })),
         }));
-    }, [activeDate]);
+    }, [activeDate, apiBookings]);
 
     const currentOccupancyData = React.useMemo(() => {
+        // Use real data if available
+        if (liveOccupancyData && activeDate === 'This Month') {
+            return liveOccupancyData;
+        }
         const days = Math.max(1, Math.round(getMultiplier(activeDate)));
         return occupancyData.map(d => {
             const total = 9 * days;
@@ -230,12 +323,16 @@ export default function DashboardPage() {
             const booked = Math.round((pct / 100) * total);
             return { ...d, total, booked: Math.min(booked, total), pct: Math.round(pct) };
         });
-    }, [activeDate]);
+    }, [activeDate, liveOccupancyData]);
 
     const currentBookingStatusData = React.useMemo(() => {
+        // Use real data if available
+        if (liveBookingStatusData && activeDate === 'This Month') {
+            return liveBookingStatusData;
+        }
         const m = getMultiplier(activeDate);
         return bookingStatusData.map(d => ({ ...d, value: Math.round(d.value * m) }));
-    }, [activeDate]);
+    }, [activeDate, liveBookingStatusData]);
 
     const currentTopClients = React.useMemo(() => {
         const m = getMultiplier(activeDate);

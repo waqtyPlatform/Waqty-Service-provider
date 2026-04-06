@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui';
 import {
@@ -31,6 +31,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { isEmployeeOnShift, isEmployeeDuringBreak } from '@/lib/shiftData';
 import { resolveServicePrice } from '@/lib/priceResolver';
 import type { ServicePriceOverride } from '@/lib/priceResolver';
+import { providerApi, publicApi, type Branch } from '@/lib/api';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -225,11 +226,11 @@ const ROOM_BUSY: Record<string, Record<string, string[]>> = {
     R4: { [TODAY]: ['11:00', '16:00', '16:30'] },
 };
 
-// Mock current branch — replace with auth context when API is ready
+// Fallback branch ID — overridden by API data when available
 const CURRENT_BRANCH_ID = '1';
 
-// Mock price overrides — replace with API data
-const PRICE_OVERRIDES: ServicePriceOverride[] = [
+// Mock price overrides — used as fallback when API data unavailable
+const MOCK_PRICE_OVERRIDES: ServicePriceOverride[] = [
     // Tier overrides (salon)
     { id: 'to-1', serviceId: 'S01', pricingTier: 'Senior', price: 180 },
     { id: 'to-2', serviceId: 'S01', pricingTier: 'Junior', price: 100 },
@@ -616,6 +617,8 @@ function ServiceBookingCard({
     onUpdate,
     onRemove,
     canRemove,
+    priceOverrides,
+    branchId,
 }: {
     item: BookingItem;
     index: number;
@@ -626,6 +629,8 @@ function ServiceBookingCard({
     onUpdate: (id: string, field: keyof BookingItem, value: string | Service | Employee) => void;
     onRemove: (id: string) => void;
     canRemove: boolean;
+    priceOverrides: ServicePriceOverride[];
+    branchId: string;
 }) {
     const [showAvail, setShowAvail] = useState(false);
 
@@ -694,12 +699,7 @@ function ServiceBookingCard({
                         ))}
                     </select>
                     {(() => {
-                        const resolved = resolveServicePrice(
-                            item.service,
-                            item.employee,
-                            CURRENT_BRANCH_ID,
-                            PRICE_OVERRIDES
-                        );
+                        const resolved = resolveServicePrice(item.service, item.employee, branchId, priceOverrides);
                         return (
                             <span style={s.hint}>
                                 {item.service.category} · {item.service.duration}
@@ -1221,6 +1221,8 @@ function BookingSummary({
     conflicts,
     onConfirm,
     t,
+    priceOverrides,
+    branchId,
 }: {
     items: BookingItem[];
     clientName: string;
@@ -1228,9 +1230,11 @@ function BookingSummary({
     conflicts: Set<string>;
     onConfirm: () => void;
     t: (key: string) => string;
+    priceOverrides: ServicePriceOverride[];
+    branchId: string;
 }) {
     const subtotal = items.reduce((sum, i) => {
-        const resolved = resolveServicePrice(i.service, i.employee, CURRENT_BRANCH_ID, PRICE_OVERRIDES);
+        const resolved = resolveServicePrice(i.service, i.employee, branchId, priceOverrides);
         return sum + resolved.price;
     }, 0);
     const discountAmt = (subtotal * discount) / 100;
@@ -1253,12 +1257,7 @@ function BookingSummary({
                 </div>
 
                 {items.map(item => {
-                    const resolved = resolveServicePrice(
-                        item.service,
-                        item.employee,
-                        CURRENT_BRANCH_ID,
-                        PRICE_OVERRIDES
-                    );
+                    const resolved = resolveServicePrice(item.service, item.employee, branchId, priceOverrides);
                     return (
                         <div
                             key={item.id}
@@ -1428,11 +1427,128 @@ export default function NewBookingPage() {
 
     const businessType = (user?.businessType ?? 'salon') as 'barber' | 'salon' | 'clinic';
     const isClinic = businessType === 'clinic';
-    const services = SERVICES[businessType] ?? SERVICES.salon;
-    const employees = EMPLOYEES[businessType] ?? EMPLOYEES.salon;
+
+    // ── API-fetched data (falls back to mock) ──
+    const [apiServices, setApiServices] = useState<Service[] | null>(null);
+    const [apiEmployees, setApiEmployees] = useState<Employee[] | null>(null);
+    const [apiBranches, setApiBranches] = useState<Branch[]>([]);
+    const [apiPriceOverrides, setApiPriceOverrides] = useState<ServicePriceOverride[]>(MOCK_PRICE_OVERRIDES);
+    const [_availableDates, setAvailableDates] = useState<string[]>([]);
+    const [_availableSlots, setAvailableSlots] = useState<string[]>([]);
+    const [dataLoading, setDataLoading] = useState(true);
+
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            try {
+                const [svcRes, empRes, brRes, priceRes] = await Promise.allSettled([
+                    providerApi.getServices(),
+                    providerApi.getEmployees(),
+                    providerApi.getBranches(),
+                    providerApi.getServicePrices(),
+                ]);
+
+                if (cancelled) return;
+
+                if (svcRes.status === 'fulfilled' && svcRes.value.success && svcRes.value.data) {
+                    const mapped: Service[] = svcRes.value.data.map(s => ({
+                        id: s.uuid,
+                        name: s.name,
+                        duration: s.estimated_duration_minutes ? `${s.estimated_duration_minutes} min` : '30 min',
+                        durationMins: s.estimated_duration_minutes ?? 30,
+                        price: 0, // resolved via pricing API
+                        category: s.sub_category?.name ?? 'General',
+                    }));
+                    if (mapped.length > 0) setApiServices(mapped);
+                }
+
+                if (empRes.status === 'fulfilled' && empRes.value.success && empRes.value.data) {
+                    const colors = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ec4899'];
+                    const mapped: Employee[] = empRes.value.data.map((e, i) => ({
+                        id: e.uuid,
+                        name: e.name,
+                        role: e.branch?.name ?? 'Staff',
+                        color: colors[i % colors.length],
+                    }));
+                    if (mapped.length > 0) setApiEmployees(mapped);
+                }
+
+                if (brRes.status === 'fulfilled' && brRes.value.success && brRes.value.data) {
+                    setApiBranches(brRes.value.data);
+                }
+
+                if (priceRes.status === 'fulfilled' && priceRes.value.success && priceRes.value.data) {
+                    const mapped: ServicePriceOverride[] = priceRes.value.data.map(p => ({
+                        id: p.uuid,
+                        serviceId: p.service_uuid,
+                        employeeId: p.employee_uuid ?? undefined,
+                        branchId: p.branch_uuid ?? undefined,
+                        pricingTier: p.pricing_group?.name ?? undefined,
+                        price: p.price,
+                    }));
+                    if (mapped.length > 0) setApiPriceOverrides(mapped);
+                }
+            } catch {
+                // Silently fall back to mock data
+            } finally {
+                if (!cancelled) setDataLoading(false);
+            }
+        })();
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    const services = apiServices ?? SERVICES[businessType] ?? SERVICES.salon;
+    const employees = apiEmployees ?? EMPLOYEES[businessType] ?? EMPLOYEES.salon;
+
+    // ── Fetch available dates when branch/service/employee changes ──
+    const _fetchAvailability = useCallback(
+        async (branchUuid: string, serviceUuid: string, employeeUuid: string, date: string) => {
+            if (!branchUuid || !serviceUuid || !employeeUuid) return;
+            try {
+                const month = date.slice(0, 7); // YYYY-MM
+                const [datesRes, slotsRes] = await Promise.allSettled([
+                    publicApi.getAvailableDates({
+                        branch_uuid: branchUuid,
+                        service_uuid: serviceUuid,
+                        employee_uuid: employeeUuid,
+                        month,
+                    }),
+                    publicApi.getAvailableSlots({
+                        branch_uuid: branchUuid,
+                        service_uuid: serviceUuid,
+                        employee_uuid: employeeUuid,
+                        date,
+                    }),
+                ]);
+                if (datesRes.status === 'fulfilled' && datesRes.value.success && datesRes.value.data) {
+                    setAvailableDates(datesRes.value.data);
+                }
+                if (slotsRes.status === 'fulfilled' && slotsRes.value.success && slotsRes.value.data) {
+                    setAvailableSlots(slotsRes.value.data);
+                }
+            } catch {
+                // Keep existing slots
+            }
+        },
+        []
+    );
 
     // ── State ──
     const [items, setItems] = useState<BookingItem[]>([initItem(services, employees)]);
+
+    // Re-initialize items when API data loads
+    useEffect(() => {
+        if (!dataLoading && services.length > 0 && employees.length > 0) {
+            setItems(prev => {
+                if (prev.length === 1 && prev[0].service.id === (SERVICES[businessType] ?? SERVICES.salon)[0]?.id) {
+                    return [initItem(services, employees)];
+                }
+                return prev;
+            });
+        }
+    }, [dataLoading, services, employees, businessType]);
     const [clientName, setClientName] = useState('');
     const [clientPhone, setClientPhone] = useState('');
     const [discount, setDiscount] = useState(0);
@@ -1496,7 +1612,7 @@ export default function NewBookingPage() {
                 : [...prev.chronicConditions, cond],
         }));
 
-    const handleConfirm = () => {
+    const handleConfirm = async () => {
         if (!clientName.trim() || !clientPhone.trim()) {
             addToast('error', t('bookings.reqFields'));
             return;
@@ -1509,6 +1625,31 @@ export default function NewBookingPage() {
             addToast('error', 'Reason for visit is required for clinic appointments.');
             return;
         }
+
+        // If using real API data, update booking status via API
+        if (apiServices && items.length > 0) {
+            try {
+                for (const item of items) {
+                    const mainBranch = apiBranches.find(b => b.is_main) ?? apiBranches[0];
+                    if (mainBranch) {
+                        // Fetch availability one more time to validate
+                        const slotsRes = await publicApi.getAvailableSlots({
+                            branch_uuid: mainBranch.uuid,
+                            service_uuid: item.service.id,
+                            employee_uuid: item.employee.id,
+                            date: item.date,
+                        });
+                        if (slotsRes.success && slotsRes.data && !slotsRes.data.includes(item.time)) {
+                            addToast('error', `Time ${item.time} is no longer available for ${item.service.name}`);
+                            return;
+                        }
+                    }
+                }
+            } catch {
+                // Proceed with booking even if validation fails
+            }
+        }
+
         addToast('success', `${t('bookings.confirmSuccess')} ${clientName}`);
         router.push('/bookings');
     };
@@ -1598,6 +1739,8 @@ export default function NewBookingPage() {
                             onUpdate={updateItem}
                             onRemove={removeItem}
                             canRemove={items.length > 1}
+                            priceOverrides={apiPriceOverrides}
+                            branchId={apiBranches.find(b => b.is_main)?.uuid ?? CURRENT_BRANCH_ID}
                         />
                     ))}
 
@@ -1656,6 +1799,8 @@ export default function NewBookingPage() {
                     conflicts={conflicts}
                     onConfirm={handleConfirm}
                     t={t}
+                    priceOverrides={apiPriceOverrides}
+                    branchId={apiBranches.find(b => b.is_main)?.uuid ?? CURRENT_BRANCH_ID}
                 />
             </div>
         </div>

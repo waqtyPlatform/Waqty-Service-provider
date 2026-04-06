@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
     User,
@@ -52,9 +52,10 @@ import {
     ResponsiveContainer,
 } from 'recharts';
 import styles from './page.module.css';
+import { providerApi, getImageUrl } from '@/lib/api';
 
-// Mock Data
-const employee = {
+// Mock Data (fallback)
+const defaultEmployee = {
     id: 'EMP-001',
     name: 'Sarah Ahmed',
     position: 'Senior Stylist',
@@ -141,6 +142,53 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
     const router = useRouter();
     const [activeTab, setActiveTab] = useState('performance');
     const { addToast } = useToast();
+    const [employee, setEmployee] = useState(defaultEmployee);
+    const [employeePhotoUrl, setEmployeePhotoUrl] = useState<string | null>(null);
+
+    // Fetch real employee data from API
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            try {
+                const res = await providerApi.getEmployee(id);
+                if (cancelled) return;
+                if (res.success && res.data) {
+                    const e = res.data;
+                    setEmployee({
+                        id: e.uuid,
+                        name: e.name,
+                        position: e.branch?.name || 'Staff',
+                        level: 'Staff',
+                        department: e.branch?.name || 'General',
+                        email: e.email || defaultEmployee.email,
+                        phone: e.phone || defaultEmployee.phone,
+                        avatar: e.name
+                            .split(' ')
+                            .map(w => w[0])
+                            .join('')
+                            .slice(0, 2)
+                            .toUpperCase(),
+                        status: e.active ? 'active' : 'inactive',
+                        joined: e.created_at
+                            ? new Date(e.created_at).toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric',
+                              })
+                            : defaultEmployee.joined,
+                        performance: defaultEmployee.performance,
+                        stats: defaultEmployee.stats,
+                    });
+                    setEmployeePhotoUrl(getImageUrl('employees', e.uuid));
+                }
+            } catch {
+                // API unavailable — keep mock data
+            }
+        })();
+        return () => {
+            cancelled = true;
+        };
+    }, [id]);
 
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isPermissionsOpen, setIsPermissionsOpen] = useState(false);
@@ -205,7 +253,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
         else addToast('info', `${action} ${t('empProfile.actionDev')}`);
     };
 
-    const handleReportReview = (reviewId: string) => {
+    const handleReportReview = (_reviewId: string) => {
         addToast('success', t('empProfile.reviewReportedMsg'));
     };
 
@@ -732,7 +780,26 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                 </div>
                 <div className={styles.headerTop}>
                     <div className={styles.profileInfo}>
-                        <div className={styles.avatar}>{employee.avatar}</div>
+                        <div className={styles.avatar} style={{ overflow: 'hidden', position: 'relative' }}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            {employeePhotoUrl && (
+                                <img
+                                    src={employeePhotoUrl}
+                                    alt={employee.name}
+                                    style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        objectFit: 'cover',
+                                        position: 'absolute',
+                                        inset: 0,
+                                    }}
+                                    onError={e => {
+                                        (e.target as HTMLImageElement).style.display = 'none';
+                                    }}
+                                />
+                            )}
+                            <span>{employee.avatar}</span>
+                        </div>
                         <div className={styles.details}>
                             <h1>
                                 {employee.name}
