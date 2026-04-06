@@ -29,7 +29,7 @@ export default function NotificationsSettingsPage() {
                 </div>
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <Button>{t('settings.notifications.saveChanges')}</Button>
+                <Button onClick={() => alert(t('settings.notifications.saved') || 'Notification preferences saved!')}>{t('settings.notifications.saveChanges')}</Button>
             </div>
         </div>
     );

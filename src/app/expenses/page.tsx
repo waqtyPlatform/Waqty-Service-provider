@@ -45,7 +45,7 @@ const statusStyles: Record<string, { bg: string; color: string }> = {
     rejected: { bg: 'var(--color-error-light)', color: 'var(--color-error)' },
 };
 
-const getTabItems = (t: any) => [
+const getTabItems = (t: (key: string) => string) => [
     { label: t('exp.tabList'), href: '/expenses', icon: <Receipt size={16} /> },
     { label: t('exp.tabInvoices'), href: '/expenses/invoices', icon: <FileText size={16} /> },
     { label: t('exp.tabRecurring'), href: '/expenses/recurring', icon: <Repeat size={16} /> },
@@ -80,7 +80,11 @@ export default function ExpensesPage() {
                     <p className={styles.sub}>{t('expenses.desc')}</p>
                 </div>
                 <div className={styles.actions}>
-                    <button className={styles.btnOutline}><Download size={16} /> {t('expenses.export')}</button>
+                    <button className={styles.btnOutline} onClick={() => {
+                        const csv = ['Date,Category,Description,Vendor,Amount,Method,Status', ...expenses.map(e => `${e.date},${e.category},"${e.description}",${e.vendor},${e.amount},${e.method},${e.status}`)].join('\n');
+                        const blob = new Blob([csv], { type: 'text/csv' });
+                        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'expenses.csv'; a.click();
+                    }}><Download size={16} /> {t('expenses.export')}</button>
                     <button className={styles.btnPrimary}><Plus size={16} /> {t('expenses.add')}</button>
                 </div>
             </div>

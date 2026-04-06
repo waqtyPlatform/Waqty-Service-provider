@@ -62,7 +62,7 @@ export default function LocalizationSettingsPage() {
                 </div>
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <Button>{t('settings.localization.saveChanges')}</Button>
+                <Button onClick={() => alert(t('settings.localization.saved') || 'Localization settings saved!')}>{t('settings.localization.saveChanges')}</Button>
             </div>
         </div>
     );

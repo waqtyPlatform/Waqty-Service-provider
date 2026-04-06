@@ -129,6 +129,8 @@ const clients = [
 export default function CustomersPage() {
     const [search, setSearch] = useState('');
     const [groupFilter, setGroupFilter] = useState('all');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 5;
 
     // CRUD State
     const [isAddOpen, setIsAddOpen] = useState(false);
@@ -148,6 +150,9 @@ export default function CustomersPage() {
         const matchGroup = groupFilter === 'all' || c.group.toLowerCase() === groupFilter;
         return matchSearch && matchGroup;
     });
+
+    const totalPages = Math.ceil(filtered.length / itemsPerPage);
+    const paginated = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
@@ -245,7 +250,7 @@ export default function CustomersPage() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filtered.map(c => (
+                                    {paginated.map(c => (
                                         <tr
                                             key={c.id}
                                             onClick={() => router.push(`/customers/${c.id}`)}
@@ -398,11 +403,15 @@ export default function CustomersPage() {
                                 {t('customers.showing')} {filtered.length} {t('customers.of')} {clients.length}
                             </span>
                             <div className={styles.pageButtons}>
-                                <button className={styles.pageBtn}>
+                                <button className={styles.pageBtn} onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
                                     <ChevronLeft size={16} />
                                 </button>
-                                <button className={`${styles.pageBtn} ${styles.pageBtnActive}`}>1</button>
-                                <button className={styles.pageBtn}>
+                                {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                                    <button key={p} className={`${styles.pageBtn} ${currentPage === p ? styles.pageBtnActive : ''}`} onClick={() => setCurrentPage(p)}>
+                                        {p}
+                                    </button>
+                                ))}
+                                <button className={styles.pageBtn} onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>
                                     <ChevronRight size={16} />
                                 </button>
                             </div>

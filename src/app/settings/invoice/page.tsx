@@ -43,7 +43,7 @@ export default function InvoiceSettingsPage() {
                     <div style={s.row}><textarea style={s.textarea} defaultValue="Thank you for choosing Hagzy Beauty Center! We look forward to seeing you again." /></div>
                 </div>
 
-                <button style={s.saveBtn}><Save size={16} /> {t('settings.invoice.saveSettings')}</button>
+                <button style={s.saveBtn} onClick={() => alert(t('settings.invoice.saved') || 'Invoice settings saved!')}><Save size={16} /> {t('settings.invoice.saveSettings')}</button>
             </div>
         </div>
     );

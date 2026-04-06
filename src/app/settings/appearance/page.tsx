@@ -62,7 +62,7 @@ export default function AppearanceSettingsPage() {
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <Button>{t('settings.appearance.saveChanges')}</Button>
+                <Button onClick={() => alert(t('settings.appearance.saved') || 'Appearance settings saved!')}>{t('settings.appearance.saveChanges')}</Button>
             </div>
         </div>
     );

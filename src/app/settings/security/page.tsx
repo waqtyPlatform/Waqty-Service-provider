@@ -35,7 +35,7 @@ export default function SecuritySettingsPage() {
                 </div>
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <Button>{t('settings.security.saveChanges')}</Button>
+                <Button onClick={() => alert(t('settings.security.saved') || 'Security settings saved!')}>{t('settings.security.saveChanges')}</Button>
             </div>
         </div>
     );

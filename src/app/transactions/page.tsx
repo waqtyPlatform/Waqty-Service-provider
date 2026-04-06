@@ -177,7 +177,11 @@ export default function TransactionsPage() {
                     <h1>{t('txn.title')}</h1>
                     <p>{t('txn.desc')}</p>
                 </div>
-                <button className={styles.btnOutline}>
+                <button className={styles.btnOutline} onClick={() => {
+                    const csv = ['Date,Type,Client,Service,Employee,Amount,Method', ...filtered.map(tx => `${tx.date},${tx.type},${tx.client},"${tx.service}",${tx.employee},${tx.amount},${tx.method}`)].join('\n');
+                    const blob = new Blob([csv], { type: 'text/csv' });
+                    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'transactions.csv'; a.click();
+                }}>
                     <Download size={16} /> {t('txn.export')}
                 </button>
             </div>

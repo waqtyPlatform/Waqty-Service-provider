@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { useSidebar } from './SidebarContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -28,10 +29,12 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/contexts/ThemeContext';
 
 function TopBarInner() {
+    const router = useRouter();
     const { setMobileOpen } = useSidebar();
     const { user, logout } = useAuth();
     const { language, toggleLanguage } = useLanguage();
     const { resolvedTheme, toggleTheme } = useTheme();
+    const [activeBranch, setActiveBranch] = useState('main');
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const [branchMenuOpen, setBranchMenuOpen] = useState(false);
     const [notifOpen, setNotifOpen] = useState(false);
@@ -50,6 +53,7 @@ function TopBarInner() {
             desc: t('notifications.newBookingDesc') || 'Ahmed M. booked a haircut for today at 3:00 PM',
             time: t('notifications.minutesAgo')?.replace('{n}', '5') || '5 min ago',
             unread: true,
+            href: '/bookings',
         },
         {
             id: 2,
@@ -59,6 +63,7 @@ function TopBarInner() {
             desc: t('notifications.cancellationDesc') || 'Sara K. cancelled her appointment for tomorrow',
             time: t('notifications.minutesAgo')?.replace('{n}', '18') || '18 min ago',
             unread: true,
+            href: '/bookings',
         },
         {
             id: 3,
@@ -68,6 +73,7 @@ function TopBarInner() {
             desc: t('notifications.paymentDesc') || 'EGP 350 payment confirmed from Omar H.',
             time: t('notifications.hoursAgo')?.replace('{n}', '1') || '1 hour ago',
             unread: true,
+            href: '/transactions',
         },
         {
             id: 4,
@@ -77,6 +83,7 @@ function TopBarInner() {
             desc: t('notifications.newClientDesc') || 'Fatma A. signed up via the booking page',
             time: t('notifications.hoursAgo')?.replace('{n}', '3') || '3 hours ago',
             unread: false,
+            href: '/customers',
         },
         {
             id: 5,
@@ -86,9 +93,34 @@ function TopBarInner() {
             desc: t('notifications.completedDesc') || 'Youssef E. completed haircut + beard trim',
             time: t('notifications.hoursAgo')?.replace('{n}', '5') || '5 hours ago',
             unread: false,
+            href: '/bookings',
         },
     ];
     const unreadCount = notifications.filter(n => n.unread).length;
+
+    const navigateTo = useCallback(
+        (path: string) => {
+            router.push(path);
+            setUserMenuOpen(false);
+            setNotifOpen(false);
+            setBranchMenuOpen(false);
+        },
+        [router],
+    );
+
+    const branches = [
+        { key: 'main', label: t('branch.main') },
+        { key: 'downtown', label: t('branch.downtown') },
+        { key: 'mall', label: t('branch.mall') },
+    ];
+
+    const handleBranchSelect = useCallback(
+        (key: string) => {
+            setActiveBranch(key);
+            setBranchMenuOpen(false);
+        },
+        [],
+    );
 
     // Close menus on outside click
     useEffect(() => {
@@ -130,23 +162,21 @@ function TopBarInner() {
             <div className={styles.branchSelector} ref={branchMenuRef}>
                 <button className={styles.branchBtn} onClick={() => setBranchMenuOpen(!branchMenuOpen)}>
                     <Building2 size={16} />
-                    <span>{t('branch.main')}</span>
+                    <span>{branches.find(b => b.key === activeBranch)?.label || t('branch.main')}</span>
                     <ChevronDown size={14} />
                 </button>
                 {branchMenuOpen && (
                     <div className={styles.branchDropdown}>
-                        <div className={`${styles.branchItem} ${styles.branchActive}`}>
-                            <Building2 size={16} />
-                            <span>{t('branch.main')}</span>
-                        </div>
-                        <div className={styles.branchItem}>
-                            <Building2 size={16} />
-                            <span>{t('branch.downtown')}</span>
-                        </div>
-                        <div className={styles.branchItem}>
-                            <Building2 size={16} />
-                            <span>{t('branch.mall')}</span>
-                        </div>
+                        {branches.map(b => (
+                            <button
+                                key={b.key}
+                                className={`${styles.branchItem} ${activeBranch === b.key ? styles.branchActive : ''}`}
+                                onClick={() => handleBranchSelect(b.key)}
+                            >
+                                <Building2 size={16} />
+                                <span>{b.label}</span>
+                            </button>
+                        ))}
                     </div>
                 )}
             </div>
@@ -204,6 +234,10 @@ function TopBarInner() {
                                     <div
                                         key={n.id}
                                         className={`${styles.notifItem} ${n.unread ? styles.notifUnread : ''}`}
+                                        onClick={() => navigateTo(n.href)}
+                                        role="button"
+                                        tabIndex={0}
+                                        onKeyDown={e => e.key === 'Enter' && navigateTo(n.href)}
                                     >
                                         <div
                                             className={styles.notifIcon}
@@ -223,7 +257,7 @@ function TopBarInner() {
                                 ))}
                             </div>
                             <div className={styles.notifFooter}>
-                                <button className={styles.notifViewAll}>
+                                <button className={styles.notifViewAll} onClick={() => navigateTo('/marketing/notifications')}>
                                     {t('notifications.viewAll') || 'View all notifications'}
                                 </button>
                             </div>
@@ -245,11 +279,11 @@ function TopBarInner() {
                     </button>
                     {userMenuOpen && (
                         <div className={styles.userDropdown}>
-                            <button className={styles.dropdownItem}>
+                            <button className={styles.dropdownItem} onClick={() => navigateTo('/settings/profile')}>
                                 <User size={16} />
                                 <span>{t('user.profile')}</span>
                             </button>
-                            <button className={styles.dropdownItem}>
+                            <button className={styles.dropdownItem} onClick={() => navigateTo('/settings')}>
                                 <Settings size={16} />
                                 <span>{t('user.settings')}</span>
                             </button>
