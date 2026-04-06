@@ -1288,6 +1288,38 @@ const translations: Translations = {
     'settings.appearance.showAnimations': { en: 'Show animations', ar: 'إظهار الحركات' },
     'settings.appearance.saveChanges': { en: 'Save Changes', ar: 'حفظ التغييرات' },
 
+    // TopBar Notification Dropdown
+    'notifications.title': { en: 'Notifications', ar: 'الإشعارات' },
+    'notifications.markAllRead': { en: 'Mark all read', ar: 'تعيين الكل كمقروء' },
+    'notifications.viewAll': { en: 'View all notifications', ar: 'عرض جميع الإشعارات' },
+    'notifications.minutesAgo': { en: '{n} min ago', ar: 'منذ {n} دقيقة' },
+    'notifications.hoursAgo': { en: '{n} hour ago', ar: 'منذ {n} ساعة' },
+    'notifications.newBooking': { en: 'New booking', ar: 'حجز جديد' },
+    'notifications.newBookingDesc': {
+        en: 'Ahmed M. booked a haircut for today at 3:00 PM',
+        ar: 'أحمد م. حجز قص شعر اليوم الساعة 3:00 مساءً',
+    },
+    'notifications.cancellation': { en: 'Booking cancelled', ar: 'تم إلغاء الحجز' },
+    'notifications.cancellationDesc': {
+        en: 'Sara K. cancelled her appointment for tomorrow',
+        ar: 'سارة ك. ألغت موعدها ليوم غد',
+    },
+    'notifications.payment': { en: 'Payment received', ar: 'تم استلام الدفعة' },
+    'notifications.paymentDesc': {
+        en: 'EGP 350 payment confirmed from Omar H.',
+        ar: 'تم تأكيد دفعة 350 جنيه من عمر ح.',
+    },
+    'notifications.newClient': { en: 'New client registered', ar: 'عميل جديد مسجّل' },
+    'notifications.newClientDesc': {
+        en: 'Fatma A. signed up via the booking page',
+        ar: 'فاطمة أ. سجّلت عبر صفحة الحجز',
+    },
+    'notifications.completed': { en: 'Service completed', ar: 'تمت الخدمة' },
+    'notifications.completedDesc': {
+        en: 'Youssef E. completed haircut + beard trim',
+        ar: 'يوسف إ. أنهى قص الشعر + تهذيب اللحية',
+    },
+
     // Settings Notifications Page
     'settings.notifications.title': { en: 'Notification Preferences', ar: 'تفضيلات الإشعارات' },
     'settings.notifications.desc': { en: 'Choose what notifications you receive.', ar: 'اختر الإشعارات التي تتلقاها.' },
