@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { Button, Modal, Input, Select, Badge, useToast } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useApiQuery } from '@/hooks/useApiQuery';
 import SubTabs from '@/components/SubTabs';
 import TimeTrackingPage from '@/app/employees/time-tracking/page';
 import {
@@ -26,7 +27,7 @@ import {
     type ShiftTemplate,
     type DayKey,
 } from '@/lib/shiftData';
-import { providerApi } from '@/lib/api';
+import { providerApi, employeeExtApi } from '@/lib/api';
 
 /* ─── Mock Data ───────────────────────── */
 const days: DayKey[] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -376,6 +377,14 @@ const s: Record<string, React.CSSProperties> = {
 export default function SchedulePage() {
     const { t, lang } = useTranslation();
     const { addToast } = useToast();
+
+    // API: fetch schedule data (ready for backend)
+    const {
+        loading: scheduleLoading,
+        error: scheduleError,
+        refetch: refetchSchedule,
+    } = useApiQuery(() => employeeExtApi.getSchedule() as never, [], { fallbackData: initialSchedule });
+
     const [scheduleData, setScheduleData] = useState(initialSchedule);
 
     // Templates
@@ -746,11 +755,8 @@ export default function SchedulePage() {
 
     return (
         <div style={{ ...s.page, direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
-            {/* eslint-disable-next-line react/no-children-prop */}
-            <SubTabs
-                tabs={subTabs}
-                defaultTab="schedule"
-                children={{
+            <SubTabs tabs={subTabs} defaultTab="schedule">
+                {{
                     schedule: (
                         <>
                             {/* KPIs */}
@@ -1580,7 +1586,7 @@ export default function SchedulePage() {
                     ),
                     timeTracking: <TimeTrackingPage />,
                 }}
-            />
+            </SubTabs>
         </div>
     );
 }

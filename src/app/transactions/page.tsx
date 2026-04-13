@@ -2,11 +2,13 @@
 
 import React, { useState } from 'react';
 import { Search, Download, ChevronLeft, ChevronRight, Receipt } from 'lucide-react';
-import { EmptyState } from '@/components/ui';
 import styles from './transactions.module.css';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useApiQuery } from '@/hooks/useApiQuery';
+import { transactionApi } from '@/lib/api';
+import { DataGuard } from '@/components/DataGuard';
 
-const transactions = [
+const fallbackTransactions = [
     {
         id: 'TXN-2048',
         date: 'Mar 17, 2026',
@@ -132,6 +134,15 @@ export default function TransactionsPage() {
     const [typeFilter, setTypeFilter] = useState('all');
     const { t, lang } = useTranslation();
 
+    const {
+        data: transactions,
+        loading,
+        error,
+        refetch,
+    } = useApiQuery<typeof fallbackTransactions>(() => transactionApi.getTransactions() as never, [], {
+        fallbackData: fallbackTransactions,
+    });
+
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 8;
@@ -153,7 +164,8 @@ export default function TransactionsPage() {
         }
     };
 
-    const filtered = transactions.filter(t => {
+    const txnList = transactions ?? [];
+    const filtered = txnList.filter(t => {
         const matchSearch =
             t.id.toLowerCase().includes(search.toLowerCase()) ||
             t.client.toLowerCase().includes(search.toLowerCase()) ||
@@ -162,9 +174,9 @@ export default function TransactionsPage() {
         return matchSearch && matchType;
     });
 
-    const totalSales = transactions.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0);
-    const totalRefunds = Math.abs(transactions.filter(t => t.type === 'refund').reduce((s, t) => s + t.amount, 0));
-    const netRevenue = transactions.reduce((s, t) => s + t.amount, 0);
+    const totalSales = txnList.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0);
+    const totalRefunds = Math.abs(txnList.filter(t => t.type === 'refund').reduce((s, t) => s + t.amount, 0));
+    const netRevenue = txnList.reduce((s, t) => s + t.amount, 0);
 
     // Pagination logic
     const totalPages = Math.ceil(filtered.length / itemsPerPage);
@@ -177,7 +189,23 @@ export default function TransactionsPage() {
                     <h1>{t('txn.title')}</h1>
                     <p>{t('txn.desc')}</p>
                 </div>
-                <button className={styles.btnOutline}>
+                <button
+                    className={styles.btnOutline}
+                    onClick={() => {
+                        const csv = [
+                            'Date,Type,Client,Service,Employee,Amount,Method',
+                            ...filtered.map(
+                                tx =>
+                                    `${tx.date},${tx.type},${tx.client},"${tx.service}",${tx.employee},${tx.amount},${tx.method}`
+                            ),
+                        ].join('\n');
+                        const blob = new Blob([csv], { type: 'text/csv' });
+                        const a = document.createElement('a');
+                        a.href = URL.createObjectURL(blob);
+                        a.download = 'transactions.csv';
+                        a.click();
+                    }}
+                >
                     <Download size={16} /> {t('txn.export')}
                 </button>
             </div>
@@ -204,7 +232,7 @@ export default function TransactionsPage() {
                 </div>
                 <div className={styles.kpiCard}>
                     <div className={styles.kpiLabel}>{t('txn.transactions')}</div>
-                    <div className={styles.kpiValue}>{transactions.length}</div>
+                    <div className={styles.kpiValue}>{txnList.length}</div>
                 </div>
             </div>
 
@@ -240,128 +268,134 @@ export default function TransactionsPage() {
 
             {/* Table */}
             <div className={styles.tableCard}>
-                {filtered.length > 0 ? (
-                    <>
-                        <div className={styles.tableScroll}>
-                            <table className={styles.dataTable}>
-                                <thead>
-                                    <tr>
-                                        <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                            {t('txn.thTxnNum')}
-                                        </th>
-                                        <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                            {t('txn.thDateTime')}
-                                        </th>
-                                        <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                            {t('txn.thType')}
-                                        </th>
-                                        <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                            {t('txn.thClient')}
-                                        </th>
-                                        <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                            {t('txn.thDescription')}
-                                        </th>
-                                        <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                            {t('txn.thEmployee')}
-                                        </th>
-                                        <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                            {t('txn.thMethod')}
-                                        </th>
-                                        <th style={{ textAlign: lang === 'ar' ? 'left' : 'right' }}>
-                                            {t('txn.thAmount')}
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {paginatedTransactions.map(t => (
-                                        <tr key={t.id}>
-                                            <td className={styles.txnId}>{t.id}</td>
-                                            <td>
-                                                <div style={{ fontWeight: 'var(--font-medium)' }}>{t.date}</div>
-                                                <div
+                <DataGuard
+                    loading={loading}
+                    error={error}
+                    data={filtered}
+                    onRetry={refetch}
+                    emptyIcon={<Receipt size={32} color="var(--text-tertiary)" />}
+                    emptyTitle={t('txn.emptyTitle')}
+                    emptyDescription={t('txn.emptyDesc')}
+                >
+                    {filtered.length > 0 ? (
+                        <>
+                            <div className={styles.tableScroll}>
+                                <table className={styles.dataTable}>
+                                    <thead>
+                                        <tr>
+                                            <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                                {t('txn.thTxnNum')}
+                                            </th>
+                                            <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                                {t('txn.thDateTime')}
+                                            </th>
+                                            <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                                {t('txn.thType')}
+                                            </th>
+                                            <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                                {t('txn.thClient')}
+                                            </th>
+                                            <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                                {t('txn.thDescription')}
+                                            </th>
+                                            <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                                {t('txn.thEmployee')}
+                                            </th>
+                                            <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                                {t('txn.thMethod')}
+                                            </th>
+                                            <th style={{ textAlign: lang === 'ar' ? 'left' : 'right' }}>
+                                                {t('txn.thAmount')}
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {paginatedTransactions.map(t => (
+                                            <tr key={t.id}>
+                                                <td className={styles.txnId}>{t.id}</td>
+                                                <td>
+                                                    <div style={{ fontWeight: 'var(--font-medium)' }}>{t.date}</div>
+                                                    <div
+                                                        style={{
+                                                            fontSize: 'var(--text-xs)',
+                                                            color: 'var(--text-tertiary)',
+                                                        }}
+                                                    >
+                                                        {t.time}
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span
+                                                        className={`${styles.typeBadge} ${typeConfig[t.type]?.class}`}
+                                                    >
+                                                        {getTypeLabel(t.type)}
+                                                    </span>
+                                                </td>
+                                                <td
                                                     style={{
-                                                        fontSize: 'var(--text-xs)',
-                                                        color: 'var(--text-tertiary)',
+                                                        fontWeight: t.client !== '—' ? 'var(--font-medium)' : undefined,
+                                                        color: t.client === '—' ? 'var(--text-tertiary)' : undefined,
                                                     }}
                                                 >
-                                                    {t.time}
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span className={`${styles.typeBadge} ${typeConfig[t.type]?.class}`}>
-                                                    {getTypeLabel(t.type)}
-                                                </span>
-                                            </td>
-                                            <td
-                                                style={{
-                                                    fontWeight: t.client !== '—' ? 'var(--font-medium)' : undefined,
-                                                    color: t.client === '—' ? 'var(--text-tertiary)' : undefined,
-                                                }}
-                                            >
-                                                {t.client}
-                                            </td>
-                                            <td>{t.service}</td>
-                                            <td>{t.employee}</td>
-                                            <td>{t.method}</td>
-                                            <td style={{ textAlign: lang === 'ar' ? 'left' : 'right' }} dir="ltr">
-                                                <span
-                                                    className={
-                                                        t.amount >= 0 ? styles.amountPositive : styles.amountNegative
-                                                    }
-                                                >
-                                                    {t.amount >= 0 ? '+' : ''}
-                                                    {t.amount.toLocaleString()} EGP
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                        <div className={styles.pagination}>
-                            <span className={styles.pageInfo}>
-                                {t('txn.showingInfo')
-                                    .replace('{visible}', paginatedTransactions.length.toString())
-                                    .replace('{total}', filtered.length.toString())}
-                            </span>
-                            {totalPages > 1 && (
-                                <div className={styles.pageButtons}>
-                                    <button
-                                        className={styles.pageBtn}
-                                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                                        disabled={currentPage === 1}
-                                    >
-                                        <ChevronLeft
-                                            size={16}
-                                            style={lang === 'ar' ? { transform: 'scaleX(-1)' } : {}}
-                                        />
-                                    </button>
-                                    <button className={`${styles.pageBtn} ${styles.pageBtnActive}`}>
-                                        {currentPage}
-                                    </button>
-                                    <button
-                                        className={styles.pageBtn}
-                                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                                        disabled={currentPage === totalPages}
-                                    >
-                                        <ChevronRight
-                                            size={16}
-                                            style={lang === 'ar' ? { transform: 'scaleX(-1)' } : {}}
-                                        />
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    </>
-                ) : (
-                    <div style={{ padding: 'var(--space-12) 0' }}>
-                        <EmptyState
-                            icon={<Receipt size={32} color="var(--text-tertiary)" />}
-                            title={t('txn.emptyTitle')}
-                            description={t('txn.emptyDesc')}
-                        />
-                    </div>
-                )}
+                                                    {t.client}
+                                                </td>
+                                                <td>{t.service}</td>
+                                                <td>{t.employee}</td>
+                                                <td>{t.method}</td>
+                                                <td style={{ textAlign: lang === 'ar' ? 'left' : 'right' }} dir="ltr">
+                                                    <span
+                                                        className={
+                                                            t.amount >= 0
+                                                                ? styles.amountPositive
+                                                                : styles.amountNegative
+                                                        }
+                                                    >
+                                                        {t.amount >= 0 ? '+' : ''}
+                                                        {t.amount.toLocaleString()} EGP
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div className={styles.pagination}>
+                                <span className={styles.pageInfo}>
+                                    {t('txn.showingInfo')
+                                        .replace('{visible}', paginatedTransactions.length.toString())
+                                        .replace('{total}', filtered.length.toString())}
+                                </span>
+                                {totalPages > 1 && (
+                                    <div className={styles.pageButtons}>
+                                        <button
+                                            className={styles.pageBtn}
+                                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                            disabled={currentPage === 1}
+                                        >
+                                            <ChevronLeft
+                                                size={16}
+                                                style={lang === 'ar' ? { transform: 'scaleX(-1)' } : {}}
+                                            />
+                                        </button>
+                                        <button className={`${styles.pageBtn} ${styles.pageBtnActive}`}>
+                                            {currentPage}
+                                        </button>
+                                        <button
+                                            className={styles.pageBtn}
+                                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                            disabled={currentPage === totalPages}
+                                        >
+                                            <ChevronRight
+                                                size={16}
+                                                style={lang === 'ar' ? { transform: 'scaleX(-1)' } : {}}
+                                            />
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </>
+                    ) : null}
+                </DataGuard>
             </div>
         </div>
     );

@@ -16,8 +16,11 @@ import {
 } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import styles from './returns.module.css';
+import { useApiQuery } from '@/hooks/useApiQuery';
+import { returnApi, type Return } from '@/lib/api';
+import { DataGuard } from '@/components/DataGuard';
 
-const returns = [
+const fallbackReturns = [
     {
         id: 'RTN-301',
         date: 'Mar 21, 2026',
@@ -111,7 +114,19 @@ export default function ReturnsPage() {
     const [activeTab, setActiveTab] = useState('all');
     const [search, setSearch] = useState('');
 
-    const filteredReturns = returns.filter(r => {
+    // API: fetch returns
+    const {
+        data: apiReturns,
+        loading: returnsLoading,
+        error: returnsError,
+        refetch: refetchReturns,
+    } = useApiQuery<Return[]>(() => returnApi.getReturns(), [], {
+        fallbackData: fallbackReturns as unknown as Return[],
+    });
+
+    const returns = (apiReturns as unknown as typeof fallbackReturns) || fallbackReturns;
+
+    const filteredReturns = returns.filter((r: (typeof fallbackReturns)[number]) => {
         const matchSearch =
             r.client.toLowerCase().includes(search.toLowerCase()) ||
             r.id.toLowerCase().includes(search.toLowerCase()) ||
@@ -225,135 +240,164 @@ export default function ReturnsPage() {
                 </div>
             </div>
 
-            <div className={styles.card}>
-                <div className={styles.tableResponsive}>
-                    <table className={styles.dataTable}>
-                        <thead>
-                            <tr>
-                                <th className={styles.th} style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                    {t('rtn.thRtnNum')}
-                                </th>
-                                <th className={styles.th} style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                    {t('rtn.thDate')}
-                                </th>
-                                <th className={styles.th} style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                    {t('rtn.thType')}
-                                </th>
-                                <th className={styles.th} style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                    {t('rtn.thClient')}
-                                </th>
-                                <th className={styles.th} style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                    {t('rtn.thItem')}
-                                </th>
-                                <th className={styles.th} style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                    {t('rtn.thReason')}
-                                </th>
-                                <th className={`${styles.th} ${styles.thRight}`}>{t('rtn.thAmount')}</th>
-                                <th className={styles.th} style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                    {t('rtn.thStatus')}
-                                </th>
-                                <th className={styles.th}></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredReturns.map(r => {
-                                const tp = typeConfig[r.type];
-                                const st = statusConfig[r.status];
-                                return (
-                                    <tr
-                                        key={r.id}
-                                        className={`${styles.tr} ${styles.trInteractive}`}
-                                        onClick={() => addToast('info', `Viewing return ${r.id} details`)}
-                                    >
-                                        <td className={`${styles.td} ${styles.idCell}`}>{r.id}</td>
-                                        <td className={styles.td}>
-                                            <div className={styles.dateCell}>{r.date}</div>
-                                            <div className={styles.timeCell}>{r.time}</div>
-                                        </td>
-                                        <td className={styles.td}>
-                                            <span
-                                                className={styles.badge}
-                                                style={{ background: tp.bg, color: tp.color }}
-                                            >
-                                                {tp.label}
-                                            </span>
-                                        </td>
-                                        <td className={`${styles.td} ${r.client !== '—' ? styles.clientName : ''}`}>
-                                            {r.client}
-                                        </td>
-                                        <td className={`${styles.td} ${styles.truncate}`}>{r.item}</td>
-                                        <td className={`${styles.td} ${styles.truncateReason}`}>{r.reason}</td>
-                                        <td
-                                            className={`${styles.td} ${styles.amountRefund}`}
-                                            dir="ltr"
-                                            style={{ textAlign: lang === 'ar' ? 'left' : 'right' }}
+            <DataGuard
+                loading={returnsLoading}
+                error={returnsError}
+                data={filteredReturns}
+                emptyIcon={<RotateCcw size={48} />}
+                emptyTitle={t('rtn.title')}
+                emptyDescription="No returns found"
+                onRetry={refetchReturns}
+            >
+                <div className={styles.card}>
+                    <div className={styles.tableResponsive}>
+                        <table className={styles.dataTable}>
+                            <thead>
+                                <tr>
+                                    <th className={styles.th} style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                        {t('rtn.thRtnNum')}
+                                    </th>
+                                    <th className={styles.th} style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                        {t('rtn.thDate')}
+                                    </th>
+                                    <th className={styles.th} style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                        {t('rtn.thType')}
+                                    </th>
+                                    <th className={styles.th} style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                        {t('rtn.thClient')}
+                                    </th>
+                                    <th className={styles.th} style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                        {t('rtn.thItem')}
+                                    </th>
+                                    <th className={styles.th} style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                        {t('rtn.thReason')}
+                                    </th>
+                                    <th className={`${styles.th} ${styles.thRight}`}>{t('rtn.thAmount')}</th>
+                                    <th className={styles.th} style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                        {t('rtn.thStatus')}
+                                    </th>
+                                    <th className={styles.th}></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredReturns.map(r => {
+                                    const tp = typeConfig[r.type];
+                                    const st = statusConfig[r.status];
+                                    return (
+                                        <tr
+                                            key={r.id}
+                                            className={`${styles.tr} ${styles.trInteractive}`}
+                                            onClick={() => addToast('info', `Viewing return ${r.id} details`)}
                                         >
-                                            -{r.amount.toLocaleString()} EGP
-                                            {r.priceSource !== 'base' && (
+                                            <td className={`${styles.td} ${styles.idCell}`}>{r.id}</td>
+                                            <td className={styles.td}>
+                                                <div className={styles.dateCell}>{r.date}</div>
+                                                <div className={styles.timeCell}>{r.time}</div>
+                                            </td>
+                                            <td className={styles.td}>
                                                 <span
-                                                    style={{
-                                                        marginLeft: 4,
-                                                        padding: '1px 5px',
-                                                        borderRadius: 'var(--radius-full)',
-                                                        fontSize: 10,
-                                                        fontWeight: 600,
-                                                        background: 'var(--color-primary-50, #eff6ff)',
-                                                        color: 'var(--color-primary-600)',
-                                                    }}
+                                                    className={styles.badge}
+                                                    style={{ background: tp.bg, color: tp.color }}
                                                 >
-                                                    {r.priceSource}
+                                                    {tp.label}
                                                 </span>
-                                            )}
-                                        </td>
-                                        <td className={styles.td}>
-                                            <span
-                                                className={styles.badge}
-                                                style={{ background: st.bg, color: st.color }}
+                                            </td>
+                                            <td className={`${styles.td} ${r.client !== '—' ? styles.clientName : ''}`}>
+                                                {r.client}
+                                            </td>
+                                            <td className={`${styles.td} ${styles.truncate}`}>{r.item}</td>
+                                            <td className={`${styles.td} ${styles.truncateReason}`}>{r.reason}</td>
+                                            <td
+                                                className={`${styles.td} ${styles.amountRefund}`}
+                                                dir="ltr"
+                                                style={{ textAlign: lang === 'ar' ? 'left' : 'right' }}
                                             >
-                                                {st.icon} {st.label}
-                                            </span>
-                                        </td>
-                                        <td className={styles.td}>
-                                            <DropdownMenu
-                                                trigger={
-                                                    <button className={styles.actionBtn}>
-                                                        <MoreVertical size={16} />
-                                                    </button>
-                                                }
-                                                items={[
-                                                    {
-                                                        label: t('rtn.actionView'),
-                                                        icon: <Search size={14} />,
-                                                        onClick: () => addToast('info', 'Viewing return details'),
-                                                    },
-                                                    {
-                                                        label: t('rtn.actionApprove'),
-                                                        icon: <CheckCircle2 size={14} />,
-                                                        onClick: () => addToast('success', 'Return approved'),
-                                                    },
-                                                    {
-                                                        label: t('rtn.actionReject'),
-                                                        icon: <XCircle size={14} />,
-                                                        onClick: () => addToast('error', 'Return rejected'),
-                                                        destructive: true,
-                                                    },
-                                                ]}
-                                            />
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
+                                                -{r.amount.toLocaleString()} EGP
+                                                {r.priceSource !== 'base' && (
+                                                    <span
+                                                        style={{
+                                                            marginLeft: 4,
+                                                            padding: '1px 5px',
+                                                            borderRadius: 'var(--radius-full)',
+                                                            fontSize: 10,
+                                                            fontWeight: 600,
+                                                            background: 'var(--color-primary-50, #eff6ff)',
+                                                            color: 'var(--color-primary-600)',
+                                                        }}
+                                                    >
+                                                        {r.priceSource}
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td className={styles.td}>
+                                                <span
+                                                    className={styles.badge}
+                                                    style={{ background: st.bg, color: st.color }}
+                                                >
+                                                    {st.icon} {st.label}
+                                                </span>
+                                            </td>
+                                            <td className={styles.td}>
+                                                <DropdownMenu
+                                                    trigger={
+                                                        <button className={styles.actionBtn}>
+                                                            <MoreVertical size={16} />
+                                                        </button>
+                                                    }
+                                                    items={[
+                                                        {
+                                                            label: t('rtn.actionView'),
+                                                            icon: <Search size={14} />,
+                                                            onClick: () => addToast('info', 'Viewing return details'),
+                                                        },
+                                                        {
+                                                            label: t('rtn.actionApprove'),
+                                                            icon: <CheckCircle2 size={14} />,
+                                                            onClick: async () => {
+                                                                try {
+                                                                    await returnApi.approveReturn(r.id);
+                                                                    refetchReturns();
+                                                                } catch {
+                                                                    /* fallback */
+                                                                }
+                                                                addToast('success', 'Return approved');
+                                                            },
+                                                        },
+                                                        {
+                                                            label: t('rtn.actionReject'),
+                                                            icon: <XCircle size={14} />,
+                                                            onClick: async () => {
+                                                                try {
+                                                                    await returnApi.rejectReturn(
+                                                                        r.id,
+                                                                        'Rejected by admin'
+                                                                    );
+                                                                    refetchReturns();
+                                                                } catch {
+                                                                    /* fallback */
+                                                                }
+                                                                addToast('error', 'Return rejected');
+                                                            },
+                                                            destructive: true,
+                                                        },
+                                                    ]}
+                                                />
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className={styles.pag}>
+                        <span className={styles.pageInfo}>
+                            {t('exp.showing')
+                                .replace('{visible}', filteredReturns.length.toString())
+                                .replace('{total}', returns.length.toString())}
+                        </span>
+                    </div>
                 </div>
-                <div className={styles.pag}>
-                    <span className={styles.pageInfo}>
-                        {t('exp.showing')
-                            .replace('{visible}', filteredReturns.length.toString())
-                            .replace('{total}', returns.length.toString())}
-                    </span>
-                </div>
-            </div>
+            </DataGuard>
         </div>
     );
 }

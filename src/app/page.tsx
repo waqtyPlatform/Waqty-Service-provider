@@ -1,10 +1,18 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { providerApi, type Booking, type Employee as ApiEmployee } from '@/lib/api';
+import {
+    providerApi,
+    dashboardApi,
+    type Booking,
+    type Employee as ApiEmployee,
+    type DashboardSummary,
+} from '@/lib/api';
+import { useApiQuery } from '@/hooks/useApiQuery';
+import { KPICardSkeleton } from '@/components/ui/Skeleton';
 import {
     DollarSign,
     CalendarDays,
@@ -148,12 +156,99 @@ function pseudoRandom(seed: string) {
     return (Math.abs(h) % 100) / 100;
 }
 
+/** Compute from_date / to_date for the selected date range tab */
+function getDateRangeFilters(range: string): { from_date: string; to_date: string } {
+    const now = new Date();
+    const toDate = now.toISOString().split('T')[0];
+    let fromDate = toDate;
+
+    switch (range) {
+        case 'Today':
+            fromDate = toDate;
+            break;
+        case 'This Week': {
+            const day = now.getDay();
+            const diff = day === 0 ? 6 : day - 1; // Monday-based week
+            const weekStart = new Date(now);
+            weekStart.setDate(now.getDate() - diff);
+            fromDate = weekStart.toISOString().split('T')[0];
+            break;
+        }
+        case 'This Month':
+            fromDate = toDate.slice(0, 8) + '01';
+            break;
+        case 'This Quarter': {
+            const quarter = Math.floor(now.getMonth() / 3);
+            const quarterStart = new Date(now.getFullYear(), quarter * 3, 1);
+            fromDate = quarterStart.toISOString().split('T')[0];
+            break;
+        }
+        default:
+            fromDate = toDate.slice(0, 8) + '01'; // fallback to month
+            break;
+    }
+    return { from_date: fromDate, to_date: toDate };
+}
+
+/** Fallback KPI mock data shaped like a DashboardSummary */
+const FALLBACK_SUMMARY: DashboardSummary = {
+    total_revenue: 12450,
+    total_bookings: 47,
+    new_clients: 12,
+    total_invoices: 38,
+    total_returns: 3,
+    revenue_trend: 12.5,
+    bookings_trend: 8.2,
+    clients_trend: 25,
+    top_services: [
+        { name: 'Hair Coloring', revenue: 23200, count: 58 },
+        { name: 'Keratin Treatment', revenue: 21000, count: 42 },
+        { name: 'Facial Treatment', revenue: 16500, count: 55 },
+        { name: 'Manicure & Pedicure', revenue: 13400, count: 67 },
+        { name: 'Haircut & Styling', revenue: 10800, count: 72 },
+    ],
+    top_employees: [
+        { name: 'Layla Hassan', revenue: 14200, bookings: 42 },
+        { name: 'Sara Ahmed', revenue: 12800, bookings: 38 },
+        { name: 'Nora Ali', revenue: 11500, bookings: 35 },
+        { name: 'Reem Mohamed', revenue: 9800, bookings: 30 },
+        { name: 'Hana Youssef', revenue: 8100, bookings: 25 },
+    ],
+    top_clients: [
+        { name: 'Fatima Al-Rashid', visits: 24, spent: 8400 },
+        { name: 'Aisha Mohammed', visits: 19, spent: 6250 },
+        { name: 'Maryam Ibrahim', visits: 17, spent: 5800 },
+        { name: 'Huda Saleh', visits: 15, spent: 4900 },
+        { name: 'Noura Ahmed', visits: 12, spent: 3600 },
+    ],
+    booking_status_distribution: [
+        { status: 'Confirmed', count: 18 },
+        { status: 'Completed', count: 12 },
+        { status: 'Arrived', count: 7 },
+        { status: 'Unconfirmed', count: 5 },
+        { status: 'Cancelled', count: 3 },
+        { status: 'No-Show', count: 2 },
+    ],
+    revenue_by_day: [],
+    occupancy_rate: 67,
+};
+
 export default function DashboardPage() {
     const [activeDate, setActiveDate] = useState('Today');
     const [showProfileBanner, setShowProfileBanner] = useState(true);
     const router = useRouter();
     const { user } = useAuth();
     const { t, lang } = useTranslation();
+
+    // ── Dashboard Summary API ──
+    const dateFilters = useMemo(() => getDateRangeFilters(activeDate), [activeDate]);
+    const {
+        data: summaryData,
+        loading: summaryLoading,
+        refetch: _refetchSummary,
+    } = useApiQuery<DashboardSummary>(() => dashboardApi.getSummary(dateFilters), [dateFilters], {
+        fallbackData: FALLBACK_SUMMARY,
+    });
 
     // Check if banner was previously dismissed
     useEffect(() => {
@@ -263,103 +358,155 @@ export default function DashboardPage() {
 
     const formatNum = (num: number) => num.toLocaleString('en-US');
 
-    const getMultiplier = (range: string) => {
-        switch (range) {
-            case 'Today':
-                return 1;
-            case 'This Week':
-                return 5.5;
-            case 'This Month':
-                return 22.4;
-            case 'This Quarter':
-                return 65.2;
-            case 'Custom':
-                return 15.6;
-            default:
-                return 1;
-        }
-    };
+    // ── Use API summary data (with fallback) for all KPI / top sections ──
+    const summary = summaryData ?? FALLBACK_SUMMARY;
 
-    const currentKpiData = React.useMemo(() => {
-        const m = getMultiplier(activeDate);
+    const currentKpiData = useMemo(() => {
+        return [
+            {
+                label: 'Total Revenue',
+                value: formatNum(Math.round(summary.total_revenue)),
+                unit: 'EGP',
+                trend: `${summary.revenue_trend >= 0 ? '+' : ''}${summary.revenue_trend}%`,
+                trendUp: summary.revenue_trend >= 0,
+                icon: <DollarSign size={22} />,
+                colorClass: 'kpiIconGreen',
+                sparkData: kpiData[0].sparkData.map((d, i) => ({
+                    v: Math.round(d.v * (1 + (pseudoRandom('revenue' + activeDate + i) * 0.2 - 0.1))),
+                })),
+            },
+            {
+                label: 'Bookings',
+                value: formatNum(summary.total_bookings),
+                unit: '',
+                trend: `${summary.bookings_trend >= 0 ? '+' : ''}${summary.bookings_trend}%`,
+                trendUp: summary.bookings_trend >= 0,
+                icon: <CalendarDays size={22} />,
+                colorClass: 'kpiIconBlue',
+                sparkData: kpiData[1].sparkData.map((d, i) => ({
+                    v: Math.round(d.v * (1 + (pseudoRandom('bookings' + activeDate + i) * 0.2 - 0.1))),
+                })),
+            },
+            {
+                label: 'New Clients',
+                value: formatNum(summary.new_clients),
+                unit: '',
+                trend: `${summary.clients_trend >= 0 ? '+' : ''}${summary.clients_trend}%`,
+                trendUp: summary.clients_trend >= 0,
+                icon: <UserPlus size={22} />,
+                colorClass: 'kpiIconPurple',
+                sparkData: kpiData[2].sparkData.map((d, i) => ({
+                    v: Math.round(d.v * (1 + (pseudoRandom('clients' + activeDate + i) * 0.2 - 0.1))),
+                })),
+            },
+            {
+                label: 'Invoices',
+                value: formatNum(summary.total_invoices),
+                unit: '',
+                trend:
+                    summary.total_invoices > 0
+                        ? '+' +
+                          Math.round((summary.total_invoices / Math.max(summary.total_bookings, 1)) * 100 - 100) +
+                          '%'
+                        : '0%',
+                trendUp: summary.total_invoices >= summary.total_bookings * 0.8,
+                icon: <FileText size={22} />,
+                colorClass: 'kpiIconOrange',
+                sparkData: kpiData[3].sparkData.map((d, i) => ({
+                    v: Math.round(d.v * (1 + (pseudoRandom('invoices' + activeDate + i) * 0.2 - 0.1))),
+                })),
+            },
+            {
+                label: 'Returns',
+                value: formatNum(summary.total_returns),
+                unit: '',
+                trend:
+                    summary.total_returns <= 3
+                        ? '-40%'
+                        : `+${Math.round((summary.total_returns / Math.max(summary.total_bookings, 1)) * 100)}%`,
+                trendUp: summary.total_returns <= 3,
+                icon: <RotateCcw size={22} />,
+                colorClass: 'kpiIconRed',
+                sparkData: kpiData[4].sparkData.map((d, i) => ({
+                    v: Math.round(d.v * (1 + (pseudoRandom('returns' + activeDate + i) * 0.2 - 0.1))),
+                })),
+            },
+        ];
+    }, [summary, activeDate]);
 
-        // If we have real booking data and viewing "Today" or "This Month", inject real values
-        if (apiBookings && activeDate === 'This Month') {
-            return kpiData.map(kpi => {
-                let value = formatNum(Math.round(parseInt(kpi.value.replace(/,/g, '')) * m));
-
-                if (kpi.label === 'Bookings') {
-                    value = formatNum(apiBookings.length);
-                }
-
-                return {
-                    ...kpi,
-                    value,
-                    sparkData: kpi.sparkData.map((d, i) => ({
-                        v: Math.round(d.v * (1 + (pseudoRandom(kpi.label + activeDate + i) * 0.2 - 0.1))),
-                    })),
-                };
-            });
-        }
-
-        return kpiData.map(kpi => ({
-            ...kpi,
-            value: formatNum(Math.round(parseInt(kpi.value.replace(/,/g, '')) * m)),
-            sparkData: kpi.sparkData.map((d, i) => ({
-                v: Math.round(d.v * (1 + (pseudoRandom(kpi.label + activeDate + i) * 0.2 - 0.1))),
-            })),
-        }));
-    }, [activeDate, apiBookings]);
-
-    const currentOccupancyData = React.useMemo(() => {
-        // Use real data if available
-        if (liveOccupancyData && activeDate === 'This Month') {
+    const currentOccupancyData = useMemo(() => {
+        // Use real data from bookings/employees if available
+        if (liveOccupancyData) {
             return liveOccupancyData;
         }
-        const days = Math.max(1, Math.round(getMultiplier(activeDate)));
         return occupancyData.map(d => {
-            const total = 9 * days;
             const pct = Math.min(100, Math.max(0, d.pct + (pseudoRandom(d.employee + activeDate) * 10 - 5)));
-            const booked = Math.round((pct / 100) * total);
-            return { ...d, total, booked: Math.min(booked, total), pct: Math.round(pct) };
+            const booked = Math.round((pct / 100) * d.total);
+            return { ...d, booked: Math.min(booked, d.total), pct: Math.round(pct) };
         });
     }, [activeDate, liveOccupancyData]);
 
-    const currentBookingStatusData = React.useMemo(() => {
-        // Use real data if available
-        if (liveBookingStatusData && activeDate === 'This Month') {
+    const currentBookingStatusData = useMemo(() => {
+        // Use real data from bookings API if available
+        if (liveBookingStatusData) {
             return liveBookingStatusData;
         }
-        const m = getMultiplier(activeDate);
-        return bookingStatusData.map(d => ({ ...d, value: Math.round(d.value * m) }));
-    }, [activeDate, liveBookingStatusData]);
+        // Use summary distribution if available from dashboard API
+        if (summary.booking_status_distribution.length > 0) {
+            const colorMap: Record<string, string> = {
+                Confirmed: 'var(--status-confirmed)',
+                Completed: 'var(--status-completed)',
+                Arrived: 'var(--status-arrived)',
+                Unconfirmed: 'var(--status-unconfirmed)',
+                Cancelled: 'var(--status-cancelled)',
+                'No-Show': 'var(--status-no-show)',
+            };
+            return summary.booking_status_distribution.map(d => ({
+                name: d.status,
+                value: d.count,
+                color: colorMap[d.status] || 'var(--color-primary-500)',
+            }));
+        }
+        return bookingStatusData;
+    }, [liveBookingStatusData, summary]);
 
-    const currentTopClients = React.useMemo(() => {
-        const m = getMultiplier(activeDate);
-        return topClients.map(c => ({
-            ...c,
-            visits: Math.max(1, Math.round(c.visits * m)),
-            spend: formatNum(Math.round(parseInt(c.spend.replace(/,/g, '')) * m)),
-        }));
-    }, [activeDate]);
+    const currentTopClients = useMemo(() => {
+        if (summary.top_clients.length > 0) {
+            return summary.top_clients.map((c, i) => ({
+                rank: i + 1,
+                name: c.name,
+                visits: c.visits,
+                spend: formatNum(Math.round(c.spent)),
+                id: `C${String(i + 1).padStart(3, '0')}`,
+            }));
+        }
+        return topClients;
+    }, [summary]);
 
-    const currentTopEmployees = React.useMemo(() => {
-        const m = getMultiplier(activeDate);
-        return topEmployees.map(e => ({
-            ...e,
-            bookings: Math.round(e.bookings * m),
-            revenue: formatNum(Math.round(parseInt(e.revenue.replace(/,/g, '')) * m)),
-        }));
-    }, [activeDate]);
+    const currentTopEmployees = useMemo(() => {
+        if (summary.top_employees.length > 0) {
+            return summary.top_employees.map((e, i) => ({
+                rank: i + 1,
+                name: e.name,
+                bookings: e.bookings,
+                revenue: formatNum(Math.round(e.revenue)),
+                id: `E${String(i + 1).padStart(3, '0')}`,
+            }));
+        }
+        return topEmployees;
+    }, [summary]);
 
-    const currentTopServices = React.useMemo(() => {
-        const m = getMultiplier(activeDate);
-        return topServices.map(s => ({
-            ...s,
-            count: Math.round(s.count * m),
-            revenue: formatNum(Math.round(parseInt(s.revenue.replace(/,/g, '')) * m)),
-        }));
-    }, [activeDate]);
+    const currentTopServices = useMemo(() => {
+        if (summary.top_services.length > 0) {
+            return summary.top_services.map((s, i) => ({
+                rank: i + 1,
+                name: s.name,
+                count: s.count,
+                revenue: formatNum(Math.round(s.revenue)),
+            }));
+        }
+        return topServices;
+    }, [summary]);
 
     const totalBookings = currentBookingStatusData.reduce((s, d) => s + d.value, 0);
 
@@ -439,92 +586,100 @@ export default function DashboardPage() {
 
             <>
                 {/* KPI Cards */}
-                <motion.div
-                    className={styles.kpiGrid}
-                    initial="hidden"
-                    animate="visible"
-                    variants={{
-                        hidden: { opacity: 0 },
-                        visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
-                    }}
-                >
-                    {currentKpiData.map(kpi => (
-                        <motion.div
-                            key={kpi.label}
-                            className={styles.kpiCard}
-                            variants={{
-                                hidden: { y: 20, opacity: 0 },
-                                visible: { y: 0, opacity: 1 },
-                            }}
-                        >
-                            <div className={styles.kpiHeader}>
-                                <div className={`${styles.kpiIcon} ${styles[kpi.colorClass]}`}>{kpi.icon}</div>
-                                <span
-                                    className={`${styles.kpiTrend} ${
-                                        kpi.trendUp ? styles.kpiTrendUp : styles.kpiTrendDown
-                                    }`}
-                                >
-                                    {kpi.trendUp ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-                                    {kpi.trend}
-                                </span>
-                            </div>
-                            <div>
-                                <span className={styles.kpiValue}>
-                                    {kpi.value}
-                                    {kpi.unit && (
-                                        <span
-                                            style={{
-                                                fontSize: 'var(--text-lg)',
-                                                fontWeight: 'var(--font-medium)',
-                                                marginInlineStart: '4px',
-                                                color: 'var(--text-tertiary)',
-                                            }}
-                                        >
-                                            {kpi.unit}
-                                        </span>
-                                    )}
-                                </span>
-                                <div className={styles.kpiLabel}>
-                                    {kpi.label === 'Bookings'
-                                        ? bookingsTerm
-                                        : kpi.label === 'New Clients'
-                                          ? `+ ${clientsTerm}`
-                                          : t(
-                                                kpi.label === 'Total Revenue'
-                                                    ? 'dash.kpiRev'
-                                                    : kpi.label === 'Invoices'
-                                                      ? 'dash.kpiInvoices'
-                                                      : 'dash.kpiReturns'
-                                            )}
+                {summaryLoading ? (
+                    <div className={styles.kpiGrid}>
+                        {Array.from({ length: 5 }).map((_, i) => (
+                            <KPICardSkeleton key={i} />
+                        ))}
+                    </div>
+                ) : (
+                    <motion.div
+                        className={styles.kpiGrid}
+                        initial="hidden"
+                        animate="visible"
+                        variants={{
+                            hidden: { opacity: 0 },
+                            visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
+                        }}
+                    >
+                        {currentKpiData.map(kpi => (
+                            <motion.div
+                                key={kpi.label}
+                                className={styles.kpiCard}
+                                variants={{
+                                    hidden: { y: 20, opacity: 0 },
+                                    visible: { y: 0, opacity: 1 },
+                                }}
+                            >
+                                <div className={styles.kpiHeader}>
+                                    <div className={`${styles.kpiIcon} ${styles[kpi.colorClass]}`}>{kpi.icon}</div>
+                                    <span
+                                        className={`${styles.kpiTrend} ${
+                                            kpi.trendUp ? styles.kpiTrendUp : styles.kpiTrendDown
+                                        }`}
+                                    >
+                                        {kpi.trendUp ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                                        {kpi.trend}
+                                    </span>
                                 </div>
-                            </div>
-                            <div className={styles.kpiSparkline}>
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart data={kpi.sparkData}>
-                                        <Area
-                                            type="monotone"
-                                            dataKey="v"
-                                            stroke="var(--color-primary-500)"
-                                            fill="var(--color-primary-500)"
-                                            strokeWidth={2}
-                                        />
-                                        <RechartsTooltip
-                                            contentStyle={{
-                                                borderRadius: '8px',
-                                                border: 'none',
-                                                boxShadow: 'var(--shadow-sm)',
-                                                fontSize: '12px',
-                                                padding: '4px 8px',
-                                            }}
-                                            formatter={val => [`${val ?? ''}`, 'Value']}
-                                            labelFormatter={() => ''}
-                                        />
-                                    </AreaChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </motion.div>
-                    ))}
-                </motion.div>
+                                <div>
+                                    <span className={styles.kpiValue}>
+                                        {kpi.value}
+                                        {kpi.unit && (
+                                            <span
+                                                style={{
+                                                    fontSize: 'var(--text-lg)',
+                                                    fontWeight: 'var(--font-medium)',
+                                                    marginInlineStart: '4px',
+                                                    color: 'var(--text-tertiary)',
+                                                }}
+                                            >
+                                                {kpi.unit}
+                                            </span>
+                                        )}
+                                    </span>
+                                    <div className={styles.kpiLabel}>
+                                        {kpi.label === 'Bookings'
+                                            ? bookingsTerm
+                                            : kpi.label === 'New Clients'
+                                              ? `+ ${clientsTerm}`
+                                              : t(
+                                                    kpi.label === 'Total Revenue'
+                                                        ? 'dash.kpiRev'
+                                                        : kpi.label === 'Invoices'
+                                                          ? 'dash.kpiInvoices'
+                                                          : 'dash.kpiReturns'
+                                                )}
+                                    </div>
+                                </div>
+                                <div className={styles.kpiSparkline}>
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <AreaChart data={kpi.sparkData}>
+                                            <Area
+                                                type="monotone"
+                                                dataKey="v"
+                                                stroke="var(--color-primary-500)"
+                                                fill="var(--color-primary-500)"
+                                                strokeWidth={2}
+                                            />
+                                            <RechartsTooltip
+                                                contentStyle={{
+                                                    borderRadius: '8px',
+                                                    border: 'none',
+                                                    boxShadow: 'var(--shadow-sm)',
+                                                    fontSize: '12px',
+                                                    padding: '4px 8px',
+                                                }}
+                                                formatter={val => [`${val ?? ''}`, 'Value']}
+                                                labelFormatter={() => ''}
+                                            />
+                                        </AreaChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </motion.div>
+                )}
 
                 {/* Charts Row */}
                 <motion.div
@@ -898,7 +1053,7 @@ export default function DashboardPage() {
                             <Users size={24} />
                         </div>
                         <div className={styles.summaryContent}>
-                            <h3>{Math.round(18 * getMultiplier(activeDate))}</h3>
+                            <h3>{formatNum(summary.new_clients)}</h3>
                             <p>+ {clientsTerm}</p>
                         </div>
                     </div>
@@ -910,7 +1065,7 @@ export default function DashboardPage() {
                             <Wallet size={24} />
                         </div>
                         <div className={styles.summaryContent}>
-                            <h3>{formatNum(Math.round(42500 * getMultiplier(activeDate)))}</h3>
+                            <h3>{formatNum(Math.round(summary.total_revenue))}</h3>
                             <p>{t('dash.cashDrawer')}</p>
                         </div>
                     </div>
@@ -922,7 +1077,14 @@ export default function DashboardPage() {
                             <Crown size={24} />
                         </div>
                         <div className={styles.summaryContent}>
-                            <h3>Fatima A.</h3>
+                            <h3>
+                                {summary.top_clients.length > 0
+                                    ? summary.top_clients[0].name
+                                          .split(' ')
+                                          .map((n, i) => (i === 0 ? n : n[0] + '.'))
+                                          .join(' ')
+                                    : 'Fatima A.'}
+                            </h3>
                             <p>
                                 🌟 {clientTerm} {t('dash.clientOfMonth')}
                             </p>

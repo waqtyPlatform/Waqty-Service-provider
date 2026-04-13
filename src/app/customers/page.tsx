@@ -18,136 +18,266 @@ import {
 } from 'lucide-react';
 import styles from './customers.module.css';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useApiQuery } from '@/hooks/useApiQuery';
+import { customerApi, type Customer } from '@/lib/api';
+import { DataGuard } from '@/components/DataGuard';
 
-const clients = [
+const fallbackClients: Customer[] = [
     {
-        id: 'C001',
+        uuid: 'C001',
         name: 'Fatima Al-Rashid',
         phone: '+20 123 456 789',
         email: 'fatima@email.com',
-        visits: 24,
-        spend: 8400,
-        lastVisit: 'Mar 23, 2026',
+        total_visits: 24,
+        total_spent: 8400,
+        last_visit: 'Mar 23, 2026',
         vip: true,
-        hasAllergy: true,
-        group: 'VIP',
-        status: 'active',
+        allergies: 'Latex',
+        group_uuid: null,
+        group: {
+            uuid: 'g1',
+            name: 'VIP',
+            discount_percentage: 15,
+            color: '#F59E0B',
+            description: null,
+            customers_count: 2,
+            created_at: '',
+            updated_at: '',
+        },
+        notes: null,
+        medical_conditions: null,
+        medications: null,
+        created_at: '',
+        updated_at: '',
     },
     {
-        id: 'C002',
+        uuid: 'C002',
         name: 'Aisha Mohammed',
         phone: '+20 111 222 333',
         email: 'aisha@email.com',
-        visits: 19,
-        spend: 6250,
-        lastVisit: 'Mar 25, 2026',
+        total_visits: 19,
+        total_spent: 6250,
+        last_visit: 'Mar 25, 2026',
         vip: true,
-        hasAllergy: false,
-        group: 'VIP',
-        status: 'active',
+        allergies: null,
+        group_uuid: null,
+        group: {
+            uuid: 'g1',
+            name: 'VIP',
+            discount_percentage: 15,
+            color: '#F59E0B',
+            description: null,
+            customers_count: 2,
+            created_at: '',
+            updated_at: '',
+        },
+        notes: null,
+        medical_conditions: null,
+        medications: null,
+        created_at: '',
+        updated_at: '',
     },
     {
-        id: 'C003',
+        uuid: 'C003',
         name: 'Maryam Ibrahim',
         phone: '+20 100 200 300',
         email: 'maryam@email.com',
-        visits: 17,
-        spend: 5800,
-        lastVisit: 'Mar 18, 2026',
+        total_visits: 17,
+        total_spent: 5800,
+        last_visit: 'Mar 18, 2026',
         vip: false,
-        hasAllergy: false,
-        group: 'Regular',
-        status: 'active',
+        allergies: null,
+        group_uuid: null,
+        group: {
+            uuid: 'g2',
+            name: 'Regular',
+            discount_percentage: 5,
+            color: '#3B82F6',
+            description: null,
+            customers_count: 3,
+            created_at: '',
+            updated_at: '',
+        },
+        notes: null,
+        medical_conditions: null,
+        medications: null,
+        created_at: '',
+        updated_at: '',
     },
     {
-        id: 'C004',
+        uuid: 'C004',
         name: 'Huda Saleh',
         phone: '+20 155 666 777',
         email: 'huda@email.com',
-        visits: 15,
-        spend: 4900,
-        lastVisit: 'Mar 22, 2026',
+        total_visits: 15,
+        total_spent: 4900,
+        last_visit: 'Mar 22, 2026',
         vip: false,
-        hasAllergy: true,
-        group: 'Regular',
-        status: 'active',
+        allergies: 'Sulfates',
+        group_uuid: null,
+        group: {
+            uuid: 'g2',
+            name: 'Regular',
+            discount_percentage: 5,
+            color: '#3B82F6',
+            description: null,
+            customers_count: 3,
+            created_at: '',
+            updated_at: '',
+        },
+        notes: null,
+        medical_conditions: null,
+        medications: null,
+        created_at: '',
+        updated_at: '',
     },
     {
-        id: 'C005',
+        uuid: 'C005',
         name: 'Noura Ahmed',
         phone: '+20 199 888 999',
         email: 'noura@email.com',
-        visits: 12,
-        spend: 3600,
-        lastVisit: 'Mar 26, 2026',
+        total_visits: 12,
+        total_spent: 3600,
+        last_visit: 'Mar 26, 2026',
         vip: false,
-        hasAllergy: false,
-        group: 'Regular',
-        status: 'active',
+        allergies: null,
+        group_uuid: null,
+        group: {
+            uuid: 'g2',
+            name: 'Regular',
+            discount_percentage: 5,
+            color: '#3B82F6',
+            description: null,
+            customers_count: 3,
+            created_at: '',
+            updated_at: '',
+        },
+        notes: null,
+        medical_conditions: null,
+        medications: null,
+        created_at: '',
+        updated_at: '',
     },
     {
-        id: 'C006',
+        uuid: 'C006',
         name: 'Rania Khalil',
         phone: '+20 133 444 555',
         email: 'rania@email.com',
-        visits: 8,
-        spend: 2400,
-        lastVisit: 'Mar 19, 2026',
+        total_visits: 8,
+        total_spent: 2400,
+        last_visit: 'Mar 19, 2026',
         vip: false,
-        hasAllergy: false,
-        group: 'New',
-        status: 'active',
+        allergies: null,
+        group_uuid: null,
+        group: {
+            uuid: 'g3',
+            name: 'New',
+            discount_percentage: 10,
+            color: '#10B981',
+            description: null,
+            customers_count: 3,
+            created_at: '',
+            updated_at: '',
+        },
+        notes: null,
+        medical_conditions: null,
+        medications: null,
+        created_at: '',
+        updated_at: '',
     },
     {
-        id: 'C007',
+        uuid: 'C007',
         name: 'Dana Faris',
         phone: '+20 177 333 222',
         email: 'dana@email.com',
-        visits: 6,
-        spend: 1800,
-        lastVisit: 'Mar 14, 2026',
+        total_visits: 6,
+        total_spent: 1800,
+        last_visit: 'Mar 14, 2026',
         vip: false,
-        hasAllergy: false,
-        group: 'New',
-        status: 'inactive',
+        allergies: null,
+        group_uuid: null,
+        group: {
+            uuid: 'g3',
+            name: 'New',
+            discount_percentage: 10,
+            color: '#10B981',
+            description: null,
+            customers_count: 3,
+            created_at: '',
+            updated_at: '',
+        },
+        notes: null,
+        medical_conditions: null,
+        medications: null,
+        created_at: '',
+        updated_at: '',
     },
     {
-        id: 'C008',
+        uuid: 'C008',
         name: 'Lina Tariq',
         phone: '+20 122 555 666',
         email: 'lina@email.com',
-        visits: 3,
-        spend: 750,
-        lastVisit: 'Mar 16, 2026',
+        total_visits: 3,
+        total_spent: 750,
+        last_visit: 'Mar 16, 2026',
         vip: false,
-        hasAllergy: false,
-        group: 'New',
-        status: 'inactive',
+        allergies: null,
+        group_uuid: null,
+        group: {
+            uuid: 'g3',
+            name: 'New',
+            discount_percentage: 10,
+            color: '#10B981',
+            description: null,
+            customers_count: 3,
+            created_at: '',
+            updated_at: '',
+        },
+        notes: null,
+        medical_conditions: null,
+        medications: null,
+        created_at: '',
+        updated_at: '',
     },
 ];
 
 export default function CustomersPage() {
     const [search, setSearch] = useState('');
     const [groupFilter, setGroupFilter] = useState('all');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 5;
 
     // CRUD State
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-    const [selectedClient, setSelectedClient] = useState<(typeof clients)[0] | null>(null);
+    const [selectedClient, setSelectedClient] = useState<Customer | null>(null);
 
     const router = useRouter();
     const { addToast } = useToast();
     const { t } = useTranslation();
 
-    const filtered = clients.filter(c => {
+    const {
+        data: clients,
+        loading,
+        error,
+        refetch,
+        setData: setClients,
+    } = useApiQuery<Customer[]>(() => customerApi.getCustomers(), [], { fallbackData: fallbackClients });
+
+    const allClients = clients ?? [];
+
+    const filtered = allClients.filter(c => {
         const matchSearch =
             c.name.toLowerCase().includes(search.toLowerCase()) ||
             c.phone.includes(search) ||
-            c.email.toLowerCase().includes(search.toLowerCase());
-        const matchGroup = groupFilter === 'all' || c.group.toLowerCase() === groupFilter;
+            (c.email ?? '').toLowerCase().includes(search.toLowerCase());
+        const matchGroup = groupFilter === 'all' || (c.group?.name ?? '').toLowerCase() === groupFilter;
         return matchSearch && matchGroup;
     });
+
+    const totalPages = Math.ceil(filtered.length / itemsPerPage);
+    const paginated = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
@@ -161,7 +291,7 @@ export default function CustomersPage() {
                         <Users size={22} />
                     </div>
                     <div>
-                        <div className={styles.kpiValue}>{clients.length}</div>
+                        <div className={styles.kpiValue}>{allClients.length}</div>
                         <div className={styles.kpiLabel}>{t('customers.totalClients')}</div>
                     </div>
                 </div>
@@ -170,7 +300,7 @@ export default function CustomersPage() {
                         <Star size={22} />
                     </div>
                     <div>
-                        <div className={styles.kpiValue}>{clients.filter(c => c.vip).length}</div>
+                        <div className={styles.kpiValue}>{allClients.filter(c => c.vip).length}</div>
                         <div className={styles.kpiLabel}>{t('customers.vipClients')}</div>
                     </div>
                 </div>
@@ -182,7 +312,9 @@ export default function CustomersPage() {
                         <UserPlus size={22} />
                     </div>
                     <div>
-                        <div className={styles.kpiValue}>{clients.filter(c => c.group === 'New').length}</div>
+                        <div className={styles.kpiValue}>
+                            {allClients.filter(c => (c.group?.name ?? '') === 'New').length}
+                        </div>
                         <div className={styles.kpiLabel}>{t('customers.newThisMonth')}</div>
                     </div>
                 </div>
@@ -194,7 +326,7 @@ export default function CustomersPage() {
                         <AlertTriangle size={22} />
                     </div>
                     <div>
-                        <div className={styles.kpiValue}>{clients.filter(c => c.status === 'inactive').length}</div>
+                        <div className={styles.kpiValue}>{allClients.filter(c => !c.last_visit).length}</div>
                         <div className={styles.kpiLabel}>{t('customers.inactive')}</div>
                     </div>
                 </div>
@@ -227,197 +359,248 @@ export default function CustomersPage() {
                 </div>
             </div>
 
-            <div className={styles.tableCard}>
-                {filtered.length > 0 ? (
-                    <>
-                        <div className={styles.tableScroll}>
-                            <table className={styles.dataTable}>
-                                <thead>
-                                    <tr>
-                                        <th>{t('customers.colClient')}</th>
-                                        <th>{t('customers.colContact')}</th>
-                                        <th>{t('customers.colGroup')}</th>
-                                        <th>{t('customers.colVisits')}</th>
-                                        <th>{t('customers.colTotalSpend')}</th>
-                                        <th>{t('customers.colLastVisit')}</th>
-                                        <th>{t('customers.colFlags')}</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filtered.map(c => (
-                                        <tr
-                                            key={c.id}
-                                            onClick={() => router.push(`/customers/${c.id}`)}
-                                            style={{ cursor: 'pointer' }}
-                                        >
-                                            <td>
-                                                <div
-                                                    style={{
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        gap: 'var(--space-3)',
-                                                    }}
+            <DataGuard
+                loading={loading}
+                error={error}
+                data={allClients}
+                onRetry={refetch}
+                emptyIcon={<Users size={48} />}
+                emptyTitle={t('customers.noClients')}
+                emptyDescription={t('customers.noClientsDesc')}
+                emptyAction={
+                    <button className={styles.btnPrimary} onClick={() => setIsAddOpen(true)}>
+                        <UserPlus size={16} /> {t('customers.addClient')}
+                    </button>
+                }
+                skeletonCount={5}
+            >
+                <div className={styles.tableCard}>
+                    {filtered.length > 0 ? (
+                        <>
+                            <div className={styles.tableScroll}>
+                                <table className={styles.dataTable}>
+                                    <thead>
+                                        <tr>
+                                            <th>{t('customers.colClient')}</th>
+                                            <th>{t('customers.colContact')}</th>
+                                            <th>{t('customers.colGroup')}</th>
+                                            <th>{t('customers.colVisits')}</th>
+                                            <th>{t('customers.colTotalSpend')}</th>
+                                            <th>{t('customers.colLastVisit')}</th>
+                                            <th>{t('customers.colFlags')}</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {paginated.map(c => {
+                                            const groupName = c.group?.name ?? 'Regular';
+                                            return (
+                                                <tr
+                                                    key={c.uuid}
+                                                    onClick={() => router.push(`/customers/${c.uuid}`)}
+                                                    style={{ cursor: 'pointer' }}
                                                 >
-                                                    <div className={styles.avatar}>
-                                                        {c.name
-                                                            .split(' ')
-                                                            .map(n => n[0])
-                                                            .join('')
-                                                            .slice(0, 2)}
-                                                    </div>
-                                                    <div>
+                                                    <td>
                                                         <div
                                                             style={{
-                                                                fontWeight: 'var(--font-semibold)',
                                                                 display: 'flex',
                                                                 alignItems: 'center',
-                                                                gap: 'var(--space-1)',
+                                                                gap: 'var(--space-3)',
                                                             }}
                                                         >
-                                                            {c.name}
-                                                            {c.vip && (
-                                                                <Star size={14} fill="#F59E0B" stroke="#F59E0B" />
-                                                            )}
+                                                            <div className={styles.avatar}>
+                                                                {c.name
+                                                                    .split(' ')
+                                                                    .map(n => n[0])
+                                                                    .join('')
+                                                                    .slice(0, 2)}
+                                                            </div>
+                                                            <div>
+                                                                <div
+                                                                    style={{
+                                                                        fontWeight: 'var(--font-semibold)',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        gap: 'var(--space-1)',
+                                                                    }}
+                                                                >
+                                                                    {c.name}
+                                                                    {c.vip && (
+                                                                        <Star
+                                                                            size={14}
+                                                                            fill="#F59E0B"
+                                                                            stroke="#F59E0B"
+                                                                        />
+                                                                    )}
+                                                                </div>
+                                                                <div
+                                                                    style={{
+                                                                        fontSize: 'var(--text-xs)',
+                                                                        color: 'var(--text-tertiary)',
+                                                                    }}
+                                                                >
+                                                                    {c.uuid}
+                                                                </div>
+                                                            </div>
                                                         </div>
+                                                    </td>
+                                                    <td>
                                                         <div
                                                             style={{
-                                                                fontSize: 'var(--text-xs)',
-                                                                color: 'var(--text-tertiary)',
+                                                                display: 'flex',
+                                                                flexDirection: 'column',
+                                                                gap: '2px',
                                                             }}
                                                         >
-                                                            {c.id}
+                                                            <span
+                                                                style={{
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    gap: 'var(--space-1)',
+                                                                    fontSize: 'var(--text-sm)',
+                                                                }}
+                                                            >
+                                                                <Phone
+                                                                    size={12}
+                                                                    style={{ color: 'var(--text-tertiary)' }}
+                                                                />{' '}
+                                                                {c.phone}
+                                                            </span>
+                                                            <span
+                                                                style={{
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    gap: 'var(--space-1)',
+                                                                    fontSize: 'var(--text-xs)',
+                                                                    color: 'var(--text-tertiary)',
+                                                                }}
+                                                            >
+                                                                <Mail size={12} /> {c.email ?? '-'}
+                                                            </span>
                                                         </div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                                    <span
-                                                        style={{
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            gap: 'var(--space-1)',
-                                                            fontSize: 'var(--text-sm)',
-                                                        }}
-                                                    >
-                                                        <Phone size={12} style={{ color: 'var(--text-tertiary)' }} />{' '}
-                                                        {c.phone}
-                                                    </span>
-                                                    <span
-                                                        style={{
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            gap: 'var(--space-1)',
-                                                            fontSize: 'var(--text-xs)',
-                                                            color: 'var(--text-tertiary)',
-                                                        }}
-                                                    >
-                                                        <Mail size={12} /> {c.email}
-                                                    </span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span className={`${styles.groupBadge} ${styles[`group${c.group}`]}`}>
-                                                    {c.group}
-                                                </span>
-                                            </td>
-                                            <td style={{ fontWeight: 'var(--font-medium)' }}>{c.visits}</td>
-                                            <td
-                                                style={{
-                                                    fontWeight: 'var(--font-semibold)',
-                                                    color: 'var(--color-primary-600)',
-                                                }}
-                                            >
-                                                {c.spend.toLocaleString()} EGP
-                                            </td>
-                                            <td>
-                                                <span
-                                                    style={{
-                                                        color:
-                                                            c.status === 'inactive'
-                                                                ? 'var(--color-error)'
-                                                                : 'var(--text-secondary)',
-                                                    }}
-                                                >
-                                                    {c.lastVisit}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
-                                                    {c.hasAllergy && (
+                                                    </td>
+                                                    <td>
                                                         <span
-                                                            className={styles.flagBadge}
-                                                            title={t('customers.hasAllergies')}
+                                                            className={`${styles.groupBadge} ${styles[`group${groupName}`]}`}
                                                         >
-                                                            <AlertTriangle size={12} /> {t('customers.allergy')}
+                                                            {groupName}
                                                         </span>
-                                                    )}
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <DropdownMenu
-                                                    trigger={
-                                                        <button className={styles.actionBtn}>
-                                                            <MoreVertical size={16} />
-                                                        </button>
-                                                    }
-                                                    items={[
-                                                        {
-                                                            label: t('customers.viewProfile'),
-                                                            icon: <Users size={14} />,
-                                                            onClick: () => router.push(`/customers/${c.id}`),
-                                                        },
-                                                        {
-                                                            label: t('customers.edit'),
-                                                            icon: <CreditCard size={14} />,
-                                                            onClick: () => {
-                                                                setSelectedClient(c);
-                                                                setIsEditOpen(true);
-                                                            },
-                                                        },
-                                                        {
-                                                            label: t('customers.delete'),
-                                                            destructive: true,
-                                                            icon: <AlertTriangle size={14} />,
-                                                            onClick: () => {
-                                                                setSelectedClient(c);
-                                                                setIsDeleteOpen(true);
-                                                            },
-                                                        },
-                                                    ]}
-                                                />
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                        <div className={styles.pagination}>
-                            <span className={styles.pageInfo}>
-                                {t('customers.showing')} {filtered.length} {t('customers.of')} {clients.length}
-                            </span>
-                            <div className={styles.pageButtons}>
-                                <button className={styles.pageBtn}>
-                                    <ChevronLeft size={16} />
-                                </button>
-                                <button className={`${styles.pageBtn} ${styles.pageBtnActive}`}>1</button>
-                                <button className={styles.pageBtn}>
-                                    <ChevronRight size={16} />
-                                </button>
+                                                    </td>
+                                                    <td style={{ fontWeight: 'var(--font-medium)' }}>
+                                                        {c.total_visits}
+                                                    </td>
+                                                    <td
+                                                        style={{
+                                                            fontWeight: 'var(--font-semibold)',
+                                                            color: 'var(--color-primary-600)',
+                                                        }}
+                                                    >
+                                                        {c.total_spent.toLocaleString()} EGP
+                                                    </td>
+                                                    <td>
+                                                        <span
+                                                            style={{
+                                                                color: !c.last_visit
+                                                                    ? 'var(--color-error)'
+                                                                    : 'var(--text-secondary)',
+                                                            }}
+                                                        >
+                                                            {c.last_visit ?? '-'}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
+                                                            {c.allergies && (
+                                                                <span
+                                                                    className={styles.flagBadge}
+                                                                    title={t('customers.hasAllergies')}
+                                                                >
+                                                                    <AlertTriangle size={12} /> {t('customers.allergy')}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <DropdownMenu
+                                                            trigger={
+                                                                <button className={styles.actionBtn}>
+                                                                    <MoreVertical size={16} />
+                                                                </button>
+                                                            }
+                                                            items={[
+                                                                {
+                                                                    label: t('customers.viewProfile'),
+                                                                    icon: <Users size={14} />,
+                                                                    onClick: () => router.push(`/customers/${c.uuid}`),
+                                                                },
+                                                                {
+                                                                    label: t('customers.edit'),
+                                                                    icon: <CreditCard size={14} />,
+                                                                    onClick: () => {
+                                                                        setSelectedClient(c);
+                                                                        setIsEditOpen(true);
+                                                                    },
+                                                                },
+                                                                {
+                                                                    label: t('customers.delete'),
+                                                                    destructive: true,
+                                                                    icon: <AlertTriangle size={14} />,
+                                                                    onClick: () => {
+                                                                        setSelectedClient(c);
+                                                                        setIsDeleteOpen(true);
+                                                                    },
+                                                                },
+                                                            ]}
+                                                        />
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
                             </div>
+                            <div className={styles.pagination}>
+                                <span className={styles.pageInfo}>
+                                    {t('customers.showing')} {filtered.length} {t('customers.of')} {allClients.length}
+                                </span>
+                                <div className={styles.pageButtons}>
+                                    <button
+                                        className={styles.pageBtn}
+                                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                        disabled={currentPage === 1}
+                                    >
+                                        <ChevronLeft size={16} />
+                                    </button>
+                                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                                        <button
+                                            key={p}
+                                            className={`${styles.pageBtn} ${currentPage === p ? styles.pageBtnActive : ''}`}
+                                            onClick={() => setCurrentPage(p)}
+                                        >
+                                            {p}
+                                        </button>
+                                    ))}
+                                    <button
+                                        className={styles.pageBtn}
+                                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                        disabled={currentPage === totalPages}
+                                    >
+                                        <ChevronRight size={16} />
+                                    </button>
+                                </div>
+                            </div>
+                        </>
+                    ) : (
+                        <div style={{ padding: 'var(--space-12) 0' }}>
+                            <EmptyState
+                                icon={<Users size={32} color="var(--text-tertiary)" />}
+                                title={t('customers.noClients')}
+                                description={t('customers.noClientsDesc')}
+                            />
                         </div>
-                    </>
-                ) : (
-                    <div style={{ padding: 'var(--space-12) 0' }}>
-                        <EmptyState
-                            icon={<Users size={32} color="var(--text-tertiary)" />}
-                            title={t('customers.noClients')}
-                            description={t('customers.noClientsDesc')}
-                        />
-                    </div>
-                )}
-            </div>
+                    )}
+                </div>
+            </DataGuard>
 
             {/* Add Client SlideOver */}
             <SlideOver
@@ -430,7 +613,13 @@ export default function CustomersPage() {
                             {t('customers.cancel')}
                         </Button>
                         <Button
-                            onClick={() => {
+                            onClick={async () => {
+                                try {
+                                    await customerApi.createCustomer({});
+                                    await refetch();
+                                } catch {
+                                    // fallback: keep local state
+                                }
                                 setIsAddOpen(false);
                                 addToast('success', t('customers.toastCreated'));
                             }}
@@ -486,7 +675,15 @@ export default function CustomersPage() {
                             {t('customers.cancel')}
                         </Button>
                         <Button
-                            onClick={() => {
+                            onClick={async () => {
+                                if (selectedClient) {
+                                    try {
+                                        await customerApi.updateCustomer(selectedClient.uuid, {});
+                                        await refetch();
+                                    } catch {
+                                        // fallback: keep local state
+                                    }
+                                }
                                 setIsEditOpen(false);
                                 addToast('success', t('customers.toastUpdated'));
                             }}
@@ -500,10 +697,10 @@ export default function CustomersPage() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                         <Input label={t('customers.fullName')} defaultValue={selectedClient.name} />
                         <Input label={t('customers.phoneOption')} defaultValue={selectedClient.phone} />
-                        <Input label={t('customers.emailOption')} defaultValue={selectedClient.email} />
+                        <Input label={t('customers.emailOption')} defaultValue={selectedClient.email ?? ''} />
                         <Select
                             label={t('customers.groupLabel')}
-                            defaultValue={selectedClient.group}
+                            defaultValue={selectedClient.group?.name ?? 'Regular'}
                             options={[
                                 { label: t('customers.regular'), value: 'Regular' },
                                 { label: t('customers.vip'), value: 'VIP' },
@@ -529,8 +726,18 @@ export default function CustomersPage() {
                         </Button>
                         <Button
                             variant="destructive"
-                            onClick={() => {
+                            onClick={async () => {
+                                if (selectedClient) {
+                                    try {
+                                        await customerApi.deleteCustomer(selectedClient.uuid);
+                                        setClients(prev => (prev ?? []).filter(c => c.uuid !== selectedClient.uuid));
+                                    } catch {
+                                        // fallback: remove from local state
+                                        setClients(prev => (prev ?? []).filter(c => c.uuid !== selectedClient.uuid));
+                                    }
+                                }
                                 setIsDeleteOpen(false);
+                                setSelectedClient(null);
                                 addToast('error', t('customers.toastDeleted'));
                             }}
                         >

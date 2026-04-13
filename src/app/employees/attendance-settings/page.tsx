@@ -5,18 +5,54 @@ import { Save, Clock, ShieldAlert, Timer, CalendarClock, ExternalLink } from 'lu
 import Link from 'next/link';
 import { Switch, Input, Select, Button, useToast } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useApiQuery } from '@/hooks/useApiQuery';
+import { employeeExtApi } from '@/lib/api';
 import { SHIFT_TEMPLATES } from '@/lib/shiftData';
 
 /* ─── Styles ───────────────────────────── */
 const s: Record<string, React.CSSProperties> = {
-    page: { display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', maxWidth: 900, margin: '0 auto', width: '100%', paddingBottom: 'var(--space-8)' },
-    header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-3)' },
+    page: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 'var(--space-6)',
+        maxWidth: 900,
+        margin: '0 auto',
+        width: '100%',
+        paddingBottom: 'var(--space-8)',
+    },
+    header: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: 'var(--space-3)',
+    },
     title: { fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)', color: 'var(--text-primary)' },
     subtitle: { fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginTop: 4 },
-    card: { background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-xl)', overflow: 'hidden' },
-    cardHeader: { padding: 'var(--space-4) var(--space-5)', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)', color: 'var(--text-primary)' },
+    card: {
+        background: 'var(--bg-primary)',
+        border: '1px solid var(--border-color)',
+        borderRadius: 'var(--radius-xl)',
+        overflow: 'hidden',
+    },
+    cardHeader: {
+        padding: 'var(--space-4) var(--space-5)',
+        borderBottom: '1px solid var(--border-color)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 'var(--space-2)',
+        fontSize: 'var(--text-base)',
+        fontWeight: 'var(--font-semibold)',
+        color: 'var(--text-primary)',
+    },
     cardBody: { padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' },
-    row: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--space-4) 0', borderBottom: '1px dashed var(--border-color)' },
+    row: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: 'var(--space-4) 0',
+        borderBottom: '1px dashed var(--border-color)',
+    },
     rowLast: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--space-4) 0' },
     rowLabel: { display: 'flex', flexDirection: 'column', gap: 2, flex: 1 },
     label: { fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', color: 'var(--text-primary)' },
@@ -24,10 +60,45 @@ const s: Record<string, React.CSSProperties> = {
     rowAction: { display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexShrink: 0 },
     inputGroup: { display: 'flex', alignItems: 'center', gap: 'var(--space-2)' },
     unit: { fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' },
-    deductionBox: { background: 'var(--bg-secondary)', padding: 'var(--space-4)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' },
-    shiftLink: { display: 'flex', alignItems: 'center', gap: 'var(--space-3)', padding: 'var(--space-4)', background: 'var(--color-primary-50)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-primary-200)', cursor: 'pointer', textDecoration: 'none', color: 'var(--text-primary)', transition: 'background 0.15s' },
-    tplPill: { display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 'var(--text-xs)', padding: '2px 8px', borderRadius: 'var(--radius-full)', background: 'var(--bg-primary)', border: '1px solid var(--border-color)' },
-    footer: { display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid var(--border-color)', padding: 'var(--space-5)', gap: 'var(--space-3)' },
+    deductionBox: {
+        background: 'var(--bg-secondary)',
+        padding: 'var(--space-4)',
+        borderRadius: 'var(--radius-lg)',
+        border: '1px solid var(--border-color)',
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: 'var(--space-4)',
+    },
+    shiftLink: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 'var(--space-3)',
+        padding: 'var(--space-4)',
+        background: 'var(--color-primary-50)',
+        borderRadius: 'var(--radius-lg)',
+        border: '1px solid var(--color-primary-200)',
+        cursor: 'pointer',
+        textDecoration: 'none',
+        color: 'var(--text-primary)',
+        transition: 'background 0.15s',
+    },
+    tplPill: {
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 4,
+        fontSize: 'var(--text-xs)',
+        padding: '2px 8px',
+        borderRadius: 'var(--radius-full)',
+        background: 'var(--bg-primary)',
+        border: '1px solid var(--border-color)',
+    },
+    footer: {
+        display: 'flex',
+        justifyContent: 'flex-end',
+        borderTop: '1px solid var(--border-color)',
+        padding: 'var(--space-5)',
+        gap: 'var(--space-3)',
+    },
 };
 
 /* ─── Component ─────────────────────────── */
@@ -36,6 +107,11 @@ export default function AttendanceSettingsPage() {
     const { addToast } = useToast();
     const [isSaving, setIsSaving] = useState(false);
     const dir = lang === 'ar' ? 'rtl' : 'ltr';
+
+    // API: fetch attendance methods (ready for backend)
+    const { loading, error, refetch } = useApiQuery(() => employeeExtApi.getAttendanceMethods() as never, [], {
+        fallbackData: [],
+    });
 
     const [config, setConfig] = useState({
         lateGrace: '5',
@@ -83,7 +159,14 @@ export default function AttendanceSettingsPage() {
                     <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: 2 }}>
                         {t('attendanceSettings.shiftSourceHint')}
                     </div>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)', marginTop: 'var(--space-2)' }}>
+                    <div
+                        style={{
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            gap: 'var(--space-2)',
+                            marginTop: 'var(--space-2)',
+                        }}
+                    >
                         {SHIFT_TEMPLATES.map(tpl => (
                             <span key={tpl.id} style={s.tplPill}>
                                 <span style={{ width: 8, height: 8, borderRadius: '50%', background: tpl.color }} />
@@ -107,7 +190,12 @@ export default function AttendanceSettingsPage() {
                             <div style={s.hint}>{t('attendanceSettings.lateGraceHint')}</div>
                         </div>
                         <div style={s.rowAction}>
-                            <Input type="number" value={config.lateGrace} onChange={e => set('lateGrace', e.target.value)} style={{ width: 70, textAlign: 'center', margin: 0 }} />
+                            <Input
+                                type="number"
+                                value={config.lateGrace}
+                                onChange={e => set('lateGrace', e.target.value)}
+                                style={{ width: 70, textAlign: 'center', margin: 0 }}
+                            />
                             <span style={s.unit}>{t('attendanceSettings.min')}</span>
                         </div>
                     </div>
@@ -117,7 +205,12 @@ export default function AttendanceSettingsPage() {
                             <div style={s.hint}>{t('attendanceSettings.earlyGraceHint')}</div>
                         </div>
                         <div style={s.rowAction}>
-                            <Input type="number" value={config.earlyGrace} onChange={e => set('earlyGrace', e.target.value)} style={{ width: 70, textAlign: 'center', margin: 0 }} />
+                            <Input
+                                type="number"
+                                value={config.earlyGrace}
+                                onChange={e => set('earlyGrace', e.target.value)}
+                                style={{ width: 70, textAlign: 'center', margin: 0 }}
+                            />
                             <span style={s.unit}>{t('attendanceSettings.min')}</span>
                         </div>
                     </div>
@@ -136,7 +229,12 @@ export default function AttendanceSettingsPage() {
                             <div style={s.hint}>{t('attendanceSettings.overtimeThresholdHint')}</div>
                         </div>
                         <div style={s.rowAction}>
-                            <Input type="number" value={config.overtimeThreshold} onChange={e => set('overtimeThreshold', e.target.value)} style={{ width: 70, textAlign: 'center', margin: 0 }} />
+                            <Input
+                                type="number"
+                                value={config.overtimeThreshold}
+                                onChange={e => set('overtimeThreshold', e.target.value)}
+                                style={{ width: 70, textAlign: 'center', margin: 0 }}
+                            />
                             <span style={s.unit}>{t('attendanceSettings.min')}</span>
                         </div>
                     </div>
@@ -146,7 +244,12 @@ export default function AttendanceSettingsPage() {
                             <div style={s.hint}>{t('attendanceSettings.maxOvertimeDailyHint')}</div>
                         </div>
                         <div style={s.rowAction}>
-                            <Input type="number" value={config.maxOvertimeDaily} onChange={e => set('maxOvertimeDaily', e.target.value)} style={{ width: 70, textAlign: 'center', margin: 0 }} />
+                            <Input
+                                type="number"
+                                value={config.maxOvertimeDaily}
+                                onChange={e => set('maxOvertimeDaily', e.target.value)}
+                                style={{ width: 70, textAlign: 'center', margin: 0 }}
+                            />
                             <span style={s.unit}>{t('attendanceSettings.hrs')}</span>
                         </div>
                     </div>
@@ -167,7 +270,12 @@ export default function AttendanceSettingsPage() {
                         <div style={s.rowAction}>
                             {config.autoClockOut && (
                                 <>
-                                    <Input type="number" value={config.autoClockOutBuffer} onChange={e => set('autoClockOutBuffer', e.target.value)} style={{ width: 70, textAlign: 'center', margin: 0 }} />
+                                    <Input
+                                        type="number"
+                                        value={config.autoClockOutBuffer}
+                                        onChange={e => set('autoClockOutBuffer', e.target.value)}
+                                        style={{ width: 70, textAlign: 'center', margin: 0 }}
+                                    />
                                     <span style={s.unit}>{t('attendanceSettings.min')}</span>
                                 </>
                             )}
@@ -209,7 +317,11 @@ export default function AttendanceSettingsPage() {
                                 type="number"
                                 value={config.deductionValue}
                                 onChange={e => set('deductionValue', e.target.value)}
-                                hint={config.deductionType === 'percentage' ? t('attendanceSettings.valueHintPct') : t('attendanceSettings.valueHintFixed')}
+                                hint={
+                                    config.deductionType === 'percentage'
+                                        ? t('attendanceSettings.valueHintPct')
+                                        : t('attendanceSettings.valueHintFixed')
+                                }
                             />
                         </div>
                     )}

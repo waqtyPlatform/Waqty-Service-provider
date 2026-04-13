@@ -1,23 +1,24 @@
 'use client';
 
 import React from 'react';
-import {
-    Plus,
-    Edit,
-    Trash2,
-    Fingerprint,
-    Wifi,
-    RefreshCw
-} from 'lucide-react';
-import {
-    Button,
-    Badge
-} from '@/components/ui';
+import { Plus, Edit, Trash2, Fingerprint, Wifi, RefreshCw } from 'lucide-react';
+import { Button, Badge, useToast } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useApiQuery } from '@/hooks/useApiQuery';
+import { settingsApi } from '@/lib/api';
+import { DataGuard } from '@/components/DataGuard';
 import styles from './page.module.css';
 
-// Mock Data
-const devices = [
+interface FpDevice {
+    id: number;
+    name: string;
+    ip: string;
+    status: string;
+    lastSync: string;
+}
+
+// Fallback Data
+const fallbackDevices: FpDevice[] = [
     { id: 1, name: 'Recepiton Main', ip: '192.168.1.101', status: 'Online', lastSync: 'Just now' },
     { id: 2, name: 'Staff Entrance', ip: '192.168.1.102', status: 'Online', lastSync: '5 mins ago' },
     { id: 3, name: 'Back Office', ip: '192.168.1.103', status: 'Offline', lastSync: '2 hours ago' },
@@ -25,13 +26,46 @@ const devices = [
 
 export default function FingerprintDevicesPage() {
     const { t, lang } = useTranslation();
+    const { addToast } = useToast();
+
+    const {
+        data: apiDevices,
+        loading,
+        error,
+        refetch,
+    } = useApiQuery<FpDevice[]>(
+        () =>
+            (settingsApi.getFingerprintDevices?.() as
+                | Promise<import('@/lib/api').ApiResponse<FpDevice[]>>
+                | undefined) ?? Promise.resolve({ success: true, message: '', data: fallbackDevices }),
+        [],
+        { fallbackData: fallbackDevices }
+    );
+
+    const devices = apiDevices || fallbackDevices;
 
     const getTranslatedSync = (sync: string) => {
         switch (sync) {
-            case 'Just now': return t('settings.fingerprint.justNow');
-            case '5 mins ago': return t('settings.fingerprint.minsAgo');
-            case '2 hours ago': return t('settings.fingerprint.hoursAgo');
-            default: return sync;
+            case 'Just now':
+                return t('settings.fingerprint.justNow');
+            case '5 mins ago':
+                return t('settings.fingerprint.minsAgo');
+            case '2 hours ago':
+                return t('settings.fingerprint.hoursAgo');
+            default:
+                return sync;
+        }
+    };
+
+    const handleDelete = async (id: number) => {
+        try {
+            if (settingsApi.deleteFingerprintDevice) {
+                await settingsApi.deleteFingerprintDevice(String(id));
+            }
+            addToast('success', 'Device removed');
+            refetch();
+        } catch {
+            addToast('error', 'Failed to remove device');
         }
     };
 
@@ -43,51 +77,127 @@ export default function FingerprintDevicesPage() {
                     <div className={styles.subtitle}>{t('settings.fingerprint.subtitle')}</div>
                 </div>
                 <div className={styles.actions}>
-                    <Button variant="outline"><RefreshCw size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('settings.fingerprint.scan')}</Button>
-                    <Button><Plus size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('settings.fingerprint.addDevice')}</Button>
+                    <Button variant="outline" onClick={() => refetch()}>
+                        <RefreshCw size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} />{' '}
+                        {t('settings.fingerprint.scan')}
+                    </Button>
+                    <Button
+                        onClick={async () => {
+                            try {
+                                if (settingsApi.createFingerprintDevice) {
+                                    await settingsApi.createFingerprintDevice({ name: 'New Device', ip: '' });
+                                }
+                                addToast('success', 'Device added');
+                                refetch();
+                            } catch {
+                                addToast('error', 'Failed to add device');
+                            }
+                        }}
+                    >
+                        <Plus size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} />{' '}
+                        {t('settings.fingerprint.addDevice')}
+                    </Button>
                 </div>
             </div>
 
-            <div className={styles.card}>
-                <div className={styles.cardHeader}>
-                    <span className={styles.cardTitle}><Fingerprint size={18} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('settings.fingerprint.connected')}</span>
-                </div>
-                <div className="table-wrapper">
-                    <table className="data-table">
-                        <thead>
-                            <tr>
-                                <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('settings.fingerprint.colName')}</th>
-                                <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('settings.fingerprint.colIp')}</th>
-                                <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('settings.fingerprint.colStatus')}</th>
-                                <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('settings.fingerprint.colLastSync')}</th>
-                                <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{t('settings.fingerprint.colActions')}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {devices.map(device => (
-                                <tr key={device.id}>
-                                    <td style={{ fontWeight: 'var(--font-medium)', textAlign: lang === 'ar' ? 'right' : 'left' }}>{device.name}</td>
-                                    <td style={{ fontFamily: 'var(--font-mono)', textAlign: lang === 'ar' ? 'right' : 'left' }}>{device.ip}</td>
-                                    <td style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                        <Badge color={device.status === 'Online' ? 'success' : 'destructive'}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                                <Wifi size={12} /> {device.status === 'Online' ? t('settings.fingerprint.online') : t('settings.fingerprint.offline')}
-                                            </div>
-                                        </Badge>
-                                    </td>
-                                    <td style={{ color: 'var(--text-secondary)', textAlign: lang === 'ar' ? 'right' : 'left' }}>{getTranslatedSync(device.lastSync)}</td>
-                                    <td style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                        <div style={{ display: 'flex', gap: 8 }}>
-                                            <Button variant="ghost" size="sm" iconOnly><Edit size={14} /></Button>
-                                            <Button variant="destructive" size="sm" iconOnly><Trash2 size={14} /></Button>
-                                        </div>
-                                    </td>
+            <DataGuard
+                loading={loading}
+                error={error}
+                data={devices}
+                emptyIcon={<Fingerprint size={48} />}
+                emptyTitle={t('settings.fingerprint.connected')}
+                emptyDescription="No fingerprint devices registered yet"
+                onRetry={refetch}
+                skeletonCount={3}
+                skeletonVariant="card"
+            >
+                <div className={styles.card}>
+                    <div className={styles.cardHeader}>
+                        <span className={styles.cardTitle}>
+                            <Fingerprint size={18} className={lang === 'ar' ? 'ml-2' : 'mr-2'} />{' '}
+                            {t('settings.fingerprint.connected')}
+                        </span>
+                    </div>
+                    <div className="table-wrapper">
+                        <table className="data-table">
+                            <thead>
+                                <tr>
+                                    <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                        {t('settings.fingerprint.colName')}
+                                    </th>
+                                    <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                        {t('settings.fingerprint.colIp')}
+                                    </th>
+                                    <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                        {t('settings.fingerprint.colStatus')}
+                                    </th>
+                                    <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                        {t('settings.fingerprint.colLastSync')}
+                                    </th>
+                                    <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                        {t('settings.fingerprint.colActions')}
+                                    </th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {devices.map(device => (
+                                    <tr key={device.id}>
+                                        <td
+                                            style={{
+                                                fontWeight: 'var(--font-medium)',
+                                                textAlign: lang === 'ar' ? 'right' : 'left',
+                                            }}
+                                        >
+                                            {device.name}
+                                        </td>
+                                        <td
+                                            style={{
+                                                fontFamily: 'var(--font-mono)',
+                                                textAlign: lang === 'ar' ? 'right' : 'left',
+                                            }}
+                                        >
+                                            {device.ip}
+                                        </td>
+                                        <td style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                            <Badge color={device.status === 'Online' ? 'success' : 'destructive'}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                    <Wifi size={12} />{' '}
+                                                    {device.status === 'Online'
+                                                        ? t('settings.fingerprint.online')
+                                                        : t('settings.fingerprint.offline')}
+                                                </div>
+                                            </Badge>
+                                        </td>
+                                        <td
+                                            style={{
+                                                color: 'var(--text-secondary)',
+                                                textAlign: lang === 'ar' ? 'right' : 'left',
+                                            }}
+                                        >
+                                            {getTranslatedSync(device.lastSync)}
+                                        </td>
+                                        <td style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                            <div style={{ display: 'flex', gap: 8 }}>
+                                                <Button variant="ghost" size="sm" iconOnly>
+                                                    <Edit size={14} />
+                                                </Button>
+                                                <Button
+                                                    variant="destructive"
+                                                    size="sm"
+                                                    iconOnly
+                                                    onClick={() => handleDelete(device.id)}
+                                                >
+                                                    <Trash2 size={14} />
+                                                </Button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
+            </DataGuard>
         </div>
     );
 }

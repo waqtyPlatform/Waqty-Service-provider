@@ -1,68 +1,99 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Lock, DollarSign, Vault, MapPin } from 'lucide-react';
 import { Button, Badge, useToast, Modal, Input, Select, SlideOver } from '@/components/ui';
 import styles from './page.module.css';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useApiQuery } from '@/hooks/useApiQuery';
+import { settingsApi, type Safe } from '@/lib/api';
 
-const initialSafes = [
+const fallbackSafes: Safe[] = [
     {
-        id: 1,
+        uuid: '1',
         name: 'Main Reception Safe',
-        branch: 'Downtown',
+        branch_uuid: '',
         balance: 12450,
-        lastActivity: 'Today, 3:20 PM',
-        status: 'Active',
-        color: '#3B82F6',
+        active: true,
+        created_at: '',
+        updated_at: '',
     },
     {
-        id: 2,
+        uuid: '2',
         name: 'Back Office Safe',
-        branch: 'Downtown',
+        branch_uuid: '',
         balance: 50000,
-        lastActivity: 'Today, 11:00 AM',
-        status: 'Active',
-        color: '#10B981',
+        active: true,
+        created_at: '',
+        updated_at: '',
     },
+    { uuid: '3', name: 'Petty Cash Box', branch_uuid: '', balance: 1200, active: true, created_at: '', updated_at: '' },
     {
-        id: 3,
-        name: 'Petty Cash Box',
-        branch: 'Downtown',
-        balance: 1200,
-        lastActivity: 'Yesterday',
-        status: 'Active',
-        color: '#F59E0B',
-    },
-    {
-        id: 4,
+        uuid: '4',
         name: 'Mall Branch Safe',
-        branch: 'Mall of Arabia',
+        branch_uuid: '',
         balance: 8750,
-        lastActivity: 'Today, 1:45 PM',
-        status: 'Active',
-        color: '#8B5CF6',
+        active: true,
+        created_at: '',
+        updated_at: '',
     },
     {
-        id: 5,
+        uuid: '5',
         name: 'New Cairo Drawer',
-        branch: 'New Cairo',
+        branch_uuid: '',
         balance: 3200,
-        lastActivity: 'Feb 20',
-        status: 'Inactive',
-        color: '#6B7280',
+        active: false,
+        created_at: '',
+        updated_at: '',
     },
 ];
 
 export default function SafesPage() {
     const { addToast } = useToast();
     const { t } = useTranslation();
+
+    const {
+        data: apiSafes,
+        loading,
+        error,
+        refetch,
+    } = useApiQuery<Safe[]>(() => settingsApi.getSafes(), [], { fallbackData: fallbackSafes });
+
+    const colors = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#6B7280'];
+
+    const initialSafes = (apiSafes || []).map((s, i) => ({
+        id: s.uuid || String(i + 1),
+        name: s.name,
+        branch: s.branch?.name || 'Downtown',
+        balance: s.balance,
+        lastActivity: s.updated_at || 'Recently',
+        status: s.active ? 'Active' : 'Inactive',
+        color: colors[i % colors.length],
+    }));
+
     const [safesList, setSafesList] = useState(initialSafes);
+
+    useEffect(() => {
+        if (apiSafes && apiSafes.length > 0) {
+            setSafesList(
+                apiSafes.map((s, i) => ({
+                    id: s.uuid || String(i + 1),
+                    name: s.name,
+                    branch: s.branch?.name || 'Downtown',
+                    balance: s.balance,
+                    lastActivity: s.updated_at || 'Recently',
+                    status: s.active ? 'Active' : 'Inactive',
+                    color: colors[i % colors.length],
+                }))
+            );
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [apiSafes]);
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [selectedSafe, setSelectedSafe] = useState<{
-        id: number;
+        id: string | number;
         name: string;
         branch: string;
         balance: number;
@@ -75,34 +106,35 @@ export default function SafesPage() {
     const totalBalance = safesList.reduce((s, safe) => s + safe.balance, 0);
     const activeSafes = safesList.filter(s => s.status === 'Active').length;
 
-    const handleAddSafe = () => {
+    const handleAddSafe = async () => {
         if (!newSafe.name) return addToast('error', 'Safe name is required');
-        const colors = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899'];
-        const branchMap: Record<string, string> = {
-            downtown: 'Downtown',
-            mall: 'Mall of Arabia',
-            newcairo: 'New Cairo',
-        };
-        const added = {
-            id: Date.now(),
-            name: newSafe.name,
-            branch: branchMap[newSafe.branch] || 'Downtown',
-            balance: parseFloat(newSafe.balance) || 0,
-            lastActivity: 'Just now',
-            status: newSafe.status === 'active' ? 'Active' : 'Inactive',
-            color: colors[Math.floor(Math.random() * colors.length)],
-        };
-        setSafesList([...safesList, added]);
-        setIsAddOpen(false);
-        setNewSafe({ name: '', branch: 'downtown', balance: '', status: 'active' });
-        addToast('success', `"${added.name}" created successfully`);
+        try {
+            await settingsApi.createSafe({
+                name: newSafe.name,
+                branch_uuid: newSafe.branch,
+                balance: parseFloat(newSafe.balance) || 0,
+                active: newSafe.status === 'active',
+            });
+            setIsAddOpen(false);
+            setNewSafe({ name: '', branch: 'downtown', balance: '', status: 'active' });
+            addToast('success', `"${newSafe.name}" created successfully`);
+            refetch();
+        } catch {
+            addToast('error', 'Failed to create safe');
+        }
     };
 
-    const handleDeleteSafe = () => {
-        setSafesList(safesList.filter(s => s.id !== selectedSafe?.id));
-        setIsDeleteOpen(false);
-        setSelectedSafe(null);
-        addToast('success', 'Safe deleted permanently');
+    const handleDeleteSafe = async () => {
+        try {
+            if (selectedSafe) await settingsApi.deleteSafe(String(selectedSafe.id));
+            setSafesList(safesList.filter(s => String(s.id) !== String(selectedSafe?.id)));
+            setIsDeleteOpen(false);
+            setSelectedSafe(null);
+            addToast('success', 'Safe deleted permanently');
+            refetch();
+        } catch {
+            addToast('error', 'Failed to delete safe');
+        }
     };
 
     const fmt = (n: number) => n.toLocaleString('en-US');
@@ -316,9 +348,19 @@ export default function SafesPage() {
                             {t('settings.safes.cancel')}
                         </Button>
                         <Button
-                            onClick={() => {
-                                setIsEditOpen(false);
-                                addToast('success', 'Safe updated successfully');
+                            onClick={async () => {
+                                try {
+                                    if (selectedSafe)
+                                        await settingsApi.updateSafe(String(selectedSafe.id), {
+                                            name: selectedSafe.name,
+                                            active: selectedSafe.status === 'Active',
+                                        });
+                                    setIsEditOpen(false);
+                                    addToast('success', 'Safe updated successfully');
+                                    refetch();
+                                } catch {
+                                    addToast('error', 'Failed to update safe');
+                                }
                             }}
                         >
                             {t('settings.safes.saveChanges')}

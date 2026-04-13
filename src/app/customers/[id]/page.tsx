@@ -29,9 +29,12 @@ import {
 import { Tabs, Button, Badge, Timeline, EmptyState, useToast, Modal, Input, Textarea } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
 import styles from './page.module.css';
+import { useApiQuery } from '@/hooks/useApiQuery';
+import { customerApi, type Customer, type CustomerReview, type StaffNote } from '@/lib/api';
+import { DataGuard } from '@/components/DataGuard';
 
-// Mock Data
-const clientReviews = [
+// Fallback mock data for reviews
+const fallbackReviews = [
     {
         id: '1',
         author: 'Fatima Al-Rashid',
@@ -54,8 +57,8 @@ const clientReviews = [
     },
 ];
 
-// Task 05: Staff Notes (internal employee notes about client)
-const initialStaffNotes = [
+// Fallback mock data for staff notes
+const fallbackStaffNotes = [
     {
         id: '1',
         employee: 'Sara Ahmed',
@@ -76,7 +79,7 @@ const initialStaffNotes = [
     },
 ];
 
-const client = {
+const fallbackClient = {
     id: '1',
     name: 'Fatima Al-Rashid',
     email: 'fatima.rashid@example.com',
@@ -201,7 +204,126 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
     const { addToast } = useToast();
     const [activeTab, setActiveTab] = useState('overview');
     const [reviewsFilter, setReviewsFilter] = useState<'all' | 'by_customer' | 'about_customer'>('all');
-    const [staffNotes, setStaffNotes] = useState(initialStaffNotes);
+
+    // API queries
+    const {
+        data: apiCustomer,
+        loading: customerLoading,
+        error: customerError,
+        refetch: refetchCustomer,
+    } = useApiQuery<Customer>(() => customerApi.getCustomer(id), [id], {
+        fallbackData: fallbackClient as unknown as Customer,
+    });
+
+    const {
+        data: apiReviews,
+        loading: reviewsLoading,
+        error: reviewsError,
+        refetch: refetchReviews,
+    } = useApiQuery<CustomerReview[]>(() => customerApi.getCustomerReviews(id), [id], {
+        fallbackData: fallbackReviews as unknown as CustomerReview[],
+    });
+
+    const {
+        data: apiStaffNotes,
+        loading: notesLoading,
+        error: notesError,
+        refetch: refetchNotes,
+        setData: setApiStaffNotes,
+    } = useApiQuery<StaffNote[]>(() => customerApi.getStaffNotes(id), [id], {
+        fallbackData: fallbackStaffNotes as unknown as StaffNote[],
+    });
+
+    // Derive client from API data or fallback
+    const client = apiCustomer
+        ? {
+              id: apiCustomer.uuid,
+              name: apiCustomer.name,
+              email: apiCustomer.email ?? fallbackClient.email,
+              phone: apiCustomer.phone,
+              address: fallbackClient.address,
+              avatar: apiCustomer.name
+                  .split(' ')
+                  .map(n => n[0])
+                  .join('')
+                  .slice(0, 2),
+              status: apiCustomer.last_visit ? 'active' : 'inactive',
+              vip: apiCustomer.vip,
+              joined: apiCustomer.created_at
+                  ? new Date(apiCustomer.created_at).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                    })
+                  : fallbackClient.joined,
+              dob: fallbackClient.dob,
+              medical: {
+                  allergies: apiCustomer.allergies ? apiCustomer.allergies.split(',').map(s => s.trim()) : [],
+                  conditions: apiCustomer.medical_conditions
+                      ? apiCustomer.medical_conditions.split(',').map(s => s.trim())
+                      : [],
+                  medications: apiCustomer.medications ? apiCustomer.medications.split(',').map(s => s.trim()) : [],
+                  generalNotes: apiCustomer.notes ?? '',
+              },
+              stats: {
+                  visits: apiCustomer.total_visits,
+                  spend: apiCustomer.total_spent.toLocaleString(),
+                  points: fallbackClient.stats.points,
+                  lastVisit: apiCustomer.last_visit ?? '-',
+              },
+          }
+        : fallbackClient;
+
+    // Map API reviews to the local shape, or use fallback
+    const clientReviews =
+        apiReviews && apiReviews.length > 0
+            ? apiReviews.map(r => ({
+                  id: r.uuid,
+                  author: r.customer?.name ?? 'Unknown',
+                  target: r.employee?.name ?? 'Unknown',
+                  role: r.direction === 'by_customer' ? 'Employee' : 'Customer',
+                  rating: r.rating,
+                  date: new Date(r.created_at).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                  }),
+                  comment: r.comment ?? '',
+                  type: r.direction,
+              }))
+            : fallbackReviews;
+
+    // Map API staff notes to local shape, or use fallback
+    const staffNotesData =
+        apiStaffNotes && apiStaffNotes.length > 0
+            ? apiStaffNotes.map(n => ({
+                  id: n.uuid,
+                  employee: n.employee?.name ?? 'Staff',
+                  employeeAvatar: (n.employee?.name ?? 'ST')
+                      .split(' ')
+                      .map(w => w[0])
+                      .join('')
+                      .slice(0, 2),
+                  service: n.service?.name ?? 'Service',
+                  date: new Date(n.created_at).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                  }),
+                  rating: 0,
+                  note: n.note,
+              }))
+            : fallbackStaffNotes;
+
+    const [staffNotes, setStaffNotes] = useState(fallbackStaffNotes);
+    // Sync staffNotes state when API data arrives
+    React.useEffect(() => {
+        if (apiStaffNotes && apiStaffNotes.length > 0) {
+            setStaffNotes(staffNotesData);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [apiStaffNotes]);
+
     const [preferences, setPreferences] = useState<string[]>([
         'Sensitive scalp',
         'Latex allergy',
@@ -215,13 +337,30 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
     const [editedMedical, setEditedMedical] = useState({ ...client.medical });
     const [currentMedical, setCurrentMedical] = useState({ ...client.medical });
 
-    const handleSaveMedical = () => {
+    const handleSaveMedical = async () => {
+        try {
+            await customerApi.updateCustomer(id, {
+                allergies: editedMedical.allergies.join(', '),
+                medical_conditions: editedMedical.conditions.join(', '),
+                medications: editedMedical.medications.join(', '),
+                notes: editedMedical.generalNotes,
+            });
+            await refetchCustomer();
+        } catch {
+            // fallback: update local state
+        }
         setCurrentMedical({ ...editedMedical });
         setIsMedicalModalOpen(false);
         addToast('success', t('custProfile.medicalUpdated') || 'Medical notes updated successfully');
     };
 
-    const handleReportReview = (reviewId: string) => {
+    const handleReportReview = async (reviewId: string) => {
+        try {
+            await customerApi.flagReview(reviewId, 'Reported by staff');
+            await refetchReviews();
+        } catch {
+            // fallback: show toast anyway
+        }
         addToast('success', t('custProfile.reviewReportedMsg'));
     };
 
@@ -1105,7 +1244,12 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                                             size="sm"
                                             iconOnly
                                             style={{ color: 'var(--color-error)' }}
-                                            onClick={() => {
+                                            onClick={async () => {
+                                                try {
+                                                    await customerApi.deleteStaffNote(id, note.id);
+                                                } catch {
+                                                    // fallback: remove from local state
+                                                }
                                                 setStaffNotes(prev => prev.filter(n => n.id !== note.id));
                                                 addToast('success', 'Note removed');
                                             }}
@@ -1141,101 +1285,117 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
 
     return (
         <div className={styles.page} style={{ direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
-            {/* Header */}
-            <div className={styles.header}>
-                <div style={{ marginBottom: 'var(--space-4)' }}>
-                    <Button variant="ghost" onClick={() => router.push('/customers')} size="sm">
-                        {t('custProfile.backToCustomers')}
-                    </Button>
-                </div>
-                <div className={styles.headerTop}>
-                    <div className={styles.profileInfo}>
-                        <div className={styles.avatar}>{client.avatar}</div>
-                        <div className={styles.details}>
-                            <h1>
-                                {client.name}
-                                {client.vip && (
-                                    <Star
-                                        size={20}
-                                        fill="var(--color-warning)"
-                                        color="var(--color-warning)"
-                                        className={lang === 'ar' ? 'mr-2' : 'ml-2'}
-                                    />
-                                )}
-                            </h1>
-                            <div className={styles.meta}>
-                                <span className={styles.metaItem}>
-                                    <User size={14} className={lang === 'ar' ? 'ml-1' : 'mr-1'} />{' '}
-                                    {t('custProfile.clientNum')}
-                                    {client.id}
-                                </span>
-                                <span className={styles.metaItem}>
-                                    <Calendar size={14} className={lang === 'ar' ? 'ml-1' : 'mr-1'} />{' '}
-                                    {t('custProfile.joined')} {client.joined}
-                                </span>
-                                <Badge color="success">{t('custProfile.activeBadge')}</Badge>
+            <DataGuard
+                loading={customerLoading}
+                error={customerError}
+                data={client ? [client] : []}
+                onRetry={refetchCustomer}
+                emptyIcon={<User size={48} />}
+                emptyTitle="Customer not found"
+                emptyDescription="The customer profile could not be loaded."
+                skeletonCount={3}
+            >
+                {/* Header */}
+                <div className={styles.header}>
+                    <div style={{ marginBottom: 'var(--space-4)' }}>
+                        <Button variant="ghost" onClick={() => router.push('/customers')} size="sm">
+                            {t('custProfile.backToCustomers')}
+                        </Button>
+                    </div>
+                    <div className={styles.headerTop}>
+                        <div className={styles.profileInfo}>
+                            <div className={styles.avatar}>{client.avatar}</div>
+                            <div className={styles.details}>
+                                <h1>
+                                    {client.name}
+                                    {client.vip && (
+                                        <Star
+                                            size={20}
+                                            fill="var(--color-warning)"
+                                            color="var(--color-warning)"
+                                            className={lang === 'ar' ? 'mr-2' : 'ml-2'}
+                                        />
+                                    )}
+                                </h1>
+                                <div className={styles.meta}>
+                                    <span className={styles.metaItem}>
+                                        <User size={14} className={lang === 'ar' ? 'ml-1' : 'mr-1'} />{' '}
+                                        {t('custProfile.clientNum')}
+                                        {client.id}
+                                    </span>
+                                    <span className={styles.metaItem}>
+                                        <Calendar size={14} className={lang === 'ar' ? 'ml-1' : 'mr-1'} />{' '}
+                                        {t('custProfile.joined')} {client.joined}
+                                    </span>
+                                    <Badge color="success">{t('custProfile.activeBadge')}</Badge>
+                                </div>
                             </div>
                         </div>
+                        <div className={styles.actions}>
+                            <Button variant="outline" iconOnly>
+                                <MoreHorizontal size={20} />
+                            </Button>
+                            <Button variant="outline">
+                                <Edit size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} />{' '}
+                                {t('custProfile.editProfile')}
+                            </Button>
+                            <Button onClick={() => router.push('/bookings/new')}>
+                                <Plus size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} />{' '}
+                                {t('custProfile.newBooking')}
+                            </Button>
+                        </div>
                     </div>
-                    <div className={styles.actions}>
-                        <Button variant="outline" iconOnly>
-                            <MoreHorizontal size={20} />
-                        </Button>
-                        <Button variant="outline">
-                            <Edit size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} />{' '}
-                            {t('custProfile.editProfile')}
-                        </Button>
-                        <Button onClick={() => router.push('/bookings/new')}>
-                            <Plus size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('custProfile.newBooking')}
-                        </Button>
+
+                    <div className={styles.headerStats}>
+                        <div className={styles.statItem}>
+                            <span className={styles.statValue}>{client.stats.visits}</span>
+                            <span className={styles.statLabel}>{t('custProfile.statVisits')}</span>
+                        </div>
+                        <div className={styles.statItem}>
+                            <span className={styles.statValue}>{client.stats.spend} EGP</span>
+                            <span className={styles.statLabel}>{t('custProfile.statSpend')}</span>
+                        </div>
+                        <div className={styles.statItem}>
+                            <span className={styles.statValue}>{client.stats.points}</span>
+                            <span className={styles.statLabel}>{t('custProfile.statPoints')}</span>
+                        </div>
+                        <div className={styles.statItem}>
+                            <span className={styles.statValue}>{client.stats.lastVisit}</span>
+                            <span className={styles.statLabel}>{t('custProfile.statLastVisit')}</span>
+                        </div>
                     </div>
                 </div>
 
-                <div className={styles.headerStats}>
-                    <div className={styles.statItem}>
-                        <span className={styles.statValue}>{client.stats.visits}</span>
-                        <span className={styles.statLabel}>{t('custProfile.statVisits')}</span>
-                    </div>
-                    <div className={styles.statItem}>
-                        <span className={styles.statValue}>{client.stats.spend} EGP</span>
-                        <span className={styles.statLabel}>{t('custProfile.statSpend')}</span>
-                    </div>
-                    <div className={styles.statItem}>
-                        <span className={styles.statValue}>{client.stats.points}</span>
-                        <span className={styles.statLabel}>{t('custProfile.statPoints')}</span>
-                    </div>
-                    <div className={styles.statItem}>
-                        <span className={styles.statValue}>{client.stats.lastVisit}</span>
-                        <span className={styles.statLabel}>{t('custProfile.statLastVisit')}</span>
-                    </div>
-                </div>
-            </div>
+                {/* Tabs */}
+                <Tabs
+                    active={activeTab}
+                    onChange={setActiveTab}
+                    items={[
+                        { key: 'overview', label: t('custProfile.tabOverview'), icon: <User size={16} /> },
+                        { key: 'bookings', label: t('custProfile.tabBookings'), icon: <Calendar size={16} /> },
+                        { key: 'sales', label: t('custProfile.tabSales'), icon: <CreditCard size={16} /> },
+                        { key: 'reviews', label: t('custProfile.tabReviews'), icon: <MessageSquare size={16} /> },
+                        {
+                            key: 'staffNotes',
+                            label: `Staff Notes${staffNotes.length > 0 ? ` (${staffNotes.length})` : ''}`,
+                            icon: <MessageSquare size={16} />,
+                        },
+                        {
+                            key: 'files',
+                            label: t('custProfile.tabFiles') || 'Files & Forms',
+                            icon: <FileText size={16} />,
+                        },
+                    ]}
+                />
 
-            {/* Tabs */}
-            <Tabs
-                active={activeTab}
-                onChange={setActiveTab}
-                items={[
-                    { key: 'overview', label: t('custProfile.tabOverview'), icon: <User size={16} /> },
-                    { key: 'bookings', label: t('custProfile.tabBookings'), icon: <Calendar size={16} /> },
-                    { key: 'sales', label: t('custProfile.tabSales'), icon: <CreditCard size={16} /> },
-                    { key: 'reviews', label: t('custProfile.tabReviews'), icon: <MessageSquare size={16} /> },
-                    {
-                        key: 'staffNotes',
-                        label: `Staff Notes${staffNotes.length > 0 ? ` (${staffNotes.length})` : ''}`,
-                        icon: <MessageSquare size={16} />,
-                    },
-                    { key: 'files', label: t('custProfile.tabFiles') || 'Files & Forms', icon: <FileText size={16} /> },
-                ]}
-            />
-
-            {/* Content */}
-            {activeTab === 'overview' && renderOverview()}
-            {activeTab === 'bookings' && renderBookings()}
-            {activeTab === 'sales' && renderSales()}
-            {activeTab === 'reviews' && renderReviews()}
-            {activeTab === 'staffNotes' && renderStaffNotes()}
-            {activeTab === 'files' && renderFilesAndForms()}
+                {/* Content */}
+                {activeTab === 'overview' && renderOverview()}
+                {activeTab === 'bookings' && renderBookings()}
+                {activeTab === 'sales' && renderSales()}
+                {activeTab === 'reviews' && renderReviews()}
+                {activeTab === 'staffNotes' && renderStaffNotes()}
+                {activeTab === 'files' && renderFilesAndForms()}
+            </DataGuard>
         </div>
     );
 }

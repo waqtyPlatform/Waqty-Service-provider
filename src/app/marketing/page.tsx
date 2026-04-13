@@ -232,6 +232,7 @@ export default function MarketingPage() {
     const { addToast } = useToast();
     const [activeTab, setActiveTab] = useState<TabKey>('offers');
     const [search, setSearch] = useState('');
+    const [statusFilter, setStatusFilter] = useState('all');
     const { t, lang } = useTranslation();
     const { user } = useAuth();
     const isNewWorkspace = user?.isNewWorkspace;
@@ -379,7 +380,11 @@ export default function MarketingPage() {
                         onChange={e => setSearch(e.target.value)}
                     />
                 </div>
-                <select className={styles.selectFilter}>
+                <select
+                    className={styles.selectFilter}
+                    value={statusFilter}
+                    onChange={e => setStatusFilter(e.target.value)}
+                >
                     <option value="all">{t('marketing.filterAll')}</option>
                     <option value="active">{t('marketing.filterActive')}</option>
                     <option value="draft">{t('marketing.filterDraft')}</option>
@@ -419,6 +424,7 @@ export default function MarketingPage() {
                     <div className={styles.cardGrid}>
                         {offers
                             .filter(o => o.name.toLowerCase().includes(search.toLowerCase()))
+                            .filter(o => statusFilter === 'all' || o.status === statusFilter)
                             .map(offer => (
                                 <div key={offer.id} className={styles.offerCard}>
                                     <div className={styles.offerBanner} style={{ background: offer.bg }}>
@@ -531,6 +537,7 @@ export default function MarketingPage() {
                             <tbody>
                                 {promoCodes
                                     .filter(p => p.code.toLowerCase().includes(search.toLowerCase()))
+                                    .filter(p => statusFilter === 'all' || p.status === statusFilter)
                                     .map(p => {
                                         const pct = (p.used / p.maxUses) * 100;
                                         return (

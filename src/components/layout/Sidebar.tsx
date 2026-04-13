@@ -19,6 +19,7 @@ import {
     ChevronLeft,
     ChevronDown,
     X,
+    HelpCircle,
 } from 'lucide-react';
 import styles from './Sidebar.module.css';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -69,6 +70,7 @@ const getNavigation = (
                 { label: t('sidebar.bookingList'), href: '/bookings/list' },
                 { label: t('sidebar.newBooking'), href: '/bookings/new' },
                 { label: t('sidebar.rooms'), href: '/bookings/rooms' },
+                { label: t('waitlist.title'), href: '/bookings/waitlist' },
             ],
         },
         {
@@ -92,6 +94,7 @@ const getNavigation = (
                 { label: t('sidebar.groups'), href: '/customers/groups' },
                 { label: t('sidebar.statements'), href: '/customers/statements' },
                 { label: t('sidebar.lastVisits'), href: '/customers/last-visits' },
+                { label: t('reviews.title'), href: '/customers/reviews' },
             ],
         },
         {
@@ -117,6 +120,7 @@ const getNavigation = (
                 { label: t('sidebar.promoCodes'), href: '/marketing/promo-codes' },
                 { label: t('sidebar.messages'), href: '/marketing/messages' },
                 { label: t('sidebar.serviceGroups'), href: '/marketing/service-groups' },
+                { label: t('announcements.title'), href: '/marketing/announcements' },
             ],
         },
         {
@@ -154,6 +158,16 @@ const getNavigation = (
                 { label: t('sidebar.fpDevices'), href: '/settings/fingerprint-devices' },
                 { label: t('sidebar.fpAreas'), href: '/settings/fingerprint-areas' },
                 { label: t('sidebar.pettyCash'), href: '/settings/petty-cash-items' },
+                { label: t('tipping.title'), href: '/settings/tipping' },
+                { label: t('loyalty.title'), href: '/settings/loyalty' },
+            ],
+        },
+        {
+            label: t('help.title'),
+            icon: <HelpCircle size={20} />,
+            children: [
+                { label: t('help.title'), href: '/help' },
+                { label: t('help.bugReport'), href: '/help/bug-report' },
             ],
         },
     ];

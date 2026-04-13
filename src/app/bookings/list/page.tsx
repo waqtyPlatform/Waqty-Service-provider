@@ -487,7 +487,23 @@ export default function BookingListPage() {
                         <option value="partial">{t('bk.payPartial')}</option>
                         <option value="unpaid">{t('bk.payUnpaid')}</option>
                     </select>
-                    <button className={styles.filterBtn}>
+                    <button
+                        className={styles.filterBtn}
+                        onClick={() => {
+                            const csv = [
+                                'ID,Date,Time,Client,Service,Employee,Status,Payment,Value',
+                                ...filtered.map(
+                                    b =>
+                                        `${b.id},${b.date},${b.time},${b.client},"${b.service}",${b.employee},${b.status},${b.payment},${b.value}`
+                                ),
+                            ].join('\n');
+                            const blob = new Blob([csv], { type: 'text/csv' });
+                            const a = document.createElement('a');
+                            a.href = URL.createObjectURL(blob);
+                            a.download = 'bookings.csv';
+                            a.click();
+                        }}
+                    >
                         <Download size={16} /> {t('bk.btnExport')}
                     </button>
                 </div>

@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/components/ui';
 import {
     User,
@@ -31,7 +31,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { isEmployeeOnShift, isEmployeeDuringBreak } from '@/lib/shiftData';
 import { resolveServicePrice } from '@/lib/priceResolver';
 import type { ServicePriceOverride } from '@/lib/priceResolver';
-import { providerApi, publicApi, type Branch } from '@/lib/api';
+import { providerApi, publicApi, bookingApi, type Branch, type Booking } from '@/lib/api';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -1223,6 +1223,8 @@ function BookingSummary({
     t,
     priceOverrides,
     branchId,
+    submitLabel,
+    submitting,
 }: {
     items: BookingItem[];
     clientName: string;
@@ -1232,6 +1234,8 @@ function BookingSummary({
     t: (key: string) => string;
     priceOverrides: ServicePriceOverride[];
     branchId: string;
+    submitLabel?: string;
+    submitting?: boolean;
 }) {
     const subtotal = items.reduce((sum, i) => {
         const resolved = resolveServicePrice(i.service, i.employee, branchId, priceOverrides);
@@ -1344,8 +1348,12 @@ function BookingSummary({
                     </div>
                 )}
 
-                <button style={{ ...s.btnPrimary, opacity: hasConflict ? 0.6 : 1 }} onClick={onConfirm}>
-                    <Check size={16} /> {t('bookings.confirmBooking')}
+                <button
+                    style={{ ...s.btnPrimary, opacity: hasConflict || submitting ? 0.6 : 1 }}
+                    onClick={onConfirm}
+                    disabled={submitting}
+                >
+                    <Check size={16} /> {submitting ? '...' : (submitLabel ?? t('bookings.confirmBooking'))}
                 </button>
             </div>
 
@@ -1419,14 +1427,47 @@ function BookingSummary({
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function NewBookingPage() {
+function NewBookingPageInner() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const editId = searchParams.get('edit');
+    const isEditMode = Boolean(editId);
     const { addToast } = useToast();
     const { t } = useTranslation();
     const { user } = useAuth();
 
     const businessType = (user?.businessType ?? 'salon') as 'barber' | 'salon' | 'clinic';
     const isClinic = businessType === 'clinic';
+
+    // ── Edit mode: fetch existing booking ──
+    const [editBooking, setEditBooking] = useState<Booking | null>(null);
+    const [editLoading, setEditLoading] = useState(isEditMode);
+    const [rescheduleReason, setRescheduleReason] = useState('');
+    const [submitting, setSubmitting] = useState(false);
+
+    useEffect(() => {
+        if (!editId) return;
+        let cancelled = false;
+        (async () => {
+            setEditLoading(true);
+            try {
+                const res = await providerApi.getBooking(editId);
+                if (!cancelled && res.success && res.data) {
+                    setEditBooking(res.data);
+                }
+            } catch {
+                if (!cancelled) {
+                    addToast('error', t('bookings.bookingNotFound'));
+                }
+            } finally {
+                if (!cancelled) setEditLoading(false);
+            }
+        })();
+        return () => {
+            cancelled = true;
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [editId]);
 
     // ── API-fetched data (falls back to mock) ──
     const [apiServices, setApiServices] = useState<Service[] | null>(null);
@@ -1574,6 +1615,43 @@ export default function NewBookingPage() {
         insurancePolicyNo: '',
     });
 
+    // ── Pre-fill form when editing an existing booking ──
+    const [editPrefilled, setEditPrefilled] = useState(false);
+    useEffect(() => {
+        if (!editBooking || editPrefilled) return;
+        if (services.length === 0 || employees.length === 0) return;
+
+        // Pre-fill client info
+        if (editBooking.user) {
+            setClientName(editBooking.user.name ?? '');
+            setClientPhone(editBooking.user.phone ?? '');
+        }
+
+        // Pre-fill notes
+        if (editBooking.notes) {
+            setNotes(editBooking.notes);
+        }
+
+        // Pre-fill the service/employee/date/time from the booking
+        const matchedService = services.find(sv => sv.id === editBooking.service_uuid) ?? services[0];
+        const matchedEmployee = editBooking.employee_uuid
+            ? (employees.find(em => em.id === editBooking.employee_uuid) ?? employees[0])
+            : employees[0];
+
+        setItems([
+            {
+                id: Date.now().toString(),
+                service: matchedService,
+                employee: matchedEmployee,
+                date: editBooking.booking_date ?? TODAY,
+                time: editBooking.start_time?.slice(0, 5) ?? '10:00',
+                room: '',
+            },
+        ]);
+
+        setEditPrefilled(true);
+    }, [editBooking, services, employees, editPrefilled]);
+
     // ── Conflict detection ──
     const conflicts = useMemo(() => {
         const set = new Set<string>();
@@ -1626,13 +1704,12 @@ export default function NewBookingPage() {
             return;
         }
 
-        // If using real API data, update booking status via API
+        // If using real API data, validate availability
         if (apiServices && items.length > 0) {
             try {
                 for (const item of items) {
                     const mainBranch = apiBranches.find(b => b.is_main) ?? apiBranches[0];
                     if (mainBranch) {
-                        // Fetch availability one more time to validate
                         const slotsRes = await publicApi.getAvailableSlots({
                             branch_uuid: mainBranch.uuid,
                             service_uuid: item.service.id,
@@ -1650,11 +1727,53 @@ export default function NewBookingPage() {
             }
         }
 
+        // ── Edit mode: update via API ──
+        if (isEditMode && editId) {
+            setSubmitting(true);
+            try {
+                const item = items[0];
+                const mainBranch = apiBranches.find(b => b.is_main) ?? apiBranches[0];
+                const payload: Record<string, unknown> = {
+                    service_uuid: item.service.id,
+                    employee_uuid: item.employee.id,
+                    booking_date: item.date,
+                    start_time: item.time,
+                    notes: [notes, rescheduleReason ? `Reschedule reason: ${rescheduleReason}` : '']
+                        .filter(Boolean)
+                        .join('\n'),
+                };
+                if (mainBranch) payload.branch_uuid = mainBranch.uuid;
+
+                await bookingApi.updateBooking(editId, payload);
+                addToast('success', t('bookings.updateSuccess'));
+                router.push(`/bookings/${editId}`);
+            } catch {
+                addToast('error', 'Failed to update booking. Please try again.');
+            } finally {
+                setSubmitting(false);
+            }
+            return;
+        }
+
         addToast('success', `${t('bookings.confirmSuccess')} ${clientName}`);
         router.push('/bookings');
     };
 
     const businessLabel = { barber: 'Barber', salon: 'Salon', clinic: 'Clinic' }[businessType];
+
+    // ── Loading state for edit mode ──
+    if (editLoading) {
+        return (
+            <div style={s.page}>
+                <BookingsTabs />
+                <div style={{ ...s.card, textAlign: 'center' as const, padding: 'var(--space-8)' }}>
+                    <p style={{ fontSize: 'var(--text-lg)', color: 'var(--text-secondary)' }}>
+                        {t('bookings.loadingBooking')}
+                    </p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div style={s.page}>
@@ -1662,10 +1781,13 @@ export default function NewBookingPage() {
 
             {/* Header */}
             <div style={s.header}>
-                <button style={s.btnGhost} onClick={() => router.push('/bookings')}>
+                <button
+                    style={s.btnGhost}
+                    onClick={() => (isEditMode ? router.push(`/bookings/${editId}`) : router.push('/bookings'))}
+                >
                     ← Back
                 </button>
-                <h1 style={s.h1}>{t('bookings.newBooking')}</h1>
+                <h1 style={s.h1}>{isEditMode ? t('bookings.editBooking') : t('bookings.newBooking')}</h1>
                 <span
                     style={{
                         ...s.badge,
@@ -1778,6 +1900,19 @@ export default function NewBookingPage() {
                                 />
                             </div>
                         </div>
+
+                        {/* Reschedule Reason (edit mode only) */}
+                        {isEditMode && (
+                            <div style={{ ...s.field, marginTop: 'var(--space-4)' }}>
+                                <label style={s.label}>{t('bookings.rescheduleReason')}</label>
+                                <textarea
+                                    style={s.textarea}
+                                    placeholder={t('bookings.rescheduleReasonPlaceholder')}
+                                    value={rescheduleReason}
+                                    onChange={e => setRescheduleReason(e.target.value)}
+                                />
+                            </div>
+                        )}
                     </div>
 
                     {/* Patient intake form (clinic only) */}
@@ -1801,8 +1936,28 @@ export default function NewBookingPage() {
                     t={t}
                     priceOverrides={apiPriceOverrides}
                     branchId={apiBranches.find(b => b.is_main)?.uuid ?? CURRENT_BRANCH_ID}
+                    submitLabel={isEditMode ? t('bookings.saveChanges') : undefined}
+                    submitting={submitting}
                 />
             </div>
         </div>
+    );
+}
+
+// ─── Suspense wrapper (required for useSearchParams) ─────────────────────────
+
+export default function NewBookingPage() {
+    return (
+        <Suspense
+            fallback={
+                <div
+                    style={{ padding: 'var(--space-8)', textAlign: 'center' as const, color: 'var(--text-secondary)' }}
+                >
+                    Loading...
+                </div>
+            }
+        >
+            <NewBookingPageInner />
+        </Suspense>
     );
 }

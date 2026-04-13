@@ -3,13 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import {
-    CalendarDays,
-    List,
-    DoorOpen,
-    Plus,
-    Printer,
-} from 'lucide-react';
+import { CalendarDays, List, DoorOpen, Plus, Printer, Clock } from 'lucide-react';
 import styles from './bookings.module.css';
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -19,10 +13,7 @@ export default function BookingsTabs() {
 
     return (
         <div className={styles.tabs}>
-            <Link
-                href="/bookings"
-                className={`${styles.tab} ${pathname === '/bookings' ? styles.tabActive : ''}`}
-            >
+            <Link href="/bookings" className={`${styles.tab} ${pathname === '/bookings' ? styles.tabActive : ''}`}>
                 <CalendarDays size={16} /> {t('bk.calendarTab')}
             </Link>
             <Link
@@ -42,6 +33,12 @@ export default function BookingsTabs() {
                 className={`${styles.tab} ${pathname === '/bookings/new' ? styles.tabActive : ''}`}
             >
                 <Plus size={16} /> {t('bk.newBooking')}
+            </Link>
+            <Link
+                href="/bookings/waitlist"
+                className={`${styles.tab} ${pathname === '/bookings/waitlist' ? styles.tabActive : ''}`}
+            >
+                <Clock size={16} /> {t('waitlist.title')}
             </Link>
             <Link
                 href="/bookings/print"
