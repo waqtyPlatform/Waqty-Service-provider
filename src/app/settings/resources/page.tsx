@@ -165,7 +165,7 @@ export default function ResourcesPage() {
                                                 size="sm"
                                                 iconOnly
                                                 onClick={() => {
-                                                    setSelectedResource(res);
+                                                    setSelectedResource(res._raw);
                                                     setIsEditOpen(true);
                                                 }}
                                             >
@@ -176,7 +176,7 @@ export default function ResourcesPage() {
                                                 size="sm"
                                                 iconOnly
                                                 onClick={() => {
-                                                    setSelectedResource(res);
+                                                    setSelectedResource(res._raw);
                                                     setIsDeleteOpen(true);
                                                 }}
                                             >
@@ -262,11 +262,11 @@ export default function ResourcesPage() {
                             onClick={async () => {
                                 try {
                                     if (selectedResource)
-                                        await settingsApi.updateResource(selectedResource.id, {
+                                        await settingsApi.updateResource(selectedResource.uuid, {
                                             name: selectedResource.name,
-                                            type: selectedResource._raw?.type || 'chair',
+                                            type: selectedResource.type,
                                             capacity: selectedResource.capacity,
-                                            active: selectedResource.status === 'Active',
+                                            active: selectedResource.active,
                                         });
                                     setIsEditOpen(false);
                                     addToast('success', 'Resource updated successfully');
@@ -286,7 +286,7 @@ export default function ResourcesPage() {
                         <Input label={t('settings.resources.resName')} defaultValue={selectedResource.name} />
                         <Select
                             label={t('settings.resources.resType')}
-                            defaultValue={selectedResource.type.toLowerCase()}
+                            defaultValue={selectedResource.type}
                             options={[
                                 { label: t('settings.resources.typeChair'), value: 'chair' },
                                 { label: t('settings.resources.typeRoom'), value: 'room' },
@@ -301,7 +301,7 @@ export default function ResourcesPage() {
                         />
                         <Select
                             label={t('settings.resources.colStatus')}
-                            defaultValue={selectedResource.status.toLowerCase()}
+                            defaultValue={selectedResource.active ? 'active' : 'inactive'}
                             options={[
                                 { label: t('settings.resources.statusActive'), value: 'active' },
                                 { label: t('settings.resources.statusMaint'), value: 'maintenance' },
@@ -328,7 +328,7 @@ export default function ResourcesPage() {
                             variant="destructive"
                             onClick={async () => {
                                 try {
-                                    if (selectedResource) await settingsApi.deleteResource(selectedResource.id);
+                                    if (selectedResource) await settingsApi.deleteResource(selectedResource.uuid);
                                     setIsDeleteOpen(false);
                                     addToast('error', 'Resource deleted permanently');
                                     refetch();

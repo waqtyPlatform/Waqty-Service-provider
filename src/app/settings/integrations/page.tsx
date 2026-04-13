@@ -245,6 +245,7 @@ export default function IntegrationsPage() {
     };
 
     const confirmAction = async () => {
+        if (!selectedIntegration) return;
         const isConnecting = selectedIntegration.status === 'disconnected';
         try {
             if (isConnecting) {

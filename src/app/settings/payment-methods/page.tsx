@@ -137,7 +137,7 @@ export default function PaymentMethodsPage() {
                                                     size="sm"
                                                     iconOnly
                                                     onClick={() => {
-                                                        setSelectedMethod(method);
+                                                        setSelectedMethod(method._raw);
                                                         setIsEditOpen(true);
                                                     }}
                                                 >
@@ -148,7 +148,7 @@ export default function PaymentMethodsPage() {
                                                     size="sm"
                                                     iconOnly
                                                     onClick={() => {
-                                                        setSelectedMethod(method);
+                                                        setSelectedMethod(method._raw);
                                                         setIsDeleteOpen(true);
                                                     }}
                                                 >
@@ -238,12 +238,12 @@ export default function PaymentMethodsPage() {
                         <Button
                             onClick={async () => {
                                 try {
-                                    if (selectedMethod?._raw)
-                                        await settingsApi.updatePaymentMethod(selectedMethod.id, {
+                                    if (selectedMethod)
+                                        await settingsApi.updatePaymentMethod(selectedMethod.uuid, {
                                             name: selectedMethod.name,
-                                            type: selectedMethod._raw.type,
-                                            fee_percentage: selectedMethod._raw.fee_percentage,
-                                            active: selectedMethod._raw.active,
+                                            type: selectedMethod.type,
+                                            fee_percentage: selectedMethod.fee_percentage,
+                                            active: selectedMethod.active,
                                         });
                                     setIsEditOpen(false);
                                     addToast('success', 'Payment method updated');
@@ -265,23 +265,23 @@ export default function PaymentMethodsPage() {
                             label={t('settings.paymentMethods.methodType')}
                             defaultValue={selectedMethod.type}
                             options={[
-                                { label: t('settings.paymentMethods.types.cash'), value: 'Cash' },
-                                { label: t('settings.paymentMethods.types.card'), value: 'Card' },
-                                { label: t('settings.paymentMethods.types.bank'), value: 'Bank' },
-                                { label: t('settings.paymentMethods.types.wallet'), value: 'Mobile Wallet' },
+                                { label: t('settings.paymentMethods.types.cash'), value: 'cash' },
+                                { label: t('settings.paymentMethods.types.card'), value: 'card' },
+                                { label: t('settings.paymentMethods.types.bank'), value: 'bank_transfer' },
+                                { label: t('settings.paymentMethods.types.wallet'), value: 'wallet' },
                             ]}
                         />
                         <Input
                             label={t('settings.paymentMethods.transactionFee')}
                             type="number"
-                            defaultValue={parseFloat(selectedMethod.fee)}
+                            defaultValue={selectedMethod.fee_percentage}
                         />
                         <Select
                             label={t('settings.paymentMethods.colStatus')}
-                            defaultValue={selectedMethod.status}
+                            defaultValue={selectedMethod.active ? 'active' : 'inactive'}
                             options={[
-                                { label: t('settings.safes.active'), value: 'Active' },
-                                { label: t('settings.safes.inactive'), value: 'Inactive' },
+                                { label: t('settings.safes.active'), value: 'active' },
+                                { label: t('settings.safes.inactive'), value: 'inactive' },
                             ]}
                         />
                     </div>
@@ -305,7 +305,7 @@ export default function PaymentMethodsPage() {
                             variant="destructive"
                             onClick={async () => {
                                 try {
-                                    if (selectedMethod) await settingsApi.deletePaymentMethod(selectedMethod.id);
+                                    if (selectedMethod) await settingsApi.deletePaymentMethod(selectedMethod.uuid);
                                     setIsDeleteOpen(false);
                                     addToast('error', 'Payment method deleted');
                                     refetch();

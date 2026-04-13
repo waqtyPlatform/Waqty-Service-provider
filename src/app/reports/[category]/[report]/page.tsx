@@ -1230,7 +1230,7 @@ export default function DynamicReportPage({ params }: { params: Promise<{ catego
                                         >
                                             {data.columns.map((_, ci) => {
                                                 const key = `col${ci + 1}` as keyof ReportRow;
-                                                const val = row[key];
+                                                const val = row[key] as string | number | boolean | undefined;
                                                 const isStatus =
                                                     typeof val === 'string' &&
                                                     [

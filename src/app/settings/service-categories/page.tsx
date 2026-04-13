@@ -64,6 +64,7 @@ export default function ServiceCategoriesPage() {
         color: colorMap[i % 5] || '#8b5cf6',
         services: c.services_count,
         order: c.sort_order,
+        _raw: c,
     }));
 
     return (
@@ -125,7 +126,7 @@ export default function ServiceCategoriesPage() {
                                                 variant="ghost"
                                                 size="sm"
                                                 onClick={() => {
-                                                    setSelectedCat(cat);
+                                                    setSelectedCat(cat._raw);
                                                     setIsEditOpen(true);
                                                 }}
                                             >
@@ -135,7 +136,7 @@ export default function ServiceCategoriesPage() {
                                                 variant="destructive"
                                                 size="sm"
                                                 onClick={() => {
-                                                    setSelectedCat(cat);
+                                                    setSelectedCat(cat._raw);
                                                     setIsDeleteOpen(true);
                                                 }}
                                             >
@@ -209,7 +210,7 @@ export default function ServiceCategoriesPage() {
                             onClick={async () => {
                                 try {
                                     if (selectedCat)
-                                        await settingsApi.updateServiceCategory(selectedCat.id, {
+                                        await settingsApi.updateServiceCategory(selectedCat.uuid, {
                                             name: selectedCat.name,
                                         });
                                     setIsEditOpen(false);
@@ -230,7 +231,7 @@ export default function ServiceCategoriesPage() {
                         <Input label={t('settings.serviceCategories.categoryName')} defaultValue={selectedCat.name} />
                         <Select
                             label={t('settings.serviceCategories.colorTag')}
-                            defaultValue={selectedCat.color}
+                            defaultValue={'#8b5cf6'}
                             options={[
                                 { label: t('settings.serviceCategories.colors.purple'), value: '#8b5cf6' },
                                 { label: t('settings.serviceCategories.colors.pink'), value: '#ec4899' },
@@ -260,7 +261,7 @@ export default function ServiceCategoriesPage() {
                             variant="destructive"
                             onClick={async () => {
                                 try {
-                                    if (selectedCat) await settingsApi.deleteServiceCategory(selectedCat.id);
+                                    if (selectedCat) await settingsApi.deleteServiceCategory(selectedCat.uuid);
                                     setIsDeleteOpen(false);
                                     addToast('error', 'Category deleted');
                                     refetch();

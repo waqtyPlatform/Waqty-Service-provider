@@ -58,7 +58,7 @@ export default function NotificationsSettingsPage() {
     const setSettings = setLocalSettings;
 
     const toggleSetting = (key: string) => {
-        setSettings(prev => prev.map(s => (s.key === key ? { ...s, enabled: !s.enabled } : s)));
+        setSettings(prev => (prev ?? []).map(s => (s.key === key ? { ...s, enabled: !s.enabled } : s)));
     };
 
     const handleSave = async () => {
