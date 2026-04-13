@@ -4,15 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslation } from '@/hooks/useTranslation';
-import {
-    Users,
-    Star,
-    CreditCard,
-    Clock,
-    Plus,
-    Download,
-    Upload
-} from 'lucide-react';
+import { Users, Star, CreditCard, Clock, Plus, Download, Upload, MessageSquare } from 'lucide-react';
 import styles from './customers.module.css';
 
 export default function CustomersLayout({ children }: { children: React.ReactNode }) {
@@ -24,6 +16,7 @@ export default function CustomersLayout({ children }: { children: React.ReactNod
         { label: t('customers.tabGroups'), href: '/customers/groups', icon: <Star size={16} /> },
         { label: t('customers.tabStatements'), href: '/customers/statements', icon: <CreditCard size={16} /> },
         { label: t('customers.tabVisits'), href: '/customers/last-visits', icon: <Clock size={16} /> },
+        { label: t('reviews.title'), href: '/customers/reviews', icon: <MessageSquare size={16} /> },
     ];
 
     return (
@@ -32,7 +25,9 @@ export default function CustomersLayout({ children }: { children: React.ReactNod
             <div className={styles.stickyHeader}>
                 <div className={styles.headerContent}>
                     <div>
-                        <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' }}>{t('sidebar.customers')}</h1>
+                        <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' }}>
+                            {t('sidebar.customers')}
+                        </h1>
                         <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginTop: 4 }}>
                             {t('customers.desc')}
                         </div>
@@ -52,7 +47,7 @@ export default function CustomersLayout({ children }: { children: React.ReactNod
 
                 {/* Tabs */}
                 <div className={styles.tabsScrollContainer}>
-                    {tabItems.map((tab) => {
+                    {tabItems.map(tab => {
                         const isActive = pathname === tab.href;
                         return (
                             <Link

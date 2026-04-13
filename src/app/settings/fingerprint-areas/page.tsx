@@ -1,21 +1,23 @@
 'use client';
 
 import React from 'react';
-import {
-    Plus,
-    Edit,
-    Trash2,
-    MapPin
-} from 'lucide-react';
-import {
-    Button,
-    Badge
-} from '@/components/ui';
+import { Plus, Edit, Trash2, MapPin } from 'lucide-react';
+import { Button, Badge, useToast } from '@/components/ui';
 import styles from './page.module.css';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useApiQuery } from '@/hooks/useApiQuery';
+import { settingsApi } from '@/lib/api';
+import { DataGuard } from '@/components/DataGuard';
 
-// Mock Data
-const areas = [
+interface FingerprintArea {
+    id: number;
+    name: string;
+    devices: number;
+    employees: number;
+}
+
+// Fallback Data
+const fallbackAreas: FingerprintArea[] = [
     { id: 1, name: 'Cairo Branch (Downtown)', devices: 2, employees: 8 },
     { id: 2, name: 'Alexandria Branch', devices: 1, employees: 5 },
     { id: 3, name: 'HQ Office', devices: 1, employees: 12 },
@@ -23,6 +25,35 @@ const areas = [
 
 export default function FingerprintAreasPage() {
     const { t, lang } = useTranslation();
+    const { addToast } = useToast();
+
+    const {
+        data: apiAreas,
+        loading,
+        error,
+        refetch,
+    } = useApiQuery<FingerprintArea[]>(
+        () =>
+            (settingsApi.getFingerprintAreas?.() as
+                | Promise<import('@/lib/api').ApiResponse<FingerprintArea[]>>
+                | undefined) ?? Promise.resolve({ success: true, message: '', data: fallbackAreas }),
+        [],
+        { fallbackData: fallbackAreas }
+    );
+
+    const areas = apiAreas || fallbackAreas;
+
+    const handleDelete = async (id: number) => {
+        try {
+            if (settingsApi.deleteFingerprintArea) {
+                await settingsApi.deleteFingerprintArea(String(id));
+            }
+            addToast('success', 'Area deleted');
+            refetch();
+        } catch {
+            addToast('error', 'Failed to delete area');
+        }
+    };
 
     return (
         <div className={styles.page} style={{ direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
@@ -32,42 +63,85 @@ export default function FingerprintAreasPage() {
                     <div className={styles.subtitle}>{t('fpAreas.subtitle')}</div>
                 </div>
                 <div className={styles.actions}>
-                    <Button><Plus size={16} /> {t('fpAreas.newArea')}</Button>
+                    <Button
+                        onClick={async () => {
+                            try {
+                                if (settingsApi.createFingerprintArea) {
+                                    await settingsApi.createFingerprintArea({ name: 'New Area' });
+                                }
+                                addToast('success', 'Area created');
+                                refetch();
+                            } catch {
+                                addToast('error', 'Failed to create area');
+                            }
+                        }}
+                    >
+                        <Plus size={16} /> {t('fpAreas.newArea')}
+                    </Button>
                 </div>
             </div>
 
-            <div className={styles.card}>
-                <div className={styles.cardHeader}>
-                    <span className={styles.cardTitle}><MapPin size={18} /> {t('fpAreas.definedAreas')}</span>
-                </div>
-                <div className="table-wrapper">
-                    <table className="data-table">
-                        <thead>
-                            <tr>
-                                <th>{t('fpAreas.colName')}</th>
-                                <th>{t('fpAreas.colDevices')}</th>
-                                <th>{t('fpAreas.colEmployees')}</th>
-                                <th>{t('fpAreas.colActions')}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {areas.map(area => (
-                                <tr key={area.id}>
-                                    <td style={{ fontWeight: 'var(--font-medium)' }}>{area.name}</td>
-                                    <td>{area.devices} {t('fpAreas.devices')}</td>
-                                    <td><Badge color="neutral">{area.employees} {t('fpAreas.staff')}</Badge></td>
-                                    <td>
-                                        <div style={{ display: 'flex', gap: 8 }}>
-                                            <Button variant="ghost" size="sm" iconOnly><Edit size={14} /></Button>
-                                            <Button variant="destructive" size="sm" iconOnly><Trash2 size={14} /></Button>
-                                        </div>
-                                    </td>
+            <DataGuard
+                loading={loading}
+                error={error}
+                data={areas}
+                emptyIcon={<MapPin size={48} />}
+                emptyTitle={t('fpAreas.definedAreas')}
+                emptyDescription="No fingerprint areas configured yet"
+                onRetry={refetch}
+                skeletonCount={3}
+                skeletonVariant="card"
+            >
+                <div className={styles.card}>
+                    <div className={styles.cardHeader}>
+                        <span className={styles.cardTitle}>
+                            <MapPin size={18} /> {t('fpAreas.definedAreas')}
+                        </span>
+                    </div>
+                    <div className="table-wrapper">
+                        <table className="data-table">
+                            <thead>
+                                <tr>
+                                    <th>{t('fpAreas.colName')}</th>
+                                    <th>{t('fpAreas.colDevices')}</th>
+                                    <th>{t('fpAreas.colEmployees')}</th>
+                                    <th>{t('fpAreas.colActions')}</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {areas.map(area => (
+                                    <tr key={area.id}>
+                                        <td style={{ fontWeight: 'var(--font-medium)' }}>{area.name}</td>
+                                        <td>
+                                            {area.devices} {t('fpAreas.devices')}
+                                        </td>
+                                        <td>
+                                            <Badge color="neutral">
+                                                {area.employees} {t('fpAreas.staff')}
+                                            </Badge>
+                                        </td>
+                                        <td>
+                                            <div style={{ display: 'flex', gap: 8 }}>
+                                                <Button variant="ghost" size="sm" iconOnly>
+                                                    <Edit size={14} />
+                                                </Button>
+                                                <Button
+                                                    variant="destructive"
+                                                    size="sm"
+                                                    iconOnly
+                                                    onClick={() => handleDelete(area.id)}
+                                                >
+                                                    <Trash2 size={14} />
+                                                </Button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
+            </DataGuard>
         </div>
     );
 }

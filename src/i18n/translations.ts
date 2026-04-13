@@ -1916,6 +1916,16 @@ const translations: Translations = {
         en: 'This staff member is already assigned to another service at an overlapping time.',
         ar: 'هذا الموظف مخصص بالفعل لخدمة أخرى في وقت متداخل.',
     },
+    'bookings.editBooking': { en: 'Edit Booking', ar: 'تعديل الحجز' },
+    'bookings.saveChanges': { en: 'Save Changes', ar: 'حفظ التغييرات' },
+    'bookings.updateSuccess': { en: 'Booking updated successfully', ar: 'تم تحديث الحجز بنجاح' },
+    'bookings.rescheduleReason': { en: 'Reschedule Reason', ar: 'سبب إعادة الجدولة' },
+    'bookings.rescheduleReasonPlaceholder': {
+        en: 'Why is this booking being rescheduled?',
+        ar: 'لماذا يتم إعادة جدولة هذا الحجز؟',
+    },
+    'bookings.loadingBooking': { en: 'Loading booking...', ar: 'جارٍ تحميل الحجز...' },
+    'bookings.bookingNotFound': { en: 'Booking not found', ar: 'لم يتم العثور على الحجز' },
     'bookings.showAvailability': { en: 'Show staff availability', ar: 'عرض توفر الموظفين' },
     'bookings.hideAvailability': { en: 'Hide staff availability', ar: 'إخفاء توفر الموظفين' },
     'bookings.assignedStaff': { en: 'Assigned Staff', ar: 'الموظفون المعينون' },
@@ -3495,6 +3505,361 @@ const translations: Translations = {
     // Sidebar (missing)
     'sidebar.hours': { en: 'Working Hours', ar: 'ساعات العمل' },
     'sidebar.resources': { en: 'Resources', ar: 'الموارد' },
+
+    // ── Gap Remediation: New Feature Translations ──
+
+    // Terms & Conditions
+    'onboarding.termsCheckbox': {
+        en: 'I agree to the Terms & Conditions and Privacy Policy',
+        ar: 'أوافق على الشروط والأحكام وسياسة الخصوصية',
+    },
+    'onboarding.termsTitle': { en: 'Terms & Conditions', ar: 'الشروط والأحكام' },
+    'onboarding.termsAccept': { en: 'Accept & Continue', ar: 'قبول ومتابعة' },
+    'onboarding.termsRequired': { en: 'Please accept the Terms & Conditions', ar: 'يرجى قبول الشروط والأحكام' },
+
+    // Empty States
+    'empty.customers.title': { en: 'No customers yet', ar: 'لا يوجد عملاء بعد' },
+    'empty.customers.desc': {
+        en: 'Your customer list will grow as bookings are made. Add your first customer to get started.',
+        ar: 'ستنمو قائمة عملائك مع الحجوزات. أضف أول عميل للبدء.',
+    },
+    'empty.bookings.title': { en: 'No bookings yet', ar: 'لا يوجد حجوزات بعد' },
+    'empty.bookings.desc': {
+        en: 'Create your first booking or wait for customers to book through the app.',
+        ar: 'أنشئ أول حجز أو انتظر حجز العملاء عبر التطبيق.',
+    },
+    'empty.transactions.title': { en: 'No transactions yet', ar: 'لا يوجد معاملات بعد' },
+    'empty.transactions.desc': {
+        en: 'Transactions will appear here as payments are processed.',
+        ar: 'ستظهر المعاملات هنا عند معالجة المدفوعات.',
+    },
+    'empty.reports.title': { en: 'No data to report', ar: 'لا توجد بيانات للتقارير' },
+    'empty.reports.desc': {
+        en: 'Reports will populate as your business activity grows.',
+        ar: 'سيتم ملء التقارير مع نمو نشاط عملك.',
+    },
+    'empty.marketing.title': { en: 'No campaigns yet', ar: 'لا توجد حملات بعد' },
+    'empty.marketing.desc': {
+        en: 'Create your first offer or promo code to attract customers.',
+        ar: 'أنشئ أول عرض أو رمز ترويجي لجذب العملاء.',
+    },
+    'empty.employees.title': { en: 'No employees yet', ar: 'لا يوجد موظفين بعد' },
+    'empty.employees.desc': {
+        en: 'Add your team members to manage schedules and track performance.',
+        ar: 'أضف أعضاء فريقك لإدارة الجداول وتتبع الأداء.',
+    },
+    'empty.expenses.title': { en: 'No expenses recorded', ar: 'لم يتم تسجيل مصروفات' },
+    'empty.expenses.desc': { en: 'Track your business expenses here.', ar: 'تتبع مصروفات عملك هنا.' },
+    'empty.returns.title': { en: 'No returns', ar: 'لا يوجد مرتجعات' },
+    'empty.returns.desc': {
+        en: 'Return and refund requests will appear here.',
+        ar: 'ستظهر طلبات الإرجاع والاسترداد هنا.',
+    },
+    'empty.sales.title': { en: 'No sales yet', ar: 'لا يوجد مبيعات بعد' },
+    'empty.sales.desc': {
+        en: 'Quick sales from the POS will appear here.',
+        ar: 'ستظهر المبيعات السريعة من نقطة البيع هنا.',
+    },
+
+    // Review Moderation
+    'reviews.title': { en: 'Review Moderation', ar: 'إدارة التقييمات' },
+    'reviews.subtitle': {
+        en: 'Monitor customer reviews and report issues',
+        ar: 'متابعة تقييمات العملاء والإبلاغ عن المشاكل',
+    },
+    'reviews.report': { en: 'Report', ar: 'إبلاغ' },
+    'reviews.reported': { en: 'Reported', ar: 'تم الإبلاغ' },
+    'reviews.reportReview': { en: 'Report Review', ar: 'الإبلاغ عن التقييم' },
+    'reviews.reportDesc': {
+        en: 'Please select a reason and describe why this review needs action.',
+        ar: 'يرجى اختيار السبب ووصف لماذا يحتاج هذا التقييم إلى إجراء.',
+    },
+    'reviews.reportCategory': { en: 'Report Category', ar: 'فئة البلاغ' },
+    'reviews.reportReason': { en: 'Details', ar: 'التفاصيل' },
+    'reviews.submitReport': { en: 'Submit Report', ar: 'إرسال البلاغ' },
+    'reviews.pending': { en: 'Pending', ar: 'بانتظار المراجعة' },
+    'reviews.published': { en: 'Published', ar: 'منشور' },
+    'reviews.empty.title': { en: 'No reviews yet', ar: 'لا توجد تقييمات بعد' },
+    'reviews.empty.desc': {
+        en: 'Customer reviews will appear here once they start rating your services.',
+        ar: 'ستظهر تقييمات العملاء هنا بمجرد تقييمهم لخدماتك.',
+    },
+    'reviews.avgRating': { en: 'Avg Rating', ar: 'متوسط التقييم' },
+    'reviews.totalReviews': { en: 'Total Reviews', ar: 'إجمالي التقييمات' },
+
+    // Tipping
+    'tipping.title': { en: 'Tipping Configuration', ar: 'إعدادات البقشيش' },
+    'tipping.enable': { en: 'Enable Tipping', ar: 'تفعيل البقشيش' },
+    'tipping.enableDesc': {
+        en: 'Allow customers to add tips during checkout',
+        ar: 'السماح للعملاء بإضافة بقشيش عند الدفع',
+    },
+    'tipping.percentages': { en: 'Quick Tip Percentages', ar: 'نسب البقشيش السريعة' },
+    'tipping.customAmount': { en: 'Allow Custom Tip Amount', ar: 'السماح بمبلغ بقشيش مخصص' },
+    'tipping.distribution': { en: 'Tip Distribution', ar: 'توزيع البقشيش' },
+    'tipping.individual': { en: 'Individual — Goes to the assigned employee', ar: 'فردي — يذهب للموظف المسؤول' },
+    'tipping.pool': { en: 'Pool — Split equally among all staff', ar: 'مشترك — يُقسم بالتساوي بين الموظفين' },
+    'tipping.split': { en: 'Split — Custom split by role/position', ar: 'مخصص — تقسيم حسب الدور/المنصب' },
+
+    // Waitlist
+    'waitlist.title': { en: 'Waitlist', ar: 'قائمة الانتظار' },
+    'waitlist.subtitle': {
+        en: 'Manage customers waiting for available time slots',
+        ar: 'إدارة العملاء المنتظرين لمواعيد متاحة',
+    },
+    'waitlist.empty.title': { en: 'Waitlist is empty', ar: 'قائمة الانتظار فارغة' },
+    'waitlist.empty.desc': {
+        en: 'When all time slots are booked, customers can join the waitlist.',
+        ar: 'عندما تكون جميع المواعيد محجوزة، يمكن للعملاء الانضمام لقائمة الانتظار.',
+    },
+    'waitlist.notify': { en: 'Notify', ar: 'إخطار' },
+    'waitlist.waiting': { en: 'Waiting', ar: 'بالانتظار' },
+    'waitlist.notified': { en: 'Notified', ar: 'تم الإخطار' },
+    'waitlist.booked': { en: 'Booked', ar: 'تم الحجز' },
+
+    // Loyalty
+    'loyalty.title': { en: 'Loyalty Program', ar: 'برنامج الولاء' },
+    'loyalty.enable': { en: 'Enable Loyalty Program', ar: 'تفعيل برنامج الولاء' },
+    'loyalty.earningRules': { en: 'Earning Rules', ar: 'قواعد الكسب' },
+    'loyalty.pointsPerEgp': { en: 'Points per 1 EGP spent', ar: 'نقاط لكل 1 جنيه' },
+    'loyalty.pointsPerBooking': { en: 'Points per booking', ar: 'نقاط لكل حجز' },
+    'loyalty.referralBonus': { en: 'Referral bonus (points)', ar: 'مكافأة الإحالة (نقاط)' },
+    'loyalty.redemptionRate': { en: 'Redemption rate (points per 1 EGP)', ar: 'معدل الاستبدال (نقاط لكل 1 جنيه)' },
+    'loyalty.tiers': { en: 'Loyalty Tiers', ar: 'مستويات الولاء' },
+    'loyalty.addTier': { en: 'Add Tier', ar: 'إضافة مستوى' },
+
+    // Help Center
+    'help.title': { en: 'Help Center', ar: 'مركز المساعدة' },
+    'help.subtitle': {
+        en: 'Find answers to common questions about using Hagzy',
+        ar: 'ابحث عن إجابات للأسئلة الشائعة حول استخدام هجزي',
+    },
+    'help.search': { en: 'Search for help...', ar: 'ابحث عن مساعدة...' },
+    'help.bugReport': { en: 'Report a Bug', ar: 'الإبلاغ عن خطأ' },
+    'help.contactSupport': { en: 'Contact Support', ar: 'تواصل مع الدعم' },
+
+    // Bug Report
+    'bugReport.title': { en: 'Report a Bug', ar: 'الإبلاغ عن خطأ' },
+    'bugReport.subtitle': {
+        en: 'Help us improve by reporting issues you encounter',
+        ar: 'ساعدنا في التحسين بالإبلاغ عن المشاكل',
+    },
+    'bugReport.category': { en: 'Category', ar: 'الفئة' },
+    'bugReport.severity': { en: 'Severity', ar: 'الخطورة' },
+    'bugReport.description': { en: 'Description', ar: 'الوصف' },
+    'bugReport.steps': { en: 'Steps to Reproduce', ar: 'خطوات إعادة الإنتاج' },
+    'bugReport.screenshot': { en: 'Screenshot (optional)', ar: 'لقطة شاشة (اختياري)' },
+    'bugReport.submit': { en: 'Submit Bug Report', ar: 'إرسال تقرير الخطأ' },
+    'bugReport.submitted': { en: 'Report Submitted', ar: 'تم إرسال التقرير' },
+    'bugReport.submittedDesc': {
+        en: 'Thank you for reporting this issue. Our team will review it and work on a fix.',
+        ar: 'شكرًا لك على الإبلاغ عن هذه المشكلة. سيراجعها فريقنا ويعمل على إصلاحها.',
+    },
+
+    // Announcements
+    'announcements.title': { en: 'Announcements', ar: 'الإعلانات' },
+    'announcements.subtitle': {
+        en: 'Create and manage announcements for your employees',
+        ar: 'إنشاء وإدارة الإعلانات لموظفيك',
+    },
+    'announcements.create': { en: 'Create Announcement', ar: 'إنشاء إعلان' },
+    'announcements.draft': { en: 'Draft', ar: 'مسودة' },
+    'announcements.published': { en: 'Published', ar: 'منشور' },
+    'announcements.scheduled': { en: 'Scheduled', ar: 'مجدول' },
+    'announcements.empty.title': { en: 'No announcements yet', ar: 'لا توجد إعلانات بعد' },
+    'announcements.empty.desc': {
+        en: 'Create an announcement to communicate with your employees.',
+        ar: 'أنشئ إعلانًا للتواصل مع موظفيك.',
+    },
+
+    // Booking Edit/Reschedule
+    'booking.edit': { en: 'Edit Booking', ar: 'تعديل الحجز' },
+    'booking.reschedule': { en: 'Reschedule', ar: 'إعادة الجدولة' },
+    'booking.rescheduleReason': { en: 'Reason for rescheduling', ar: 'سبب إعادة الجدولة' },
+    'booking.saveChanges': { en: 'Save Changes', ar: 'حفظ التغييرات' },
+    'booking.createNew': { en: 'Create Booking', ar: 'إنشاء حجز' },
+
+    // Geofencing
+    'geofence.title': { en: 'Geofence Settings', ar: 'إعدادات النطاق الجغرافي' },
+    'geofence.radius': { en: 'Geofence Radius', ar: 'نصف قطر النطاق الجغرافي' },
+    'geofence.requireGps': { en: 'Require GPS for clock-in', ar: 'يتطلب GPS لتسجيل الحضور' },
+    'geofence.save': { en: 'Save Geofence Settings', ar: 'حفظ إعدادات النطاق الجغرافي' },
+
+    // Common
+    'common.save': { en: 'Save', ar: 'حفظ' },
+    'common.saving': { en: 'Saving...', ar: 'جاري الحفظ...' },
+    'common.cancel': { en: 'Cancel', ar: 'إلغاء' },
+    'common.delete': { en: 'Delete', ar: 'حذف' },
+    'common.edit': { en: 'Edit', ar: 'تعديل' },
+    'common.create': { en: 'Create', ar: 'إنشاء' },
+    'common.search': { en: 'Search', ar: 'بحث' },
+    'common.filter': { en: 'Filter', ar: 'تصفية' },
+    'common.export': { en: 'Export', ar: 'تصدير' },
+    'common.retry': { en: 'Retry', ar: 'إعادة المحاولة' },
+    'common.loading': { en: 'Loading...', ar: 'جاري التحميل...' },
+    'common.error': { en: 'Something went wrong', ar: 'حدث خطأ ما' },
+    'common.noData': { en: 'No data available', ar: 'لا توجد بيانات' },
+
+    // ── Marketing / Announcements (mkt.*) ──
+    'mkt.btnCreateAnnouncement': { en: 'Create Announcement', ar: 'إنشاء إعلان' },
+    'mkt.btnNewAnnouncement': { en: 'New Announcement', ar: 'إعلان جديد' },
+    'mkt.btnPublish': { en: 'Publish', ar: 'نشر' },
+    'mkt.lblAllEmployees': { en: 'All Employees', ar: 'جميع الموظفين' },
+    'mkt.lblAnnouncementBody': { en: 'Announcement Body', ar: 'نص الإعلان' },
+    'mkt.lblAnnouncementDetails': { en: 'Announcement Details', ar: 'تفاصيل الإعلان' },
+    'mkt.lblAnnouncementTitle': { en: 'Announcement Title', ar: 'عنوان الإعلان' },
+    'mkt.lblByBranch': { en: 'By Branch', ar: 'حسب الفرع' },
+    'mkt.lblByRole': { en: 'By Role', ar: 'حسب الدور' },
+    'mkt.lblContent': { en: 'Content', ar: 'المحتوى' },
+    'mkt.lblCreateAnnouncement': { en: 'Create Announcement', ar: 'إنشاء إعلان' },
+    'mkt.lblDelete': { en: 'Delete', ar: 'حذف' },
+    'mkt.lblDeleteAnnouncement': { en: 'Delete Announcement', ar: 'حذف الإعلان' },
+    'mkt.lblEditAnnouncement': { en: 'Edit Announcement', ar: 'تعديل الإعلان' },
+    'mkt.lblHigh': { en: 'High', ar: 'عالي' },
+    'mkt.lblLow': { en: 'Low', ar: 'منخفض' },
+    'mkt.lblNoAnnouncements': { en: 'No announcements yet', ar: 'لا توجد إعلانات بعد' },
+    'mkt.lblNormal': { en: 'Normal', ar: 'عادي' },
+    'mkt.lblPriority': { en: 'Priority', ar: 'الأولوية' },
+    'mkt.lblPublished': { en: 'Published', ar: 'منشور' },
+    'mkt.lblPublishedAt': { en: 'Published At', ar: 'نُشر في' },
+    'mkt.lblReadCount': { en: 'Read Count', ar: 'عدد القراءات' },
+    'mkt.lblScheduleDate': { en: 'Schedule Date', ar: 'تاريخ الجدولة' },
+    'mkt.lblScheduledFor': { en: 'Scheduled For', ar: 'مجدول لـ' },
+    'mkt.lblUrgent': { en: 'Urgent', ar: 'عاجل' },
+    'mkt.msgAnnouncementBodyRequired': { en: 'Announcement body is required', ar: 'نص الإعلان مطلوب' },
+    'mkt.msgAnnouncementCreated': { en: 'Announcement created successfully', ar: 'تم إنشاء الإعلان بنجاح' },
+    'mkt.msgAnnouncementDeleted': { en: 'Announcement deleted', ar: 'تم حذف الإعلان' },
+    'mkt.msgAnnouncementPublished': { en: 'Announcement published', ar: 'تم نشر الإعلان' },
+    'mkt.msgAnnouncementTitleRequired': { en: 'Announcement title is required', ar: 'عنوان الإعلان مطلوب' },
+    'mkt.msgAnnouncementUpdated': { en: 'Announcement updated', ar: 'تم تحديث الإعلان' },
+    'mkt.msgDeleteAnnouncementConfirm': {
+        en: 'Are you sure you want to delete this announcement?',
+        ar: 'هل أنت متأكد من حذف هذا الإعلان؟',
+    },
+    'mkt.msgNoAnnouncementsDesc': {
+        en: 'Create an announcement to communicate with your employees.',
+        ar: 'أنشئ إعلانًا للتواصل مع موظفيك.',
+    },
+    'mkt.phAnnouncementBody': { en: 'Write your announcement here...', ar: 'اكتب إعلانك هنا...' },
+
+    // ── Marketing Empty States ──
+    'mkt.lblNoGroups': { en: 'No service groups yet', ar: 'لا توجد مجموعات خدمات بعد' },
+    'mkt.msgNoGroupsDesc': {
+        en: 'Create service groups to bundle promotions together.',
+        ar: 'أنشئ مجموعات خدمات لتجميع العروض معًا.',
+    },
+    'mkt.lblNoNotifications': { en: 'No notifications yet', ar: 'لا توجد إشعارات بعد' },
+    'mkt.msgNoNotificationsDesc': {
+        en: 'Send push notifications to your customers.',
+        ar: 'أرسل إشعارات فورية لعملائك.',
+    },
+    'mkt.lblNoOffers': { en: 'No offers yet', ar: 'لا توجد عروض بعد' },
+    'mkt.msgNoOffersDesc': { en: 'Create your first promotional offer.', ar: 'أنشئ أول عرض ترويجي.' },
+    'mkt.lblNoPackages': { en: 'No packages yet', ar: 'لا توجد باقات بعد' },
+    'mkt.msgNoPackagesDesc': { en: 'Create service packages to boost sales.', ar: 'أنشئ باقات خدمات لزيادة المبيعات.' },
+    'mkt.lblNoPromoCodes': { en: 'No promo codes yet', ar: 'لا توجد أكواد ترويجية بعد' },
+    'mkt.msgNoPromoCodesDesc': { en: 'Generate promo codes for your customers.', ar: 'أنشئ أكواد ترويجية لعملائك.' },
+    'mkt.lblNoTemplates': { en: 'No templates yet', ar: 'لا توجد قوالب بعد' },
+    'mkt.msgNoTemplatesDesc': {
+        en: 'Create message templates for quick sending.',
+        ar: 'أنشئ قوالب رسائل للإرسال السريع.',
+    },
+
+    // ── Customer Empty States ──
+    'custGroups.noGroups': { en: 'No customer groups yet', ar: 'لا توجد مجموعات عملاء بعد' },
+    'custGroups.noGroupsDesc': {
+        en: 'Create groups to segment your customers with discounts.',
+        ar: 'أنشئ مجموعات لتصنيف عملائك مع خصومات.',
+    },
+    'custStmts.noStatements': { en: 'No statements yet', ar: 'لا توجد كشوفات بعد' },
+    'custStmts.noStatementsDesc': {
+        en: 'Customer financial statements will appear here.',
+        ar: 'ستظهر الكشوفات المالية للعملاء هنا.',
+    },
+    'custVisits.noVisits': { en: 'No visit records yet', ar: 'لا توجد سجلات زيارات بعد' },
+    'custVisits.noVisitsDesc': {
+        en: 'Visit history will appear as customers book appointments.',
+        ar: 'سيظهر سجل الزيارات عند حجز العملاء للمواعيد.',
+    },
+
+    // ── Employee Empty States ──
+    'attendMethods.emptyTitle': { en: 'No attendance methods configured', ar: 'لم يتم إعداد طرق الحضور' },
+    'attendMethods.emptyDesc': {
+        en: 'Configure fingerprint, face recognition, GPS, or PIN methods.',
+        ar: 'قم بإعداد البصمة أو التعرف على الوجه أو GPS أو رمز PIN.',
+    },
+    'commissions.emptyTitle': { en: 'No commission records', ar: 'لا توجد سجلات عمولات' },
+    'commissions.emptyDesc': {
+        en: 'Commission records will appear as services are completed.',
+        ar: 'ستظهر سجلات العمولات عند إتمام الخدمات.',
+    },
+    'servicePricing.source': { en: 'Pricing Source', ar: 'مصدر التسعير' },
+    'perf.emptyTitle': { en: 'No performance data yet', ar: 'لا توجد بيانات أداء بعد' },
+    'perf.emptyDesc': {
+        en: 'Employee performance metrics will populate as bookings are completed.',
+        ar: 'ستُملأ مقاييس أداء الموظفين عند إتمام الحجوزات.',
+    },
+    'perms.emptyTitle': { en: 'No roles configured', ar: 'لم يتم إعداد الأدوار' },
+    'perms.emptyDesc': {
+        en: 'Create roles to manage employee permissions.',
+        ar: 'أنشئ أدوارًا لإدارة صلاحيات الموظفين.',
+    },
+    'targets.emptyTitle': { en: 'No targets set', ar: 'لم يتم تعيين أهداف' },
+    'targets.emptyDesc': {
+        en: 'Set revenue or booking targets for your employees.',
+        ar: 'حدد أهداف الإيرادات أو الحجوزات لموظفيك.',
+    },
+
+    // ── Settings Saved Messages ──
+    'settings.appearance.saved': { en: 'Appearance settings saved', ar: 'تم حفظ إعدادات المظهر' },
+    'settings.invoice.saved': { en: 'Invoice settings saved', ar: 'تم حفظ إعدادات الفاتورة' },
+    'settings.localization.saved': { en: 'Localization settings saved', ar: 'تم حفظ إعدادات التوطين' },
+    'settings.notifications.saved': { en: 'Notification settings saved', ar: 'تم حفظ إعدادات الإشعارات' },
+    'settings.security.saved': { en: 'Security settings saved', ar: 'تم حفظ إعدادات الأمان' },
+    'settings.paymentMethods.noMethods': { en: 'No payment methods configured', ar: 'لم يتم إعداد طرق الدفع' },
+    'settings.paymentMethods.noMethodsDesc': {
+        en: 'Add payment methods your business accepts.',
+        ar: 'أضف طرق الدفع التي يقبلها عملك.',
+    },
+    'settings.tab.tipping': { en: 'Tipping', ar: 'البقشيش' },
+    'settings.tab.loyalty': { en: 'Loyalty Program', ar: 'برنامج الولاء' },
+
+    // ── Transaction Empty States ──
+    'txn.adv.emptyTitle': { en: 'No advance payments', ar: 'لا توجد دفعات مقدمة' },
+    'txn.adv.emptyDesc': { en: 'Advance payment records will appear here.', ar: 'ستظهر سجلات الدفعات المقدمة هنا.' },
+    'txn.best.emptyTitle': { en: 'No sales data yet', ar: 'لا توجد بيانات مبيعات بعد' },
+    'txn.best.emptyDesc': { en: 'Top-selling services will be shown here.', ar: 'ستظهر الخدمات الأكثر مبيعًا هنا.' },
+    'txn.cash.emptyTitle': { en: 'No cash sales yet', ar: 'لا توجد مبيعات نقدية بعد' },
+    'txn.cash.emptyDesc': { en: 'Cash sale transactions will appear here.', ar: 'ستظهر معاملات البيع النقدي هنا.' },
+    'txn.client.emptyTitle': { en: 'No client sales data', ar: 'لا توجد بيانات مبيعات عملاء' },
+    'txn.client.emptyDesc': {
+        en: 'Sales by client will appear as transactions are processed.',
+        ar: 'ستظهر المبيعات حسب العميل عند معالجة المعاملات.',
+    },
+    'txn.dailies.emptyTitle': { en: 'No daily reports yet', ar: 'لا توجد تقارير يومية بعد' },
+    'txn.dailies.emptyDesc': {
+        en: 'Daily transaction summaries will appear here.',
+        ar: 'ستظهر ملخصات المعاملات اليومية هنا.',
+    },
+    'txn.petty.emptyTitle': { en: 'No petty cash records', ar: 'لا توجد سجلات مصروفات نثرية' },
+    'txn.petty.emptyDesc': {
+        en: 'Petty cash transactions will appear here.',
+        ar: 'ستظهر معاملات المصروفات النثرية هنا.',
+    },
+    'txn.safe.emptyTitle': { en: 'No safes configured', ar: 'لم يتم إعداد الخزائن' },
+    'txn.safe.emptyDesc': { en: 'Safe balances will be tracked here.', ar: 'سيتم تتبع أرصدة الخزائن هنا.' },
+    'txn.shifts.emptyTitle': { en: 'No shift records', ar: 'لا توجد سجلات ورديات' },
+    'txn.shifts.emptyDesc': {
+        en: 'Shift opening and closing totals will appear here.',
+        ar: 'ستظهر إجماليات فتح وإغلاق الورديات هنا.',
+    },
+    'txn.transfers.emptyTitle': { en: 'No transfers yet', ar: 'لا توجد تحويلات بعد' },
+    'txn.transfers.emptyDesc': {
+        en: 'Money transfers between safes will appear here.',
+        ar: 'ستظهر التحويلات المالية بين الخزائن هنا.',
+    },
+    'txn.pkg.emptyTitle': { en: 'No package sales yet', ar: 'لا توجد مبيعات باقات بعد' },
+    'txn.pkg.emptyDesc': { en: 'Package sale records will appear here.', ar: 'ستظهر سجلات مبيعات الباقات هنا.' },
 };
 
 export default translations;

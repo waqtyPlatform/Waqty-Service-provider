@@ -5,6 +5,9 @@ import { Download, Calculator, Clock, PieChart, Target, Send } from 'lucide-reac
 import Link from 'next/link';
 import { Select, Input, Button, useToast, EmptyState, Badge } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useApiQuery } from '@/hooks/useApiQuery';
+import { payrollApi, type Commission } from '@/lib/api';
+import { DataGuard } from '@/components/DataGuard';
 
 interface CommissionData {
     id: string;
@@ -240,6 +243,36 @@ export default function CommissionsPage() {
     const { t, lang } = useTranslation();
     const isRtl = lang === 'ar';
 
+    // ─── API Integration ────────────────────────────────────────────
+    const {
+        data: apiCommissions,
+        loading: apiLoading,
+        error: apiError,
+        refetch,
+    } = useApiQuery<Commission[]>(() => payrollApi.getCommissions() as never, [], { fallbackData: allCommissionsData });
+
+    // Map API data to local format, or use fallback
+    const resolvedCommissions: CommissionData[] = useMemo(() => {
+        if (apiCommissions && apiCommissions.length > 0) {
+            return apiCommissions.map((c, i) => ({
+                id: c.uuid || String(i + 1),
+                date: c.created_at?.split('T')[0] || '',
+                employee: c.employee?.name || 'Unknown',
+                employeeLevel: 'Mid',
+                service: c.service?.name || 'Service',
+                segment: 'General',
+                count: 1,
+                basePrice: c.amount / (c.rate / 100 || 1),
+                resolvedPrice: c.amount / (c.rate / 100 || 1),
+                priceSource: 'base',
+                revenue: c.amount / (c.rate / 100 || 1),
+                rate: c.rate,
+                commission: c.amount,
+            }));
+        }
+        return allCommissionsData;
+    }, [apiCommissions]);
+
     const [activeTab, setActiveTab] = useState(0);
 
     const subTabs = [
@@ -261,6 +294,13 @@ export default function CommissionsPage() {
 
     const [displayedData, setDisplayedData] = useState(allCommissionsData);
     const [isCalculating, setIsCalculating] = useState(false);
+
+    // Sync API data to local state
+    React.useEffect(() => {
+        if (resolvedCommissions.length > 0 && resolvedCommissions !== allCommissionsData) {
+            setDisplayedData(resolvedCommissions);
+        }
+    }, [resolvedCommissions]);
 
     const employees = ['All', ...Array.from(new Set(allCommissionsData.map(d => d.employee)))];
     const services = ['All', ...Array.from(new Set(allCommissionsData.map(d => d.service)))];
@@ -418,133 +458,211 @@ export default function CommissionsPage() {
 
     return (
         <div style={{ ...s.page, direction: isRtl ? 'rtl' : 'ltr' }}>
-            <div
-                style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    flexWrap: 'wrap',
-                    gap: 'var(--space-3)',
-                }}
+            <DataGuard
+                loading={apiLoading}
+                error={apiError}
+                data={displayedData}
+                onRetry={refetch}
+                emptyIcon={<Calculator size={48} />}
+                emptyTitle={t('commissions.emptyTitle') || 'No commissions found'}
+                emptyDescription={t('commissions.emptyDesc') || 'Commission data will appear here once calculated.'}
             >
                 <div
                     style={{
-                        fontSize: 'var(--text-3xl)',
-                        fontWeight: 'var(--font-bold)',
                         display: 'flex',
+                        justifyContent: 'space-between',
                         alignItems: 'center',
+                        flexWrap: 'wrap',
                         gap: 'var(--space-3)',
                     }}
                 >
-                    {t('commissions.title')}
-                </div>
-                <Link href="/employees/payroll">
-                    <Button variant="primary">
-                        <Send size={16} className={isRtl ? 'ml-2' : 'mr-2'} />
-                        {t('commissions.sendToPayroll')}
-                    </Button>
-                </Link>
-            </div>
-
-            <div style={s.tabBar}>
-                {subTabs.map((tSub, i) => (
                     <div
-                        key={tSub}
-                        style={{ ...s.tab, ...(i === activeTab ? s.tabActive : {}) }}
-                        onClick={() => setActiveTab(i)}
+                        style={{
+                            fontSize: 'var(--text-3xl)',
+                            fontWeight: 'var(--font-bold)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 'var(--space-3)',
+                        }}
                     >
-                        {tSub}
+                        {t('commissions.title')}
                     </div>
-                ))}
-            </div>
+                    <Link href="/employees/payroll">
+                        <Button variant="primary">
+                            <Send size={16} className={isRtl ? 'ml-2' : 'mr-2'} />
+                            {t('commissions.sendToPayroll')}
+                        </Button>
+                    </Link>
+                </div>
 
-            <div style={s.kpis}>
-                {activeTab === 3 ? (
-                    <>
-                        <div style={s.kpi}>
-                            <div style={s.kpiVal}>
-                                {totalExtNet3.toLocaleString()}
-                                {t('payroll.egp')}
-                            </div>
-                            <div style={s.kpiLbl}>{t('commissions.kpiNetRev')}</div>
+                <div style={s.tabBar}>
+                    {subTabs.map((tSub, i) => (
+                        <div
+                            key={tSub}
+                            style={{ ...s.tab, ...(i === activeTab ? s.tabActive : {}) }}
+                            onClick={() => setActiveTab(i)}
+                        >
+                            {tSub}
                         </div>
-                        <div style={s.kpi}>
-                            <div style={{ ...s.kpiVal, color: 'var(--color-primary-600)' }}>
-                                {totalExtCommission3.toLocaleString()}
-                                {t('payroll.egp')}
-                            </div>
-                            <div style={s.kpiLbl}>{t('commissions.kpiExtComm')}</div>
-                        </div>
-                        <div style={s.kpi}>
-                            <div style={{ ...s.kpiVal, color: '#ef4444' }}>
-                                {totalExtCost3.toLocaleString()}
-                                {t('payroll.egp')}
-                            </div>
-                            <div style={s.kpiLbl}>{t('commissions.kpiMatCost')}</div>
-                        </div>
-                    </>
-                ) : (
-                    <>
-                        <div style={s.kpi}>
-                            <div style={s.kpiVal}>
-                                {(activeTab === 0
-                                    ? totalRev0
-                                    : activeTab === 1
-                                      ? totalRev1
-                                      : totalRev2
-                                ).toLocaleString()}
-                                {t('payroll.egp')}
-                            </div>
-                            <div style={s.kpiLbl}>{t('commissions.kpiRevGen')}</div>
-                        </div>
-                        {activeTab === 2 ? (
+                    ))}
+                </div>
+
+                <div style={s.kpis}>
+                    {activeTab === 3 ? (
+                        <>
                             <div style={s.kpi}>
-                                <div style={{ ...s.kpiVal, color: 'var(--color-primary-600)' }}>
-                                    {totalTargetBonus2.toLocaleString()}
+                                <div style={s.kpiVal}>
+                                    {totalExtNet3.toLocaleString()}
                                     {t('payroll.egp')}
                                 </div>
-                                <div style={s.kpiLbl}>{t('commissions.kpiTargetBonus')}</div>
+                                <div style={s.kpiLbl}>{t('commissions.kpiNetRev')}</div>
                             </div>
-                        ) : (
                             <div style={s.kpi}>
                                 <div style={{ ...s.kpiVal, color: 'var(--color-primary-600)' }}>
-                                    {(activeTab === 0 ? totalComm0 : totalComm1).toLocaleString()}
+                                    {totalExtCommission3.toLocaleString()}
                                     {t('payroll.egp')}
                                 </div>
-                                <div style={s.kpiLbl}>{t('commissions.kpiCommPayout')}</div>
+                                <div style={s.kpiLbl}>{t('commissions.kpiExtComm')}</div>
                             </div>
-                        )}
-                        <div style={s.kpi}>
-                            <div style={s.kpiVal}>
-                                {activeTab === 0 ? avgRate0 : activeTab === 1 ? avgRate1 : '0.0'}%
+                            <div style={s.kpi}>
+                                <div style={{ ...s.kpiVal, color: '#ef4444' }}>
+                                    {totalExtCost3.toLocaleString()}
+                                    {t('payroll.egp')}
+                                </div>
+                                <div style={s.kpiLbl}>{t('commissions.kpiMatCost')}</div>
                             </div>
-                            <div style={s.kpiLbl}>{t('commissions.kpiAvgRate')}</div>
+                        </>
+                    ) : (
+                        <>
+                            <div style={s.kpi}>
+                                <div style={s.kpiVal}>
+                                    {(activeTab === 0
+                                        ? totalRev0
+                                        : activeTab === 1
+                                          ? totalRev1
+                                          : totalRev2
+                                    ).toLocaleString()}
+                                    {t('payroll.egp')}
+                                </div>
+                                <div style={s.kpiLbl}>{t('commissions.kpiRevGen')}</div>
+                            </div>
+                            {activeTab === 2 ? (
+                                <div style={s.kpi}>
+                                    <div style={{ ...s.kpiVal, color: 'var(--color-primary-600)' }}>
+                                        {totalTargetBonus2.toLocaleString()}
+                                        {t('payroll.egp')}
+                                    </div>
+                                    <div style={s.kpiLbl}>{t('commissions.kpiTargetBonus')}</div>
+                                </div>
+                            ) : (
+                                <div style={s.kpi}>
+                                    <div style={{ ...s.kpiVal, color: 'var(--color-primary-600)' }}>
+                                        {(activeTab === 0 ? totalComm0 : totalComm1).toLocaleString()}
+                                        {t('payroll.egp')}
+                                    </div>
+                                    <div style={s.kpiLbl}>{t('commissions.kpiCommPayout')}</div>
+                                </div>
+                            )}
+                            <div style={s.kpi}>
+                                <div style={s.kpiVal}>
+                                    {activeTab === 0 ? avgRate0 : activeTab === 1 ? avgRate1 : '0.0'}%
+                                </div>
+                                <div style={s.kpiLbl}>{t('commissions.kpiAvgRate')}</div>
+                            </div>
+                        </>
+                    )}
+                </div>
+
+                <div style={s.toolbar}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', minWidth: 180 }}>
+                        <span
+                            style={{
+                                fontSize: 'var(--text-xs)',
+                                fontWeight: 'var(--font-medium)',
+                                color: 'var(--text-secondary)',
+                            }}
+                        >
+                            {t('commissions.filterEmp')}
+                        </span>
+                        <Select
+                            value={employeeFilter}
+                            onChange={e => setEmployeeFilter(e.target.value)}
+                            options={employees.map(e => ({
+                                label: e === 'All' ? t('commissions.allEmp') : e,
+                                value: e,
+                            }))}
+                            style={{ margin: 0, height: 40 }}
+                        />
+                    </div>
+
+                    {(activeTab === 0 || activeTab === 3) && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', minWidth: 180 }}>
+                            <span
+                                style={{
+                                    fontSize: 'var(--text-xs)',
+                                    fontWeight: 'var(--font-medium)',
+                                    color: 'var(--text-secondary)',
+                                }}
+                            >
+                                {t('commissions.filterService')}
+                            </span>
+                            <Select
+                                value={serviceFilter}
+                                onChange={e => setServiceFilter(e.target.value)}
+                                options={services.map(s => ({
+                                    label: s === 'All' ? t('commissions.allServices') : s,
+                                    value: s,
+                                }))}
+                                style={{ margin: 0, height: 40 }}
+                            />
                         </div>
-                    </>
-                )}
-            </div>
+                    )}
+                    {activeTab === 1 && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', minWidth: 180 }}>
+                            <span
+                                style={{
+                                    fontSize: 'var(--text-xs)',
+                                    fontWeight: 'var(--font-medium)',
+                                    color: 'var(--text-secondary)',
+                                }}
+                            >
+                                {t('commissions.filterSegment')}
+                            </span>
+                            <Select
+                                value={segmentFilter}
+                                onChange={e => setSegmentFilter(e.target.value)}
+                                options={segments.map(s => ({
+                                    label: s === 'All' ? t('commissions.allSegments') : s,
+                                    value: s,
+                                }))}
+                                style={{ margin: 0, height: 40 }}
+                            />
+                        </div>
+                    )}
+                    {activeTab === 2 && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', minWidth: 180 }}>
+                            <span
+                                style={{
+                                    fontSize: 'var(--text-xs)',
+                                    fontWeight: 'var(--font-medium)',
+                                    color: 'var(--text-secondary)',
+                                }}
+                            >
+                                {t('commissions.filterStatus')}
+                            </span>
+                            <Select
+                                value={statusFilter}
+                                onChange={e => setStatusFilter(e.target.value)}
+                                options={statuses.map(s => ({
+                                    label: s === 'All' ? t('commissions.allStatuses') : translateStatus(s),
+                                    value: s,
+                                }))}
+                                style={{ margin: 0, height: 40 }}
+                            />
+                        </div>
+                    )}
 
-            <div style={s.toolbar}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', minWidth: 180 }}>
-                    <span
-                        style={{
-                            fontSize: 'var(--text-xs)',
-                            fontWeight: 'var(--font-medium)',
-                            color: 'var(--text-secondary)',
-                        }}
-                    >
-                        {t('commissions.filterEmp')}
-                    </span>
-                    <Select
-                        value={employeeFilter}
-                        onChange={e => setEmployeeFilter(e.target.value)}
-                        options={employees.map(e => ({ label: e === 'All' ? t('commissions.allEmp') : e, value: e }))}
-                        style={{ margin: 0, height: 40 }}
-                    />
-                </div>
-
-                {(activeTab === 0 || activeTab === 3) && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', minWidth: 180 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
                         <span
                             style={{
                                 fontSize: 'var(--text-xs)',
@@ -552,21 +670,16 @@ export default function CommissionsPage() {
                                 color: 'var(--text-secondary)',
                             }}
                         >
-                            {t('commissions.filterService')}
+                            {t('commissions.startDate')}
                         </span>
-                        <Select
-                            value={serviceFilter}
-                            onChange={e => setServiceFilter(e.target.value)}
-                            options={services.map(s => ({
-                                label: s === 'All' ? t('commissions.allServices') : s,
-                                value: s,
-                            }))}
-                            style={{ margin: 0, height: 40 }}
+                        <Input
+                            type="date"
+                            value={startDate}
+                            onChange={e => setStartDate(e.target.value)}
+                            style={{ margin: 0, height: 40, paddingRight: isRtl ? 'var(--space-3)' : undefined }}
                         />
                     </div>
-                )}
-                {activeTab === 1 && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', minWidth: 180 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
                         <span
                             style={{
                                 fontSize: 'var(--text-xs)',
@@ -574,148 +687,145 @@ export default function CommissionsPage() {
                                 color: 'var(--text-secondary)',
                             }}
                         >
-                            {t('commissions.filterSegment')}
+                            {t('commissions.endDate')}
                         </span>
-                        <Select
-                            value={segmentFilter}
-                            onChange={e => setSegmentFilter(e.target.value)}
-                            options={segments.map(s => ({
-                                label: s === 'All' ? t('commissions.allSegments') : s,
-                                value: s,
-                            }))}
-                            style={{ margin: 0, height: 40 }}
+                        <Input
+                            type="date"
+                            value={endDate}
+                            onChange={e => setEndDate(e.target.value)}
+                            style={{ margin: 0, height: 40, paddingRight: isRtl ? 'var(--space-3)' : undefined }}
                         />
                     </div>
-                )}
-                {activeTab === 2 && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', minWidth: 180 }}>
-                        <span
-                            style={{
-                                fontSize: 'var(--text-xs)',
-                                fontWeight: 'var(--font-medium)',
-                                color: 'var(--text-secondary)',
-                            }}
-                        >
-                            {t('commissions.filterStatus')}
-                        </span>
-                        <Select
-                            value={statusFilter}
-                            onChange={e => setStatusFilter(e.target.value)}
-                            options={statuses.map(s => ({
-                                label: s === 'All' ? t('commissions.allStatuses') : translateStatus(s),
-                                value: s,
-                            }))}
-                            style={{ margin: 0, height: 40 }}
-                        />
-                    </div>
-                )}
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-                    <span
-                        style={{
-                            fontSize: 'var(--text-xs)',
-                            fontWeight: 'var(--font-medium)',
-                            color: 'var(--text-secondary)',
-                        }}
-                    >
-                        {t('commissions.startDate')}
-                    </span>
-                    <Input
-                        type="date"
-                        value={startDate}
-                        onChange={e => setStartDate(e.target.value)}
-                        style={{ margin: 0, height: 40, paddingRight: isRtl ? 'var(--space-3)' : undefined }}
-                    />
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-                    <span
-                        style={{
-                            fontSize: 'var(--text-xs)',
-                            fontWeight: 'var(--font-medium)',
-                            color: 'var(--text-secondary)',
-                        }}
-                    >
-                        {t('commissions.endDate')}
-                    </span>
-                    <Input
-                        type="date"
-                        value={endDate}
-                        onChange={e => setEndDate(e.target.value)}
-                        style={{ margin: 0, height: 40, paddingRight: isRtl ? 'var(--space-3)' : undefined }}
-                    />
+                    <Button onClick={handleCalculate} disabled={isCalculating} style={{ height: 40 }}>
+                        <Calculator size={16} className={isRtl ? 'ml-2' : 'mr-2'} />
+                        {isCalculating ? t('commissions.calculating') : t('commissions.calculate')}
+                    </Button>
+
+                    <div style={{ flex: 1 }} />
+
+                    <Button variant="outline" onClick={handleExport} style={{ height: 40 }}>
+                        <Download size={16} className={isRtl ? 'ml-2' : 'mr-2'} /> {t('commissions.exportReport')}
+                    </Button>
                 </div>
 
-                <Button onClick={handleCalculate} disabled={isCalculating} style={{ height: 40 }}>
-                    <Calculator size={16} className={isRtl ? 'ml-2' : 'mr-2'} />
-                    {isCalculating ? t('commissions.calculating') : t('commissions.calculate')}
-                </Button>
-
-                <div style={{ flex: 1 }} />
-
-                <Button variant="outline" onClick={handleExport} style={{ height: 40 }}>
-                    <Download size={16} className={isRtl ? 'ml-2' : 'mr-2'} /> {t('commissions.exportReport')}
-                </Button>
-            </div>
-
-            <div style={s.tableWrapper}>
-                {activeTab === 0 ? (
-                    tab0Data.length > 0 ? (
-                        <table style={s.table as React.CSSProperties}>
-                            <thead>
-                                <tr>
-                                    {[
-                                        t('commissions.colDate'),
-                                        t('commissions.colEmp'),
-                                        t('commissions.colService'),
-                                        t('commissions.colCount'),
-                                        t('commissions.colRev'),
-                                        t('commissions.colRate'),
-                                        t('commissions.colComm'),
-                                        t('servicePricing.source') || 'Price Source',
-                                    ].map(h => (
-                                        <th
-                                            key={h}
-                                            style={
-                                                { ...s.th, textAlign: isRtl ? 'right' : 'left' } as React.CSSProperties
-                                            }
-                                        >
-                                            {h}
-                                        </th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {tab0Data.map(row => (
-                                    <tr key={row.id} className="hoverRow">
-                                        <td style={s.td}>{row.date}</td>
-                                        <td
-                                            style={{ ...s.td, fontWeight: 'var(--font-medium)' } as React.CSSProperties}
-                                        >
-                                            {row.employee}
-                                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
-                                                {row.employeeLevel}
-                                            </div>
-                                        </td>
-                                        <td style={s.td}>
-                                            {row.service}
-                                            {row.priceSource !== 'base' && (
+                <div style={s.tableWrapper}>
+                    {activeTab === 0 ? (
+                        tab0Data.length > 0 ? (
+                            <table style={s.table as React.CSSProperties}>
+                                <thead>
+                                    <tr>
+                                        {[
+                                            t('commissions.colDate'),
+                                            t('commissions.colEmp'),
+                                            t('commissions.colService'),
+                                            t('commissions.colCount'),
+                                            t('commissions.colRev'),
+                                            t('commissions.colRate'),
+                                            t('commissions.colComm'),
+                                            t('servicePricing.source') || 'Price Source',
+                                        ].map(h => (
+                                            <th
+                                                key={h}
+                                                style={
+                                                    {
+                                                        ...s.th,
+                                                        textAlign: isRtl ? 'right' : 'left',
+                                                    } as React.CSSProperties
+                                                }
+                                            >
+                                                {h}
+                                            </th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {tab0Data.map(row => (
+                                        <tr key={row.id} className="hoverRow">
+                                            <td style={s.td}>{row.date}</td>
+                                            <td
+                                                style={
+                                                    { ...s.td, fontWeight: 'var(--font-medium)' } as React.CSSProperties
+                                                }
+                                            >
+                                                {row.employee}
                                                 <div
                                                     style={{
                                                         fontSize: 'var(--text-xs)',
                                                         color: 'var(--text-tertiary)',
                                                     }}
                                                 >
-                                                    <s>{row.basePrice}</s> → {row.resolvedPrice}
-                                                    {t('payroll.egp')}
+                                                    {row.employeeLevel}
                                                 </div>
-                                            )}
+                                            </td>
+                                            <td style={s.td}>
+                                                {row.service}
+                                                {row.priceSource !== 'base' && (
+                                                    <div
+                                                        style={{
+                                                            fontSize: 'var(--text-xs)',
+                                                            color: 'var(--text-tertiary)',
+                                                        }}
+                                                    >
+                                                        <s>{row.basePrice}</s> → {row.resolvedPrice}
+                                                        {t('payroll.egp')}
+                                                    </div>
+                                                )}
+                                            </td>
+                                            <td style={s.td}>{row.count}</td>
+                                            <td style={s.td}>
+                                                {row.revenue.toLocaleString()}
+                                                {t('payroll.egp')}
+                                            </td>
+                                            <td style={s.td}>{row.rate}%</td>
+                                            <td
+                                                style={
+                                                    {
+                                                        ...s.td,
+                                                        fontWeight: 'var(--font-bold)',
+                                                        color: 'var(--color-primary-600)',
+                                                    } as React.CSSProperties
+                                                }
+                                            >
+                                                {row.commission.toLocaleString()}
+                                                {t('payroll.egp')}
+                                            </td>
+                                            <td style={s.td}>
+                                                <span
+                                                    style={{
+                                                        padding: '2px 8px',
+                                                        borderRadius: 'var(--radius-full)',
+                                                        fontSize: 'var(--text-xs)',
+                                                        fontWeight: 'var(--font-medium)',
+                                                        background:
+                                                            row.priceSource !== 'base'
+                                                                ? 'var(--color-primary-50, #eff6ff)'
+                                                                : 'var(--bg-secondary)',
+                                                        color:
+                                                            row.priceSource !== 'base'
+                                                                ? 'var(--color-primary-600)'
+                                                                : 'var(--text-tertiary)',
+                                                    }}
+                                                >
+                                                    {row.priceSource}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                                <tfoot>
+                                    <tr style={{ background: 'var(--bg-secondary)' }}>
+                                        <td
+                                            style={{ ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties}
+                                            colSpan={4}
+                                        >
+                                            {t('commissions.aggFiltered')}
                                         </td>
-                                        <td style={s.td}>{row.count}</td>
-                                        <td style={s.td}>
-                                            {row.revenue.toLocaleString()}
+                                        <td style={{ ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties}>
+                                            {totalRev0.toLocaleString()}
                                             {t('payroll.egp')}
                                         </td>
-                                        <td style={s.td}>{row.rate}%</td>
+                                        <td style={s.td}></td>
                                         <td
                                             style={
                                                 {
@@ -725,117 +835,211 @@ export default function CommissionsPage() {
                                                 } as React.CSSProperties
                                             }
                                         >
-                                            {row.commission.toLocaleString()}
+                                            {totalComm0.toLocaleString()}
                                             {t('payroll.egp')}
                                         </td>
-                                        <td style={s.td}>
-                                            <span
-                                                style={{
-                                                    padding: '2px 8px',
-                                                    borderRadius: 'var(--radius-full)',
-                                                    fontSize: 'var(--text-xs)',
-                                                    fontWeight: 'var(--font-medium)',
-                                                    background:
-                                                        row.priceSource !== 'base'
-                                                            ? 'var(--color-primary-50, #eff6ff)'
-                                                            : 'var(--bg-secondary)',
-                                                    color:
-                                                        row.priceSource !== 'base'
+                                        <td style={s.td}></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        ) : (
+                            <EmptyState
+                                icon={<Clock size={32} color="var(--text-tertiary)" />}
+                                title={t('commissions.emptyCommTitle')}
+                                description={t('commissions.emptyCommDesc')}
+                            />
+                        )
+                    ) : activeTab === 1 ? (
+                        tab1Data.length > 0 ? (
+                            <table style={s.table as React.CSSProperties}>
+                                <thead>
+                                    <tr>
+                                        {[
+                                            t('commissions.colEmp'),
+                                            t('commissions.colBizSeg'),
+                                            t('commissions.colTotalServ'),
+                                            t('commissions.colSegRev'),
+                                            t('commissions.colAvgRate'),
+                                            t('commissions.colSegComm'),
+                                        ].map(h => (
+                                            <th
+                                                key={h}
+                                                style={
+                                                    {
+                                                        ...s.th,
+                                                        textAlign: isRtl ? 'right' : 'left',
+                                                    } as React.CSSProperties
+                                                }
+                                            >
+                                                {h}
+                                            </th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {tab1Data.map((row: AggregatedSegment) => (
+                                        <tr key={row.id} className="hoverRow">
+                                            <td
+                                                style={
+                                                    { ...s.td, fontWeight: 'var(--font-medium)' } as React.CSSProperties
+                                                }
+                                            >
+                                                {row.employee}
+                                            </td>
+                                            <td
+                                                style={
+                                                    {
+                                                        ...s.td,
+                                                        color: 'var(--color-primary-600)',
+                                                        fontWeight: 'var(--font-medium)',
+                                                    } as React.CSSProperties
+                                                }
+                                            >
+                                                {row.segment}
+                                            </td>
+                                            <td style={s.td}>{row.count}</td>
+                                            <td style={s.td}>
+                                                {row.revenue.toLocaleString()}
+                                                {t('payroll.egp')}
+                                            </td>
+                                            <td style={s.td}>{row.rate}%</td>
+                                            <td
+                                                style={
+                                                    {
+                                                        ...s.td,
+                                                        fontWeight: 'var(--font-bold)',
+                                                        color: 'var(--color-primary-600)',
+                                                    } as React.CSSProperties
+                                                }
+                                            >
+                                                {row.commission.toLocaleString()}
+                                                {t('payroll.egp')}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                                <tfoot>
+                                    <tr style={{ background: 'var(--bg-secondary)' }}>
+                                        <td
+                                            style={{ ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties}
+                                            colSpan={3}
+                                        >
+                                            {t('commissions.aggSubSeg')}
+                                        </td>
+                                        <td style={{ ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties}>
+                                            {totalRev1.toLocaleString()}
+                                            {t('payroll.egp')}
+                                        </td>
+                                        <td style={s.td}></td>
+                                        <td
+                                            style={
+                                                {
+                                                    ...s.td,
+                                                    fontWeight: 'var(--font-bold)',
+                                                    color: 'var(--color-primary-600)',
+                                                } as React.CSSProperties
+                                            }
+                                        >
+                                            {totalComm1.toLocaleString()}
+                                            {t('payroll.egp')}
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        ) : (
+                            <EmptyState
+                                icon={<PieChart size={32} color="var(--text-tertiary)" />}
+                                title={t('commissions.emptySegTitle')}
+                                description={t('commissions.emptySegDesc')}
+                            />
+                        )
+                    ) : activeTab === 2 ? (
+                        tab2Data.length > 0 ? (
+                            <table style={s.table as React.CSSProperties}>
+                                <thead>
+                                    <tr>
+                                        {[
+                                            t('commissions.colEmp'),
+                                            t('commissions.colTargetRev'),
+                                            t('commissions.colActualRev'),
+                                            t('commissions.colAchieved'),
+                                            t('commissions.colStatus'),
+                                            t('commissions.colTargetBonus'),
+                                        ].map(h => (
+                                            <th
+                                                key={h}
+                                                style={
+                                                    {
+                                                        ...s.th,
+                                                        textAlign: isRtl ? 'right' : 'left',
+                                                    } as React.CSSProperties
+                                                }
+                                            >
+                                                {h}
+                                            </th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {tab2Data.map((row: AggregatedTarget) => (
+                                        <tr key={row.id} className="hoverRow">
+                                            <td
+                                                style={
+                                                    { ...s.td, fontWeight: 'var(--font-medium)' } as React.CSSProperties
+                                                }
+                                            >
+                                                {row.employee}
+                                            </td>
+                                            <td style={s.td}>
+                                                {row.targetRev.toLocaleString()}
+                                                {t('payroll.egp')}
+                                            </td>
+                                            <td style={s.td}>
+                                                {row.actualRevenue.toLocaleString()}
+                                                {t('payroll.egp')}
+                                            </td>
+                                            <td
+                                                style={
+                                                    { ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties
+                                                }
+                                            >
+                                                {row.achievedPct}%
+                                            </td>
+                                            <td style={s.td}>
+                                                <Badge color={row.isEligible ? 'success' : 'neutral'}>
+                                                    {translateStatus(row.status)}
+                                                </Badge>
+                                            </td>
+                                            <td
+                                                style={
+                                                    {
+                                                        ...s.td,
+                                                        fontWeight: 'var(--font-bold)',
+                                                        color: row.isEligible
                                                             ? 'var(--color-primary-600)'
                                                             : 'var(--text-tertiary)',
-                                                }}
+                                                    } as React.CSSProperties
+                                                }
                                             >
-                                                {row.priceSource}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                            <tfoot>
-                                <tr style={{ background: 'var(--bg-secondary)' }}>
-                                    <td
-                                        style={{ ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties}
-                                        colSpan={4}
-                                    >
-                                        {t('commissions.aggFiltered')}
-                                    </td>
-                                    <td style={{ ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties}>
-                                        {totalRev0.toLocaleString()}
-                                        {t('payroll.egp')}
-                                    </td>
-                                    <td style={s.td}></td>
-                                    <td
-                                        style={
-                                            {
-                                                ...s.td,
-                                                fontWeight: 'var(--font-bold)',
-                                                color: 'var(--color-primary-600)',
-                                            } as React.CSSProperties
-                                        }
-                                    >
-                                        {totalComm0.toLocaleString()}
-                                        {t('payroll.egp')}
-                                    </td>
-                                    <td style={s.td}></td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    ) : (
-                        <EmptyState
-                            icon={<Clock size={32} color="var(--text-tertiary)" />}
-                            title={t('commissions.emptyCommTitle')}
-                            description={t('commissions.emptyCommDesc')}
-                        />
-                    )
-                ) : activeTab === 1 ? (
-                    tab1Data.length > 0 ? (
-                        <table style={s.table as React.CSSProperties}>
-                            <thead>
-                                <tr>
-                                    {[
-                                        t('commissions.colEmp'),
-                                        t('commissions.colBizSeg'),
-                                        t('commissions.colTotalServ'),
-                                        t('commissions.colSegRev'),
-                                        t('commissions.colAvgRate'),
-                                        t('commissions.colSegComm'),
-                                    ].map(h => (
-                                        <th
-                                            key={h}
-                                            style={
-                                                { ...s.th, textAlign: isRtl ? 'right' : 'left' } as React.CSSProperties
-                                            }
-                                        >
-                                            {h}
-                                        </th>
+                                                {row.bonusAmount.toLocaleString()}
+                                                {t('payroll.egp')}
+                                            </td>
+                                        </tr>
                                     ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {tab1Data.map((row: AggregatedSegment) => (
-                                    <tr key={row.id} className="hoverRow">
+                                </tbody>
+                                <tfoot>
+                                    <tr style={{ background: 'var(--bg-secondary)' }}>
                                         <td
-                                            style={{ ...s.td, fontWeight: 'var(--font-medium)' } as React.CSSProperties}
+                                            style={{ ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties}
+                                            colSpan={2}
                                         >
-                                            {row.employee}
+                                            {t('commissions.aggPortfolio')}
                                         </td>
-                                        <td
-                                            style={
-                                                {
-                                                    ...s.td,
-                                                    color: 'var(--color-primary-600)',
-                                                    fontWeight: 'var(--font-medium)',
-                                                } as React.CSSProperties
-                                            }
-                                        >
-                                            {row.segment}
-                                        </td>
-                                        <td style={s.td}>{row.count}</td>
-                                        <td style={s.td}>
-                                            {row.revenue.toLocaleString()}
+                                        <td style={{ ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties}>
+                                            {totalRev2.toLocaleString()}
                                             {t('payroll.egp')}
                                         </td>
-                                        <td style={s.td}>{row.rate}%</td>
+                                        <td style={s.td} colSpan={2}></td>
                                         <td
                                             style={
                                                 {
@@ -845,198 +1049,121 @@ export default function CommissionsPage() {
                                                 } as React.CSSProperties
                                             }
                                         >
-                                            {row.commission.toLocaleString()}
+                                            {totalTargetBonus2.toLocaleString()}
                                             {t('payroll.egp')}
                                         </td>
                                     </tr>
-                                ))}
-                            </tbody>
-                            <tfoot>
-                                <tr style={{ background: 'var(--bg-secondary)' }}>
-                                    <td
-                                        style={{ ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties}
-                                        colSpan={3}
-                                    >
-                                        {t('commissions.aggSubSeg')}
-                                    </td>
-                                    <td style={{ ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties}>
-                                        {totalRev1.toLocaleString()}
-                                        {t('payroll.egp')}
-                                    </td>
-                                    <td style={s.td}></td>
-                                    <td
-                                        style={
-                                            {
-                                                ...s.td,
-                                                fontWeight: 'var(--font-bold)',
-                                                color: 'var(--color-primary-600)',
-                                            } as React.CSSProperties
-                                        }
-                                    >
-                                        {totalComm1.toLocaleString()}
-                                        {t('payroll.egp')}
-                                    </td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    ) : (
-                        <EmptyState
-                            icon={<PieChart size={32} color="var(--text-tertiary)" />}
-                            title={t('commissions.emptySegTitle')}
-                            description={t('commissions.emptySegDesc')}
-                        />
-                    )
-                ) : activeTab === 2 ? (
-                    tab2Data.length > 0 ? (
-                        <table style={s.table as React.CSSProperties}>
-                            <thead>
-                                <tr>
-                                    {[
-                                        t('commissions.colEmp'),
-                                        t('commissions.colTargetRev'),
-                                        t('commissions.colActualRev'),
-                                        t('commissions.colAchieved'),
-                                        t('commissions.colStatus'),
-                                        t('commissions.colTargetBonus'),
-                                    ].map(h => (
-                                        <th
-                                            key={h}
-                                            style={
-                                                { ...s.th, textAlign: isRtl ? 'right' : 'left' } as React.CSSProperties
-                                            }
-                                        >
-                                            {h}
-                                        </th>
+                                </tfoot>
+                            </table>
+                        ) : (
+                            <EmptyState
+                                icon={<Target size={32} color="var(--text-tertiary)" />}
+                                title={t('commissions.emptyTargetTitle')}
+                                description={t('commissions.emptyTargetDesc')}
+                            />
+                        )
+                    ) : activeTab === 3 ? (
+                        tab3Data.length > 0 ? (
+                            <table style={s.table as React.CSSProperties}>
+                                <thead>
+                                    <tr>
+                                        {[
+                                            t('commissions.colDate'),
+                                            t('commissions.colEmp'),
+                                            t('commissions.colService'),
+                                            t('commissions.colGrossRev'),
+                                            t('commissions.colMatExt'),
+                                            t('commissions.colNetRev'),
+                                            t('commissions.colRate'),
+                                            t('commissions.colComm'),
+                                        ].map(h => (
+                                            <th
+                                                key={h}
+                                                style={
+                                                    {
+                                                        ...s.th,
+                                                        textAlign: isRtl ? 'right' : 'left',
+                                                    } as React.CSSProperties
+                                                }
+                                            >
+                                                {h}
+                                            </th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {tab3Data.map((row: AggregatedExtraction) => (
+                                        <tr key={row.id} className="hoverRow">
+                                            <td style={s.td}>{row.date}</td>
+                                            <td
+                                                style={
+                                                    { ...s.td, fontWeight: 'var(--font-medium)' } as React.CSSProperties
+                                                }
+                                            >
+                                                {row.employee}
+                                            </td>
+                                            <td style={s.td}>{row.service}</td>
+                                            <td style={s.td}>
+                                                {row.revenue.toLocaleString()}
+                                                {t('payroll.egp')}
+                                            </td>
+                                            <td style={{ ...s.td, color: '#ef4444' }}>
+                                                - {row.extractionCost.toLocaleString()}
+                                                {t('payroll.egp')}
+                                            </td>
+                                            <td
+                                                style={
+                                                    { ...s.td, fontWeight: 'var(--font-medium)' } as React.CSSProperties
+                                                }
+                                            >
+                                                {row.netRevenue.toLocaleString()}
+                                                {t('payroll.egp')}
+                                            </td>
+                                            <td style={s.td}>{row.rate}%</td>
+                                            <td
+                                                style={
+                                                    {
+                                                        ...s.td,
+                                                        fontWeight: 'var(--font-bold)',
+                                                        color: 'var(--color-primary-600)',
+                                                    } as React.CSSProperties
+                                                }
+                                            >
+                                                {row.newCommission.toLocaleString()}
+                                                {t('payroll.egp')}
+                                            </td>
+                                        </tr>
                                     ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {tab2Data.map((row: AggregatedTarget) => (
-                                    <tr key={row.id} className="hoverRow">
+                                </tbody>
+                                <tfoot>
+                                    <tr style={{ background: 'var(--bg-secondary)' }}>
                                         <td
-                                            style={{ ...s.td, fontWeight: 'var(--font-medium)' } as React.CSSProperties}
+                                            style={{ ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties}
+                                            colSpan={3}
                                         >
-                                            {row.employee}
+                                            {t('commissions.aggNetPortfolio')}
                                         </td>
-                                        <td style={s.td}>
-                                            {row.targetRev.toLocaleString()}
+                                        <td style={{ ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties}>
+                                            {totalExtGross3.toLocaleString()}
                                             {t('payroll.egp')}
                                         </td>
-                                        <td style={s.td}>
-                                            {row.actualRevenue.toLocaleString()}
+                                        <td
+                                            style={
+                                                {
+                                                    ...s.td,
+                                                    fontWeight: 'var(--font-bold)',
+                                                    color: '#ef4444',
+                                                } as React.CSSProperties
+                                            }
+                                        >
+                                            - {totalExtCost3.toLocaleString()}
                                             {t('payroll.egp')}
                                         </td>
                                         <td style={{ ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties}>
-                                            {row.achievedPct}%
-                                        </td>
-                                        <td style={s.td}>
-                                            <Badge color={row.isEligible ? 'success' : 'neutral'}>
-                                                {translateStatus(row.status)}
-                                            </Badge>
-                                        </td>
-                                        <td
-                                            style={
-                                                {
-                                                    ...s.td,
-                                                    fontWeight: 'var(--font-bold)',
-                                                    color: row.isEligible
-                                                        ? 'var(--color-primary-600)'
-                                                        : 'var(--text-tertiary)',
-                                                } as React.CSSProperties
-                                            }
-                                        >
-                                            {row.bonusAmount.toLocaleString()}
+                                            {totalExtNet3.toLocaleString()}
                                             {t('payroll.egp')}
                                         </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                            <tfoot>
-                                <tr style={{ background: 'var(--bg-secondary)' }}>
-                                    <td
-                                        style={{ ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties}
-                                        colSpan={2}
-                                    >
-                                        {t('commissions.aggPortfolio')}
-                                    </td>
-                                    <td style={{ ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties}>
-                                        {totalRev2.toLocaleString()}
-                                        {t('payroll.egp')}
-                                    </td>
-                                    <td style={s.td} colSpan={2}></td>
-                                    <td
-                                        style={
-                                            {
-                                                ...s.td,
-                                                fontWeight: 'var(--font-bold)',
-                                                color: 'var(--color-primary-600)',
-                                            } as React.CSSProperties
-                                        }
-                                    >
-                                        {totalTargetBonus2.toLocaleString()}
-                                        {t('payroll.egp')}
-                                    </td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    ) : (
-                        <EmptyState
-                            icon={<Target size={32} color="var(--text-tertiary)" />}
-                            title={t('commissions.emptyTargetTitle')}
-                            description={t('commissions.emptyTargetDesc')}
-                        />
-                    )
-                ) : activeTab === 3 ? (
-                    tab3Data.length > 0 ? (
-                        <table style={s.table as React.CSSProperties}>
-                            <thead>
-                                <tr>
-                                    {[
-                                        t('commissions.colDate'),
-                                        t('commissions.colEmp'),
-                                        t('commissions.colService'),
-                                        t('commissions.colGrossRev'),
-                                        t('commissions.colMatExt'),
-                                        t('commissions.colNetRev'),
-                                        t('commissions.colRate'),
-                                        t('commissions.colComm'),
-                                    ].map(h => (
-                                        <th
-                                            key={h}
-                                            style={
-                                                { ...s.th, textAlign: isRtl ? 'right' : 'left' } as React.CSSProperties
-                                            }
-                                        >
-                                            {h}
-                                        </th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {tab3Data.map((row: AggregatedExtraction) => (
-                                    <tr key={row.id} className="hoverRow">
-                                        <td style={s.td}>{row.date}</td>
-                                        <td
-                                            style={{ ...s.td, fontWeight: 'var(--font-medium)' } as React.CSSProperties}
-                                        >
-                                            {row.employee}
-                                        </td>
-                                        <td style={s.td}>{row.service}</td>
-                                        <td style={s.td}>
-                                            {row.revenue.toLocaleString()}
-                                            {t('payroll.egp')}
-                                        </td>
-                                        <td style={{ ...s.td, color: '#ef4444' }}>
-                                            - {row.extractionCost.toLocaleString()}
-                                            {t('payroll.egp')}
-                                        </td>
-                                        <td
-                                            style={{ ...s.td, fontWeight: 'var(--font-medium)' } as React.CSSProperties}
-                                        >
-                                            {row.netRevenue.toLocaleString()}
-                                            {t('payroll.egp')}
-                                        </td>
-                                        <td style={s.td}>{row.rate}%</td>
+                                        <td style={s.td}></td>
                                         <td
                                             style={
                                                 {
@@ -1046,70 +1173,27 @@ export default function CommissionsPage() {
                                                 } as React.CSSProperties
                                             }
                                         >
-                                            {row.newCommission.toLocaleString()}
+                                            {totalExtCommission3.toLocaleString()}
                                             {t('payroll.egp')}
                                         </td>
                                     </tr>
-                                ))}
-                            </tbody>
-                            <tfoot>
-                                <tr style={{ background: 'var(--bg-secondary)' }}>
-                                    <td
-                                        style={{ ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties}
-                                        colSpan={3}
-                                    >
-                                        {t('commissions.aggNetPortfolio')}
-                                    </td>
-                                    <td style={{ ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties}>
-                                        {totalExtGross3.toLocaleString()}
-                                        {t('payroll.egp')}
-                                    </td>
-                                    <td
-                                        style={
-                                            {
-                                                ...s.td,
-                                                fontWeight: 'var(--font-bold)',
-                                                color: '#ef4444',
-                                            } as React.CSSProperties
-                                        }
-                                    >
-                                        - {totalExtCost3.toLocaleString()}
-                                        {t('payroll.egp')}
-                                    </td>
-                                    <td style={{ ...s.td, fontWeight: 'var(--font-bold)' } as React.CSSProperties}>
-                                        {totalExtNet3.toLocaleString()}
-                                        {t('payroll.egp')}
-                                    </td>
-                                    <td style={s.td}></td>
-                                    <td
-                                        style={
-                                            {
-                                                ...s.td,
-                                                fontWeight: 'var(--font-bold)',
-                                                color: 'var(--color-primary-600)',
-                                            } as React.CSSProperties
-                                        }
-                                    >
-                                        {totalExtCommission3.toLocaleString()}
-                                        {t('payroll.egp')}
-                                    </td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    ) : (
-                        <EmptyState
-                            icon={<Calculator size={32} color="var(--text-tertiary)" />}
-                            title={t('commissions.emptyExtTitle')}
-                            description={t('commissions.emptyExtDesc')}
-                        />
-                    )
-                ) : null}
-            </div>
+                                </tfoot>
+                            </table>
+                        ) : (
+                            <EmptyState
+                                icon={<Calculator size={32} color="var(--text-tertiary)" />}
+                                title={t('commissions.emptyExtTitle')}
+                                description={t('commissions.emptyExtDesc')}
+                            />
+                        )
+                    ) : null}
+                </div>
 
-            <style>{`
+                <style>{`
                 .hoverRow:hover { background-color: var(--bg-secondary); }
                 .hoverRow:last-child td { border-bottom: none !important; }
             `}</style>
+            </DataGuard>
         </div>
     );
 }

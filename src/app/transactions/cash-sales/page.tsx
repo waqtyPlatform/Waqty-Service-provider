@@ -2,9 +2,12 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Search, Download } from 'lucide-react';
+import { Search, Download, Banknote } from 'lucide-react';
 
 import { useTranslation } from '@/hooks/useTranslation';
+import { useApiQuery } from '@/hooks/useApiQuery';
+import { transactionApi } from '@/lib/api';
+import { DataGuard } from '@/components/DataGuard';
 
 const tabs = [
     { labelKey: 'txn.tabLog', href: '/transactions' },
@@ -20,7 +23,7 @@ const tabs = [
     { labelKey: 'txn.tabPackageSales', href: '/transactions/package-sales' },
 ];
 
-const data = [
+const fallbackData = [
     {
         id: 'CS-001',
         date: '2026-03-14',
@@ -236,6 +239,17 @@ const s: Record<string, React.CSSProperties> = {
 export default function CashSalesPage() {
     const { t, lang } = useTranslation();
     const [search, setSearch] = useState('');
+
+    const {
+        data: cashSales,
+        loading,
+        error,
+        refetch,
+    } = useApiQuery<typeof fallbackData>(() => transactionApi.getCashSales() as never, [], {
+        fallbackData: fallbackData,
+    });
+
+    const data = cashSales ?? [];
     const filtered = data.filter(
         d =>
             d.client.toLowerCase().includes(search.toLowerCase()) ||
@@ -302,67 +316,77 @@ export default function CashSalesPage() {
                 </button>
             </div>
 
-            <table style={s.table}>
-                <thead>
-                    <tr>
-                        {[
-                            'txn.thTxnNum',
-                            'txn.thDateTime',
-                            'txn.cash.thTime',
-                            'txn.thClient',
-                            'txn.cash.thServices',
-                            'txn.thAmount',
-                            'txn.cash.thReceipt',
-                            'txn.cash.thCashier',
-                        ].map(h => (
-                            <th
-                                key={h}
-                                style={{
-                                    ...(s.th as React.CSSProperties),
-                                    textAlign: lang === 'ar' ? 'right' : 'left',
-                                }}
-                            >
-                                {t(h)}
-                            </th>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody>
-                    {filtered.map(row => (
-                        <tr key={row.id}>
-                            <td style={s.td}>{row.id}</td>
-                            <td style={s.td} dir="ltr">
-                                {row.date}
-                            </td>
-                            <td style={s.td} dir="ltr">
-                                {row.time}
-                            </td>
-                            <td style={s.td}>{row.client}</td>
-                            <td style={s.td}>{row.services}</td>
-                            <td style={{ ...s.td, ...s.amount }} dir="ltr">
-                                {row.amount} EGP
-                                {row.priceSource !== 'base' && (
-                                    <span
-                                        style={{
-                                            marginLeft: 4,
-                                            padding: '1px 5px',
-                                            borderRadius: 'var(--radius-full)',
-                                            fontSize: 10,
-                                            fontWeight: 600,
-                                            background: 'var(--color-primary-50, #eff6ff)',
-                                            color: 'var(--color-primary-600)',
-                                        }}
-                                    >
-                                        {row.priceSource}
-                                    </span>
-                                )}
-                            </td>
-                            <td style={s.td}>{row.receipt}</td>
-                            <td style={s.td}>{row.cashier}</td>
+            <DataGuard
+                loading={loading}
+                error={error}
+                data={filtered}
+                onRetry={refetch}
+                emptyIcon={<Banknote size={48} />}
+                emptyTitle={t('txn.cash.emptyTitle') || 'No cash sales'}
+                emptyDescription={t('txn.cash.emptyDesc') || 'Cash sales will appear here.'}
+            >
+                <table style={s.table}>
+                    <thead>
+                        <tr>
+                            {[
+                                'txn.thTxnNum',
+                                'txn.thDateTime',
+                                'txn.cash.thTime',
+                                'txn.thClient',
+                                'txn.cash.thServices',
+                                'txn.thAmount',
+                                'txn.cash.thReceipt',
+                                'txn.cash.thCashier',
+                            ].map(h => (
+                                <th
+                                    key={h}
+                                    style={{
+                                        ...(s.th as React.CSSProperties),
+                                        textAlign: lang === 'ar' ? 'right' : 'left',
+                                    }}
+                                >
+                                    {t(h)}
+                                </th>
+                            ))}
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {filtered.map(row => (
+                            <tr key={row.id}>
+                                <td style={s.td}>{row.id}</td>
+                                <td style={s.td} dir="ltr">
+                                    {row.date}
+                                </td>
+                                <td style={s.td} dir="ltr">
+                                    {row.time}
+                                </td>
+                                <td style={s.td}>{row.client}</td>
+                                <td style={s.td}>{row.services}</td>
+                                <td style={{ ...s.td, ...s.amount }} dir="ltr">
+                                    {row.amount} EGP
+                                    {row.priceSource !== 'base' && (
+                                        <span
+                                            style={{
+                                                marginLeft: 4,
+                                                padding: '1px 5px',
+                                                borderRadius: 'var(--radius-full)',
+                                                fontSize: 10,
+                                                fontWeight: 600,
+                                                background: 'var(--color-primary-50, #eff6ff)',
+                                                color: 'var(--color-primary-600)',
+                                            }}
+                                        >
+                                            {row.priceSource}
+                                        </span>
+                                    )}
+                                </td>
+                                <td style={s.td}>{row.receipt}</td>
+                                <td style={s.td}>{row.cashier}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </DataGuard>
         </div>
     );
 }

@@ -1,20 +1,94 @@
 ﻿'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Plus, Search, Edit, Trash2 } from 'lucide-react';
 import { SlideOver, Modal, Input, Select, Button, useToast, EmptyState } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useApiQuery } from '@/hooks/useApiQuery';
+import { employeeExtApi, type Position } from '@/lib/api';
 
-const initialPositions = [
-    { id: 1, title: 'Senior Stylist', level: 'Senior', department: 'Hair Styling', employees: 2, minSalary: 6000, maxSalary: 10000 },
-    { id: 2, title: 'Junior Stylist', level: 'Junior', department: 'Hair Styling', employees: 2, minSalary: 3000, maxSalary: 5000 },
-    { id: 3, title: 'Skin Specialist', level: 'Senior', department: 'Skin Care', employees: 2, minSalary: 5500, maxSalary: 9000 },
-    { id: 4, title: 'Esthetician', level: 'Mid', department: 'Skin Care', employees: 1, minSalary: 4000, maxSalary: 6500 },
-    { id: 5, title: 'Senior Therapist', level: 'Senior', department: 'Massage & Body', employees: 1, minSalary: 5000, maxSalary: 8000 },
-    { id: 6, title: 'Massage Therapist', level: 'Mid', department: 'Massage & Body', employees: 1, minSalary: 3500, maxSalary: 5500 },
-    { id: 7, title: 'Nail Technician', level: 'Mid', department: 'Nails', employees: 2, minSalary: 3000, maxSalary: 5000 },
-    { id: 8, title: 'Receptionist', level: 'Entry', department: 'Reception', employees: 2, minSalary: 2500, maxSalary: 4000 },
-    { id: 9, title: 'Branch Manager', level: 'Management', department: 'Administration', employees: 1, minSalary: 8000, maxSalary: 15000 },
+const fallbackPositions = [
+    {
+        id: 1,
+        title: 'Senior Stylist',
+        level: 'Senior',
+        department: 'Hair Styling',
+        employees: 2,
+        minSalary: 6000,
+        maxSalary: 10000,
+    },
+    {
+        id: 2,
+        title: 'Junior Stylist',
+        level: 'Junior',
+        department: 'Hair Styling',
+        employees: 2,
+        minSalary: 3000,
+        maxSalary: 5000,
+    },
+    {
+        id: 3,
+        title: 'Skin Specialist',
+        level: 'Senior',
+        department: 'Skin Care',
+        employees: 2,
+        minSalary: 5500,
+        maxSalary: 9000,
+    },
+    {
+        id: 4,
+        title: 'Esthetician',
+        level: 'Mid',
+        department: 'Skin Care',
+        employees: 1,
+        minSalary: 4000,
+        maxSalary: 6500,
+    },
+    {
+        id: 5,
+        title: 'Senior Therapist',
+        level: 'Senior',
+        department: 'Massage & Body',
+        employees: 1,
+        minSalary: 5000,
+        maxSalary: 8000,
+    },
+    {
+        id: 6,
+        title: 'Massage Therapist',
+        level: 'Mid',
+        department: 'Massage & Body',
+        employees: 1,
+        minSalary: 3500,
+        maxSalary: 5500,
+    },
+    {
+        id: 7,
+        title: 'Nail Technician',
+        level: 'Mid',
+        department: 'Nails',
+        employees: 2,
+        minSalary: 3000,
+        maxSalary: 5000,
+    },
+    {
+        id: 8,
+        title: 'Receptionist',
+        level: 'Entry',
+        department: 'Reception',
+        employees: 2,
+        minSalary: 2500,
+        maxSalary: 4000,
+    },
+    {
+        id: 9,
+        title: 'Branch Manager',
+        level: 'Management',
+        department: 'Administration',
+        employees: 1,
+        minSalary: 8000,
+        maxSalary: 15000,
+    },
 ];
 
 const levelColors: Record<string, { bg: string; color: string }> = {
@@ -27,21 +101,107 @@ const levelColors: Record<string, { bg: string; color: string }> = {
 
 const s: Record<string, React.CSSProperties> = {
     page: { display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' },
-    toolbar: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-3)', flexWrap: 'wrap' },
+    toolbar: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 'var(--space-3)',
+        flexWrap: 'wrap',
+    },
     searchBox: { position: 'relative', flex: 1, maxWidth: 320 },
-    searchIcon: { position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' },
-    searchInput: { width: '100%', height: 40, paddingLeft: 40, border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', background: 'var(--bg-primary)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' },
-    table: { width: '100%', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-xl)', overflow: 'hidden' },
-    th: { padding: 'var(--space-3) var(--space-4)', textAlign: 'left', fontSize: 'var(--text-xs)', fontWeight: 'var(--font-semibold)', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)' },
-    td: { padding: 'var(--space-3) var(--space-4)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)', borderBottom: '1px solid var(--border-color)' },
-    badge: { display: 'inline-flex', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontSize: 11, fontWeight: 'var(--font-semibold)' },
+    searchIcon: {
+        position: 'absolute',
+        left: 12,
+        top: '50%',
+        transform: 'translateY(-50%)',
+        color: 'var(--text-tertiary)',
+    },
+    searchInput: {
+        width: '100%',
+        height: 40,
+        paddingLeft: 40,
+        border: '1px solid var(--border-color)',
+        borderRadius: 'var(--radius-lg)',
+        background: 'var(--bg-primary)',
+        fontSize: 'var(--text-sm)',
+        color: 'var(--text-primary)',
+    },
+    table: {
+        width: '100%',
+        background: 'var(--bg-primary)',
+        border: '1px solid var(--border-color)',
+        borderRadius: 'var(--radius-xl)',
+        overflow: 'hidden',
+    },
+    th: {
+        padding: 'var(--space-3) var(--space-4)',
+        textAlign: 'left',
+        fontSize: 'var(--text-xs)',
+        fontWeight: 'var(--font-semibold)',
+        color: 'var(--text-tertiary)',
+        textTransform: 'uppercase',
+        letterSpacing: '0.05em',
+        background: 'var(--bg-secondary)',
+        borderBottom: '1px solid var(--border-color)',
+    },
+    td: {
+        padding: 'var(--space-3) var(--space-4)',
+        fontSize: 'var(--text-sm)',
+        color: 'var(--text-primary)',
+        borderBottom: '1px solid var(--border-color)',
+    },
+    badge: {
+        display: 'inline-flex',
+        padding: '2px 8px',
+        borderRadius: 'var(--radius-full)',
+        fontSize: 11,
+        fontWeight: 'var(--font-semibold)',
+    },
     actions: { display: 'flex', gap: 'var(--space-2)' },
-    btnIcon: { display: 'flex', alignItems: 'center', justifyContent: 'center', width: 30, height: 30, borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', cursor: 'pointer', color: 'var(--text-secondary)' },
+    btnIcon: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: 30,
+        height: 30,
+        borderRadius: 'var(--radius-md)',
+        border: '1px solid var(--border-color)',
+        background: 'var(--bg-primary)',
+        cursor: 'pointer',
+        color: 'var(--text-secondary)',
+    },
 };
 
 export default function PositionsPage() {
     const { t, lang } = useTranslation();
-    const [positions, setPositions] = useState(initialPositions);
+
+    // ─── API Integration ────────────────────────────────────────────
+    const {
+        data: apiPositions,
+        loading,
+        error,
+        refetch,
+    } = useApiQuery<Position[]>(() => employeeExtApi.getPositions() as never, [], { fallbackData: fallbackPositions });
+
+    const mappedPositions = useMemo(() => {
+        if (apiPositions && apiPositions.length > 0) {
+            return apiPositions.map((p, i) => ({
+                id: i + 1,
+                uuid: p.uuid,
+                title: p.name,
+                level: p.level,
+                department: p.department?.name || 'Unknown',
+                employees: 0,
+                minSalary: p.salary_min,
+                maxSalary: p.salary_max,
+            }));
+        }
+        return fallbackPositions;
+    }, [apiPositions]);
+
+    const [localPositions, setLocalPositions] = useState<typeof fallbackPositions | null>(null);
+    const positions = localPositions ?? mappedPositions;
+    const setPositions = setLocalPositions;
     const [search, setSearch] = useState('');
     const { addToast } = useToast();
 
@@ -49,15 +209,32 @@ export default function PositionsPage() {
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-    const [selectedPos, setSelectedPos] = useState<typeof positions[0] | null>(null);
+    const [selectedPos, setSelectedPos] = useState<(typeof positions)[0] | null>(null);
 
     // Form
-    const [formData, setFormData] = useState({ title: '', level: 'Mid', department: 'Hair Styling', minSalary: '', maxSalary: '' });
+    const [formData, setFormData] = useState({
+        title: '',
+        level: 'Mid',
+        department: 'Hair Styling',
+        minSalary: '',
+        maxSalary: '',
+    });
 
     const filtered = positions.filter(p => p.title.toLowerCase().includes(search.toLowerCase()));
 
-    const handleSaveAdd = () => {
+    const handleSaveAdd = async () => {
         if (!formData.title) return addToast('error', t('positions.toastReqTitle'));
+        try {
+            await employeeExtApi.createPosition({
+                name: formData.title,
+                level: formData.level,
+                salary_min: parseInt(formData.minSalary) || 0,
+                salary_max: parseInt(formData.maxSalary) || 0,
+            });
+            refetch();
+        } catch {
+            // Fallback to local state
+        }
         const newPos = {
             id: positions.length + 1,
             title: formData.title,
@@ -73,22 +250,51 @@ export default function PositionsPage() {
         addToast('success', t('positions.toastAddSec'));
     };
 
-    const handleSaveEdit = () => {
+    const handleSaveEdit = async () => {
         if (!formData.title) return addToast('error', t('positions.toastReqTitle'));
-        setPositions(positions.map(p => p.id === selectedPos?.id ? {
-            ...p,
-            title: formData.title,
-            level: formData.level,
-            department: formData.department,
-            minSalary: parseInt(formData.minSalary) || 0,
-            maxSalary: parseInt(formData.maxSalary) || 0,
-        } : p));
+        try {
+            const pos = selectedPos as (typeof positions)[0] & { uuid?: string };
+            if (pos?.uuid) {
+                await employeeExtApi.updatePosition(pos.uuid, {
+                    name: formData.title,
+                    level: formData.level,
+                    salary_min: parseInt(formData.minSalary) || 0,
+                    salary_max: parseInt(formData.maxSalary) || 0,
+                });
+                refetch();
+            }
+        } catch {
+            // Fallback to local state
+        }
+        setPositions(
+            positions.map(p =>
+                p.id === selectedPos?.id
+                    ? {
+                          ...p,
+                          title: formData.title,
+                          level: formData.level,
+                          department: formData.department,
+                          minSalary: parseInt(formData.minSalary) || 0,
+                          maxSalary: parseInt(formData.maxSalary) || 0,
+                      }
+                    : p
+            )
+        );
         setIsEditOpen(false);
         setSelectedPos(null);
         addToast('success', t('positions.toastUpdateSec'));
     };
 
-    const handleDelete = () => {
+    const handleDelete = async () => {
+        try {
+            const pos = selectedPos as (typeof positions)[0] & { uuid?: string };
+            if (pos?.uuid) {
+                await employeeExtApi.deletePosition(pos.uuid);
+                refetch();
+            }
+        } catch {
+            // Fallback to local state
+        }
         setPositions(positions.filter(p => p.id !== selectedPos?.id));
         setIsDeleteOpen(false);
         setSelectedPos(null);
@@ -101,8 +307,26 @@ export default function PositionsPage() {
 
             <div style={s.toolbar}>
                 <div style={s.searchBox as React.CSSProperties}>
-                    <Search size={16} style={{ ...s.searchIcon, ...(lang === 'ar' ? { right: 12, left: 'auto' } : {}) } as React.CSSProperties} />
-                    <input style={{ ...s.searchInput, ...(lang === 'ar' ? { paddingRight: 40, paddingLeft: 12 } : { paddingLeft: 40, paddingRight: 12 }) }} placeholder={t('positions.search')} value={search} onChange={e => setSearch(e.target.value)} />
+                    <Search
+                        size={16}
+                        style={
+                            {
+                                ...s.searchIcon,
+                                ...(lang === 'ar' ? { right: 12, left: 'auto' } : {}),
+                            } as React.CSSProperties
+                        }
+                    />
+                    <input
+                        style={{
+                            ...s.searchInput,
+                            ...(lang === 'ar'
+                                ? { paddingRight: 40, paddingLeft: 12 }
+                                : { paddingLeft: 40, paddingRight: 12 }),
+                        }}
+                        placeholder={t('positions.search')}
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                    />
                 </div>
                 <Button onClick={() => setIsAddOpen(true)}>
                     <Plus size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('positions.newPosition')}
@@ -113,32 +337,71 @@ export default function PositionsPage() {
                 <table style={s.table}>
                     <thead>
                         <tr>
-                            {[{ label: t('positions.colTitle'), key: 'title' }, { label: t('positions.colLevel'), key: 'level' }, { label: t('positions.colDept'), key: 'dept' }, { label: t('positions.colEmployees'), key: 'employees' }, { label: t('positions.colSalary'), key: 'salary' }, { label: t('positions.colActions'), key: 'actions' }].map(h =>
-                                <th key={h.key} style={{ ...(s.th as React.CSSProperties), textAlign: lang === 'ar' ? 'right' : 'left' }}>{h.label}</th>
-                            )}
+                            {[
+                                { label: t('positions.colTitle'), key: 'title' },
+                                { label: t('positions.colLevel'), key: 'level' },
+                                { label: t('positions.colDept'), key: 'dept' },
+                                { label: t('positions.colEmployees'), key: 'employees' },
+                                { label: t('positions.colSalary'), key: 'salary' },
+                                { label: t('positions.colActions'), key: 'actions' },
+                            ].map(h => (
+                                <th
+                                    key={h.key}
+                                    style={{
+                                        ...(s.th as React.CSSProperties),
+                                        textAlign: lang === 'ar' ? 'right' : 'left',
+                                    }}
+                                >
+                                    {h.label}
+                                </th>
+                            ))}
                         </tr>
                     </thead>
                     <tbody>
                         {filtered.map(p => (
                             <tr key={p.id} className="hoverRow">
-                                <td style={{ ...s.td, fontWeight: 'var(--font-medium)' } as React.CSSProperties}>{p.title}</td>
-                                <td style={s.td}><span style={{ ...s.badge, ...levelColors[p.level] }}>{t(`positions.lvl${p.level}`)}</span></td>
-                                <td style={s.td}>{t(`positions.${({ 'Hair Styling': 'deptHair', 'Skin Care': 'deptSkin', 'Massage & Body': 'deptMassage', 'Nails': 'deptNails', 'Reception': 'deptReception', 'Administration': 'deptAdmin' } as Record<string, string>)[p.department] || 'deptHair'}`)}</td>
+                                <td style={{ ...s.td, fontWeight: 'var(--font-medium)' } as React.CSSProperties}>
+                                    {p.title}
+                                </td>
+                                <td style={s.td}>
+                                    <span style={{ ...s.badge, ...levelColors[p.level] }}>
+                                        {t(`positions.lvl${p.level}`)}
+                                    </span>
+                                </td>
+                                <td style={s.td}>
+                                    {t(
+                                        `positions.${({ 'Hair Styling': 'deptHair', 'Skin Care': 'deptSkin', 'Massage & Body': 'deptMassage', Nails: 'deptNails', Reception: 'deptReception', Administration: 'deptAdmin' } as Record<string, string>)[p.department] || 'deptHair'}`
+                                    )}
+                                </td>
                                 <td style={s.td}>{p.employees}</td>
-                                <td style={s.td} dir="ltr">{p.minSalary.toLocaleString()} - {p.maxSalary.toLocaleString()} EGP</td>
+                                <td style={s.td} dir="ltr">
+                                    {p.minSalary.toLocaleString()} - {p.maxSalary.toLocaleString()} EGP
+                                </td>
                                 <td style={s.td}>
                                     <div style={s.actions}>
-                                        <button style={s.btnIcon} onClick={() => {
-                                            setSelectedPos(p);
-                                            setFormData({ title: p.title, level: p.level, department: p.department, minSalary: p.minSalary.toString(), maxSalary: p.maxSalary.toString() });
-                                            setIsEditOpen(true);
-                                        }}>
+                                        <button
+                                            style={s.btnIcon}
+                                            onClick={() => {
+                                                setSelectedPos(p);
+                                                setFormData({
+                                                    title: p.title,
+                                                    level: p.level,
+                                                    department: p.department,
+                                                    minSalary: p.minSalary.toString(),
+                                                    maxSalary: p.maxSalary.toString(),
+                                                });
+                                                setIsEditOpen(true);
+                                            }}
+                                        >
                                             <Edit size={14} />
                                         </button>
-                                        <button style={{ ...s.btnIcon, color: 'var(--color-error)' }} onClick={() => {
-                                            setSelectedPos(p);
-                                            setIsDeleteOpen(true);
-                                        }}>
+                                        <button
+                                            style={{ ...s.btnIcon, color: 'var(--color-error)' }}
+                                            onClick={() => {
+                                                setSelectedPos(p);
+                                                setIsDeleteOpen(true);
+                                            }}
+                                        >
                                             <Trash2 size={14} />
                                         </button>
                                     </div>
@@ -148,7 +411,11 @@ export default function PositionsPage() {
                     </tbody>
                 </table>
             ) : (
-                <EmptyState icon={<Edit size={32} color="var(--text-tertiary)" />} title={t('positions.emptyTitle')} description={t('positions.emptyDesc')} />
+                <EmptyState
+                    icon={<Edit size={32} color="var(--text-tertiary)" />}
+                    title={t('positions.emptyTitle')}
+                    description={t('positions.emptyDesc')}
+                />
             )}
             <style>{`
                 .hoverRow:hover { background-color: var(--bg-secondary); }
@@ -161,31 +428,60 @@ export default function PositionsPage() {
                 title={t('positions.addTitle')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>{t('positions.btnCancel')}</Button>
+                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>
+                            {t('positions.btnCancel')}
+                        </Button>
                         <Button onClick={handleSaveAdd}>{t('positions.btnCreate')}</Button>
                     </div>
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label={t('positions.lblTitle')} placeholder={t('positions.phTitle')} value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} />
-                    <Select label={t('positions.lblLevel')} value={formData.level} onChange={e => setFormData({ ...formData, level: e.target.value })} options={[
-                        { label: t('positions.lvlEntry'), value: 'Entry' },
-                        { label: t('positions.lvlJunior'), value: 'Junior' },
-                        { label: t('positions.lvlMid'), value: 'Mid' },
-                        { label: t('positions.lvlSenior'), value: 'Senior' },
-                        { label: t('positions.lvlManagement'), value: 'Management' },
-                    ]} />
-                    <Select label={t('positions.lblDept')} value={formData.department} onChange={e => setFormData({ ...formData, department: e.target.value })} options={[
-                        { label: t('positions.deptHair'), value: 'Hair Styling' },
-                        { label: t('positions.deptSkin'), value: 'Skin Care' },
-                        { label: t('positions.deptMassage'), value: 'Massage & Body' },
-                        { label: t('positions.deptNails'), value: 'Nails' },
-                        { label: t('positions.deptReception'), value: 'Reception' },
-                        { label: t('positions.deptAdmin'), value: 'Administration' },
-                    ]} />
+                    <Input
+                        label={t('positions.lblTitle')}
+                        placeholder={t('positions.phTitle')}
+                        value={formData.title}
+                        onChange={e => setFormData({ ...formData, title: e.target.value })}
+                    />
+                    <Select
+                        label={t('positions.lblLevel')}
+                        value={formData.level}
+                        onChange={e => setFormData({ ...formData, level: e.target.value })}
+                        options={[
+                            { label: t('positions.lvlEntry'), value: 'Entry' },
+                            { label: t('positions.lvlJunior'), value: 'Junior' },
+                            { label: t('positions.lvlMid'), value: 'Mid' },
+                            { label: t('positions.lvlSenior'), value: 'Senior' },
+                            { label: t('positions.lvlManagement'), value: 'Management' },
+                        ]}
+                    />
+                    <Select
+                        label={t('positions.lblDept')}
+                        value={formData.department}
+                        onChange={e => setFormData({ ...formData, department: e.target.value })}
+                        options={[
+                            { label: t('positions.deptHair'), value: 'Hair Styling' },
+                            { label: t('positions.deptSkin'), value: 'Skin Care' },
+                            { label: t('positions.deptMassage'), value: 'Massage & Body' },
+                            { label: t('positions.deptNails'), value: 'Nails' },
+                            { label: t('positions.deptReception'), value: 'Reception' },
+                            { label: t('positions.deptAdmin'), value: 'Administration' },
+                        ]}
+                    />
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
-                        <Input type="number" label={t('positions.lblMinSal')} placeholder="0" value={formData.minSalary} onChange={e => setFormData({ ...formData, minSalary: e.target.value })} />
-                        <Input type="number" label={t('positions.lblMaxSal')} placeholder="0" value={formData.maxSalary} onChange={e => setFormData({ ...formData, maxSalary: e.target.value })} />
+                        <Input
+                            type="number"
+                            label={t('positions.lblMinSal')}
+                            placeholder="0"
+                            value={formData.minSalary}
+                            onChange={e => setFormData({ ...formData, minSalary: e.target.value })}
+                        />
+                        <Input
+                            type="number"
+                            label={t('positions.lblMaxSal')}
+                            placeholder="0"
+                            value={formData.maxSalary}
+                            onChange={e => setFormData({ ...formData, maxSalary: e.target.value })}
+                        />
                     </div>
                 </div>
             </SlideOver>
@@ -193,35 +489,64 @@ export default function PositionsPage() {
             {/* Edit SlideOver */}
             <SlideOver
                 open={isEditOpen}
-                onClose={() => { setIsEditOpen(false); setSelectedPos(null); }}
+                onClose={() => {
+                    setIsEditOpen(false);
+                    setSelectedPos(null);
+                }}
                 title={t('positions.editTitle')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>{t('positions.btnCancel')}</Button>
+                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>
+                            {t('positions.btnCancel')}
+                        </Button>
                         <Button onClick={handleSaveEdit}>{t('positions.btnSave')}</Button>
                     </div>
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label={t('positions.lblTitle')} value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} />
-                    <Select label={t('positions.lblLevel')} value={formData.level} onChange={e => setFormData({ ...formData, level: e.target.value })} options={[
-                        { label: t('positions.lvlEntry'), value: 'Entry' },
-                        { label: t('positions.lvlJunior'), value: 'Junior' },
-                        { label: t('positions.lvlMid'), value: 'Mid' },
-                        { label: t('positions.lvlSenior'), value: 'Senior' },
-                        { label: t('positions.lvlManagement'), value: 'Management' },
-                    ]} />
-                    <Select label={t('positions.lblDept')} value={formData.department} onChange={e => setFormData({ ...formData, department: e.target.value })} options={[
-                        { label: t('positions.deptHair'), value: 'Hair Styling' },
-                        { label: t('positions.deptSkin'), value: 'Skin Care' },
-                        { label: t('positions.deptMassage'), value: 'Massage & Body' },
-                        { label: t('positions.deptNails'), value: 'Nails' },
-                        { label: t('positions.deptReception'), value: 'Reception' },
-                        { label: t('positions.deptAdmin'), value: 'Administration' },
-                    ]} />
+                    <Input
+                        label={t('positions.lblTitle')}
+                        value={formData.title}
+                        onChange={e => setFormData({ ...formData, title: e.target.value })}
+                    />
+                    <Select
+                        label={t('positions.lblLevel')}
+                        value={formData.level}
+                        onChange={e => setFormData({ ...formData, level: e.target.value })}
+                        options={[
+                            { label: t('positions.lvlEntry'), value: 'Entry' },
+                            { label: t('positions.lvlJunior'), value: 'Junior' },
+                            { label: t('positions.lvlMid'), value: 'Mid' },
+                            { label: t('positions.lvlSenior'), value: 'Senior' },
+                            { label: t('positions.lvlManagement'), value: 'Management' },
+                        ]}
+                    />
+                    <Select
+                        label={t('positions.lblDept')}
+                        value={formData.department}
+                        onChange={e => setFormData({ ...formData, department: e.target.value })}
+                        options={[
+                            { label: t('positions.deptHair'), value: 'Hair Styling' },
+                            { label: t('positions.deptSkin'), value: 'Skin Care' },
+                            { label: t('positions.deptMassage'), value: 'Massage & Body' },
+                            { label: t('positions.deptNails'), value: 'Nails' },
+                            { label: t('positions.deptReception'), value: 'Reception' },
+                            { label: t('positions.deptAdmin'), value: 'Administration' },
+                        ]}
+                    />
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
-                        <Input type="number" label={t('positions.lblMinSal')} value={formData.minSalary} onChange={e => setFormData({ ...formData, minSalary: e.target.value })} />
-                        <Input type="number" label={t('positions.lblMaxSal')} value={formData.maxSalary} onChange={e => setFormData({ ...formData, maxSalary: e.target.value })} />
+                        <Input
+                            type="number"
+                            label={t('positions.lblMinSal')}
+                            value={formData.minSalary}
+                            onChange={e => setFormData({ ...formData, minSalary: e.target.value })}
+                        />
+                        <Input
+                            type="number"
+                            label={t('positions.lblMaxSal')}
+                            value={formData.maxSalary}
+                            onChange={e => setFormData({ ...formData, maxSalary: e.target.value })}
+                        />
                     </div>
                 </div>
             </SlideOver>
@@ -229,17 +554,26 @@ export default function PositionsPage() {
             {/* Delete Modal */}
             <Modal
                 open={isDeleteOpen}
-                onClose={() => { setIsDeleteOpen(false); setSelectedPos(null); }}
+                onClose={() => {
+                    setIsDeleteOpen(false);
+                    setSelectedPos(null);
+                }}
                 title={t('positions.delTitle')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>{t('positions.btnCancel')}</Button>
-                        <Button variant="destructive" onClick={handleDelete}>{t('positions.btnRemoveAnyway')}</Button>
+                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>
+                            {t('positions.btnCancel')}
+                        </Button>
+                        <Button variant="destructive" onClick={handleDelete}>
+                            {t('positions.btnRemoveAnyway')}
+                        </Button>
                     </div>
                 }
             >
                 <p style={{ color: 'var(--text-secondary)' }}>
-                    {t('positions.delConfirmMsg1')}<strong>{selectedPos?.title}</strong>{t('positions.delConfirmMsg2')}
+                    {t('positions.delConfirmMsg1')}
+                    <strong>{selectedPos?.title}</strong>
+                    {t('positions.delConfirmMsg2')}
                 </p>
             </Modal>
         </div>

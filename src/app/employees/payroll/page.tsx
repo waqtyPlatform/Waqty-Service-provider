@@ -29,6 +29,8 @@ import {
 } from 'lucide-react';
 import { Button, Select, Badge, Modal, useToast, SlideOver } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useApiQuery } from '@/hooks/useApiQuery';
+import { payrollApi } from '@/lib/api';
 import SubTabs from '@/components/SubTabs';
 import CommissionsPage from '@/app/employees/commissions/page';
 import CommissionSettingsPage from '@/app/employees/commission-settings/page';
@@ -370,6 +372,14 @@ const generateId = () => {
 export default function PayrollPage() {
     const { t, lang } = useTranslation();
     const { addToast } = useToast();
+
+    // API: fetch payroll records (ready for backend)
+    const {
+        loading: payrollLoading,
+        error: payrollError,
+        refetch: refetchPayroll,
+    } = useApiQuery(() => payrollApi.getPayroll() as never, [], { fallbackData: employees });
+
     const [activeTab, setActiveTab] = useState<'summary' | 'history' | 'slips'>('summary');
 
     // Summary state

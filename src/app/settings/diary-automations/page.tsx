@@ -1,29 +1,73 @@
 'use client';
 
 import React from 'react';
-import {
-    Plus,
-    Zap
-} from 'lucide-react';
-import {
-    Button,
-    Badge,
-    Switch
-} from '@/components/ui';
+import { Plus, Zap } from 'lucide-react';
+import { Button, Badge, Switch } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
 import styles from './page.module.css';
-
-// Removed mock rules, moved inside component for translation
+import { useApiQuery } from '@/hooks/useApiQuery';
+import { settingsApi, type DiaryAutomation } from '@/lib/api';
 
 export default function DiaryAutomationsPage() {
     const { t, lang } = useTranslation();
 
-    const rules = [
-        { id: 1, name: t('settings.diary.rule1.name'), desc: t('settings.diary.rule1.desc'), active: true },
-        { id: 2, name: t('settings.diary.rule2.name'), desc: t('settings.diary.rule2.desc'), active: true },
-        { id: 3, name: t('settings.diary.rule3.name'), desc: t('settings.diary.rule3.desc'), active: true },
-        { id: 4, name: t('settings.diary.rule4.name'), desc: t('settings.diary.rule4.desc'), active: false },
+    const fallbackRules = [
+        {
+            uuid: '1',
+            name: t('settings.diary.rule1.name'),
+            trigger: '',
+            action: '',
+            conditions: { desc: t('settings.diary.rule1.desc') },
+            active: true,
+            created_at: '',
+            updated_at: '',
+        },
+        {
+            uuid: '2',
+            name: t('settings.diary.rule2.name'),
+            trigger: '',
+            action: '',
+            conditions: { desc: t('settings.diary.rule2.desc') },
+            active: true,
+            created_at: '',
+            updated_at: '',
+        },
+        {
+            uuid: '3',
+            name: t('settings.diary.rule3.name'),
+            trigger: '',
+            action: '',
+            conditions: { desc: t('settings.diary.rule3.desc') },
+            active: true,
+            created_at: '',
+            updated_at: '',
+        },
+        {
+            uuid: '4',
+            name: t('settings.diary.rule4.name'),
+            trigger: '',
+            action: '',
+            conditions: { desc: t('settings.diary.rule4.desc') },
+            active: false,
+            created_at: '',
+            updated_at: '',
+        },
     ];
+
+    const {
+        data: apiRules,
+        loading,
+        refetch,
+    } = useApiQuery<DiaryAutomation[]>(() => settingsApi.getDiaryAutomations(), [], {
+        fallbackData: fallbackRules as DiaryAutomation[],
+    });
+
+    const rules = (apiRules || []).map((r, i) => ({
+        id: r.uuid || String(i + 1),
+        name: r.name || t(`settings.diary.rule${i + 1}.name`),
+        desc: (r.conditions as Record<string, string>)?.desc || t(`settings.diary.rule${i + 1}.desc`),
+        active: r.active,
+    }));
 
     return (
         <div className={styles.page}>
@@ -33,13 +77,17 @@ export default function DiaryAutomationsPage() {
                     <div className={styles.subtitle}>{t('settings.diary.subtitle')}</div>
                 </div>
                 <div className={styles.actions}>
-                    <Button><Plus size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('settings.diary.newRule')}</Button>
+                    <Button>
+                        <Plus size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('settings.diary.newRule')}
+                    </Button>
                 </div>
             </div>
 
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
-                    <span className={styles.cardTitle}><Zap size={18} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('settings.diary.activeRules')}</span>
+                    <span className={styles.cardTitle}>
+                        <Zap size={18} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('settings.diary.activeRules')}
+                    </span>
                 </div>
                 <div className={styles.rulesList}>
                     {rules.map(rule => (
@@ -47,7 +95,11 @@ export default function DiaryAutomationsPage() {
                             <div className={styles.ruleContent}>
                                 <div className={styles.ruleTitle}>
                                     {rule.name}
-                                    {rule.active && <Badge color="success" size="sm">{t('settings.diary.badgeActive')}</Badge>}
+                                    {rule.active && (
+                                        <Badge color="success" size="sm">
+                                            {t('settings.diary.badgeActive')}
+                                        </Badge>
+                                    )}
                                 </div>
                                 <div className={styles.ruleDesc}>{rule.desc}</div>
                             </div>

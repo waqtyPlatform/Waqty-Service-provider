@@ -29,6 +29,8 @@ import {
     MapPinned,
     Coins,
     ChevronDown,
+    HandCoins,
+    Gift,
 } from 'lucide-react';
 import styles from './SettingsTabs.module.css';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -78,6 +80,8 @@ const categories: SettingsCategory[] = [
             { labelKey: 'settings.tab.payment', href: '/settings/payment-methods', icon: <CreditCard size={16} /> },
             { labelKey: 'settings.tab.safes', href: '/settings/safes', icon: <Lock size={16} /> },
             { labelKey: 'settings.tab.pettyCash', href: '/settings/petty-cash-items', icon: <Coins size={16} /> },
+            { labelKey: 'tipping.title', href: '/settings/tipping', icon: <HandCoins size={16} /> },
+            { labelKey: 'loyalty.title', href: '/settings/loyalty', icon: <Gift size={16} /> },
         ],
     },
     {

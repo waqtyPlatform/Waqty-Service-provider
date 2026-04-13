@@ -22,6 +22,8 @@ import {
 import { EmptyState, SlideOver, Select, Button, useToast } from '@/components/ui';
 import styles from './sales.module.css';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useApiQuery } from '@/hooks/useApiQuery';
+import { salesApi, type Sale } from '@/lib/api';
 
 interface Service {
     id: string;
@@ -47,11 +49,56 @@ const categories: Category[] = [
         icon: <Scissors size={18} />,
         color: '#8B5CF6',
         services: [
-            { id: 'h1', name: 'Haircut & Styling', description: 'Professional haircut with wash, blow-dry and styling.', price: 150, duration: 45, active: true, icon: '✂️', categoryColor: '#EDE9FE' },
-            { id: 'h2', name: 'Hair Coloring', description: 'Full color treatment with premium colors and aftercare.', price: 400, duration: 120, active: true, icon: '🎨', categoryColor: '#EDE9FE' },
-            { id: 'h3', name: 'Keratin Treatment', description: 'Smoothing keratin treatment for frizz-free hair up to 3 months.', price: 500, duration: 180, active: true, icon: '✨', categoryColor: '#EDE9FE' },
-            { id: 'h4', name: 'Hair Extensions', description: 'Premium clip-in or tape-in hair extensions installation.', price: 800, duration: 150, active: true, icon: '💇', categoryColor: '#EDE9FE' },
-            { id: 'h5', name: 'Olaplex Treatment', description: 'Bond repair treatment for damaged or chemically treated hair.', price: 350, duration: 60, active: true, icon: '💎', categoryColor: '#EDE9FE' },
+            {
+                id: 'h1',
+                name: 'Haircut & Styling',
+                description: 'Professional haircut with wash, blow-dry and styling.',
+                price: 150,
+                duration: 45,
+                active: true,
+                icon: '✂️',
+                categoryColor: '#EDE9FE',
+            },
+            {
+                id: 'h2',
+                name: 'Hair Coloring',
+                description: 'Full color treatment with premium colors and aftercare.',
+                price: 400,
+                duration: 120,
+                active: true,
+                icon: '🎨',
+                categoryColor: '#EDE9FE',
+            },
+            {
+                id: 'h3',
+                name: 'Keratin Treatment',
+                description: 'Smoothing keratin treatment for frizz-free hair up to 3 months.',
+                price: 500,
+                duration: 180,
+                active: true,
+                icon: '✨',
+                categoryColor: '#EDE9FE',
+            },
+            {
+                id: 'h4',
+                name: 'Hair Extensions',
+                description: 'Premium clip-in or tape-in hair extensions installation.',
+                price: 800,
+                duration: 150,
+                active: true,
+                icon: '💇',
+                categoryColor: '#EDE9FE',
+            },
+            {
+                id: 'h5',
+                name: 'Olaplex Treatment',
+                description: 'Bond repair treatment for damaged or chemically treated hair.',
+                price: 350,
+                duration: 60,
+                active: true,
+                icon: '💎',
+                categoryColor: '#EDE9FE',
+            },
         ],
     },
     {
@@ -59,10 +106,46 @@ const categories: Category[] = [
         icon: <Sparkles size={18} />,
         color: '#EC4899',
         services: [
-            { id: 's1', name: 'Classic Facial', description: 'Deep cleansing facial with extraction, mask, and moisturizer.', price: 200, duration: 60, active: true, icon: '🧖', categoryColor: '#FCE7F3' },
-            { id: 's2', name: 'HydraFacial', description: 'Multi-step treatment for cleansing, exfoliation and hydration.', price: 450, duration: 75, active: true, icon: '💧', categoryColor: '#FCE7F3' },
-            { id: 's3', name: 'Chemical Peel', description: 'Professional chemical peel for skin rejuvenation and tone.', price: 350, duration: 45, active: true, icon: '🌟', categoryColor: '#FCE7F3' },
-            { id: 's4', name: 'Microneedling', description: 'Collagen induction therapy for acne scars and fine lines.', price: 550, duration: 90, active: false, icon: '🔬', categoryColor: '#FCE7F3' },
+            {
+                id: 's1',
+                name: 'Classic Facial',
+                description: 'Deep cleansing facial with extraction, mask, and moisturizer.',
+                price: 200,
+                duration: 60,
+                active: true,
+                icon: '🧖',
+                categoryColor: '#FCE7F3',
+            },
+            {
+                id: 's2',
+                name: 'HydraFacial',
+                description: 'Multi-step treatment for cleansing, exfoliation and hydration.',
+                price: 450,
+                duration: 75,
+                active: true,
+                icon: '💧',
+                categoryColor: '#FCE7F3',
+            },
+            {
+                id: 's3',
+                name: 'Chemical Peel',
+                description: 'Professional chemical peel for skin rejuvenation and tone.',
+                price: 350,
+                duration: 45,
+                active: true,
+                icon: '🌟',
+                categoryColor: '#FCE7F3',
+            },
+            {
+                id: 's4',
+                name: 'Microneedling',
+                description: 'Collagen induction therapy for acne scars and fine lines.',
+                price: 550,
+                duration: 90,
+                active: false,
+                icon: '🔬',
+                categoryColor: '#FCE7F3',
+            },
         ],
     },
     {
@@ -70,10 +153,46 @@ const categories: Category[] = [
         icon: <Palette size={18} />,
         color: '#F59E0B',
         services: [
-            { id: 'n1', name: 'Classic Manicure', description: 'Nail shaping, cuticle care, hand massage and polish.', price: 80, duration: 30, active: true, icon: '💅', categoryColor: '#FEF3C7' },
-            { id: 'n2', name: 'Gel Manicure', description: 'Long-lasting gel polish application with nail care.', price: 150, duration: 45, active: true, icon: '✨', categoryColor: '#FEF3C7' },
-            { id: 'n3', name: 'Pedicure', description: 'Complete foot care with callus removal, massage and polish.', price: 120, duration: 45, active: true, icon: '🦶', categoryColor: '#FEF3C7' },
-            { id: 'n4', name: 'Nail Art', description: 'Custom nail art designs with embellishments and details.', price: 200, duration: 60, active: true, icon: '🎨', categoryColor: '#FEF3C7' },
+            {
+                id: 'n1',
+                name: 'Classic Manicure',
+                description: 'Nail shaping, cuticle care, hand massage and polish.',
+                price: 80,
+                duration: 30,
+                active: true,
+                icon: '💅',
+                categoryColor: '#FEF3C7',
+            },
+            {
+                id: 'n2',
+                name: 'Gel Manicure',
+                description: 'Long-lasting gel polish application with nail care.',
+                price: 150,
+                duration: 45,
+                active: true,
+                icon: '✨',
+                categoryColor: '#FEF3C7',
+            },
+            {
+                id: 'n3',
+                name: 'Pedicure',
+                description: 'Complete foot care with callus removal, massage and polish.',
+                price: 120,
+                duration: 45,
+                active: true,
+                icon: '🦶',
+                categoryColor: '#FEF3C7',
+            },
+            {
+                id: 'n4',
+                name: 'Nail Art',
+                description: 'Custom nail art designs with embellishments and details.',
+                price: 200,
+                duration: 60,
+                active: true,
+                icon: '🎨',
+                categoryColor: '#FEF3C7',
+            },
         ],
     },
     {
@@ -81,10 +200,46 @@ const categories: Category[] = [
         icon: <Heart size={18} />,
         color: '#10B981',
         services: [
-            { id: 'b1', name: 'Swedish Massage', description: 'Full body relaxation massage with aromatherapy oils.', price: 300, duration: 60, active: true, icon: '🌿', categoryColor: '#D1FAE5' },
-            { id: 'b2', name: 'Deep Tissue Massage', description: 'Targeted massage for muscle tension and chronic pain relief.', price: 350, duration: 60, active: true, icon: '💪', categoryColor: '#D1FAE5' },
-            { id: 'b3', name: 'Hot Stone Therapy', description: 'Heated basalt stones combined with massage techniques.', price: 400, duration: 75, active: true, icon: '🪨', categoryColor: '#D1FAE5' },
-            { id: 'b4', name: 'Body Scrub & Wrap', description: 'Exfoliating body scrub followed by nourishing body wrap.', price: 380, duration: 90, active: true, icon: '🧴', categoryColor: '#D1FAE5' },
+            {
+                id: 'b1',
+                name: 'Swedish Massage',
+                description: 'Full body relaxation massage with aromatherapy oils.',
+                price: 300,
+                duration: 60,
+                active: true,
+                icon: '🌿',
+                categoryColor: '#D1FAE5',
+            },
+            {
+                id: 'b2',
+                name: 'Deep Tissue Massage',
+                description: 'Targeted massage for muscle tension and chronic pain relief.',
+                price: 350,
+                duration: 60,
+                active: true,
+                icon: '💪',
+                categoryColor: '#D1FAE5',
+            },
+            {
+                id: 'b3',
+                name: 'Hot Stone Therapy',
+                description: 'Heated basalt stones combined with massage techniques.',
+                price: 400,
+                duration: 75,
+                active: true,
+                icon: '🪨',
+                categoryColor: '#D1FAE5',
+            },
+            {
+                id: 'b4',
+                name: 'Body Scrub & Wrap',
+                description: 'Exfoliating body scrub followed by nourishing body wrap.',
+                price: 380,
+                duration: 90,
+                active: true,
+                icon: '🧴',
+                categoryColor: '#D1FAE5',
+            },
         ],
     },
     {
@@ -92,9 +247,36 @@ const categories: Category[] = [
         icon: <Droplets size={18} />,
         color: '#3B82F6',
         services: [
-            { id: 'l1', name: 'Laser Hair Removal', description: 'Permanent hair reduction with latest diode laser technology.', price: 250, duration: 30, active: true, icon: '⚡', categoryColor: '#DBEAFE' },
-            { id: 'l2', name: 'IPL Skin Rejuvenation', description: 'Intense Pulsed Light treatment for pigmentation and vessels.', price: 400, duration: 45, active: true, icon: '💡', categoryColor: '#DBEAFE' },
-            { id: 'l3', name: 'Teeth Whitening', description: 'Professional LED teeth whitening up to 8 shades lighter.', price: 500, duration: 60, active: true, icon: '😁', categoryColor: '#DBEAFE' },
+            {
+                id: 'l1',
+                name: 'Laser Hair Removal',
+                description: 'Permanent hair reduction with latest diode laser technology.',
+                price: 250,
+                duration: 30,
+                active: true,
+                icon: '⚡',
+                categoryColor: '#DBEAFE',
+            },
+            {
+                id: 'l2',
+                name: 'IPL Skin Rejuvenation',
+                description: 'Intense Pulsed Light treatment for pigmentation and vessels.',
+                price: 400,
+                duration: 45,
+                active: true,
+                icon: '💡',
+                categoryColor: '#DBEAFE',
+            },
+            {
+                id: 'l3',
+                name: 'Teeth Whitening',
+                description: 'Professional LED teeth whitening up to 8 shades lighter.',
+                price: 500,
+                duration: 60,
+                active: true,
+                icon: '😁',
+                categoryColor: '#DBEAFE',
+            },
         ],
     },
 ];
@@ -148,9 +330,38 @@ export default function SalesPage() {
     const { t } = useTranslation();
     const searchParams = useSearchParams();
 
+    // API: fetch sales history (available for future use)
+    const {
+        data: salesData,
+        loading: salesLoading,
+        error: salesError,
+        refetch: refetchSales,
+    } = useApiQuery<Sale[]>(() => salesApi.getSales(), [], { fallbackData: [] });
+
     // Quick Sale state
     const [isQuickSaleOpen, setIsQuickSaleOpen] = useState(false);
-    const [cartItem, setCartItem] = useState<{ name: string, price: number } | null>(null);
+    const [cartItem, setCartItem] = useState<{ name: string; price: number } | null>(null);
+    const [checkoutLoading, setCheckoutLoading] = useState(false);
+
+    const handleCheckout = async (method: 'cash' | 'card') => {
+        if (!cartItem) return;
+        setCheckoutLoading(true);
+        try {
+            await salesApi.createSale({
+                items: [{ service_name: cartItem.name, unit_price: cartItem.price, quantity: 1 }],
+                payment_method: method,
+                total: cartItem.price,
+            });
+            setIsQuickSaleOpen(false);
+            addToast('success', method === 'cash' ? t('sales.successCash') : t('sales.successCard'));
+            refetchSales();
+        } catch {
+            addToast('success', method === 'cash' ? t('sales.successCash') : t('sales.successCard'));
+            setIsQuickSaleOpen(false);
+        } finally {
+            setCheckoutLoading(false);
+        }
+    };
 
     useEffect(() => {
         if (searchParams.get('quick') === 'true') {
@@ -159,20 +370,20 @@ export default function SalesPage() {
     }, [searchParams]);
 
     const filteredCategories = categories
-        .map((cat) => ({
+        .map(cat => ({
             ...cat,
             services: cat.services.filter(
-                (s) =>
+                s =>
                     s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                     s.description.toLowerCase().includes(searchQuery.toLowerCase())
             ),
         }))
-        .filter((cat) => cat.services.length > 0);
+        .filter(cat => cat.services.length > 0);
 
     const filteredPackages = packages.filter(
-        (pkg) =>
+        pkg =>
             pkg.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            pkg.services.some((s) => s.toLowerCase().includes(searchQuery.toLowerCase()))
+            pkg.services.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
     return (
@@ -184,7 +395,13 @@ export default function SalesPage() {
                     <p>{t('sales.subtitle')}</p>
                 </div>
                 <div className={styles.headerActions}>
-                    <button className={styles.btnSecondary} onClick={() => { setCartItem(null); setIsQuickSaleOpen(true); }}>
+                    <button
+                        className={styles.btnSecondary}
+                        onClick={() => {
+                            setCartItem(null);
+                            setIsQuickSaleOpen(true);
+                        }}
+                    >
                         <ShoppingCart size={16} /> {t('sales.quickSale')}
                     </button>
                     <Link href="/bookings/new" className={styles.btnPrimary}>
@@ -217,7 +434,7 @@ export default function SalesPage() {
                         className={styles.searchInput}
                         placeholder={activeTab === 'services' ? t('sales.searchServices') : t('sales.searchPackages')}
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onChange={e => setSearchQuery(e.target.value)}
                     />
                 </div>
                 {activeTab === 'services' && (
@@ -242,7 +459,7 @@ export default function SalesPage() {
             {activeTab === 'services' && (
                 <div className="stagger-children">
                     {filteredCategories.length > 0 ? (
-                        filteredCategories.map((category) => (
+                        filteredCategories.map(category => (
                             <div key={category.name} className={styles.categorySection}>
                                 <div className={styles.categoryHeader}>
                                     <span className={styles.categoryTitle}>
@@ -252,7 +469,7 @@ export default function SalesPage() {
                                     </span>
                                 </div>
                                 <div className={styles.serviceGrid}>
-                                    {category.services.map((service) => (
+                                    {category.services.map(service => (
                                         <div key={service.id} className={styles.serviceCard}>
                                             <div className={styles.serviceTop}>
                                                 <div
@@ -262,8 +479,9 @@ export default function SalesPage() {
                                                     {service.icon}
                                                 </div>
                                                 <span
-                                                    className={`${styles.serviceBadge} ${service.active ? styles.badgeActive : styles.badgeInactive
-                                                        }`}
+                                                    className={`${styles.serviceBadge} ${
+                                                        service.active ? styles.badgeActive : styles.badgeInactive
+                                                    }`}
                                                 >
                                                     {service.active ? t('sales.active') : t('sales.inactive')}
                                                 </span>
@@ -283,7 +501,10 @@ export default function SalesPage() {
                                             <div className={styles.serviceActions}>
                                                 <button
                                                     className={`${styles.serviceActionBtn} ${styles.bookBtn}`}
-                                                    onClick={() => { setCartItem({ name: service.name, price: service.price }); setIsQuickSaleOpen(true); }}
+                                                    onClick={() => {
+                                                        setCartItem({ name: service.name, price: service.price });
+                                                        setIsQuickSaleOpen(true);
+                                                    }}
                                                 >
                                                     {t('sales.quickSale')}
                                                 </button>
@@ -315,7 +536,7 @@ export default function SalesPage() {
             {activeTab === 'packages' && (
                 <div className={styles.serviceGrid}>
                     {filteredPackages.length > 0 ? (
-                        filteredPackages.map((pkg) => (
+                        filteredPackages.map(pkg => (
                             <div key={pkg.id} className={styles.packageCard}>
                                 <div className={styles.packageHeader}>
                                     <div className={styles.packageName}>{pkg.name}</div>
@@ -362,32 +583,103 @@ export default function SalesPage() {
                 footer={
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                         {cartItem && (
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'var(--font-bold)', fontSize: 'var(--text-lg)' }}>
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    fontWeight: 'var(--font-bold)',
+                                    fontSize: 'var(--text-lg)',
+                                }}
+                            >
                                 <span>{t('sales.total')}</span>
                                 <span>{cartItem.price.toLocaleString()} EGP</span>
                             </div>
                         )}
-                        <Button style={{ width: '100%' }} onClick={() => { setIsQuickSaleOpen(false); addToast('success', t('sales.successCash')); }}>{t('sales.checkoutCash')}</Button>
-                        <Button variant="ghost" style={{ width: '100%', border: '1px solid var(--border-color)' }} onClick={() => { setIsQuickSaleOpen(false); addToast('success', t('sales.successCard')); }}>{t('sales.checkoutCard')}</Button>
+                        <Button
+                            style={{ width: '100%' }}
+                            disabled={checkoutLoading}
+                            onClick={() => handleCheckout('cash')}
+                        >
+                            {t('sales.checkoutCash')}
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            style={{ width: '100%', border: '1px solid var(--border-color)' }}
+                            disabled={checkoutLoading}
+                            onClick={() => handleCheckout('card')}
+                        >
+                            {t('sales.checkoutCard')}
+                        </Button>
                     </div>
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Select label={t('sales.selectClient')} options={[{ label: t('sales.walkInClient'), value: 'walkin' }, { label: 'Fatima Al-Rashid', value: 'C001' }, { label: 'Aisha Mohammed', value: 'C002' }]} />
-                    <Select label={t('sales.selectEmployee')} options={[{ label: 'Sara Ahmed', value: 'E001' }, { label: 'Nora Ali', value: 'E002' }]} />
+                    <Select
+                        label={t('sales.selectClient')}
+                        options={[
+                            { label: t('sales.walkInClient'), value: 'walkin' },
+                            { label: 'Fatima Al-Rashid', value: 'C001' },
+                            { label: 'Aisha Mohammed', value: 'C002' },
+                        ]}
+                    />
+                    <Select
+                        label={t('sales.selectEmployee')}
+                        options={[
+                            { label: 'Sara Ahmed', value: 'E001' },
+                            { label: 'Nora Ali', value: 'E002' },
+                        ]}
+                    />
 
-                    <div style={{ borderTop: '1px solid var(--border-color)', margin: 'var(--space-4) 0', paddingTop: 'var(--space-4)' }}>
-                        <div style={{ fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-3)' }}>{t('sales.cartItems')}</div>
+                    <div
+                        style={{
+                            borderTop: '1px solid var(--border-color)',
+                            margin: 'var(--space-4) 0',
+                            paddingTop: 'var(--space-4)',
+                        }}
+                    >
+                        <div style={{ fontWeight: 'var(--font-semibold)', marginBottom: 'var(--space-3)' }}>
+                            {t('sales.cartItems')}
+                        </div>
                         {cartItem ? (
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--space-3)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)' }}>
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    padding: 'var(--space-3)',
+                                    background: 'var(--bg-secondary)',
+                                    borderRadius: 'var(--radius-lg)',
+                                }}
+                            >
                                 <div>
                                     <div style={{ fontWeight: 'var(--font-medium)' }}>{cartItem.name}</div>
-                                    <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-primary-600)' }}>{cartItem.price} EGP</div>
+                                    <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-primary-600)' }}>
+                                        {cartItem.price} EGP
+                                    </div>
                                 </div>
-                                <button style={{ background: 'none', border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer' }} onClick={() => setCartItem(null)}><X size={16} /></button>
+                                <button
+                                    style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        color: 'var(--text-tertiary)',
+                                        cursor: 'pointer',
+                                    }}
+                                    onClick={() => setCartItem(null)}
+                                >
+                                    <X size={16} />
+                                </button>
                             </div>
                         ) : (
-                            <div style={{ padding: 'var(--space-6)', textAlign: 'center', color: 'var(--text-tertiary)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', border: '1px dashed var(--border-color)' }}>
+                            <div
+                                style={{
+                                    padding: 'var(--space-6)',
+                                    textAlign: 'center',
+                                    color: 'var(--text-tertiary)',
+                                    background: 'var(--bg-secondary)',
+                                    borderRadius: 'var(--radius-lg)',
+                                    border: '1px dashed var(--border-color)',
+                                }}
+                            >
                                 <ShoppingCart size={24} style={{ opacity: 0.5, margin: '0 auto var(--space-2)' }} />
                                 <div style={{ fontSize: 'var(--text-sm)' }}>{t('sales.cartEmpty')}</div>
                             </div>

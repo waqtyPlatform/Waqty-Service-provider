@@ -25,6 +25,7 @@ import {
     Navigation,
     Briefcase,
     KeyRound,
+    X,
 } from 'lucide-react';
 import { isEgyptianPhone } from '@/lib/validations';
 import styles from './onboarding.module.css';
@@ -205,6 +206,10 @@ export default function OnboardingPage() {
     const [branchPassword, setBranchPassword] = useState('');
     const [showBranchPassword, setShowBranchPassword] = useState(false);
 
+    // Step 1: Terms & Conditions
+    const [termsAccepted, setTermsAccepted] = useState(false);
+    const [showTermsModal, setShowTermsModal] = useState(false);
+
     // Step 3: Services
     const [selectedServices, setSelectedServices] = useState<string[]>([]);
     const [customService, setCustomService] = useState('');
@@ -252,6 +257,7 @@ export default function OnboardingPage() {
         if (!isEgyptianPhone(phoneNumber))
             return addToast('error', 'Enter a valid Egyptian phone number (01XXXXXXXXX)');
         if (password.length < 6) return addToast('error', 'Password must be at least 6 characters');
+        if (!termsAccepted) return addToast('error', 'Please accept the Terms & Conditions');
         setIsLoading(true);
         try {
             const res = await requestOTP(email);
@@ -376,6 +382,7 @@ export default function OnboardingPage() {
                 plan: 'trial',
                 trialStartDate: new Date().toISOString(),
                 completedAt: new Date().toISOString(),
+                termsAcceptedAt: new Date().toISOString(),
             })
         );
 
@@ -534,7 +541,32 @@ export default function OnboardingPage() {
                                 </button>
                             </div>
                         </div>
-                        <button type="submit" className={styles.loginBtn} disabled={isLoading}>
+                        <label className={styles.termsCheckbox}>
+                            <input
+                                type="checkbox"
+                                checked={termsAccepted}
+                                onChange={e => setTermsAccepted(e.target.checked)}
+                            />
+                            <span>
+                                I agree to the{' '}
+                                <button
+                                    type="button"
+                                    className={styles.termsLink}
+                                    onClick={() => setShowTermsModal(true)}
+                                >
+                                    Terms &amp; Conditions
+                                </button>{' '}
+                                and{' '}
+                                <button
+                                    type="button"
+                                    className={styles.termsLink}
+                                    onClick={() => setShowTermsModal(true)}
+                                >
+                                    Privacy Policy
+                                </button>
+                            </span>
+                        </label>
+                        <button type="submit" className={styles.loginBtn} disabled={isLoading || !termsAccepted}>
                             {isLoading ? <RefreshCw size={18} className="spin" /> : <ArrowRight size={18} />}
                             {isLoading ? 'Sending...' : 'Continue'}
                         </button>
@@ -542,6 +574,73 @@ export default function OnboardingPage() {
                             <span>Already have an account?</span> <Link href="/login">Log in</Link>
                         </div>
                     </form>
+                )}
+
+                {/* Terms & Conditions Modal */}
+                {showTermsModal && (
+                    <div className={styles.termsOverlay} onClick={() => setShowTermsModal(false)}>
+                        <div className={styles.termsModal} onClick={e => e.stopPropagation()}>
+                            <div className={styles.termsModalHeader}>
+                                <h2>Terms &amp; Conditions</h2>
+                                <button className={styles.termsModalClose} onClick={() => setShowTermsModal(false)}>
+                                    <X size={20} />
+                                </button>
+                            </div>
+                            <div className={styles.termsModalBody}>
+                                <h3>1. Acceptance of Terms</h3>
+                                <p>
+                                    By creating an account on Hagzy, you agree to be bound by these Terms and
+                                    Conditions. If you do not agree to these terms, please do not use the platform.
+                                </p>
+                                <h3>2. Account Registration</h3>
+                                <p>
+                                    You must provide accurate information when creating your account. You are
+                                    responsible for maintaining the confidentiality of your login credentials and for
+                                    all activities that occur under your account.
+                                </p>
+                                <h3>3. Service Provider Obligations</h3>
+                                <p>
+                                    As a service provider, you agree to provide accurate business information, honor
+                                    confirmed bookings, and maintain the quality of services offered through the
+                                    platform.
+                                </p>
+                                <h3>4. Payment Terms</h3>
+                                <p>
+                                    All payments are processed in Egyptian Pounds (EGP). Subscription fees are charged
+                                    according to the selected plan. Refunds are subject to our refund policy.
+                                </p>
+                                <h3>5. Data Privacy</h3>
+                                <p>
+                                    We collect and process your data in accordance with our Privacy Policy. Customer
+                                    data is handled with strict confidentiality and in compliance with applicable data
+                                    protection regulations.
+                                </p>
+                                <h3>6. Termination</h3>
+                                <p>
+                                    Either party may terminate this agreement at any time. Upon termination, your access
+                                    to the platform will be revoked, and your data will be handled according to our data
+                                    retention policy.
+                                </p>
+                                <h3>7. Limitation of Liability</h3>
+                                <p>
+                                    Hagzy shall not be liable for any indirect, incidental, or consequential damages
+                                    arising from the use of the platform. Our total liability shall not exceed the
+                                    subscription fees paid in the preceding 12 months.
+                                </p>
+                            </div>
+                            <div className={styles.termsModalFooter}>
+                                <button
+                                    className={styles.loginBtn}
+                                    onClick={() => {
+                                        setTermsAccepted(true);
+                                        setShowTermsModal(false);
+                                    }}
+                                >
+                                    <Check size={18} /> Accept &amp; Continue
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 )}
 
                 {/* 1b: OTP Verification */}

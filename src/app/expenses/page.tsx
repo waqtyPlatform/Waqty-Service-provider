@@ -7,8 +7,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Search, Plus, Download, MoreVertical, Receipt, FileText, Repeat, Wallet, PieChart } from 'lucide-react';
 import styles from './expenses.module.css';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useApiQuery } from '@/hooks/useApiQuery';
+import { expenseApi, type Expense } from '@/lib/api';
+import { DataGuard } from '@/components/DataGuard';
 
-const expenses = [
+const fallbackExpenses = [
     {
         id: 'EXP-401',
         date: 'Mar 17, 2026',
@@ -123,7 +126,19 @@ export default function ExpensesPage() {
     const { user } = useAuth();
     const isNewWorkspace = user?.isNewWorkspace;
 
-    const filtered = expenses.filter(e => {
+    // API: fetch expenses
+    const {
+        data: apiExpenses,
+        loading: expensesLoading,
+        error: expensesError,
+        refetch: refetchExpenses,
+    } = useApiQuery<Expense[]>(() => expenseApi.getExpenses(), [], {
+        fallbackData: fallbackExpenses as unknown as Expense[],
+    });
+
+    const expenses = (apiExpenses as unknown as typeof fallbackExpenses) || fallbackExpenses;
+
+    const filtered = expenses.filter((e: (typeof fallbackExpenses)[number]) => {
         const matchSearch =
             e.id.toLowerCase().includes(search.toLowerCase()) ||
             e.description.toLowerCase().includes(search.toLowerCase()) ||
@@ -244,102 +259,121 @@ export default function ExpensesPage() {
                     />
                 </div>
             ) : (
-                <div className={styles.card}>
-                    <div className={styles.tableResponsive}>
-                        <table className={styles.dataTable}>
-                            <thead>
-                                <tr>
-                                    <th className={styles.th}>{t('exp.thId')}</th>
-                                    <th className={styles.th}>{t('exp.thDate')}</th>
-                                    <th className={styles.th}>{t('exp.thCategory')}</th>
-                                    <th className={styles.th}>{t('exp.thDesc')}</th>
-                                    <th className={styles.th}>{t('exp.thVendor')}</th>
-                                    <th className={styles.th}>{t('exp.thMethod')}</th>
-                                    <th className={`${styles.th} ${styles.thRight}`}>{t('exp.thAmount')}</th>
-                                    <th className={styles.th}>{t('exp.thStatus')}</th>
-                                    <th className={styles.th}></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filtered.map(exp => {
-                                    const st = statusStyles[exp.status];
-                                    return (
-                                        <tr
-                                            key={exp.id}
-                                            className={`${styles.tr} ${styles.trInteractive}`}
-                                            onClick={() => addToast('info', `Viewing expense ${exp.id} details`)}
-                                        >
-                                            <td className={`${styles.td} ${styles.idCell}`}>{exp.id}</td>
-                                            <td className={styles.td}>{exp.date}</td>
-                                            <td className={styles.td}>
-                                                <span
-                                                    className={styles.catDot}
-                                                    role="presentation"
-                                                    aria-hidden="true"
-                                                    style={{
-                                                        background:
-                                                            categoryColors[exp.category] || 'var(--text-tertiary)',
-                                                    }}
-                                                />
-                                                {exp.category}
-                                            </td>
-                                            <td className={`${styles.td} ${styles.truncate}`}>{exp.description}</td>
-                                            <td className={`${styles.td} ${styles.vendorCell}`}>{exp.vendor}</td>
-                                            <td className={styles.td}>{exp.method}</td>
-                                            <td className={`${styles.td} ${styles.amountCell}`}>
-                                                -{exp.amount.toLocaleString()} EGP
-                                            </td>
-                                            <td className={styles.td}>
-                                                <span
-                                                    className={styles.badge}
-                                                    style={{ background: st.bg, color: st.color }}
-                                                >
-                                                    {t(
-                                                        `exp.st${exp.status.charAt(0).toUpperCase() + exp.status.slice(1)}`
-                                                    )}
-                                                </span>
-                                            </td>
-                                            <td className={styles.td}>
-                                                <DropdownMenu
-                                                    trigger={
-                                                        <button className={styles.actionBtn}>
-                                                            <MoreVertical size={16} />
-                                                        </button>
-                                                    }
-                                                    items={[
-                                                        {
-                                                            label: t('exp.actionView'),
-                                                            icon: <Search size={14} />,
-                                                            onClick: () => addToast('info', 'Viewing expense details'),
-                                                        },
-                                                        {
-                                                            label: t('exp.actionEdit'),
-                                                            icon: <FileText size={14} />,
-                                                            onClick: () => addToast('info', 'Edit expense mode'),
-                                                        },
-                                                        {
-                                                            label: t('exp.actionDelete'),
-                                                            icon: <MoreVertical size={14} />,
-                                                            onClick: () => addToast('error', 'Expense deleted'),
-                                                            destructive: true,
-                                                        },
-                                                    ]}
-                                                />
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
+                <DataGuard
+                    loading={expensesLoading}
+                    error={expensesError}
+                    data={filtered}
+                    emptyIcon={<Receipt size={48} />}
+                    emptyTitle={t('expenses.title')}
+                    emptyDescription="No expenses found"
+                    onRetry={refetchExpenses}
+                >
+                    <div className={styles.card}>
+                        <div className={styles.tableResponsive}>
+                            <table className={styles.dataTable}>
+                                <thead>
+                                    <tr>
+                                        <th className={styles.th}>{t('exp.thId')}</th>
+                                        <th className={styles.th}>{t('exp.thDate')}</th>
+                                        <th className={styles.th}>{t('exp.thCategory')}</th>
+                                        <th className={styles.th}>{t('exp.thDesc')}</th>
+                                        <th className={styles.th}>{t('exp.thVendor')}</th>
+                                        <th className={styles.th}>{t('exp.thMethod')}</th>
+                                        <th className={`${styles.th} ${styles.thRight}`}>{t('exp.thAmount')}</th>
+                                        <th className={styles.th}>{t('exp.thStatus')}</th>
+                                        <th className={styles.th}></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filtered.map(exp => {
+                                        const st = statusStyles[exp.status];
+                                        return (
+                                            <tr
+                                                key={exp.id}
+                                                className={`${styles.tr} ${styles.trInteractive}`}
+                                                onClick={() => addToast('info', `Viewing expense ${exp.id} details`)}
+                                            >
+                                                <td className={`${styles.td} ${styles.idCell}`}>{exp.id}</td>
+                                                <td className={styles.td}>{exp.date}</td>
+                                                <td className={styles.td}>
+                                                    <span
+                                                        className={styles.catDot}
+                                                        role="presentation"
+                                                        aria-hidden="true"
+                                                        style={{
+                                                            background:
+                                                                categoryColors[exp.category] || 'var(--text-tertiary)',
+                                                        }}
+                                                    />
+                                                    {exp.category}
+                                                </td>
+                                                <td className={`${styles.td} ${styles.truncate}`}>{exp.description}</td>
+                                                <td className={`${styles.td} ${styles.vendorCell}`}>{exp.vendor}</td>
+                                                <td className={styles.td}>{exp.method}</td>
+                                                <td className={`${styles.td} ${styles.amountCell}`}>
+                                                    -{exp.amount.toLocaleString()} EGP
+                                                </td>
+                                                <td className={styles.td}>
+                                                    <span
+                                                        className={styles.badge}
+                                                        style={{ background: st.bg, color: st.color }}
+                                                    >
+                                                        {t(
+                                                            `exp.st${exp.status.charAt(0).toUpperCase() + exp.status.slice(1)}`
+                                                        )}
+                                                    </span>
+                                                </td>
+                                                <td className={styles.td}>
+                                                    <DropdownMenu
+                                                        trigger={
+                                                            <button className={styles.actionBtn}>
+                                                                <MoreVertical size={16} />
+                                                            </button>
+                                                        }
+                                                        items={[
+                                                            {
+                                                                label: t('exp.actionView'),
+                                                                icon: <Search size={14} />,
+                                                                onClick: () =>
+                                                                    addToast('info', 'Viewing expense details'),
+                                                            },
+                                                            {
+                                                                label: t('exp.actionEdit'),
+                                                                icon: <FileText size={14} />,
+                                                                onClick: () => addToast('info', 'Edit expense mode'),
+                                                            },
+                                                            {
+                                                                label: t('exp.actionDelete'),
+                                                                icon: <MoreVertical size={14} />,
+                                                                onClick: async () => {
+                                                                    try {
+                                                                        await expenseApi.deleteExpense(exp.id);
+                                                                        refetchExpenses();
+                                                                    } catch {
+                                                                        /* fallback */
+                                                                    }
+                                                                    addToast('error', 'Expense deleted');
+                                                                },
+                                                                destructive: true,
+                                                            },
+                                                        ]}
+                                                    />
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div className={styles.pag}>
+                            <span className={styles.pageInfo}>
+                                {t('exp.showing')
+                                    .replace('{visible}', filtered.length.toString())
+                                    .replace('{total}', expenses.length.toString())}
+                            </span>
+                        </div>
                     </div>
-                    <div className={styles.pag}>
-                        <span className={styles.pageInfo}>
-                            {t('exp.showing')
-                                .replace('{visible}', filtered.length.toString())
-                                .replace('{total}', expenses.length.toString())}
-                        </span>
-                    </div>
-                </div>
+                </DataGuard>
             )}
         </div>
     );
