@@ -8,7 +8,7 @@ export interface ShiftTemplate {
     id: string;
     name: string;
     color: string;
-    start: string;       // "HH:MM"
+    start: string; // "HH:MM"
     end: string;
     breakStart: string;
     breakEnd: string;
@@ -18,7 +18,7 @@ export interface ShiftAssignment {
     id: string;
     templateId: string;
     targetType: 'employee' | 'role';
-    targetId: string;    // employee ID like 'E001' or role like 'Senior Stylist'
+    targetId: string; // employee ID like 'E001' or role like 'Senior Stylist'
     days: DayKey[];
 }
 
@@ -32,11 +32,7 @@ export interface ResolvedShift {
     templateColor: string | null;
 }
 
-export type ConflictKind =
-    | 'outside-branch-hours'
-    | 'overlapping-shift'
-    | 'booking-during-break'
-    | 'booking-off-shift';
+export type ConflictKind = 'outside-branch-hours' | 'overlapping-shift' | 'booking-during-break' | 'booking-off-shift';
 
 export interface ShiftConflict {
     employeeId: string;
@@ -54,19 +50,63 @@ export interface BranchDayHours {
 
 /* ─── Seed Templates ──────────────────────────────────────────────────────── */
 
-export let SHIFT_TEMPLATES: ShiftTemplate[] = [
-    { id: 'TPL-001', name: 'Morning Shift',  color: '#10b981', start: '09:00', end: '17:00', breakStart: '13:00', breakEnd: '13:30' },
-    { id: 'TPL-002', name: 'Evening Shift',  color: '#f59e0b', start: '14:00', end: '22:00', breakStart: '18:00', breakEnd: '18:30' },
-    { id: 'TPL-003', name: 'Full Day Shift', color: '#3b82f6', start: '10:00', end: '20:00', breakStart: '14:00', breakEnd: '14:30' },
-    { id: 'TPL-004', name: 'Weekend Shift',  color: '#8b5cf6', start: '10:00', end: '18:00', breakStart: '13:00', breakEnd: '13:30' },
+export const SHIFT_TEMPLATES: ShiftTemplate[] = [
+    {
+        id: 'TPL-001',
+        name: 'Morning Shift',
+        color: '#10b981',
+        start: '09:00',
+        end: '17:00',
+        breakStart: '13:00',
+        breakEnd: '13:30',
+    },
+    {
+        id: 'TPL-002',
+        name: 'Evening Shift',
+        color: '#f59e0b',
+        start: '14:00',
+        end: '22:00',
+        breakStart: '18:00',
+        breakEnd: '18:30',
+    },
+    {
+        id: 'TPL-003',
+        name: 'Full Day Shift',
+        color: '#3b82f6',
+        start: '10:00',
+        end: '20:00',
+        breakStart: '14:00',
+        breakEnd: '14:30',
+    },
+    {
+        id: 'TPL-004',
+        name: 'Weekend Shift',
+        color: '#8b5cf6',
+        start: '10:00',
+        end: '18:00',
+        breakStart: '13:00',
+        breakEnd: '13:30',
+    },
 ];
 
 /* ─── Seed Assignments ────────────────────────────────────────────────────── */
 
-export let SHIFT_ASSIGNMENTS: ShiftAssignment[] = [
+export const SHIFT_ASSIGNMENTS: ShiftAssignment[] = [
     // Role-based group assignments
-    { id: 'ASN-001', templateId: 'TPL-001', targetType: 'role', targetId: 'Senior Stylist',   days: ['Mon', 'Tue', 'Wed'] },
-    { id: 'ASN-002', templateId: 'TPL-002', targetType: 'role', targetId: 'Skin Specialist',  days: ['Mon', 'Tue', 'Thu'] },
+    {
+        id: 'ASN-001',
+        templateId: 'TPL-001',
+        targetType: 'role',
+        targetId: 'Senior Stylist',
+        days: ['Mon', 'Tue', 'Wed'],
+    },
+    {
+        id: 'ASN-002',
+        templateId: 'TPL-002',
+        targetType: 'role',
+        targetId: 'Skin Specialist',
+        days: ['Mon', 'Tue', 'Thu'],
+    },
     // Individual override example
     { id: 'ASN-003', templateId: 'TPL-003', targetType: 'employee', targetId: 'E001', days: ['Thu'] },
 ];
@@ -74,13 +114,13 @@ export let SHIFT_ASSIGNMENTS: ShiftAssignment[] = [
 /* ─── Default Branch Hours (mirrors settings/branches/[id]) ───────────── */
 
 export const DEFAULT_BRANCH_HOURS: BranchDayHours[] = [
-    { day: 'Monday',    open: '10:00', close: '22:00', closed: false },
-    { day: 'Tuesday',   open: '10:00', close: '22:00', closed: false },
+    { day: 'Monday', open: '10:00', close: '22:00', closed: false },
+    { day: 'Tuesday', open: '10:00', close: '22:00', closed: false },
     { day: 'Wednesday', open: '10:00', close: '22:00', closed: false },
-    { day: 'Thursday',  open: '10:00', close: '23:00', closed: false },
-    { day: 'Friday',    open: '13:00', close: '23:00', closed: false },
-    { day: 'Saturday',  open: '',      close: '',      closed: true  },
-    { day: 'Sunday',    open: '10:00', close: '18:00', closed: false },
+    { day: 'Thursday', open: '10:00', close: '23:00', closed: false },
+    { day: 'Friday', open: '13:00', close: '23:00', closed: false },
+    { day: 'Saturday', open: '', close: '', closed: true },
+    { day: 'Sunday', open: '10:00', close: '18:00', closed: false },
 ];
 
 /* ─── Helpers ─────────────────────────────────────────────────────────────── */
@@ -91,8 +131,13 @@ function toMin(t: string): number {
 }
 
 const DAY_FULL: Record<DayKey, string> = {
-    Mon: 'Monday', Tue: 'Tuesday', Wed: 'Wednesday', Thu: 'Thursday',
-    Fri: 'Friday', Sat: 'Saturday', Sun: 'Sunday',
+    Mon: 'Monday',
+    Tue: 'Tuesday',
+    Wed: 'Wednesday',
+    Thu: 'Thursday',
+    Fri: 'Friday',
+    Sat: 'Saturday',
+    Sun: 'Sunday',
 };
 
 export function dateToDayKey(dateStr: string): DayKey {
@@ -108,12 +153,15 @@ export function dateToDayKey(dateStr: string): DayKey {
  * Resolve all assignments for one employee into a weekly shift map.
  * Employee-specific assignments override role-level for the same day.
  */
-export function resolveEmployeeSchedule(
-    employeeId: string,
-    role: string,
-): Record<DayKey, ResolvedShift | null> {
+export function resolveEmployeeSchedule(employeeId: string, role: string): Record<DayKey, ResolvedShift | null> {
     const result: Record<DayKey, ResolvedShift | null> = {
-        Mon: null, Tue: null, Wed: null, Thu: null, Fri: null, Sat: null, Sun: null,
+        Mon: null,
+        Tue: null,
+        Wed: null,
+        Thu: null,
+        Fri: null,
+        Sat: null,
+        Sun: null,
     };
 
     // Apply role-level first
@@ -123,9 +171,13 @@ export function resolveEmployeeSchedule(
         if (!tpl) continue;
         for (const day of asn.days) {
             result[day] = {
-                start: tpl.start, end: tpl.end,
-                breakStart: tpl.breakStart, breakEnd: tpl.breakEnd,
-                templateId: tpl.id, templateName: tpl.name, templateColor: tpl.color,
+                start: tpl.start,
+                end: tpl.end,
+                breakStart: tpl.breakStart,
+                breakEnd: tpl.breakEnd,
+                templateId: tpl.id,
+                templateName: tpl.name,
+                templateColor: tpl.color,
             };
         }
     }
@@ -137,9 +189,13 @@ export function resolveEmployeeSchedule(
         if (!tpl) continue;
         for (const day of asn.days) {
             result[day] = {
-                start: tpl.start, end: tpl.end,
-                breakStart: tpl.breakStart, breakEnd: tpl.breakEnd,
-                templateId: tpl.id, templateName: tpl.name, templateColor: tpl.color,
+                start: tpl.start,
+                end: tpl.end,
+                breakStart: tpl.breakStart,
+                breakEnd: tpl.breakEnd,
+                templateId: tpl.id,
+                templateName: tpl.name,
+                templateColor: tpl.color,
             };
         }
     }
@@ -154,7 +210,7 @@ export function detectConflicts(
     employeeId: string,
     day: DayKey,
     shift: { start: string; end: string; breakStart: string; breakEnd: string },
-    bookingSlots: string[] = [],
+    bookingSlots: string[] = []
 ): ShiftConflict[] {
     const conflicts: ShiftConflict[] = [];
     const branchDay = branchHours.find(h => h.day === DAY_FULL[day]);
@@ -163,14 +219,18 @@ export function detectConflicts(
     if (branchDay && !branchDay.closed && branchDay.open && branchDay.close) {
         if (toMin(shift.start) < toMin(branchDay.open) || toMin(shift.end) > toMin(branchDay.close)) {
             conflicts.push({
-                employeeId, day, kind: 'outside-branch-hours',
+                employeeId,
+                day,
+                kind: 'outside-branch-hours',
                 detail: `Shift ${shift.start}–${shift.end} outside branch hours ${branchDay.open}–${branchDay.close}`,
             });
         }
     }
     if (branchDay?.closed) {
         conflicts.push({
-            employeeId, day, kind: 'outside-branch-hours',
+            employeeId,
+            day,
+            kind: 'outside-branch-hours',
             detail: `Branch is closed on ${DAY_FULL[day]}`,
         });
     }
@@ -182,7 +242,9 @@ export function detectConflicts(
         const slotMin = toMin(slot);
         if (slotMin >= breakS && slotMin < breakE) {
             conflicts.push({
-                employeeId, day, kind: 'booking-during-break',
+                employeeId,
+                day,
+                kind: 'booking-during-break',
                 detail: `Booking at ${slot} falls within break ${shift.breakStart}–${shift.breakEnd}`,
             });
         }

@@ -3,16 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import {
-    BarChart3,
-    DollarSign,
-    CalendarDays,
-    Users,
-    Star,
-    Package,
-    Activity,
-    Download
-} from 'lucide-react';
+import { BarChart3, DollarSign, CalendarDays, Users, Star, Package, Activity, Download } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
 import styles from './reports.module.css';
@@ -38,18 +29,18 @@ export default function ReportsLayout({ children }: { children: React.ReactNode 
                 <div className={styles.headerContent}>
                     <div>
                         <h1 className={styles.title}>{t('reports.title')}</h1>
-                        <div className={styles.subtitle}>
-                            {t('reports.subtitle')}
-                        </div>
+                        <div className={styles.subtitle}>{t('reports.subtitle')}</div>
                     </div>
                     <div className={styles.actions}>
-                        <Button variant="outline"><Download size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('reports.exportBtn')}</Button>
+                        <Button variant="outline">
+                            <Download size={16} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> {t('reports.exportBtn')}
+                        </Button>
                     </div>
                 </div>
 
                 {/* Tabs */}
                 <div className={styles.tabsScrollContainer}>
-                    {tabItems.map((t) => {
+                    {tabItems.map(t => {
                         const isActive = pathname === t.href;
                         return (
                             <Link
@@ -59,7 +50,7 @@ export default function ReportsLayout({ children }: { children: React.ReactNode 
                             >
                                 {t.icon} {t.label}
                             </Link>
-                        )
+                        );
                     })}
                 </div>
             </div>

@@ -1,5 +1,7 @@
 'use client';
 
+// MOCK: replace `fallbackOffers` and local-state CRUD with marketingApi.{getOffers,createOffer,updateOffer,deleteOffer} when backend ships.
+
 import React, { useState } from 'react';
 import { Plus, Calendar, Tag, Edit, Trash2, Eye } from 'lucide-react';
 import { useToast, SlideOver, Modal, Input, Button, Select, Badge } from '@/components/ui';
@@ -9,7 +11,22 @@ import { useApiQuery } from '@/hooks/useApiQuery';
 import { marketingApi } from '@/lib/api';
 import { DataGuard } from '@/components/DataGuard';
 
-const fallbackOffers = [
+interface OfferRow {
+    id: number | string;
+    name: string;
+    discount: number;
+    type: string;
+    services: string[];
+    startDate: string;
+    endDate: string;
+    status: string;
+    color: string;
+    uses: number;
+    limit: number;
+    description: string;
+}
+
+const fallbackOffers: OfferRow[] = [
     {
         id: 1,
         name: 'Spring Beauty Festival',
@@ -207,29 +224,33 @@ const s: Record<string, React.CSSProperties> = {
     },
 };
 
+const COLOR_PALETTE = ['#7C3AED', '#EC4899', '#F59E0B', '#10B981', '#0EA5E9', '#EF4444', '#8B5CF6'];
+
 export default function OffersPage() {
     const { addToast } = useToast();
     const { loading, error, refetch } = useApiQuery(() => marketingApi.getOffers() as never, [], {
         fallbackData: fallbackOffers,
     });
-    // Use mock data until backend API is available
-    const offers = fallbackOffers;
+    // MOCK: in-memory state mirrors what `marketingApi.getOffers/createOffer/updateOffer/deleteOffer` will manage.
+    const [offers, setOffers] = useState<OfferRow[]>(fallbackOffers);
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [isDetailOpen, setIsDetailOpen] = useState(false);
-    const [selectedOffer, setSelectedOffer] = useState<(typeof offers)[0] | null>(null);
+    const [selectedOffer, setSelectedOffer] = useState<OfferRow | null>(null);
+    const [draft, setDraft] = useState<Partial<OfferRow>>({});
 
-    const openDetail = (offer: (typeof offers)[0]) => {
+    const openDetail = (offer: OfferRow) => {
         setSelectedOffer(offer);
         setIsDetailOpen(true);
     };
-    const openEdit = (offer: (typeof offers)[0]) => {
+    const openEdit = (offer: OfferRow) => {
         setSelectedOffer(offer);
+        setDraft({ ...offer });
         setIsDetailOpen(false);
         setIsEditOpen(true);
     };
-    const openDelete = (offer: (typeof offers)[0]) => {
+    const openDelete = (offer: OfferRow) => {
         setSelectedOffer(offer);
         setIsDetailOpen(false);
         setIsDeleteOpen(true);
@@ -237,15 +258,47 @@ export default function OffersPage() {
 
     const { t } = useTranslation();
 
+    const handleCreate = () => {
+        const next: OfferRow = {
+            id: Date.now(),
+            name: draft.name || 'New offer',
+            discount: Number(draft.discount) || 0,
+            type: draft.type || 'percentage',
+            services: draft.services || ['All Services'],
+            startDate: draft.startDate || new Date().toISOString().slice(0, 10),
+            endDate: draft.endDate || new Date().toISOString().slice(0, 10),
+            status: draft.status || 'active',
+            color: COLOR_PALETTE[offers.length % COLOR_PALETTE.length],
+            uses: 0,
+            limit: Number(draft.limit) || 100,
+            description: draft.description || '',
+        };
+        setOffers(prev => [next, ...prev]);
+        setIsAddOpen(false);
+        setDraft({});
+        addToast('success', t('mkt.btnNewOffer'));
+    };
+
+    const handleUpdate = () => {
+        if (!selectedOffer) return;
+        setOffers(prev => prev.map(o => (o.id === selectedOffer.id ? { ...o, ...draft } : o)));
+        setIsEditOpen(false);
+        setDraft({});
+        setSelectedOffer(null);
+        addToast('success', t('mkt.lblEditOffer'));
+    };
+
     const handleDelete = async () => {
+        if (!selectedOffer) return;
         try {
-            if (selectedOffer?.id && typeof selectedOffer.id === 'string') {
+            if (typeof selectedOffer.id === 'string') {
                 await marketingApi.deleteOffer(selectedOffer.id);
             }
             refetch();
         } catch {
-            /* fallback to local */
+            /* mock fallback only */
         }
+        setOffers(prev => prev.filter(o => o.id !== selectedOffer.id));
         setIsDeleteOpen(false);
         setSelectedOffer(null);
         addToast('success', t('mkt.lblDeleteOffer'));
@@ -488,40 +541,94 @@ export default function OffersPage() {
             {/* Add Offer SlideOver */}
             <SlideOver
                 open={isAddOpen}
-                onClose={() => setIsAddOpen(false)}
+                onClose={() => {
+                    setIsAddOpen(false);
+                    setDraft({});
+                }}
                 title={t('mkt.lblCreateNewOffer')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>
-                            {t('rtn.btnBack')}
-                        </Button>
                         <Button
+                            variant="ghost"
                             onClick={() => {
                                 setIsAddOpen(false);
-                                addToast('success', t('mkt.btnNewOffer'));
+                                setDraft({});
                             }}
                         >
-                            {t('mkt.btnNewOffer')}
+                            {t('rtn.btnBack')}
                         </Button>
+                        <Button onClick={handleCreate}>{t('mkt.btnNewOffer')}</Button>
                     </div>
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label={t('mkt.lblOfferName')} placeholder="e.g. Summer Special" />
-                    <Input label={t('mkt.lblDescription')} placeholder="Brief description of the offer" />
+                    <Input
+                        label={t('mkt.lblOfferName')}
+                        placeholder="e.g. Summer Special"
+                        value={draft.name ?? ''}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                            setDraft(d => ({ ...d, name: e.target.value }))
+                        }
+                    />
+                    <Input
+                        label={t('mkt.lblDescription')}
+                        placeholder="Brief description of the offer"
+                        value={draft.description ?? ''}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                            setDraft(d => ({ ...d, description: e.target.value }))
+                        }
+                    />
                     <Select
                         label={t('mkt.lblDiscountType')}
+                        value={draft.type ?? 'percentage'}
+                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                            setDraft(d => ({ ...d, type: e.target.value }))
+                        }
                         options={[
                             { label: t('mkt.lblPercentage'), value: 'percentage' },
                             { label: t('mkt.lblFixedAmount'), value: 'fixed' },
                         ]}
                     />
-                    <Input label={t('mkt.lblDiscountValue')} type="number" placeholder="0" />
-                    <Input label={t('mkt.lblUsageLimit')} type="number" placeholder="e.g. 100" />
-                    <Input label={t('mkt.lblStartDate')} type="date" />
-                    <Input label={t('mkt.lblEndDate')} type="date" />
+                    <Input
+                        label={t('mkt.lblDiscountValue')}
+                        type="number"
+                        placeholder="0"
+                        value={draft.discount ?? ''}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                            setDraft(d => ({ ...d, discount: Number(e.target.value) }))
+                        }
+                    />
+                    <Input
+                        label={t('mkt.lblUsageLimit')}
+                        type="number"
+                        placeholder="e.g. 100"
+                        value={draft.limit ?? ''}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                            setDraft(d => ({ ...d, limit: Number(e.target.value) }))
+                        }
+                    />
+                    <Input
+                        label={t('mkt.lblStartDate')}
+                        type="date"
+                        value={draft.startDate ?? ''}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                            setDraft(d => ({ ...d, startDate: e.target.value }))
+                        }
+                    />
+                    <Input
+                        label={t('mkt.lblEndDate')}
+                        type="date"
+                        value={draft.endDate ?? ''}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                            setDraft(d => ({ ...d, endDate: e.target.value }))
+                        }
+                    />
                     <Select
                         label={t('mkt.lblStatus')}
+                        value={draft.status ?? 'active'}
+                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                            setDraft(d => ({ ...d, status: e.target.value }))
+                        }
                         options={[
                             { label: t('mkt.lblActive'), value: 'active' },
                             { label: t('mkt.lblScheduled'), value: 'scheduled' },
@@ -536,43 +643,89 @@ export default function OffersPage() {
                 onClose={() => {
                     setIsEditOpen(false);
                     setSelectedOffer(null);
+                    setDraft({});
                 }}
                 title={t('mkt.lblEditOffer')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                        <Button variant="ghost" onClick={() => setIsEditOpen(false)}>
-                            {t('rtn.btnBack')}
-                        </Button>
                         <Button
+                            variant="ghost"
                             onClick={() => {
                                 setIsEditOpen(false);
-                                addToast('success', t('mkt.lblEditOffer'));
+                                setDraft({});
                             }}
                         >
-                            {t('mkt.lblEditOffer')}
+                            {t('rtn.btnBack')}
                         </Button>
+                        <Button onClick={handleUpdate}>{t('mkt.lblEditOffer')}</Button>
                     </div>
                 }
             >
                 {selectedOffer && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                        <Input label={t('mkt.lblOfferName')} defaultValue={selectedOffer.name} />
-                        <Input label={t('mkt.lblDescription')} defaultValue={selectedOffer.description} />
+                        <Input
+                            label={t('mkt.lblOfferName')}
+                            value={draft.name ?? ''}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                setDraft(d => ({ ...d, name: e.target.value }))
+                            }
+                        />
+                        <Input
+                            label={t('mkt.lblDescription')}
+                            value={draft.description ?? ''}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                setDraft(d => ({ ...d, description: e.target.value }))
+                            }
+                        />
                         <Select
                             label={t('mkt.lblDiscountType')}
-                            defaultValue={selectedOffer.type}
+                            value={draft.type ?? 'percentage'}
+                            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                                setDraft(d => ({ ...d, type: e.target.value }))
+                            }
                             options={[
                                 { label: t('mkt.lblPercentage'), value: 'percentage' },
                                 { label: t('mkt.lblFixedAmount'), value: 'fixed' },
                             ]}
                         />
-                        <Input label={t('mkt.lblDiscountValue')} type="number" defaultValue={selectedOffer.discount} />
-                        <Input label={t('mkt.lblUsageLimit')} type="number" defaultValue={selectedOffer.limit} />
-                        <Input label={t('mkt.lblStartDate')} type="date" defaultValue={selectedOffer.startDate} />
-                        <Input label={t('mkt.lblEndDate')} type="date" defaultValue={selectedOffer.endDate} />
+                        <Input
+                            label={t('mkt.lblDiscountValue')}
+                            type="number"
+                            value={draft.discount ?? 0}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                setDraft(d => ({ ...d, discount: Number(e.target.value) }))
+                            }
+                        />
+                        <Input
+                            label={t('mkt.lblUsageLimit')}
+                            type="number"
+                            value={draft.limit ?? 0}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                setDraft(d => ({ ...d, limit: Number(e.target.value) }))
+                            }
+                        />
+                        <Input
+                            label={t('mkt.lblStartDate')}
+                            type="date"
+                            value={draft.startDate ?? ''}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                setDraft(d => ({ ...d, startDate: e.target.value }))
+                            }
+                        />
+                        <Input
+                            label={t('mkt.lblEndDate')}
+                            type="date"
+                            value={draft.endDate ?? ''}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                setDraft(d => ({ ...d, endDate: e.target.value }))
+                            }
+                        />
                         <Select
                             label={t('mkt.lblStatus')}
-                            defaultValue={selectedOffer.status}
+                            value={draft.status ?? 'active'}
+                            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                                setDraft(d => ({ ...d, status: e.target.value }))
+                            }
                             options={[
                                 { label: t('mkt.lblActive'), value: 'active' },
                                 { label: t('mkt.lblScheduled'), value: 'scheduled' },

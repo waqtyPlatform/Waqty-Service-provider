@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Button, Input, Textarea } from '@/components/ui';
+import { Button, Input, Textarea, useToast } from '@/components/ui';
 import { Save, Check, Upload, X, ImageIcon } from 'lucide-react';
 import { useSettings } from '@/contexts/SettingsContext';
 import styles from './settings.module.css';
@@ -13,6 +13,7 @@ export default function SettingsPage() {
     const [localSettings, setLocalSettings] = useState(settings);
     const [saved, setSaved] = useState(false);
     const { t, lang } = useTranslation();
+    const { addToast } = useToast();
 
     // Logo & Banner state (stored in localStorage separately)
     const [logo, setLogo] = useState<string | null>(null);
@@ -53,7 +54,7 @@ export default function SettingsPage() {
         const file = e.target.files?.[0];
         if (!file) return;
         if (file.size > 2 * 1024 * 1024) {
-            alert('Image must be under 2MB');
+            addToast('error', 'Image must be under 2MB');
             return;
         }
         const reader = new FileReader();
@@ -72,7 +73,7 @@ export default function SettingsPage() {
         const file = e.dataTransfer.files?.[0];
         if (!file || !file.type.startsWith('image/')) return;
         if (file.size > 2 * 1024 * 1024) {
-            alert('Image must be under 2MB');
+            addToast('error', 'Image must be under 2MB');
             return;
         }
         const reader = new FileReader();

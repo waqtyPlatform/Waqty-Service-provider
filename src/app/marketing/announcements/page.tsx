@@ -270,8 +270,8 @@ export default function AnnouncementsPage() {
                 onRetry={refetch}
             >
                 <div className={styles.grid}>
-                    {announcements.map((a: (typeof announcements)[0]) => (
-                        <div key={a.id} className={styles.card} onClick={() => openDetail(a)}>
+                    {announcements.map((a: (typeof announcements)[0], i: number) => (
+                        <div key={a.id ?? `announcement-${i}`} className={styles.card} onClick={() => openDetail(a)}>
                             <div className={styles.cardHead}>
                                 <div
                                     className={styles.priorityStripe}

@@ -781,7 +781,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                 <div className={styles.headerTop}>
                     <div className={styles.profileInfo}>
                         <div className={styles.avatar} style={{ overflow: 'hidden', position: 'relative' }}>
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            {}
                             {employeePhotoUrl && (
                                 <img
                                     src={employeePhotoUrl}

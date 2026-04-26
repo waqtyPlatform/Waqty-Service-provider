@@ -632,6 +632,7 @@ function ServiceBookingCard({
     priceOverrides: ServicePriceOverride[];
     branchId: string;
 }) {
+    const { t } = useTranslation();
     const [showAvail, setShowAvail] = useState(false);
 
     const empBusy = busySlotsInRange(EMP_BUSY, item.employee.id, item.date, item.time, item.service.durationMins);
@@ -640,7 +641,7 @@ function ServiceBookingCard({
         : [];
     const hasIssue = hasInternalConflict || empBusy.length > 0 || roomBusy.length > 0;
 
-    const label = isClinic ? 'Appointment' : 'Service';
+    const label = isClinic ? t('bookings.appointment') : t('bookings.service');
 
     return (
         <div style={hasIssue ? s.cardConflict : s.card}>
@@ -684,7 +685,7 @@ function ServiceBookingCard({
             {/* Service + Employee */}
             <div style={s.row2}>
                 <div style={s.field}>
-                    <label style={s.label}>{isClinic ? 'Service / Procedure' : 'Service'}</label>
+                    <label style={s.label}>{isClinic ? t('bookings.serviceProcedure') : t('bookings.service')}</label>
                     <select
                         style={s.select}
                         value={item.service.id}
@@ -720,7 +721,7 @@ function ServiceBookingCard({
                 </div>
 
                 <div style={s.field}>
-                    <label style={s.label}>{isClinic ? 'Doctor / Specialist' : 'Employee'}</label>
+                    <label style={s.label}>{isClinic ? t('bookings.doctorSpecialist') : t('bookings.employee')}</label>
                     <select
                         style={hasInternalConflict ? s.selectErr : s.select}
                         value={item.employee.id}

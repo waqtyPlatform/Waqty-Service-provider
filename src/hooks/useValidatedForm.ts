@@ -6,6 +6,8 @@ import { useUnsavedChanges } from './useUnsavedChanges';
 import { useEffect } from 'react';
 
 interface UseValidatedFormOptions<T extends FieldValues> {
+    // Zod 4 + react-hook-form generic interop is loose; the resolver cast below
+    // documents the boundary. Schema is passed straight through to zodResolver.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     schema: any;
     defaultValues?: DefaultValues<T>;
@@ -42,10 +44,13 @@ export function useValidatedForm<T extends FieldValues>({
     defaultValues,
     trackUnsavedChanges = false,
 }: UseValidatedFormOptions<T>): UseValidatedFormReturn<T> {
+    // zodResolver's return type uses Zod's inferred input/output split, which doesn't
+    // exactly match react-hook-form's `Resolver<T>` shape. The runtime behavior is correct;
+    // a single cast at this boundary is the standard interop pattern.
     const form = useForm<T>({
         resolver: zodResolver(schema) as unknown as Resolver<T>,
         defaultValues,
-        mode: 'onBlur', // Validate on blur for better UX
+        mode: 'onBlur',
     });
 
     const { hasChanges, setHasChanges, confirmNavigation, markSaved } = useUnsavedChanges(trackUnsavedChanges);

@@ -2,7 +2,13 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { authApi } from '@/lib/api';
+import { ApiError, authApi } from '@/lib/api';
+import { safeJsonParse } from '@/lib/storage';
+
+// MOCK: replace with authApi.sendOtp / authApi.verifyOtp when the backend OTP flow ships.
+const MOCK_OTP_CODE = '123456';
+const MOCK_OTP_REQUEST_DELAY_MS = 800;
+const MOCK_OTP_VERIFY_DELAY_MS = 1000;
 
 export type UserRole = 'admin' | 'manager' | 'staff';
 export type BusinessType = 'clinic' | 'salon' | 'barber';
@@ -110,15 +116,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const router = useRouter();
     const pathname = usePathname();
 
-    // Helper to set/clear middleware cookie marker
-    const setAuthCookie = (loggedIn: boolean, role?: string) => {
+    // Helper to set/clear the middleware cookie marker.
+    // NOTE: role is intentionally NOT stored in a cookie — RoleGuard reads it from
+    // AuthContext on the client. A client-set cookie would be forgeable.
+    const setAuthCookie = (loggedIn: boolean) => {
         if (loggedIn) {
             document.cookie = `hagzy_logged_in=true;path=/;max-age=${60 * 60 * 24 * 30};SameSite=Lax`;
-            if (role) {
-                document.cookie = `hagzy_auth=${JSON.stringify({ token: true, role })};path=/;max-age=${60 * 60 * 24 * 30};SameSite=Lax`;
-            }
         } else {
             document.cookie = 'hagzy_logged_in=;path=/;max-age=0';
+            // Clear legacy cookie set by previous versions of this app.
             document.cookie = 'hagzy_auth=;path=/;max-age=0';
         }
     };
@@ -127,15 +133,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Hydrate from localStorage — use queueMicrotask to avoid synchronous setState in effect
         const storedUser = localStorage.getItem('hagzy_user');
         const storedToken = localStorage.getItem('hagzy_token');
-        if (storedUser && storedToken) {
-            const parsed = JSON.parse(storedUser);
+        const parsed = safeJsonParse<User | null>(storedUser, null);
+        if (parsed && storedToken) {
             queueMicrotask(() => {
                 setUser(parsed);
-                setAuthCookie(true, parsed.role);
+                setAuthCookie(true);
                 setLoading(false);
             });
         } else {
-            // Clear partial state if token or user is missing
+            // Clear partial or corrupt state if token or user is missing/invalid
             localStorage.removeItem('hagzy_user');
             localStorage.removeItem('hagzy_token');
             setAuthCookie(false);
@@ -197,36 +203,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
                 setUser(loggedInUser);
                 localStorage.setItem('hagzy_user', JSON.stringify(loggedInUser));
-                setAuthCookie(true, loggedInUser.role);
+                setAuthCookie(true);
                 router.push('/');
                 return { success: true, user: loggedInUser };
             }
 
             return { success: false, error: res.message || 'Login failed' };
         } catch (err: unknown) {
-            const error = err as { message?: string; status?: number };
-            return { success: false, error: error.message || 'Invalid email or password' };
+            const message = err instanceof ApiError ? err.message : 'Invalid email or password';
+            return { success: false, error: message };
         }
     };
 
+    // MOCK: replace with authApi.sendOtp when backend OTP flow ships.
     const requestOTP = async (identifier: string) => {
-        await new Promise(resolve => setTimeout(resolve, 800));
+        await new Promise(resolve => setTimeout(resolve, MOCK_OTP_REQUEST_DELAY_MS));
         const type = identifier.includes('@') ? 'email' : 'phone';
-        console.log(`Mock OTP requested for ${type}: ${identifier}`);
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`[MOCK] OTP requested for ${type}: ${identifier} — use code ${MOCK_OTP_CODE}`);
+        }
         return { success: true, type } as const;
     };
 
+    // MOCK: replace with authApi.verifyOtp when backend OTP flow ships.
     const verifyOTP = async (identifier: string, code: string, redirect = true) => {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, MOCK_OTP_VERIFY_DELAY_MS));
 
-        if (code !== '123456') {
+        if (code !== MOCK_OTP_CODE) {
             return { success: false, error: 'Invalid verification code' };
         }
 
         const mockUser = MOCK_USERS[identifier] || MOCK_USERS['clinic@hagzy.com'];
         setUser(mockUser);
         localStorage.setItem('hagzy_user', JSON.stringify(mockUser));
-        setAuthCookie(true, mockUser.role);
+        setAuthCookie(true);
         if (redirect) {
             router.push('/');
         }
@@ -242,14 +252,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
             return { success: false, type: 'email' as const, error: res.message || 'Failed to send reset code' };
         } catch (err: unknown) {
-            const error = err as { message?: string; status?: number };
-            if (error.status === 429)
+            if (err instanceof ApiError && err.status === 429) {
                 return {
                     success: false,
                     type: 'email' as const,
                     error: 'Too many attempts. Please wait and try again.',
                 };
-            return { success: false, type: 'email' as const, error: error.message || 'Failed to send reset code' };
+            }
+            const message = err instanceof ApiError ? err.message : 'Failed to send reset code';
+            return { success: false, type: 'email' as const, error: message };
         }
     };
 
@@ -261,8 +272,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
             return { success: false, valid: false, error: res.message || 'Invalid code' };
         } catch (err: unknown) {
-            const error = err as { message?: string };
-            return { success: false, valid: false, error: error.message || 'Invalid or expired code' };
+            const message = err instanceof ApiError ? err.message : 'Invalid or expired code';
+            return { success: false, valid: false, error: message };
         }
     };
 
@@ -272,9 +283,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (res.success) return { success: true };
             return { success: false, error: res.message || 'Failed to reset password' };
         } catch (err: unknown) {
-            const error = err as { message?: string; status?: number };
-            if (error.status === 429) return { success: false, error: 'Too many attempts. Please wait and try again.' };
-            return { success: false, error: error.message || 'Failed to reset password' };
+            if (err instanceof ApiError && err.status === 429) {
+                return { success: false, error: 'Too many attempts. Please wait and try again.' };
+            }
+            const message = err instanceof ApiError ? err.message : 'Failed to reset password';
+            return { success: false, error: message };
         }
     };
 

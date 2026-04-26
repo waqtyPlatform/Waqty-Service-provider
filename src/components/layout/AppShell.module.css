@@ -14,7 +14,7 @@
 }
 
 .sidebarCollapsed :global(.topbar),
-.sidebarCollapsed header[class*="topbar"] {
+.sidebarCollapsed header[class*='topbar'] {
     inset-inline-start: var(--sidebar-collapsed);
 }
 

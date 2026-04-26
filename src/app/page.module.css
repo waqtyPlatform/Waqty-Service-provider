@@ -4,6 +4,62 @@
     gap: var(--space-6);
 }
 
+/* ──────────────────────────────────────────────────────────────────────────
+   Entrance animation — replaces the previous framer-motion staggered reveal.
+   Pure CSS keyframes ship 0 KB of JS and run on the compositor thread.
+   ────────────────────────────────────────────────────────────────────────── */
+@keyframes hagzyFadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.fadeIn {
+    animation: hagzyFadeUp 320ms ease-out both;
+}
+
+.fadeStaggerRow > * {
+    animation: hagzyFadeUp 320ms ease-out both;
+}
+.fadeStaggerRow > *:nth-child(1) {
+    animation-delay: 0ms;
+}
+.fadeStaggerRow > *:nth-child(2) {
+    animation-delay: 60ms;
+}
+.fadeStaggerRow > *:nth-child(3) {
+    animation-delay: 120ms;
+}
+.fadeStaggerRow > *:nth-child(4) {
+    animation-delay: 180ms;
+}
+.fadeStaggerRow > *:nth-child(5) {
+    animation-delay: 240ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fadeIn,
+    .fadeStaggerRow > * {
+        animation: none;
+    }
+}
+
+/* Reserves vertical space while a deferred dashboard section is loading,
+   preventing CLS when the lazy chunk arrives. Tuned to roughly match the
+   bottom-tables row + summary strip height. */
+.cardSkeleton {
+    min-height: 320px;
+    border-radius: var(--radius-xl);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    opacity: 0.5;
+}
+
 /* ── Page Header ── */
 .header {
     display: flex;

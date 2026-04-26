@@ -409,7 +409,7 @@ export default function BookingsCalendarPage() {
                                         className={styles.empAvatar}
                                         style={{ background: emp.color, overflow: 'hidden', position: 'relative' }}
                                     >
-                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        {}
                                         {emp.uuid && (
                                             <img
                                                 src={getImageUrl('employees', emp.uuid)}

@@ -3,7 +3,12 @@
    Brand Color: #00B166
    ═══════════════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap');
+/*
+ * Inter + Noto Sans Arabic are loaded via `next/font/google` in
+ * `src/app/layout.tsx` (self-hosted, same-origin, no runtime CSS round-trip).
+ * The fonts expose CSS variables --font-inter and --font-noto-arabic on the
+ * <html> element; --font-sans below references both with sensible fallbacks.
+ */
 
 :root {
     /* ── Brand Palette ── */
@@ -94,7 +99,7 @@
     --space-20: 80px;
 
     /* ── Typography ── */
-    --font-sans: 'Inter', 'Noto Sans Arabic', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-sans: var(--font-inter), var(--font-noto-arabic), -apple-system, BlinkMacSystemFont, sans-serif;
     --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
     --text-xs: 0.75rem;

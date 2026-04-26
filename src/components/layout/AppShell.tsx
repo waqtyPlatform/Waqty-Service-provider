@@ -9,6 +9,7 @@ import { ToastProvider } from '@/components/ui';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import MobileBottomNav from './MobileBottomNav';
 import { OfflineBanner } from '@/components/OfflineBanner';
+import { RoleGuard } from '@/components/RoleGuard';
 import styles from './AppShell.module.css';
 
 import { usePathname } from 'next/navigation';
@@ -36,7 +37,9 @@ function AppContent({ children }: { children: React.ReactNode }) {
             <TopBar />
             <CommandPalette />
             <main className={styles.main}>
-                <div className={styles.content}>{children}</div>
+                <div className={styles.content}>
+                    <RoleGuard>{children}</RoleGuard>
+                </div>
             </main>
             <MobileBottomNav />
         </div>
