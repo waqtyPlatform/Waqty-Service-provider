@@ -1,20 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import {
-    ArrowRight,
-    ArrowLeft,
-    Check,
-    Image as ImageIcon
-} from 'lucide-react';
-import {
-    Button,
-    Input,
-    Select,
-    Checkbox,
-    Stepper,
-    Textarea
-} from '@/components/ui';
+import { ArrowRight, ArrowLeft, Check, Image as ImageIcon } from 'lucide-react';
+import { Button, Input, Select, Checkbox, Stepper, Textarea } from '@/components/ui';
 import styles from './page.module.css';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -32,7 +20,7 @@ export default function NewServicePage() {
         duration: '45',
         buffer: '10',
         online: true,
-        gender: 'unisex'
+        gender: 'unisex',
     });
 
     const steps = [
@@ -41,7 +29,7 @@ export default function NewServicePage() {
         t('settings.services.new.step3'),
         t('settings.services.new.step4'),
         t('settings.services.new.step5'),
-        t('settings.services.new.step6')
+        t('settings.services.new.step6'),
     ];
 
     const nextStep = () => {
@@ -71,10 +59,13 @@ export default function NewServicePage() {
                             options={[
                                 { value: 'hair', label: t('settings.services.new.catHair') },
                                 { value: 'nails', label: t('settings.services.new.catNails') },
-                                { value: 'spa', label: t('settings.services.new.catSpa') }
+                                { value: 'spa', label: t('settings.services.new.catSpa') },
                             ]}
                         />
-                        <Textarea label={t('settings.services.new.desc')} placeholder={t('settings.services.new.descHint')} />
+                        <Textarea
+                            label={t('settings.services.new.desc')}
+                            placeholder={t('settings.services.new.descHint')}
+                        />
                     </div>
                 );
             case 1:
@@ -82,8 +73,18 @@ export default function NewServicePage() {
                     <div className={styles.stepContent}>
                         <h2 className={styles.stepTitle}>{t('settings.services.new.pricing')}</h2>
                         <div className={styles.grid2}>
-                            <Input label={t('settings.services.new.price')} placeholder="0.00" type="number" dir="ltr" />
-                            <Input label={t('settings.services.new.costPrice')} placeholder="0.00" type="number" dir="ltr" />
+                            <Input
+                                label={t('settings.services.new.price')}
+                                placeholder="0.00"
+                                type="number"
+                                dir="ltr"
+                            />
+                            <Input
+                                label={t('settings.services.new.costPrice')}
+                                placeholder="0.00"
+                                type="number"
+                                dir="ltr"
+                            />
                         </div>
                         <Checkbox label={t('settings.services.new.taxable')} checked={formData.tax} />
                         <Checkbox label={t('settings.services.new.allowOnline')} checked={formData.online} />
@@ -94,11 +95,28 @@ export default function NewServicePage() {
                     <div className={styles.stepContent}>
                         <h2 className={styles.stepTitle}>{t('settings.services.new.durationTitle')}</h2>
                         <div className={styles.grid2}>
-                            <Input label={t('settings.services.new.durationMin')} defaultValue="45" type="number" dir="ltr" />
-                            <Input label={t('settings.services.new.bufferAfter')} defaultValue="10" type="number" hint={t('settings.services.new.bufferHint')} dir="ltr" />
+                            <Input
+                                label={t('settings.services.new.durationMin')}
+                                defaultValue="45"
+                                type="number"
+                                dir="ltr"
+                            />
+                            <Input
+                                label={t('settings.services.new.bufferAfter')}
+                                defaultValue="10"
+                                type="number"
+                                hint={t('settings.services.new.bufferHint')}
+                                dir="ltr"
+                            />
                         </div>
                         <div className={styles.grid2}>
-                            <Input label={t('settings.services.new.processDuring')} defaultValue="0" type="number" hint={t('settings.services.new.processHint')} dir="ltr" />
+                            <Input
+                                label={t('settings.services.new.processDuring')}
+                                defaultValue="0"
+                                type="number"
+                                hint={t('settings.services.new.processHint')}
+                                dir="ltr"
+                            />
                         </div>
                     </div>
                 );
@@ -112,7 +130,7 @@ export default function NewServicePage() {
                             options={[
                                 { value: 'none', label: t('settings.services.new.resNone') },
                                 { value: 'chair', label: t('settings.services.new.resChair') },
-                                { value: 'room', label: t('settings.services.new.resRoom') }
+                                { value: 'room', label: t('settings.services.new.resRoom') },
                             ]}
                         />
                         <Select
@@ -120,7 +138,7 @@ export default function NewServicePage() {
                             options={[
                                 { value: 'unisex', label: t('settings.services.new.genderUnisex') },
                                 { value: 'female', label: t('settings.services.new.genderFemale') },
-                                { value: 'male', label: t('settings.services.new.genderMale') }
+                                { value: 'male', label: t('settings.services.new.genderMale') },
                             ]}
                         />
                     </div>
@@ -130,8 +148,18 @@ export default function NewServicePage() {
                     <div className={styles.stepContent}>
                         <h2 className={styles.stepTitle}>{t('settings.services.new.commission')}</h2>
                         <div className={styles.grid2}>
-                            <Input label={t('settings.services.new.commPct')} placeholder="e.g. 10" type="number" dir="ltr" />
-                            <Input label={t('settings.services.new.commFixed')} placeholder="e.g. 50" type="number" dir="ltr" />
+                            <Input
+                                label={t('settings.services.new.commPct')}
+                                placeholder="e.g. 10"
+                                type="number"
+                                dir="ltr"
+                            />
+                            <Input
+                                label={t('settings.services.new.commFixed')}
+                                placeholder="e.g. 50"
+                                type="number"
+                                dir="ltr"
+                            />
                         </div>
                         <Checkbox label={t('settings.services.new.deductCost')} checked={true} />
                     </div>
@@ -142,9 +170,13 @@ export default function NewServicePage() {
                         <h2 className={styles.stepTitle}>{t('settings.services.new.media')}</h2>
                         <div className={styles.uploadBox}>
                             <ImageIcon size={48} />
-                            <div style={{ fontWeight: 'var(--font-medium)' }}>{t('settings.services.new.uploadMsg1')}</div>
+                            <div style={{ fontWeight: 'var(--font-medium)' }}>
+                                {t('settings.services.new.uploadMsg1')}
+                            </div>
                             <div style={{ fontSize: 'var(--text-xs)' }}>{t('settings.services.new.uploadMsg2')}</div>
-                            <Button variant="outline" size="sm">{t('settings.services.new.selectFile')}</Button>
+                            <Button variant="outline" size="sm">
+                                {t('settings.services.new.selectFile')}
+                            </Button>
                         </div>
                     </div>
                 );
@@ -158,9 +190,14 @@ export default function NewServicePage() {
             <div className={styles.header}>
                 <div className={styles.titleGroup}>
                     <h1>{t('settings.services.new.title')}</h1>
-                    <div className={styles.subtitle}>{t('settings.services.new.stepTitle')} {currentStep + 1} {t('settings.services.new.of')} {steps.length}: {steps[currentStep]}</div>
+                    <div className={styles.subtitle}>
+                        {t('settings.services.new.stepTitle')} {currentStep + 1} {t('settings.services.new.of')}{' '}
+                        {steps.length}: {steps[currentStep]}
+                    </div>
                 </div>
-                <Button variant="ghost" onClick={() => router.back()}>{t('settings.services.new.cancel')}</Button>
+                <Button variant="ghost" onClick={() => router.back()}>
+                    {t('settings.services.new.cancel')}
+                </Button>
             </div>
 
             <div className={styles.stepperContainer}>
@@ -171,19 +208,28 @@ export default function NewServicePage() {
                 {renderStepContent()}
 
                 <div className={styles.footer}>
-                    <Button
-                        variant="outline"
-                        onClick={prevStep}
-                        disabled={currentStep === 0}
-                    >
-                        {lang === 'ar' ? <ArrowRight size={16} style={{ marginInlineEnd: 4 }} /> : <ArrowLeft size={16} />}
+                    <Button variant="outline" onClick={prevStep} disabled={currentStep === 0}>
+                        {lang === 'ar' ? (
+                            <ArrowRight size={16} style={{ marginInlineEnd: 4 }} />
+                        ) : (
+                            <ArrowLeft size={16} />
+                        )}
                         {t('settings.services.new.back')}
                     </Button>
                     <Button onClick={nextStep}>
                         {currentStep === steps.length - 1 ? (
-                            <>{t('settings.services.new.save')} <Check size={16} style={{ marginInlineStart: 4 }} /></>
+                            <>
+                                {t('settings.services.new.save')} <Check size={16} style={{ marginInlineStart: 4 }} />
+                            </>
                         ) : (
-                            <>{t('settings.services.new.next')} {lang === 'ar' ? <ArrowLeft size={16} style={{ marginInlineStart: 4 }} /> : <ArrowRight size={16} />}</>
+                            <>
+                                {t('settings.services.new.next')}{' '}
+                                {lang === 'ar' ? (
+                                    <ArrowLeft size={16} style={{ marginInlineStart: 4 }} />
+                                ) : (
+                                    <ArrowRight size={16} />
+                                )}
+                            </>
                         )}
                     </Button>
                 </div>

@@ -1,9 +1,7 @@
 'use client';
 
 import React from 'react';
-import {
-    Printer,
-} from 'lucide-react';
+import { Printer } from 'lucide-react';
 import BookingsTabs from '../BookingsTabs';
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -15,7 +13,10 @@ const employees = [
     { id: 'E05', name: 'Hana Youssef', role: 'Nail Technician', color: '#3B82F6' },
 ];
 
-const scheduleData: Record<string, Array<{ time: string; service: string; client: string; duration: string; status: string }>> = {
+const scheduleData: Record<
+    string,
+    Array<{ time: string; service: string; client: string; duration: string; status: string }>
+> = {
     E01: [
         { time: '09:00', service: 'Haircut & Styling', client: 'Fatima Ali', duration: '45 min', status: 'Confirmed' },
         { time: '10:00', service: 'Hair Coloring', client: 'Rania Khalil', duration: '90 min', status: 'Confirmed' },
@@ -31,11 +32,23 @@ const scheduleData: Record<string, Array<{ time: string; service: string; client
     ],
     E03: [
         { time: '10:00', service: 'Swedish Massage', client: 'Noura Ahmed', duration: '60 min', status: 'Confirmed' },
-        { time: '11:30', service: 'Hot Stone Massage', client: 'Rania Khalil', duration: '90 min', status: 'Confirmed' },
+        {
+            time: '11:30',
+            service: 'Hot Stone Massage',
+            client: 'Rania Khalil',
+            duration: '90 min',
+            status: 'Confirmed',
+        },
         { time: '14:00', service: 'Body Wrap', client: 'Lina Qasim', duration: '60 min', status: 'Confirmed' },
     ],
     E04: [
-        { time: '09:00', service: 'Deep Tissue Massage', client: 'Yara Hassan', duration: '60 min', status: 'Confirmed' },
+        {
+            time: '09:00',
+            service: 'Deep Tissue Massage',
+            client: 'Yara Hassan',
+            duration: '60 min',
+            status: 'Confirmed',
+        },
         { time: '10:30', service: 'Swedish Massage', client: 'Joud Salem', duration: '60 min', status: 'Confirmed' },
         { time: '12:00', service: 'Aromatherapy', client: 'Huda Saleh', duration: '90 min', status: 'Pending' },
         { time: '14:30', service: 'Sports Massage', client: 'Walk-in', duration: '60 min', status: 'Pending' },
@@ -54,21 +67,70 @@ const s: Record<string, React.CSSProperties> = {
     page: { display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' },
     header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
     h1: { fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' },
-    printBtn: { display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-2) var(--space-5)', background: 'var(--color-primary-500)', color: 'white', borderRadius: 'var(--radius-lg)', fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)', cursor: 'pointer' },
+    printBtn: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 'var(--space-2)',
+        padding: 'var(--space-2) var(--space-5)',
+        background: 'var(--color-primary-500)',
+        color: 'white',
+        borderRadius: 'var(--radius-lg)',
+        fontSize: 'var(--text-sm)',
+        fontWeight: 'var(--font-semibold)',
+        cursor: 'pointer',
+    },
     grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: 'var(--space-5)' },
-    card: { background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-xl)', overflow: 'hidden', breakInside: 'avoid' as const },
-    cardHeader: { display: 'flex', alignItems: 'center', gap: 'var(--space-3)', padding: 'var(--space-4) var(--space-5)', borderBottom: '1px solid var(--border-color)' },
-    avatar: { width: 40, height: 40, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'var(--font-bold)', fontSize: 'var(--text-sm)', flexShrink: 0 },
+    card: {
+        background: 'var(--bg-primary)',
+        border: '1px solid var(--border-color)',
+        borderRadius: 'var(--radius-xl)',
+        overflow: 'hidden',
+        breakInside: 'avoid' as const,
+    },
+    cardHeader: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 'var(--space-3)',
+        padding: 'var(--space-4) var(--space-5)',
+        borderBottom: '1px solid var(--border-color)',
+    },
+    avatar: {
+        width: 40,
+        height: 40,
+        borderRadius: '50%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: 'white',
+        fontWeight: 'var(--font-bold)',
+        fontSize: 'var(--text-sm)',
+        flexShrink: 0,
+    },
     empName: { fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)', color: 'var(--text-primary)' },
     empRole: { fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' },
     count: { marginLeft: 'auto', fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' },
-    row: { display: 'flex', padding: 'var(--space-3) var(--space-5)', borderBottom: '1px solid var(--border-color)', fontSize: 'var(--text-sm)', gap: 'var(--space-3)', alignItems: 'center' },
+    row: {
+        display: 'flex',
+        padding: 'var(--space-3) var(--space-5)',
+        borderBottom: '1px solid var(--border-color)',
+        fontSize: 'var(--text-sm)',
+        gap: 'var(--space-3)',
+        alignItems: 'center',
+    },
     time: { width: 50, fontWeight: 'var(--font-semibold)', color: 'var(--color-primary-600)', flexShrink: 0 },
     details: { flex: 1, overflow: 'hidden' },
     svc: { fontWeight: 'var(--font-medium)', color: 'var(--text-primary)' },
     client: { fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' },
     dur: { fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', whiteSpace: 'nowrap' as const },
-    pending: { display: 'inline-flex', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontSize: 10, fontWeight: 'var(--font-semibold)', background: 'var(--color-warning-light)', color: 'var(--color-warning)' },
+    pending: {
+        display: 'inline-flex',
+        padding: '2px 8px',
+        borderRadius: 'var(--radius-full)',
+        fontSize: 10,
+        fontWeight: 'var(--font-semibold)',
+        background: 'var(--color-warning-light)',
+        color: 'var(--color-warning)',
+    },
 };
 
 export default function EmployeePrintPage() {
@@ -80,7 +142,15 @@ export default function EmployeePrintPage() {
             <div style={s.header}>
                 <div>
                     <h1 style={s.h1}>{t('bk.printTitle')} — Mar 16, 2026</h1>
-                    <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginTop: 'var(--space-1)' }}>{t('bk.printSub')}</p>
+                    <p
+                        style={{
+                            fontSize: 'var(--text-sm)',
+                            color: 'var(--text-tertiary)',
+                            marginTop: 'var(--space-1)',
+                        }}
+                    >
+                        {t('bk.printSub')}
+                    </p>
                 </div>
                 <button style={s.printBtn} onClick={() => window.print()}>
                     <Printer size={16} /> {t('bk.btnPrintAll')}
@@ -88,7 +158,7 @@ export default function EmployeePrintPage() {
             </div>
 
             <div style={s.grid}>
-                {employees.map((emp) => {
+                {employees.map(emp => {
                     const bookings = scheduleData[emp.id] || [];
                     return (
                         <div key={emp.id} style={s.card}>
@@ -98,10 +168,15 @@ export default function EmployeePrintPage() {
                                     <div style={s.empName}>{emp.name}</div>
                                     <div style={s.empRole}>{emp.role}</div>
                                 </div>
-                                <span style={s.count}>{bookings.length} {t('bk.lblBookingsCount')}</span>
+                                <span style={s.count}>
+                                    {bookings.length} {t('bk.lblBookingsCount')}
+                                </span>
                             </div>
                             {bookings.map((b, i) => (
-                                <div key={i} style={{ ...s.row, ...(i === bookings.length - 1 ? { borderBottom: 'none' } : {}) }}>
+                                <div
+                                    key={i}
+                                    style={{ ...s.row, ...(i === bookings.length - 1 ? { borderBottom: 'none' } : {}) }}
+                                >
                                     <span style={s.time}>{b.time}</span>
                                     <div style={{ ...s.details, textAlign: lang === 'ar' ? 'right' : 'left' }}>
                                         <div style={s.svc}>{b.service}</div>

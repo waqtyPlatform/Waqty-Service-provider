@@ -18,6 +18,11 @@ import { Input } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
 import Link from 'next/link';
 
+const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@hagzy.com';
+const SUPPORT_WHATSAPP_DISPLAY = process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP_DISPLAY || '+20 100 000 0000';
+const SUPPORT_WHATSAPP_DIGITS =
+    process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP_DIGITS || SUPPORT_WHATSAPP_DISPLAY.replace(/\D/g, '');
+
 interface FaqItem {
     question: string;
     answer: string;
@@ -194,8 +199,11 @@ export default function HelpPage() {
                         </div>
                     </div>
                 </Link>
-                <div
+                <a
+                    href={`mailto:${SUPPORT_EMAIL}`}
                     style={{
+                        textDecoration: 'none',
+                        color: 'inherit',
                         padding: '1rem',
                         background: 'var(--bg-surface)',
                         borderRadius: '0.75rem',
@@ -208,11 +216,16 @@ export default function HelpPage() {
                     <Mail size={20} color="var(--color-primary-500)" />
                     <div>
                         <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{t('help.contactSupport')}</div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>support@hagzy.com</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>{SUPPORT_EMAIL}</div>
                     </div>
-                </div>
-                <div
+                </a>
+                <a
+                    href={`https://wa.me/${SUPPORT_WHATSAPP_DIGITS}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     style={{
+                        textDecoration: 'none',
+                        color: 'inherit',
                         padding: '1rem',
                         background: 'var(--bg-surface)',
                         borderRadius: '0.75rem',
@@ -225,9 +238,11 @@ export default function HelpPage() {
                     <MessageSquare size={20} color="var(--color-success-500)" />
                     <div>
                         <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>WhatsApp</div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>+20 10 XXXX XXXX</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>
+                            {SUPPORT_WHATSAPP_DISPLAY}
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
 
             {/* FAQ Categories */}

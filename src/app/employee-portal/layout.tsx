@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { Home, Calendar, Clock, LogOut, Menu, X } from 'lucide-react';
 import { employeeApi } from '@/lib/api';
+import { safeJsonParse } from '@/lib/storage';
 
 interface EmployeeUser {
     uuid: string;
@@ -41,8 +42,9 @@ export default function EmployeePortalLayout({ children }: { children: React.Rea
             return;
         }
 
-        if (stored) {
-            setEmployee(JSON.parse(stored));
+        const parsed = safeJsonParse<EmployeeUser | null>(stored, null);
+        if (parsed) {
+            setEmployee(parsed);
             setLoading(false);
         }
 

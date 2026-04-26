@@ -1,9 +1,26 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://waqty.alemtayaz.shop/public';
 
+// Hard ceiling on how long any one request can hang. The external Waqty API
+// is occasionally slow/unreachable; without a timeout the dashboard would
+// spin forever instead of falling back to mock data quickly.
+const API_TIMEOUT_MS = 15000;
+
 interface ApiResponse<T = unknown> {
     success: boolean;
     message: string;
     data?: T;
+}
+
+export class ApiError extends Error {
+    status: number;
+    payload: ApiResponse | undefined;
+
+    constructor(status: number, message: string, payload?: ApiResponse) {
+        super(message);
+        this.name = 'ApiError';
+        this.status = status;
+        this.payload = payload;
+    }
 }
 
 class ApiClient {
@@ -16,6 +33,20 @@ class ApiClient {
     private getToken(): string | null {
         if (typeof window === 'undefined') return null;
         return localStorage.getItem('hagzy_token');
+    }
+
+    private async fetchWithTimeout(url: string, init: RequestInit): Promise<Response> {
+        // Prefer a caller-supplied AbortSignal; otherwise enforce our own timeout.
+        if (init.signal) {
+            return fetch(url, init);
+        }
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+        try {
+            return await fetch(url, { ...init, signal: controller.signal });
+        } finally {
+            clearTimeout(timer);
+        }
     }
 
     async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
@@ -31,15 +62,19 @@ class ApiClient {
             headers['Authorization'] = `Bearer ${token}`;
         }
 
-        const response = await fetch(`${this.baseUrl}${endpoint}`, {
-            ...options,
-            headers,
-        });
+        let response: Response;
+        try {
+            response = await this.fetchWithTimeout(`${this.baseUrl}${endpoint}`, { ...options, headers });
+        } catch (err) {
+            // AbortError (timeout) and network errors both surface here.
+            const isAbort = err instanceof DOMException && err.name === 'AbortError';
+            throw new ApiError(0, isAbort ? 'Request timed out' : 'Network error');
+        }
 
         const data: ApiResponse<T> = await response.json();
 
         if (!response.ok) {
-            throw { status: response.status, ...data };
+            throw new ApiError(response.status, data.message || `Request failed with status ${response.status}`, data);
         }
 
         return data;
@@ -82,13 +117,21 @@ class ApiClient {
         };
         if (token) headers['Authorization'] = `Bearer ${token}`;
 
-        const response = await fetch(`${this.baseUrl}${endpoint}`, {
-            method: 'POST',
-            headers,
-            body: formData,
-        });
+        let response: Response;
+        try {
+            response = await this.fetchWithTimeout(`${this.baseUrl}${endpoint}`, {
+                method: 'POST',
+                headers,
+                body: formData,
+            });
+        } catch (err) {
+            const isAbort = err instanceof DOMException && err.name === 'AbortError';
+            throw new ApiError(0, isAbort ? 'Upload timed out' : 'Network error');
+        }
         const data: ApiResponse<T> = await response.json();
-        if (!response.ok) throw { status: response.status, ...data };
+        if (!response.ok) {
+            throw new ApiError(response.status, data.message || `Request failed with status ${response.status}`, data);
+        }
         return data;
     }
 }

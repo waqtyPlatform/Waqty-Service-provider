@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -22,9 +23,6 @@ import {
     TrendingUp,
     TrendingDown,
     CalendarCheck,
-    Wallet,
-    Users,
-    Crown,
     X,
     Image,
     Clock,
@@ -33,10 +31,27 @@ import {
     CreditCard,
     ChevronRight,
 } from 'lucide-react';
-import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, Tooltip as RechartsTooltip } from 'recharts';
-import { motion } from 'framer-motion';
 import styles from './page.module.css';
 import { useTranslation } from '@/hooks/useTranslation';
+
+// Lazy-load Recharts wrappers so the dashboard's initial paint isn't blocked
+// by Recharts' `ResponsiveContainer` size-detector (forced reflow on mount).
+const KpiSparkline = dynamic(() => import('@/components/dashboard/KpiSparkline'), {
+    ssr: false,
+    loading: () => null,
+});
+const BookingStatusDonut = dynamic(() => import('@/components/dashboard/BookingStatusDonut'), {
+    ssr: false,
+    loading: () => null,
+});
+
+// Lazy-load the below-the-fold sections (top-clients/employees/services tables
+// + summary strip). They're outside the initial viewport, so paying their
+// render cost during first paint is wasted work.
+const DashboardBottomSections = dynamic(() => import('@/components/dashboard/DashboardBottomSections'), {
+    ssr: false,
+    loading: () => <div className={styles.cardSkeleton} />,
+});
 
 const dateRanges = ['Today', 'This Week', 'This Month', 'This Quarter', 'Custom'];
 
@@ -139,13 +154,6 @@ function getProgressColor(pct: number) {
     if (pct >= 60) return 'var(--color-primary-500)';
     if (pct >= 40) return 'var(--color-warning)';
     return 'var(--color-error)';
-}
-
-function getRankClass(rank: number) {
-    if (rank === 1) return styles.rankGold;
-    if (rank === 2) return styles.rankSilver;
-    if (rank === 3) return styles.rankBronze;
-    return '';
 }
 
 function pseudoRandom(seed: string) {
@@ -356,6 +364,10 @@ export default function DashboardPage() {
     const employeeTerm = isClinic ? 'Doctor/Staff' : isBarber ? 'Barber' : 'Stylist';
     const employeesTerm = isClinic ? 'Doctors & Staff' : isBarber ? 'Barbers' : 'Stylists';
 
+    // Business-type-aware KPI labels (uses translation keys so EN/AR both flip)
+    const kpiBookingsLabel = isClinic || isBarber ? t('dash.kpiAppointments') : t('dash.kpiBookings');
+    const kpiNewClientsLabel = isClinic ? t('dash.kpiNewPatients') : t('dash.kpiNewClients');
+
     const formatNum = (num: number) => num.toLocaleString('en-US');
 
     // ── Use API summary data (with fallback) for all KPI / top sections ──
@@ -364,7 +376,7 @@ export default function DashboardPage() {
     const currentKpiData = useMemo(() => {
         return [
             {
-                label: 'Total Revenue',
+                label: t('dash.kpiRev'),
                 value: formatNum(Math.round(summary.total_revenue)),
                 unit: 'EGP',
                 trend: `${summary.revenue_trend >= 0 ? '+' : ''}${summary.revenue_trend}%`,
@@ -376,7 +388,7 @@ export default function DashboardPage() {
                 })),
             },
             {
-                label: 'Bookings',
+                label: kpiBookingsLabel,
                 value: formatNum(summary.total_bookings),
                 unit: '',
                 trend: `${summary.bookings_trend >= 0 ? '+' : ''}${summary.bookings_trend}%`,
@@ -388,7 +400,7 @@ export default function DashboardPage() {
                 })),
             },
             {
-                label: 'New Clients',
+                label: kpiNewClientsLabel,
                 value: formatNum(summary.new_clients),
                 unit: '',
                 trend: `${summary.clients_trend >= 0 ? '+' : ''}${summary.clients_trend}%`,
@@ -400,7 +412,7 @@ export default function DashboardPage() {
                 })),
             },
             {
-                label: 'Invoices',
+                label: t('dash.kpiInvoices'),
                 value: formatNum(summary.total_invoices),
                 unit: '',
                 trend:
@@ -417,7 +429,7 @@ export default function DashboardPage() {
                 })),
             },
             {
-                label: 'Returns',
+                label: t('dash.kpiReturns'),
                 value: formatNum(summary.total_returns),
                 unit: '',
                 trend:
@@ -432,7 +444,7 @@ export default function DashboardPage() {
                 })),
             },
         ];
-    }, [summary, activeDate]);
+    }, [summary, activeDate, t, kpiBookingsLabel, kpiNewClientsLabel]);
 
     const currentOccupancyData = useMemo(() => {
         // Use real data from bookings/employees if available
@@ -593,24 +605,9 @@ export default function DashboardPage() {
                         ))}
                     </div>
                 ) : (
-                    <motion.div
-                        className={styles.kpiGrid}
-                        initial="hidden"
-                        animate="visible"
-                        variants={{
-                            hidden: { opacity: 0 },
-                            visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
-                        }}
-                    >
+                    <div className={`${styles.kpiGrid} ${styles.fadeStaggerRow}`}>
                         {currentKpiData.map(kpi => (
-                            <motion.div
-                                key={kpi.label}
-                                className={styles.kpiCard}
-                                variants={{
-                                    hidden: { y: 20, opacity: 0 },
-                                    visible: { y: 0, opacity: 1 },
-                                }}
-                            >
+                            <div key={kpi.label} className={styles.kpiCard}>
                                 <div className={styles.kpiHeader}>
                                     <div className={`${styles.kpiIcon} ${styles[kpi.colorClass]}`}>{kpi.icon}</div>
                                     <span
@@ -653,53 +650,17 @@ export default function DashboardPage() {
                                     </div>
                                 </div>
                                 <div className={styles.kpiSparkline}>
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <AreaChart data={kpi.sparkData}>
-                                            <Area
-                                                type="monotone"
-                                                dataKey="v"
-                                                stroke="var(--color-primary-500)"
-                                                fill="var(--color-primary-500)"
-                                                strokeWidth={2}
-                                            />
-                                            <RechartsTooltip
-                                                contentStyle={{
-                                                    borderRadius: '8px',
-                                                    border: 'none',
-                                                    boxShadow: 'var(--shadow-sm)',
-                                                    fontSize: '12px',
-                                                    padding: '4px 8px',
-                                                }}
-                                                formatter={val => [`${val ?? ''}`, 'Value']}
-                                                labelFormatter={() => ''}
-                                            />
-                                        </AreaChart>
-                                    </ResponsiveContainer>
+                                    <KpiSparkline data={kpi.sparkData} />
                                 </div>
-                            </motion.div>
+                            </div>
                         ))}
-                    </motion.div>
+                    </div>
                 )}
 
                 {/* Charts Row */}
-                <motion.div
-                    className={styles.chartsRow}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, margin: '-50px' }}
-                    variants={{
-                        hidden: { opacity: 0 },
-                        visible: { opacity: 1, transition: { staggerChildren: 0.15 } },
-                    }}
-                >
+                <div className={`${styles.chartsRow} ${styles.fadeStaggerRow}`}>
                     {/* Occupancy Table */}
-                    <motion.div
-                        className={styles.card}
-                        variants={{
-                            hidden: { y: 20, opacity: 0 },
-                            visible: { y: 0, opacity: 1 },
-                        }}
-                    >
+                    <div className={styles.card}>
                         <div className={styles.cardHeader}>
                             <span className={styles.cardTitle}>
                                 {employeesTerm} {t('dash.occupancy')}
@@ -761,16 +722,10 @@ export default function DashboardPage() {
                                 </tbody>
                             </table>
                         </div>
-                    </motion.div>
+                    </div>
 
                     {/* Booking Status Donut */}
-                    <motion.div
-                        className={styles.card}
-                        variants={{
-                            hidden: { y: 20, opacity: 0 },
-                            visible: { y: 0, opacity: 1 },
-                        }}
-                    >
+                    <div className={styles.card}>
                         <div className={styles.cardHeader}>
                             <span className={styles.cardTitle}>{t('dash.bookingStatus')}</span>
                             <Link href="/bookings" className={styles.cardAction}>
@@ -778,32 +733,7 @@ export default function DashboardPage() {
                             </Link>
                         </div>
                         <div style={{ height: 200, position: 'relative' }}>
-                            <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                    <Pie
-                                        data={currentBookingStatusData}
-                                        cx="50%"
-                                        cy="50%"
-                                        innerRadius={60}
-                                        outerRadius={85}
-                                        paddingAngle={3}
-                                        dataKey="value"
-                                        stroke="none"
-                                    >
-                                        {currentBookingStatusData.map((entry, i) => (
-                                            <Cell key={i} fill={entry.color} />
-                                        ))}
-                                    </Pie>
-                                    <RechartsTooltip
-                                        contentStyle={{
-                                            borderRadius: '8px',
-                                            border: '1px solid var(--border-color)',
-                                            boxShadow: 'var(--shadow-md)',
-                                        }}
-                                        formatter={val => [`${val ?? ''}`, '']}
-                                    />
-                                </PieChart>
-                            </ResponsiveContainer>
+                            <BookingStatusDonut data={currentBookingStatusData} />
                             <div
                                 style={{
                                     position: 'absolute',
@@ -838,259 +768,26 @@ export default function DashboardPage() {
                                 </div>
                             ))}
                         </div>
-                    </motion.div>
-                </motion.div>
-
-                {/* Bottom Tables */}
-                <motion.div
-                    className={styles.tablesRow}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, margin: '-50px' }}
-                    variants={{
-                        hidden: { opacity: 0 },
-                        visible: { opacity: 1, transition: { staggerChildren: 0.15 } },
-                    }}
-                >
-                    {/* Top Clients */}
-                    <motion.div
-                        className={styles.card}
-                        variants={{
-                            hidden: { y: 20, opacity: 0 },
-                            visible: { y: 0, opacity: 1 },
-                        }}
-                    >
-                        <div className={styles.cardHeader}>
-                            <span className={styles.cardTitle}>
-                                {t('dash.top')} {clientsTerm}
-                            </span>
-                            <Link href="/customers" className={styles.cardAction}>
-                                {t('dash.viewAll')}
-                            </Link>
-                        </div>
-                        <div className={styles.tableScroll}>
-                            <table className={styles.dataTable}>
-                                <thead>
-                                    <tr>
-                                        <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>#</th>
-                                        <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{clientTerm}</th>
-                                        <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                            {t('dash.colVisits')}
-                                        </th>
-                                        <th style={{ textAlign: lang === 'ar' ? 'left' : 'right' }}>
-                                            {t('dash.colSpend')}
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {currentTopClients.map(c => (
-                                        <tr
-                                            key={c.rank}
-                                            onClick={() => router.push(`/customers/${c.id}`)}
-                                            style={{ cursor: 'pointer' }}
-                                        >
-                                            <td>
-                                                <span className={`${styles.rankNumber} ${getRankClass(c.rank)}`}>
-                                                    {c.rank}
-                                                </span>
-                                            </td>
-                                            <td className={styles.rankName}>{c.name}</td>
-                                            <td>{c.visits}</td>
-                                            <td
-                                                className={styles.rankValue}
-                                                style={{ textAlign: lang === 'ar' ? 'left' : 'right' }}
-                                            >
-                                                {c.spend} EGP
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </motion.div>
-
-                    {/* Top Employees */}
-                    <motion.div
-                        className={styles.card}
-                        variants={{
-                            hidden: { y: 20, opacity: 0 },
-                            visible: { y: 0, opacity: 1 },
-                        }}
-                    >
-                        <div className={styles.cardHeader}>
-                            <span className={styles.cardTitle}>
-                                {t('dash.top')} {employeesTerm}
-                            </span>
-                            <Link href="/employees" className={styles.cardAction}>
-                                {t('dash.viewAll')}
-                            </Link>
-                        </div>
-                        <div className={styles.tableScroll}>
-                            <table className={styles.dataTable}>
-                                <thead>
-                                    <tr>
-                                        <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>#</th>
-                                        <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{employeeTerm}</th>
-                                        <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{bookingsTerm}</th>
-                                        <th style={{ textAlign: lang === 'ar' ? 'left' : 'right' }}>
-                                            {t('dash.colRevenue')}
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {currentTopEmployees.map(e => (
-                                        <tr
-                                            key={e.rank}
-                                            onClick={() => router.push(`/employees/${e.id}`)}
-                                            style={{ cursor: 'pointer' }}
-                                        >
-                                            <td>
-                                                <span className={`${styles.rankNumber} ${getRankClass(e.rank)}`}>
-                                                    {e.rank}
-                                                </span>
-                                            </td>
-                                            <td className={styles.rankName}>{e.name}</td>
-                                            <td>{e.bookings}</td>
-                                            <td
-                                                className={styles.rankValue}
-                                                style={{ textAlign: lang === 'ar' ? 'left' : 'right' }}
-                                            >
-                                                {e.revenue} EGP
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </motion.div>
-
-                    {/* Top Services */}
-                    <motion.div
-                        className={styles.card}
-                        variants={{
-                            hidden: { y: 20, opacity: 0 },
-                            visible: { y: 0, opacity: 1 },
-                        }}
-                    >
-                        <div className={styles.cardHeader}>
-                            <span className={styles.cardTitle}>{t('dash.topServices')}</span>
-                            <Link href="/sales" className={styles.cardAction}>
-                                {t('dash.viewAll')}
-                            </Link>
-                        </div>
-                        <div className={styles.tableScroll}>
-                            <table className={styles.dataTable}>
-                                <thead>
-                                    <tr>
-                                        <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>#</th>
-                                        <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                            {t('sales.services')}
-                                        </th>
-                                        <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                            {t('dash.colCount')}
-                                        </th>
-                                        <th style={{ textAlign: lang === 'ar' ? 'left' : 'right' }}>
-                                            {t('dash.colRevenue')}
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {currentTopServices.map(s => (
-                                        <tr key={s.rank}>
-                                            <td>
-                                                <span className={`${styles.rankNumber} ${getRankClass(s.rank)}`}>
-                                                    {s.rank}
-                                                </span>
-                                            </td>
-                                            <td className={styles.rankName}>{s.name}</td>
-                                            <td>{s.count}</td>
-                                            <td
-                                                className={styles.rankValue}
-                                                style={{ textAlign: lang === 'ar' ? 'left' : 'right' }}
-                                            >
-                                                {s.revenue} EGP
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </motion.div>
-                </motion.div>
-
-                {/* Summary Strip */}
-                <div className={styles.summaryStrip}>
-                    <div className={styles.summaryCard}>
-                        <div
-                            className={styles.summaryIcon}
-                            style={{ background: 'var(--color-primary-50)', color: 'var(--color-primary-600)' }}
-                        >
-                            <CalendarCheck size={24} />
-                        </div>
-                        <div className={styles.summaryContent}>
-                            <h3>{totalBookings}</h3>
-                            <p>
-                                {bookingsTerm}{' '}
-                                {t(
-                                    activeDate === 'Today'
-                                        ? 'dash.dateToday'
-                                        : activeDate === 'This Week'
-                                          ? 'dash.dateWeek'
-                                          : activeDate === 'This Month'
-                                            ? 'dash.dateMonth'
-                                            : activeDate === 'This Quarter'
-                                              ? 'dash.dateQuarter'
-                                              : 'dash.dateCustom'
-                                )}
-                            </p>
-                        </div>
-                    </div>
-                    <div className={styles.summaryCard}>
-                        <div
-                            className={styles.summaryIcon}
-                            style={{ background: 'var(--color-info-light)', color: 'var(--color-info)' }}
-                        >
-                            <Users size={24} />
-                        </div>
-                        <div className={styles.summaryContent}>
-                            <h3>{formatNum(summary.new_clients)}</h3>
-                            <p>+ {clientsTerm}</p>
-                        </div>
-                    </div>
-                    <div className={styles.summaryCard}>
-                        <div
-                            className={styles.summaryIcon}
-                            style={{ background: 'var(--color-warning-light)', color: 'var(--color-warning)' }}
-                        >
-                            <Wallet size={24} />
-                        </div>
-                        <div className={styles.summaryContent}>
-                            <h3>{formatNum(Math.round(summary.total_revenue))}</h3>
-                            <p>{t('dash.cashDrawer')}</p>
-                        </div>
-                    </div>
-                    <div className={`${styles.summaryCard} ${styles.clientOfMonth}`}>
-                        <div
-                            className={styles.summaryIcon}
-                            style={{ background: 'rgba(255,255,255,0.2)', color: 'white' }}
-                        >
-                            <Crown size={24} />
-                        </div>
-                        <div className={styles.summaryContent}>
-                            <h3>
-                                {summary.top_clients.length > 0
-                                    ? summary.top_clients[0].name
-                                          .split(' ')
-                                          .map((n, i) => (i === 0 ? n : n[0] + '.'))
-                                          .join(' ')
-                                    : 'Fatima A.'}
-                            </h3>
-                            <p>
-                                🌟 {clientTerm} {t('dash.clientOfMonth')}
-                            </p>
-                        </div>
                     </div>
                 </div>
+
+                {/* Below-the-fold sections — lazy-loaded so they don't block the dashboard's first paint. */}
+                <DashboardBottomSections
+                    topClients={currentTopClients}
+                    topEmployees={currentTopEmployees}
+                    topServices={currentTopServices}
+                    summary={summary}
+                    totalBookings={totalBookings}
+                    activeDate={activeDate}
+                    lang={lang}
+                    t={t}
+                    clientTerm={clientTerm}
+                    clientsTerm={clientsTerm}
+                    employeeTerm={employeeTerm}
+                    employeesTerm={employeesTerm}
+                    bookingsTerm={bookingsTerm}
+                    formatNum={formatNum}
+                />
             </>
         </div>
     );

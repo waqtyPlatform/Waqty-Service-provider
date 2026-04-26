@@ -7,22 +7,12 @@ import {
     Users,
     Calendar,
     BarChart3,
-    Clock,
-    Target,
     Briefcase,
-    UserCog,
     Plus,
-    Award,
     Wallet,
     Building2,
     ClipboardCheck,
-    Layers,
-    ScanLine,
-    Settings,
     ArrowLeftRight,
-    Fingerprint,
-    BadgeCheck,
-    Cog
 } from 'lucide-react';
 import styles from './employees.module.css';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -57,7 +47,10 @@ export default function EmployeesLayout({ children }: { children: React.ReactNod
                                 <h1 className={styles.title}>{t('empLayout.title')}</h1>
                                 <p className={styles.subtitle}>{t('empLayout.subtitle')}</p>
                             </div>
-                            <button className={styles.btnAdd} onClick={() => window.dispatchEvent(new Event('openAddEmployee'))}>
+                            <button
+                                className={styles.btnAdd}
+                                onClick={() => window.dispatchEvent(new Event('openAddEmployee'))}
+                            >
                                 <Plus size={16} /> {t('empLayout.addEmployee')}
                             </button>
                         </div>
@@ -66,7 +59,7 @@ export default function EmployeesLayout({ children }: { children: React.ReactNod
                     {/* Tabs */}
                     {isTabPage && (
                         <div className={styles.tabsScrollContainer}>
-                            {tabItems.map((tab) => {
+                            {tabItems.map(tab => {
                                 const isActive = pathname === tab.href;
                                 return (
                                     <Link

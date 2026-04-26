@@ -15,7 +15,15 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     iconOnly?: boolean;
 }
 
-export function Button({ variant = 'primary', size = 'md', fullWidth, iconOnly, className, children, ...props }: ButtonProps) {
+export function Button({
+    variant = 'primary',
+    size = 'md',
+    fullWidth,
+    iconOnly,
+    className,
+    children,
+    ...props
+}: ButtonProps) {
     return (
         <button
             className={`${styles.btn} ${styles[variant]} ${styles[size]} ${fullWidth ? styles.fullWidth : ''} ${iconOnly ? styles.iconOnly : ''} ${className || ''}`}
@@ -49,22 +57,62 @@ export function Badge({ color = 'neutral', size = 'md', children, style }: Badge
         amber: styles.badgeAmber,
     };
     const sizeClass = size === 'sm' ? styles.badgeSm : '';
-    return <span className={`${styles.badge} ${colorMap[color]} ${sizeClass}`} style={style}>{children}</span>;
+    return (
+        <span className={`${styles.badge} ${colorMap[color]} ${sizeClass}`} style={style}>
+            {children}
+        </span>
+    );
 }
 
 // ─── Switch ──────────────────────────────────────────────────────────
-interface SwitchProps { checked?: boolean; onChange?: (val: boolean) => void; label?: string; }
+// Unified toggle used everywhere in the dashboard. Renders a proper ARIA switch
+// (role="switch" + aria-checked) backed by a real <button> so keyboard users can
+// toggle with Space/Enter. Supports controlled (sync with `checked` prop) and
+// uncontrolled use (falls back to internal state when `onChange` is omitted).
+interface SwitchProps {
+    checked?: boolean;
+    onChange?: (val: boolean) => void;
+    label?: string;
+    disabled?: boolean;
+    'aria-label'?: string;
+}
 
-export function Switch({ checked = false, onChange, label }: SwitchProps) {
-    const [on, setOn] = useState(checked);
-    const handleClick = () => { const next = !on; setOn(next); onChange?.(next); };
+export function Switch({ checked = false, onChange, label, disabled = false, ...rest }: SwitchProps) {
+    const isControlled = onChange !== undefined;
+    const [internalOn, setInternalOn] = useState(checked);
+    const on = isControlled ? checked : internalOn;
+
+    const handleToggle = () => {
+        if (disabled) return;
+        const next = !on;
+        if (!isControlled) setInternalOn(next);
+        onChange?.(next);
+    };
+
     return (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-            <div className={`${styles.toggle} ${on ? styles.toggleOn : styles.toggleOff}`} onClick={handleClick}>
-                <div className={`${styles.toggleDot} ${on ? styles.toggleDotOn : styles.toggleDotOff}`} />
-            </div>
+        <label
+            style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 'var(--space-3)',
+                cursor: disabled ? 'not-allowed' : 'pointer',
+                opacity: disabled ? 0.5 : 1,
+            }}
+        >
+            <button
+                type="button"
+                role="switch"
+                aria-checked={on}
+                aria-label={rest['aria-label'] ?? label}
+                disabled={disabled}
+                onClick={handleToggle}
+                className={`${styles.toggle} ${on ? styles.toggleOn : styles.toggleOff}`}
+                style={{ border: 'none', padding: 0 }}
+            >
+                <span className={`${styles.toggleDot} ${on ? styles.toggleDotOn : styles.toggleDotOff}`} />
+            </button>
             {label && <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}>{label}</span>}
-        </div>
+        </label>
     );
 }
 
@@ -97,7 +145,11 @@ export function Select({ label, options, className, ...props }: SelectProps) {
         <div className={styles.inputWrapper}>
             {label && <label className={styles.inputLabel}>{label}</label>}
             <select className={`${styles.selectField} ${className || ''}`} {...props}>
-                {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                {options.map(o => (
+                    <option key={o.value} value={o.value}>
+                        {o.label}
+                    </option>
+                ))}
             </select>
         </div>
     );
@@ -118,11 +170,19 @@ export function Textarea({ label, className, ...props }: TextareaProps) {
 }
 
 // ─── Checkbox ────────────────────────────────────────────────────────
-interface CheckboxProps { checked?: boolean; onChange?: (val: boolean) => void; label: string; }
+interface CheckboxProps {
+    checked?: boolean;
+    onChange?: (val: boolean) => void;
+    label: string;
+}
 
 export function Checkbox({ checked = false, onChange, label }: CheckboxProps) {
     const [on, setOn] = useState(checked);
-    const toggle = () => { const n = !on; setOn(n); onChange?.(n); };
+    const toggle = () => {
+        const n = !on;
+        setOn(n);
+        onChange?.(n);
+    };
     return (
         <div className={styles.checkbox} onClick={toggle}>
             <div className={`${styles.checkboxInput} ${on ? styles.checkboxChecked : ''}`}>
@@ -134,16 +194,24 @@ export function Checkbox({ checked = false, onChange, label }: CheckboxProps) {
 }
 
 // ─── Modal ───────────────────────────────────────────────────────────
-interface ModalProps { open: boolean; onClose: () => void; title: string; children: ReactNode; footer?: ReactNode; }
+interface ModalProps {
+    open: boolean;
+    onClose: () => void;
+    title: string;
+    children: ReactNode;
+    footer?: ReactNode;
+}
 
 export function Modal({ open, onClose, title, children, footer }: ModalProps) {
     if (!open) return null;
     return (
         <div className={styles.modalOverlay} onClick={onClose}>
-            <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modal} onClick={e => e.stopPropagation()}>
                 <div className={styles.modalHeader}>
                     <div className={styles.modalTitle}>{title}</div>
-                    <button className={styles.modalClose} onClick={onClose}><X size={18} /></button>
+                    <button className={styles.modalClose} onClick={onClose}>
+                        <X size={18} />
+                    </button>
                 </div>
                 <div className={styles.modalBody}>{children}</div>
                 {footer && <div className={styles.modalFooter}>{footer}</div>}
@@ -153,7 +221,13 @@ export function Modal({ open, onClose, title, children, footer }: ModalProps) {
 }
 
 // ─── SlideOver ────────────────────────────────────────────────────────
-interface SlideOverProps { open: boolean; onClose: () => void; title: string; children: ReactNode; footer?: ReactNode; }
+interface SlideOverProps {
+    open: boolean;
+    onClose: () => void;
+    title: string;
+    children: ReactNode;
+    footer?: ReactNode;
+}
 
 export function SlideOver({ open, onClose, title, children, footer }: SlideOverProps) {
     if (!open) return null;
@@ -163,7 +237,9 @@ export function SlideOver({ open, onClose, title, children, footer }: SlideOverP
             <div className={styles.slideOver}>
                 <div className={styles.slideOverHeader}>
                     <div className={styles.modalTitle}>{title}</div>
-                    <button className={styles.modalClose} onClick={onClose}><X size={18} /></button>
+                    <button className={styles.modalClose} onClick={onClose}>
+                        <X size={18} />
+                    </button>
                 </div>
                 <div className={styles.slideOverBody}>{children}</div>
                 {footer && <div className={styles.slideOverFooter}>{footer}</div>}
@@ -173,7 +249,12 @@ export function SlideOver({ open, onClose, title, children, footer }: SlideOverP
 }
 
 // ─── EmptyState ──────────────────────────────────────────────────────
-interface EmptyStateProps { icon: ReactNode; title: string; description: string; action?: ReactNode; }
+interface EmptyStateProps {
+    icon: ReactNode;
+    title: string;
+    description: string;
+    action?: ReactNode;
+}
 
 export function EmptyState({ icon, title, description, action }: EmptyStateProps) {
     return (
@@ -187,7 +268,11 @@ export function EmptyState({ icon, title, description, action }: EmptyStateProps
 }
 
 // ─── Skeleton ────────────────────────────────────────────────────────
-interface SkeletonProps { variant?: 'text' | 'title' | 'circle' | 'card'; width?: number | string; height?: number | string; }
+interface SkeletonProps {
+    variant?: 'text' | 'title' | 'circle' | 'card';
+    width?: number | string;
+    height?: number | string;
+}
 
 export function Skeleton({ variant = 'text', width, height }: SkeletonProps) {
     const variantClass = {
@@ -201,11 +286,20 @@ export function Skeleton({ variant = 'text', width, height }: SkeletonProps) {
 
 // ─── Toast System ────────────────────────────────────────────────────
 type ToastType = 'success' | 'error' | 'warning' | 'info';
-interface ToastItem { id: string; type: ToastType; message: string; undoAction?: () => void; }
+interface ToastItem {
+    id: string;
+    type: ToastType;
+    message: string;
+    undoAction?: () => void;
+}
 
-const ToastCtx = createContext<{ addToast: (type: ToastType, message: string, undoAction?: () => void) => void }>({ addToast: () => { } });
+const ToastCtx = createContext<{ addToast: (type: ToastType, message: string, undoAction?: () => void) => void }>({
+    addToast: () => {},
+});
 
-export function useToast() { return useContext(ToastCtx); }
+export function useToast() {
+    return useContext(ToastCtx);
+}
 
 export function ToastProvider({ children }: { children: ReactNode }) {
     const [toasts, setToasts] = useState<ToastItem[]>([]);
@@ -229,11 +323,23 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         <ToastCtx.Provider value={{ addToast }}>
             {children}
             <div className={styles.toastContainer}>
-                {toasts.map((t) => (
+                {toasts.map(t => (
                     <div key={t.id} className={`${styles.toast} ${typeClass[t.type]}`}>
                         <span>{t.message}</span>
-                        {t.undoAction && <span className={styles.toastUndo} onClick={() => { t.undoAction?.(); remove(t.id); }}>Undo</span>}
-                        <span className={styles.toastClose} onClick={() => remove(t.id)}><X size={14} /></span>
+                        {t.undoAction && (
+                            <span
+                                className={styles.toastUndo}
+                                onClick={() => {
+                                    t.undoAction?.();
+                                    remove(t.id);
+                                }}
+                            >
+                                Undo
+                            </span>
+                        )}
+                        <span className={styles.toastClose} onClick={() => remove(t.id)}>
+                            <X size={14} />
+                        </span>
                     </div>
                 ))}
             </div>
@@ -242,7 +348,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 }
 
 // ─── Breadcrumbs ─────────────────────────────────────────────────────
-interface BreadcrumbItem { label: string; href?: string; }
+interface BreadcrumbItem {
+    label: string;
+    href?: string;
+}
 
 export function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
     return (
@@ -251,7 +360,9 @@ export function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
                 <React.Fragment key={i}>
                     {i > 0 && <ChevronRight size={14} className={styles.breadcrumbSep} />}
                     {item.href ? (
-                        <a href={item.href} className={styles.breadcrumbItem}>{item.label}</a>
+                        <a href={item.href} className={styles.breadcrumbItem}>
+                            {item.label}
+                        </a>
                     ) : (
                         <span className={`${styles.breadcrumbItem} ${styles.breadcrumbCurrent}`}>{item.label}</span>
                     )}
@@ -262,14 +373,22 @@ export function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
 }
 
 // ─── Tabs ────────────────────────────────────────────────────────────
-interface TabItem { key: string; label: string; icon?: ReactNode; }
+interface TabItem {
+    key: string;
+    label: string;
+    icon?: ReactNode;
+}
 
-interface TabsProps { items: TabItem[]; active: string; onChange: (key: string) => void; }
+interface TabsProps {
+    items: TabItem[];
+    active: string;
+    onChange: (key: string) => void;
+}
 
 export function Tabs({ items, active, onChange }: TabsProps) {
     return (
         <div className={styles.tabGroup}>
-            {items.map((tab) => (
+            {items.map(tab => (
                 <button
                     key={tab.key}
                     className={`${styles.tabItem} ${active === tab.key ? styles.tabItemActive : ''}`}
@@ -283,16 +402,23 @@ export function Tabs({ items, active, onChange }: TabsProps) {
 }
 
 // ─── Stepper ─────────────────────────────────────────────────────────
-interface StepperProps { steps: string[]; current: number; }
+interface StepperProps {
+    steps: string[];
+    current: number;
+}
 
 export function Stepper({ steps, current }: StepperProps) {
     return (
         <div className={styles.stepper}>
             {steps.map((step, i) => (
                 <React.Fragment key={i}>
-                    {i > 0 && <div className={`${styles.stepConnector} ${i <= current ? styles.stepConnectorDone : ''}`} />}
+                    {i > 0 && (
+                        <div className={`${styles.stepConnector} ${i <= current ? styles.stepConnectorDone : ''}`} />
+                    )}
                     <div className={styles.step}>
-                        <div className={`${styles.stepCircle} ${i < current ? styles.stepDone : i === current ? styles.stepActive : styles.stepPending}`}>
+                        <div
+                            className={`${styles.stepCircle} ${i < current ? styles.stepDone : i === current ? styles.stepActive : styles.stepPending}`}
+                        >
                             {i < current ? <Check size={14} /> : i + 1}
                         </div>
                         <span className={i === current ? styles.stepLabelActive : styles.stepLabel}>{step}</span>
@@ -304,7 +430,11 @@ export function Stepper({ steps, current }: StepperProps) {
 }
 
 // ─── FAB ─────────────────────────────────────────────────────────────
-interface FABAction { label: string; icon: ReactNode; onClick: () => void; }
+interface FABAction {
+    label: string;
+    icon: ReactNode;
+    onClick: () => void;
+}
 
 export function FAB({ actions }: { actions: FABAction[] }) {
     const [open, setOpen] = useState(false);
@@ -313,21 +443,38 @@ export function FAB({ actions }: { actions: FABAction[] }) {
             {open && (
                 <div className={styles.fabMenu}>
                     {actions.map((a, i) => (
-                        <button key={i} className={styles.fabItem} onClick={() => { a.onClick(); setOpen(false); }}>
+                        <button
+                            key={i}
+                            className={styles.fabItem}
+                            onClick={() => {
+                                a.onClick();
+                                setOpen(false);
+                            }}
+                        >
                             {a.icon} {a.label}
                         </button>
                     ))}
                 </div>
             )}
             <button className={styles.fab} onClick={() => setOpen(!open)}>
-                <Plus size={24} style={{ transition: 'transform var(--transition-fast)', transform: open ? 'rotate(45deg)' : 'none' }} />
+                <Plus
+                    size={24}
+                    style={{
+                        transition: 'transform var(--transition-fast)',
+                        transform: open ? 'rotate(45deg)' : 'none',
+                    }}
+                />
             </button>
         </>
     );
 }
 
 // ─── Timeline ────────────────────────────────────────────────────────
-interface TimelineEvent { time: string; title: string; description?: string; }
+interface TimelineEvent {
+    time: string;
+    title: string;
+    description?: string;
+}
 
 export function Timeline({ events }: { events: TimelineEvent[] }) {
     return (
@@ -346,7 +493,12 @@ export function Timeline({ events }: { events: TimelineEvent[] }) {
 }
 
 // ─── SearchBar ───────────────────────────────────────────────────────
-interface SearchBarProps { placeholder?: string; value?: string; onChange?: (val: string) => void; shortcut?: string; }
+interface SearchBarProps {
+    placeholder?: string;
+    value?: string;
+    onChange?: (val: string) => void;
+    shortcut?: string;
+}
 
 export function SearchBar({ placeholder = 'Search...', value, onChange, shortcut }: SearchBarProps) {
     return (
@@ -356,7 +508,7 @@ export function SearchBar({ placeholder = 'Search...', value, onChange, shortcut
                 className={styles.searchBarInput}
                 placeholder={placeholder}
                 value={value}
-                onChange={(e) => onChange?.(e.target.value)}
+                onChange={e => onChange?.(e.target.value)}
             />
             {shortcut && <span className={styles.searchShortcut}>{shortcut}</span>}
         </div>
@@ -378,7 +530,9 @@ export function KPICard({ icon, iconBg, iconColor, value, label, trend }: KPICar
         <div className={styles.kpiCard}>
             <div className={styles.kpiCardHeader}>
                 <div className={styles.kpiCardLabel}>{label}</div>
-                <div className={styles.kpiCardIcon} style={{ background: iconBg, color: iconColor }}>{icon}</div>
+                <div className={styles.kpiCardIcon} style={{ background: iconBg, color: iconColor }}>
+                    {icon}
+                </div>
             </div>
             <div className={styles.kpiCardBody}>
                 <div className={styles.kpiCardValue}>{value}</div>
@@ -392,8 +546,17 @@ export function KPICard({ icon, iconBg, iconColor, value, label, trend }: KPICar
     );
 }
 // ─── DropdownMenu ────────────────────────────────────────────────────
-interface DropdownItemProps { label: string; icon?: ReactNode; onClick: () => void; destructive?: boolean; }
-interface DropdownMenuProps { trigger: ReactNode; items: DropdownItemProps[]; align?: 'left' | 'right'; }
+interface DropdownItemProps {
+    label: string;
+    icon?: ReactNode;
+    onClick: () => void;
+    destructive?: boolean;
+}
+interface DropdownMenuProps {
+    trigger: ReactNode;
+    items: DropdownItemProps[];
+    align?: 'left' | 'right';
+}
 
 export function DropdownMenu({ trigger, items, align = 'right' }: DropdownMenuProps) {
     const [open, setOpen] = useState(false);
@@ -412,11 +575,29 @@ export function DropdownMenu({ trigger, items, align = 'right' }: DropdownMenuPr
 
     return (
         <div className={styles.dropdown} ref={ref}>
-            <div onClick={(e) => { e.stopPropagation(); e.preventDefault(); setOpen(!open); }}>{trigger}</div>
+            <div
+                onClick={e => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    setOpen(!open);
+                }}
+            >
+                {trigger}
+            </div>
             {open && (
-                <div className={`${styles.dropdownMenu} ${align === 'right' ? styles.dropdownRight : styles.dropdownLeft}`}>
+                <div
+                    className={`${styles.dropdownMenu} ${align === 'right' ? styles.dropdownRight : styles.dropdownLeft}`}
+                >
                     {items.map((item, i) => (
-                        <button key={i} className={`${styles.dropdownItem} ${item.destructive ? styles.dropdownItemDestructive : ''}`} onClick={(e) => { e.stopPropagation(); item.onClick(); setOpen(false); }}>
+                        <button
+                            key={i}
+                            className={`${styles.dropdownItem} ${item.destructive ? styles.dropdownItemDestructive : ''}`}
+                            onClick={e => {
+                                e.stopPropagation();
+                                item.onClick();
+                                setOpen(false);
+                            }}
+                        >
                             {item.icon} {item.label}
                         </button>
                     ))}

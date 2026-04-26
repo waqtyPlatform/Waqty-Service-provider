@@ -421,11 +421,9 @@ export default function AttendancePage() {
 
     return (
         <div style={{ ...s.page, direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
-            {/* eslint-disable-next-line react/no-children-prop */}
-            <SubTabs
-                tabs={subTabs}
-                defaultTab="attendance"
-                children={{
+            {}
+            <SubTabs tabs={subTabs} defaultTab="attendance">
+                {{
                     attendance: (
                         <>
                             <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' }}>
@@ -821,7 +819,7 @@ export default function AttendancePage() {
                     attendSettings: <AttendanceSettingsPage />,
                     fingerprints: <FingerprintsPage />,
                 }}
-            />
+            </SubTabs>
         </div>
     );
 }

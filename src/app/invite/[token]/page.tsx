@@ -30,7 +30,7 @@ export default function InviteClaimPage() {
     const handleRequestOTP = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!phone.trim()) return addToast('error', 'Please enter your phone number');
-        
+
         setIsLoading(true);
         try {
             const res = await requestOTP(phone);
@@ -56,7 +56,7 @@ export default function InviteClaimPage() {
             const res = await verifyOTP(phone, code, false);
             if (!res.success) {
                 addToast('error', res.error || t('auth.errorVerify'));
-                setOtpCode(['', '', '', '', '', '']); 
+                setOtpCode(['', '', '', '', '', '']);
             } else {
                 addToast('success', 'Identity Verified!');
                 setStep(2); // Move to profile setup
@@ -71,14 +71,14 @@ export default function InviteClaimPage() {
     const handleFinishSetup = (e: React.FormEvent) => {
         e.preventDefault();
         if (!fullName.trim()) return addToast('error', 'Please enter your name');
-        
+
         // Mock saving name and role to the session
         const staffUser: User = {
             id: 'S001',
             name: fullName,
             email: phone.includes('@') ? phone : `${fullName.replace(/\s/g, '').toLowerCase()}@hagzy.com`,
             role: 'staff',
-            businessType: 'clinic'
+            businessType: 'clinic',
         };
         localStorage.setItem('hagzy_user', JSON.stringify(staffUser));
 
@@ -113,22 +113,38 @@ export default function InviteClaimPage() {
                         <span>Hagzy Invitation</span>
                     </div>
                     <h1>{step === 1 ? 'Accept Invitation' : 'Complete Profile'}</h1>
-                    <p>{step === 1 ? 'Verify your device to join the workspace.' : 'How should your colleagues and clients address you?'}</p>
+                    <p>
+                        {step === 1
+                            ? 'Verify your device to join the workspace.'
+                            : 'How should your colleagues and clients address you?'}
+                    </p>
                 </div>
 
                 <div className={styles.stepIndicator}>
-                    <div className={`${styles.stepDot} ${step >= 1 ? styles.stepDotCompleted : ''} ${step === 1 ? styles.stepDotActive : ''}`} />
-                    <div className={`${styles.stepDot} ${step >= 2 ? styles.stepDotCompleted : ''} ${step === 2 ? styles.stepDotActive : ''}`} />
+                    <div
+                        className={`${styles.stepDot} ${step >= 1 ? styles.stepDotCompleted : ''} ${step === 1 ? styles.stepDotActive : ''}`}
+                    />
+                    <div
+                        className={`${styles.stepDot} ${step >= 2 ? styles.stepDotCompleted : ''} ${step === 2 ? styles.stepDotActive : ''}`}
+                    />
                 </div>
 
                 {/* Step 1: Verify Phone/Email */}
-                {step === 1 && (
-                    !otpSent ? (
+                {step === 1 &&
+                    (!otpSent ? (
                         <form className={styles.form} onSubmit={handleRequestOTP}>
                             <div className={styles.inputGroup}>
                                 <label className={styles.label}>Invited Phone Number</label>
                                 <div style={{ position: 'relative' }}>
-                                    <div style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }}>
+                                    <div
+                                        style={{
+                                            position: 'absolute',
+                                            left: 16,
+                                            top: '50%',
+                                            transform: 'translateY(-50%)',
+                                            color: 'var(--text-tertiary)',
+                                        }}
+                                    >
                                         <Smartphone size={18} />
                                     </div>
                                     <input
@@ -137,7 +153,7 @@ export default function InviteClaimPage() {
                                         style={{ paddingLeft: 44 }}
                                         placeholder="+20 100 123 4567"
                                         value={phone}
-                                        onChange={(e) => setPhone(e.target.value)}
+                                        onChange={e => setPhone(e.target.value)}
                                         autoFocus
                                     />
                                 </div>
@@ -150,8 +166,17 @@ export default function InviteClaimPage() {
                     ) : (
                         <form className={styles.form} onSubmit={handleVerifyIdentity}>
                             <div className={styles.inputGroup}>
-                                <label className={styles.label} style={{ textAlign: 'center' }}>Enter 6-digit Code</label>
-                                <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'center', marginTop: 'var(--space-2)' }}>
+                                <label className={styles.label} style={{ textAlign: 'center' }}>
+                                    Enter 6-digit Code
+                                </label>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        gap: 'var(--space-2)',
+                                        justifyContent: 'center',
+                                        marginTop: 'var(--space-2)',
+                                    }}
+                                >
                                     {otpCode.map((digit, idx) => (
                                         <input
                                             key={idx}
@@ -161,26 +186,35 @@ export default function InviteClaimPage() {
                                             pattern="[0-9]*"
                                             maxLength={1}
                                             value={digit}
-                                            onChange={(e) => handleOtpChange(idx, e.target.value)}
-                                            onKeyDown={(e) => handleOtpKeyDown(idx, e)}
+                                            onChange={e => handleOtpChange(idx, e.target.value)}
+                                            onKeyDown={e => handleOtpKeyDown(idx, e)}
                                             style={{
-                                                width: 44, height: 52, textAlign: 'center', fontSize: 'var(--text-xl)',
-                                                fontWeight: 'var(--font-bold)', borderRadius: 'var(--radius-lg)',
+                                                width: 44,
+                                                height: 52,
+                                                textAlign: 'center',
+                                                fontSize: 'var(--text-xl)',
+                                                fontWeight: 'var(--font-bold)',
+                                                borderRadius: 'var(--radius-lg)',
                                                 border: `1px solid ${digit ? 'var(--color-primary-500)' : 'var(--border-color)'}`,
-                                                background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none'
+                                                background: 'var(--bg-primary)',
+                                                color: 'var(--text-primary)',
+                                                outline: 'none',
                                             }}
                                             autoFocus={idx === 0}
                                         />
                                     ))}
                                 </div>
                             </div>
-                            <button type="submit" className={styles.loginBtn} disabled={isLoading || otpCode.join('').length < 6}>
+                            <button
+                                type="submit"
+                                className={styles.loginBtn}
+                                disabled={isLoading || otpCode.join('').length < 6}
+                            >
                                 {isLoading ? <RefreshCw size={18} className="spin" /> : <ShieldCheck size={18} />}
                                 Verify Device
                             </button>
                         </form>
-                    )
-                )}
+                    ))}
 
                 {/* Step 2: Complete Profile */}
                 {step === 2 && (
@@ -188,7 +222,15 @@ export default function InviteClaimPage() {
                         <div className={styles.inputGroup}>
                             <label className={styles.label}>Full Name</label>
                             <div style={{ position: 'relative' }}>
-                                <div style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }}>
+                                <div
+                                    style={{
+                                        position: 'absolute',
+                                        left: 16,
+                                        top: '50%',
+                                        transform: 'translateY(-50%)',
+                                        color: 'var(--text-tertiary)',
+                                    }}
+                                >
                                     <UserIcon size={18} />
                                 </div>
                                 <input
@@ -197,12 +239,12 @@ export default function InviteClaimPage() {
                                     style={{ paddingLeft: 44 }}
                                     placeholder="e.g., Layla Hassan"
                                     value={fullName}
-                                    onChange={(e) => setFullName(e.target.value)}
+                                    onChange={e => setFullName(e.target.value)}
                                     autoFocus
                                 />
                             </div>
                         </div>
-                        
+
                         <button type="submit" className={styles.loginBtn} style={{ marginTop: 'var(--space-4)' }}>
                             <ArrowRight size={18} />
                             Join Workspace

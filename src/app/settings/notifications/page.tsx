@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Switch, Button } from '@/components/ui';
+import { Switch, Button, useToast } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useApiQuery } from '@/hooks/useApiQuery';
 import { settingsApi, type NotificationSetting } from '@/lib/api';
@@ -43,6 +43,7 @@ const cs: Record<string, React.CSSProperties> = {
 
 export default function NotificationsSettingsPage() {
     const { t } = useTranslation();
+    const { addToast } = useToast();
 
     const {
         data: apiNotifications,
@@ -64,10 +65,10 @@ export default function NotificationsSettingsPage() {
     const handleSave = async () => {
         try {
             await settingsApi.updateNotificationSettings({ settings } as Record<string, unknown>);
-            alert(t('settings.notifications.saved') || 'Notification preferences saved!');
+            addToast('success', t('settings.notifications.saved') || 'Notification preferences saved!');
             refetch();
         } catch {
-            alert('Failed to save notification settings');
+            addToast('error', 'Failed to save notification settings');
         }
     };
 

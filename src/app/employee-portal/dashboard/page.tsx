@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, CheckCircle, Briefcase } from 'lucide-react';
 import { employeeApi, type Booking, type AttendanceRecord } from '@/lib/api';
+import { safeLocalStorageGet } from '@/lib/storage';
 
 function useEmployeeToken() {
     // Swap token temporarily for employee API calls
@@ -29,8 +30,7 @@ export default function EmployeeDashboardPage() {
     const [checkingIn, setCheckingIn] = useState(false);
 
     const today = new Date().toISOString().split('T')[0];
-    const empUser =
-        typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('hagzy_employee_user') || '{}') : {};
+    const empUser = safeLocalStorageGet<{ name?: string; uuid?: string }>('hagzy_employee_user', {});
 
     useEffect(() => {
         (async () => {

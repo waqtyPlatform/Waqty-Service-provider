@@ -5,6 +5,7 @@ import { Save } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useApiQuery } from '@/hooks/useApiQuery';
 import { settingsApi, type InvoiceSettings } from '@/lib/api';
+import { useToast } from '@/components/ui';
 
 const s: Record<string, React.CSSProperties> = {
     page: { display: 'flex', flexDirection: 'column', gap: 'var(--space-5)', maxWidth: 700 },
@@ -79,6 +80,7 @@ const fallbackInvoice: InvoiceSettings = {
 
 export default function InvoiceSettingsPage() {
     const { t } = useTranslation();
+    const { addToast } = useToast();
 
     const {
         data: invoiceSettings,
@@ -93,10 +95,10 @@ export default function InvoiceSettingsPage() {
     const handleSave = async () => {
         try {
             await settingsApi.updateInvoiceSettings(form as unknown as Record<string, unknown>);
-            alert(t('settings.invoice.saved') || 'Invoice settings saved!');
+            addToast('success', t('settings.invoice.saved') || 'Invoice settings saved!');
             refetch();
         } catch {
-            alert('Failed to save invoice settings');
+            addToast('error', 'Failed to save invoice settings');
         }
     };
 

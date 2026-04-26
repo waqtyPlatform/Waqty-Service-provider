@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSidebar } from './SidebarContext';
@@ -105,6 +105,7 @@ const getNavigation = (
                 { label: t('sidebar.departments'), href: '/employees/departments' },
                 { label: t('sidebar.schedule'), href: '/employees/schedule' },
                 { label: t('sidebar.attendance'), href: '/employees/attendance' },
+                { label: t('empLayout.tabPerformance'), href: '/employees/performance' },
                 { label: t('sidebar.payroll'), href: '/employees/payroll' },
                 { label: t('sidebar.roles'), href: '/employees/roles' },
                 { label: t('sidebar.transfers'), href: '/employees/transfers' },
@@ -189,7 +190,12 @@ function SidebarInner() {
     const pathname = usePathname();
     const { t } = useTranslation();
 
-    const navigation = getNavigation(t, user?.businessType, user?.role);
+    // Memoize the nav array so the 70-item allocation + translation lookups don't
+    // run on every render (Sidebar re-renders on every route/user change).
+    const navigation = useMemo(
+        () => getNavigation(t, user?.businessType, user?.role),
+        [t, user?.businessType, user?.role]
+    );
 
     const [expandedItems, setExpandedItems] = useState<string[]>(() => {
         // Auto-expand the section that matches current path
