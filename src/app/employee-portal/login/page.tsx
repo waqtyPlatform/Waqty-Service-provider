@@ -22,9 +22,8 @@ export default function EmployeeLoginPage() {
 
         setIsLoading(true);
         try {
-            // Temporarily set the token context for the employee API
-            const origToken = localStorage.getItem('hagzy_token');
-
+            // The API client reads the employee token automatically on
+            // /employee-portal routes (X11), so no provider-token swap is needed.
             const res = await employeeApi.login(email, password);
 
             if (res.success && res.data) {
@@ -39,9 +38,6 @@ export default function EmployeeLoginPage() {
                         branch: employee.branch?.name,
                     })
                 );
-
-                // Restore original provider token if it existed
-                if (origToken) localStorage.setItem('hagzy_token', origToken);
 
                 router.push('/employee-portal/dashboard');
             } else {

@@ -29,7 +29,7 @@ describe('ApiClient', () => {
     });
 
     it('should make GET requests with auth header', async () => {
-        localStorageMock.setItem('hagzy_token', 'test-token-123');
+        localStorageMock.setItem('hagzy_provider_token', 'test-token-123');
 
         mockFetch.mockResolvedValueOnce({
             ok: true,

@@ -24,14 +24,20 @@ import {
 import { Button, Badge, Stepper, useToast } from '@/components/ui';
 import styles from './page.module.css';
 import { useTranslation } from '@/hooks/useTranslation';
-import { providerApi, type Booking } from '@/lib/api';
+import { providerApi, type Booking, type BookingStatus } from '@/lib/api';
+import type { CanonicalPaymentMethod, PaymentModel } from '@/lib/contract';
+import { egp, fromMinor, toMinor, formatMoney, DEFAULT_CURRENCY } from '@/lib/money';
+import type { PriceSource } from '@/lib/priceResolver';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type BookingStatus = 'draft' | 'confirmed' | 'arrived' | 'inService' | 'completed' | 'cancelled' | 'no_show';
+// Time-derived DISPLAY lifecycle (distinct from the canonical persistent
+// `BookingStatus`). The contract separates display state (arrived/inService)
+// from persistent status; `inService` persists as canonical `in_progress`.
+type DisplayStatus = 'draft' | 'confirmed' | 'arrived' | 'inService' | 'completed' | 'cancelled' | 'no_show';
 
-const STATUS_STEPS: BookingStatus[] = ['draft', 'confirmed', 'arrived', 'inService', 'completed'];
-const STEP_INDEX: Record<BookingStatus, number> = {
+const STATUS_STEPS: DisplayStatus[] = ['draft', 'confirmed', 'arrived', 'inService', 'completed'];
+const STEP_INDEX: Record<DisplayStatus, number> = {
     draft: 0,
     confirmed: 1,
     arrived: 2,
@@ -45,6 +51,26 @@ const STEP_INDEX: Record<BookingStatus, number> = {
 
 type ItemStatus = 'confirmed' | 'pending_assignment';
 
+// A booking line as the UI renders it — a view-model of the canonical
+// `VisitLineItem` (one service, OPTIONAL specialist, own slot). `employeeId === ''`
+// represents the canonical `employee_uuid: null` ("any available"); such a line
+// shows as `pending_assignment` until a specialist is assigned (PR-3).
+interface BookingItem {
+    id: number; // -> VisitLineItem.uuid
+    serviceId: string; // -> VisitLineItem.service_uuid
+    name: string; // resolved Service.name
+    nameAr?: string; // resolved Service.name_ar — rendered under the AR locale (X10)
+    employee: string; // resolved Employee.name ('' = unassigned)
+    employeeId: string; // -> VisitLineItem.employee_uuid ('' = null / any available)
+    employeeLevel: string;
+    basePrice: number;
+    price: number; // -> VisitLineItem.price
+    priceSource: PriceSource;
+    duration: string; // <- VisitLineItem.duration_minutes
+    time: string; // <- VisitLineItem.start_time (HH:mm) — each line has its own slot
+    itemStatus: ItemStatus;
+}
+
 // ─── Mock data ────────────────────────────────────────────────────────────────
 
 const BOOKING_DATA = {
@@ -52,7 +78,7 @@ const BOOKING_DATA = {
     date: 'Mar 17, 2026',
     time: '14:30',
     duration: '2h 15m',
-    initialStatus: 'confirmed' as BookingStatus,
+    initialStatus: 'confirmed' as DisplayStatus,
     packageId: 'PKG-003',
     packageName: 'VIP Hair Care Bundle',
     packageSessionsRemaining: 3,
@@ -70,50 +96,64 @@ const BOOKING_DATA = {
             id: 1,
             serviceId: '2',
             name: 'Hair Coloring - Full',
+            nameAr: 'صبغ شعر - كامل',
             employee: 'Sarah Ahmed',
             employeeId: 'emp-2',
             employeeLevel: 'Senior',
-            basePrice: 450,
-            price: 520,
-            priceSource: 'tier' as const,
+            basePrice: 45000, // EGP minor units (PR-8): 450.00 EGP
+            price: 52000, // 520.00 EGP
+            priceSource: 'tier' as PriceSource,
             duration: '90m',
+            time: '14:30',
             itemStatus: 'confirmed' as ItemStatus,
         },
         {
             id: 2,
             serviceId: '1',
             name: 'Hair Cut & Style',
+            nameAr: 'قص وتصفيف الشعر',
             employee: 'Sarah Ahmed',
             employeeId: 'emp-2',
             employeeLevel: 'Senior',
-            basePrice: 120,
-            price: 150,
-            priceSource: 'tier' as const,
+            basePrice: 12000, // 120.00 EGP
+            price: 15000, // 150.00 EGP
+            priceSource: 'tier' as PriceSource,
             duration: '45m',
+            time: '16:00',
             itemStatus: 'confirmed' as ItemStatus,
         },
         {
             id: 3,
             serviceId: '7',
             name: 'Deep Conditioning',
+            nameAr: 'ترطيب عميق',
             employee: '',
             employeeId: '',
             employeeLevel: '',
-            basePrice: 300,
-            price: 300,
-            priceSource: 'base' as const,
+            basePrice: 30000, // 300.00 EGP
+            price: 30000, // 300.00 EGP
+            priceSource: 'base' as PriceSource,
             duration: '30m',
+            time: '16:45',
             itemStatus: 'pending_assignment' as ItemStatus,
         },
     ],
+    // EGP minor units (PR-8) — integers, no floats.
     financials: {
-        subtotal: 970, // 520 + 150 + 300
-        discount: 97,
+        subtotal: 97000, // 970.00 (520 + 150 + 300)
+        discount: 9700, // 97.00
         discountLabel: 'VIP 10%',
-        tax: 122.22,
-        total: 995.22,
-        paid: 500,
-        due: 495.22,
+        tax: 12222, // 122.22
+        total: 99522, // 995.22
+        paid: 50000, // 500.00
+        due: 49522, // 495.22
+    },
+    // Canonical Payment (PR-4): which of the three payment models this visit uses
+    // and how it was paid. Drives the "deposit paid / balance due at shop" vs
+    // "due at shop" (cash) vs "paid online" messaging.
+    payment: {
+        model: 'deposit_balance' as PaymentModel,
+        method: 'card' as CanonicalPaymentMethod,
     },
     queue: {
         number: 3,
@@ -130,7 +170,7 @@ const BOOKING_DATA = {
     ],
 };
 
-const BADGE_COLOR: Record<BookingStatus, 'primary' | 'success' | 'warning' | 'error' | 'neutral'> = {
+const BADGE_COLOR: Record<DisplayStatus, 'primary' | 'success' | 'warning' | 'error' | 'neutral'> = {
     draft: 'neutral',
     confirmed: 'primary',
     arrived: 'warning',
@@ -140,9 +180,42 @@ const BADGE_COLOR: Record<BookingStatus, 'primary' | 'success' | 'warning' | 'er
     no_show: 'error',
 };
 
+// Staff eligible to perform a line. Each option carries the canonical
+// `employee_uuid` so assigning a line sets a real FK (not just a display name),
+// which is what the Employee app keys its "assigned work" off.
+// GAP: in production this comes from providerApi.getEmployees() filtered by the
+// line's service via ServiceEmployeeMapping.
+const ELIGIBLE_STAFF: { uuid: string; name: string }[] = [
+    { uuid: 'emp-2', name: 'Sarah Ahmed' },
+    { uuid: 'emp-3', name: 'Nora Ali' },
+    { uuid: 'emp-4', name: 'Layla Hassan' },
+];
+
+// Human messaging for the three canonical payment models (PR-4).
+function paymentModelLabel(
+    model: PaymentModel,
+    balanceDue: number
+): { text: string; tone: 'info' | 'warning' | 'success' } {
+    const balance = egp(balanceDue);
+    switch (model) {
+        case 'online_upfront':
+            return { text: 'Paid online in full', tone: 'success' };
+        case 'deposit_balance':
+            return balanceDue > 0
+                ? { text: `Deposit paid online · ${balance} balance due at shop`, tone: 'warning' }
+                : { text: 'Deposit + balance settled', tone: 'success' };
+        case 'cash':
+        default:
+            return balanceDue > 0
+                ? { text: `${balance} due at shop (cash)`, tone: 'warning' }
+                : { text: 'Paid in cash', tone: 'success' };
+    }
+}
+
 // ─── Modals ───────────────────────────────────────────────────────────────────
 
 function CancelModal({ onConfirm, onClose }: { onConfirm: (reason: string) => void; onClose: () => void }) {
+    const { t } = useTranslation();
     const [reason, setReason] = useState('');
     const overlay: React.CSSProperties = {
         position: 'fixed',
@@ -173,7 +246,9 @@ function CancelModal({ onConfirm, onClose }: { onConfirm: (reason: string) => vo
                     }}
                 >
                     <AlertTriangle size={20} color="#ef4444" />
-                    <h3 style={{ fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-lg)' }}>Cancel Booking</h3>
+                    <h3 style={{ fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-lg)' }}>
+                        {t('bk.actionCancel')}
+                    </h3>
                 </div>
                 <p
                     style={{
@@ -182,8 +257,7 @@ function CancelModal({ onConfirm, onClose }: { onConfirm: (reason: string) => vo
                         marginBottom: 'var(--space-4)',
                     }}
                 >
-                    This action cannot be undone. The booking will be marked as cancelled and the client will be
-                    notified.
+                    {t('bk.cancelWarn')}
                 </p>
                 <div style={{ marginBottom: 'var(--space-4)' }}>
                     <label
@@ -194,7 +268,7 @@ function CancelModal({ onConfirm, onClose }: { onConfirm: (reason: string) => vo
                             marginBottom: 'var(--space-2)',
                         }}
                     >
-                        Reason for cancellation
+                        {t('bk.lblCancelReason')}
                     </label>
                     <select
                         value={reason}
@@ -211,19 +285,19 @@ function CancelModal({ onConfirm, onClose }: { onConfirm: (reason: string) => vo
                             cursor: 'pointer',
                         }}
                     >
-                        <option value="">Select a reason…</option>
-                        <option value="client_request">Client requested cancellation</option>
-                        <option value="staff_unavailable">Staff unavailable</option>
-                        <option value="double_booking">Double booking</option>
-                        <option value="other">Other</option>
+                        <option value="">{t('bk.optSelectReason')}</option>
+                        <option value="client_request">{t('bk.reasonClientRequest')}</option>
+                        <option value="staff_unavailable">{t('bk.reasonStaffUnavailable')}</option>
+                        <option value="double_booking">{t('bk.reasonDoubleBooking')}</option>
+                        <option value="other">{t('bk.reasonOther')}</option>
                     </select>
                 </div>
                 <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
                     <Button variant="outline" onClick={onClose}>
-                        Keep Booking
+                        {t('bk.btnKeepBooking')}
                     </Button>
                     <Button variant="destructive" onClick={() => reason && onConfirm(reason)}>
-                        Confirm Cancel
+                        {t('bk.btnConfirmCancel')}
                     </Button>
                 </div>
             </div>
@@ -236,11 +310,13 @@ function PaymentModal({
     onConfirm,
     onClose,
 }: {
-    due: number;
-    onConfirm: (amount: number, method: string) => void;
+    due: number; // EGP minor units
+    onConfirm: (amount: number, method: string) => void; // amount in minor units
     onClose: () => void;
 }) {
-    const [amount, setAmount] = useState(String(due));
+    const { t } = useTranslation();
+    // Input is in major units (what the cashier types); stored/confirmed in minor.
+    const [amount, setAmount] = useState(String(fromMinor(due)));
     const [method, setMethod] = useState('card');
     const overlay: React.CSSProperties = {
         position: 'fixed',
@@ -287,7 +363,9 @@ function PaymentModal({
                     }}
                 >
                     <CreditCard size={20} color="var(--color-primary-500)" />
-                    <h3 style={{ fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-lg)' }}>Process Payment</h3>
+                    <h3 style={{ fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-lg)' }}>
+                        {t('bk.btnProcessPayment')}
+                    </h3>
                 </div>
 
                 <div
@@ -306,9 +384,9 @@ function PaymentModal({
                             marginBottom: 4,
                         }}
                     >
-                        <span style={{ color: 'var(--text-tertiary)' }}>Balance due</span>
+                        <span style={{ color: 'var(--text-tertiary)' }}>{t('bk.lblBalanceDue2')}</span>
                         <span style={{ fontWeight: 'var(--font-bold)', color: 'var(--color-primary-600)' }}>
-                            {due.toLocaleString()} EGP
+                            {egp(due)}
                         </span>
                     </div>
                 </div>
@@ -322,7 +400,7 @@ function PaymentModal({
                             marginBottom: 'var(--space-2)',
                         }}
                     >
-                        Amount to collect (EGP)
+                        {t('bk.lblAmountToCollect')} ({DEFAULT_CURRENCY})
                     </label>
                     <input
                         type="number"
@@ -350,27 +428,27 @@ function PaymentModal({
                             marginBottom: 'var(--space-3)',
                         }}
                     >
-                        Payment method
+                        {t('bk.lblPaymentMethod')}
                     </label>
                     <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
                         <button style={methodBtn('cash', null, 'Cash')} onClick={() => setMethod('cash')}>
-                            <Banknote size={18} /> Cash
+                            <Banknote size={18} /> {t('bk.payCash')}
                         </button>
                         <button style={methodBtn('card', null, 'Card')} onClick={() => setMethod('card')}>
-                            <CardIcon size={18} /> Card
+                            <CardIcon size={18} /> {t('bk.payCard')}
                         </button>
                         <button style={methodBtn('wallet', null, 'Wallet')} onClick={() => setMethod('wallet')}>
-                            <Wallet size={18} /> Wallet
+                            <Wallet size={18} /> {t('bk.payWallet')}
                         </button>
                     </div>
                 </div>
 
                 <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
                     <Button variant="outline" onClick={onClose}>
-                        Cancel
+                        {t('bk.btnCancel2')}
                     </Button>
-                    <Button onClick={() => onConfirm(Number(amount), method)}>
-                        Collect {Number(amount).toLocaleString()} EGP
+                    <Button onClick={() => onConfirm(toMinor(Number(amount)), method)}>
+                        {t('bk.btnCollect')} {egp(toMinor(Number(amount)))}
                     </Button>
                 </div>
             </div>
@@ -383,16 +461,16 @@ function PaymentModal({
 export default function BookingDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = React.use(params);
     const { addToast } = useToast();
-    const { t, lang } = useTranslation();
+    const { t, tn, lang } = useTranslation();
     const router = useRouter();
 
     const [apiBooking, setApiBooking] = useState<Booking | null>(null);
-    const [status, setStatus] = useState<BookingStatus>(BOOKING_DATA.initialStatus);
+    const [status, setStatus] = useState<DisplayStatus>(BOOKING_DATA.initialStatus);
     const [paid, setPaid] = useState(BOOKING_DATA.financials.paid);
     const [log, setLog] = useState(BOOKING_DATA.activityLog);
     const [showCancel, setShowCancel] = useState(false);
     const [showPayment, setShowPayment] = useState(false);
-    const [bookingItems, setBookingItems] = useState(BOOKING_DATA.items);
+    const [bookingItems, setBookingItems] = useState<BookingItem[]>(BOOKING_DATA.items);
     const [assignTarget, setAssignTarget] = useState<number | null>(null);
     const [assignForm, setAssignForm] = useState({ employee: '', time: '', room: '' });
 
@@ -405,10 +483,11 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                 const res = await providerApi.getBooking(id);
                 if (!cancelled && res.success && res.data) {
                     setApiBooking(res.data);
-                    // Map API status to UI status
-                    const statusMap: Record<string, BookingStatus> = {
+                    // Map canonical persistent status -> display lifecycle.
+                    const statusMap: Record<BookingStatus, DisplayStatus> = {
                         pending: 'draft',
                         confirmed: 'confirmed',
+                        in_progress: 'inService',
                         completed: 'completed',
                         cancelled: 'cancelled',
                         no_show: 'no_show',
@@ -424,7 +503,10 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
         };
     }, [id]);
 
-    // Derive display data from API or fallback
+    // Derive display data from the live API. Services & specialists render from
+    // the canonical multi-line `bookingItems` (the Visit line-items), so the old
+    // single-service `apiBooking.service`/`.employee` render path is gone (PR′);
+    // only the visit-level header (date/time) and client details come from here.
     const displayData = apiBooking
         ? {
               id: apiBooking.uuid,
@@ -448,10 +530,6 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                   notes: '', // GAP: API has no client notes
                   id: apiBooking.user?.uuid || '',
               },
-              service: apiBooking.service?.name || 'Service',
-              employee: apiBooking.employee?.name || 'Unassigned',
-              branch: apiBooking.branch?.name || 'Main',
-              notes: apiBooking.notes || '',
           }
         : null;
 
@@ -467,23 +545,42 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
     const canMarkNoShow = status === 'confirmed' || status === 'arrived';
     const pendingItems = bookingItems.filter(i => i.itemStatus === 'pending_assignment');
 
+    // Assign (or reassign) a line to an eligible specialist. `assignForm.employee`
+    // holds the canonical employee_uuid; we resolve the display name from it and
+    // set both employeeId (-> VisitLineItem.employee_uuid) and the line's own time.
     const handleAssign = () => {
         if (!assignTarget) return;
+        const staff = ELIGIBLE_STAFF.find(s => s.uuid === assignForm.employee);
+        if (!staff) return;
+        const target = bookingItems.find(i => i.id === assignTarget);
+        const wasUnassigned = !target?.employeeId;
         setBookingItems(prev =>
             prev.map(i =>
                 i.id === assignTarget
-                    ? { ...i, itemStatus: 'confirmed' as ItemStatus, employee: assignForm.employee || i.employee }
+                    ? {
+                          ...i,
+                          itemStatus: 'confirmed' as ItemStatus,
+                          employee: staff.name,
+                          employeeId: staff.uuid,
+                          time: assignForm.time || i.time,
+                      }
                     : i
             )
         );
-        const item = bookingItems.find(i => i.id === assignTarget);
         addLog(
-            'Service Assigned',
-            `${item?.name} assigned to ${assignForm.employee} at ${assignForm.time}${assignForm.room ? ' in ' + assignForm.room : ''}`
+            wasUnassigned ? 'Service Assigned' : 'Service Reassigned',
+            `${target?.name} ${wasUnassigned ? 'assigned to' : 'reassigned to'} ${staff.name} at ${assignForm.time || target?.time}${assignForm.room ? ' in ' + assignForm.room : ''}`
         );
-        addToast('success', 'Service assigned successfully');
+        addToast('success', wasUnassigned ? 'Service assigned successfully' : 'Specialist reassigned');
         setAssignTarget(null);
         setAssignForm({ employee: '', time: '', room: '' });
+    };
+
+    // Open the assign modal for a line, prefilling current specialist/time when
+    // reassigning an already-assigned line.
+    const openAssign = (item: BookingItem) => {
+        setAssignTarget(item.id);
+        setAssignForm({ employee: item.employeeId || '', time: item.time || '', room: '' });
     };
 
     const addLog = (label: string, detail: string) => {
@@ -503,7 +600,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
         ]);
     };
 
-    const updateApiStatus = async (apiStatus: string) => {
+    const updateApiStatus = async (apiStatus: BookingStatus) => {
         if (apiBooking) {
             try {
                 await providerApi.updateBookingStatus(apiBooking.uuid, apiStatus);
@@ -525,7 +622,8 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
         setStatus('inService');
         addLog('Service Started', 'In progress');
         addToast('success', 'Service started');
-        // GAP: API has no "inService" status
+        // Canonical `in_progress` persists the in-service display state.
+        updateApiStatus('in_progress');
     };
 
     const handleComplete = () => {
@@ -551,10 +649,11 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
     };
 
     const handlePayment = (amount: number, method: string) => {
+        // `amount` is EGP minor units (from PaymentModal).
         setPaid(prev => prev + amount);
         setShowPayment(false);
-        addLog('Payment Received', `${amount.toLocaleString()} EGP via ${method}`);
-        addToast('success', `${amount.toLocaleString()} EGP collected`);
+        addLog('Payment Received', `${egp(amount)} via ${method}`);
+        addToast('success', `${egp(amount)} collected`);
     };
 
     const handlePrint = () => {
@@ -597,7 +696,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                 marginBottom: 'var(--space-4)',
                             }}
                         >
-                            Assign Service
+                            {t('bk.assignService')}
                         </h3>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
                             <div>
@@ -609,7 +708,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                         marginBottom: 'var(--space-2)',
                                     }}
                                 >
-                                    Employee
+                                    {t('bk.thEmployee')}
                                 </label>
                                 <select
                                     value={assignForm.employee}
@@ -625,10 +724,12 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                         color: 'var(--text-primary)',
                                     }}
                                 >
-                                    <option value="">Select employee…</option>
-                                    <option>Sarah Ahmed</option>
-                                    <option>Nora Ali</option>
-                                    <option>Layla Hassan</option>
+                                    <option value="">{t('bk.optSelectEmployee')}</option>
+                                    {ELIGIBLE_STAFF.map(s => (
+                                        <option key={s.uuid} value={s.uuid}>
+                                            {s.name}
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
                             <div>
@@ -640,7 +741,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                         marginBottom: 'var(--space-2)',
                                     }}
                                 >
-                                    Time
+                                    {t('bk.tbTime')}
                                 </label>
                                 <input
                                     type="time"
@@ -667,7 +768,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                         marginBottom: 'var(--space-2)',
                                     }}
                                 >
-                                    Room (optional)
+                                    {t('bk.lblRoomOptional')}
                                 </label>
                                 <select
                                     value={assignForm.room}
@@ -683,7 +784,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                         color: 'var(--text-primary)',
                                     }}
                                 >
-                                    <option value="">No room</option>
+                                    <option value="">{t('bk.optNoRoom')}</option>
                                     <option>Styling Station 1</option>
                                     <option>Spa Room A</option>
                                     <option>VIP Suite</option>
@@ -699,10 +800,10 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                             }}
                         >
                             <Button variant="outline" onClick={() => setAssignTarget(null)}>
-                                Cancel
+                                {t('bk.btnCancel2')}
                             </Button>
                             <Button onClick={handleAssign} disabled={!assignForm.employee || !assignForm.time}>
-                                Assign
+                                {t('bk.btnAssign')}
                             </Button>
                         </div>
                     </div>
@@ -761,7 +862,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                 onClick={handleNoShow}
                                 style={{ borderColor: '#ef4444', color: '#ef4444' }}
                             >
-                                <AlertTriangle size={16} /> Mark No-Show
+                                <AlertTriangle size={16} /> {t('bk.btnNoShow')}
                             </Button>
                         )}
                         {canCheckIn && (
@@ -771,12 +872,12 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                         )}
                         {canStartService && (
                             <Button onClick={handleStartService}>
-                                <Scissors size={16} /> Start Service
+                                <Scissors size={16} /> {t('bk.btnStartService')}
                             </Button>
                         )}
                         {canComplete && (
                             <Button onClick={handleComplete}>
-                                <CheckCircle size={16} /> Mark Complete
+                                <CheckCircle size={16} /> {t('bk.btnMarkComplete')}
                             </Button>
                         )}
                     </div>
@@ -920,7 +1021,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                                         }}
                                                     >
                                                         <span style={{ fontWeight: 'var(--font-medium)' }}>
-                                                            {item.name}
+                                                            {tn(item.name, item.nameAr)}
                                                         </span>
                                                         {item.itemStatus === 'pending_assignment' && (
                                                             <span
@@ -937,14 +1038,29 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                                             </span>
                                                         )}
                                                     </div>
-                                                    {item.duration && (
+                                                    {(item.time || item.duration) && (
                                                         <div
                                                             style={{
                                                                 fontSize: 'var(--text-xs)',
                                                                 color: 'var(--text-tertiary)',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: 4,
                                                             }}
                                                         >
-                                                            {item.duration}
+                                                            {item.time && (
+                                                                <span
+                                                                    style={{
+                                                                        display: 'inline-flex',
+                                                                        alignItems: 'center',
+                                                                        gap: 2,
+                                                                    }}
+                                                                >
+                                                                    <Clock size={11} /> {item.time}
+                                                                </span>
+                                                            )}
+                                                            {item.time && item.duration && <span>·</span>}
+                                                            {item.duration && <span>{item.duration}</span>}
                                                         </div>
                                                     )}
                                                 </td>
@@ -980,10 +1096,12 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                                                         marginRight: 4,
                                                                     }}
                                                                 >
-                                                                    {item.basePrice}
+                                                                    {formatMoney(item.basePrice, {
+                                                                        withCurrency: false,
+                                                                    })}
                                                                 </span>
                                                             )}
-                                                            {item.price} EGP
+                                                            {egp(item.price)}
                                                             {item.priceSource !== 'base' && (
                                                                 <span
                                                                     style={{
@@ -1000,19 +1118,26 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                                                 </span>
                                                             )}
                                                         </span>
-                                                        {item.itemStatus === 'pending_assignment' && !isTerminal && (
-                                                            <Button
-                                                                size="sm"
-                                                                variant="outline"
-                                                                onClick={() => {
-                                                                    setAssignTarget(item.id);
-                                                                    setAssignForm({ employee: '', time: '', room: '' });
-                                                                }}
-                                                                style={{ fontSize: 11, padding: '2px 8px' }}
-                                                            >
-                                                                Assign
-                                                            </Button>
-                                                        )}
+                                                        {!isTerminal &&
+                                                            (item.itemStatus === 'pending_assignment' ? (
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="outline"
+                                                                    onClick={() => openAssign(item)}
+                                                                    style={{ fontSize: 11, padding: '2px 8px' }}
+                                                                >
+                                                                    Assign
+                                                                </Button>
+                                                            ) : (
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="ghost"
+                                                                    onClick={() => openAssign(item)}
+                                                                    style={{ fontSize: 11, padding: '2px 8px' }}
+                                                                >
+                                                                    Reassign
+                                                                </Button>
+                                                            ))}
                                                     </div>
                                                 </td>
                                             </tr>
@@ -1033,25 +1158,58 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                 </Badge>
                             </div>
                             <div className={styles.cardBody}>
+                                {(() => {
+                                    const label = paymentModelLabel(BOOKING_DATA.payment.model, due);
+                                    const toneColor =
+                                        label.tone === 'success'
+                                            ? 'var(--color-success-600)'
+                                            : label.tone === 'warning'
+                                              ? 'var(--color-warning-700, #b45309)'
+                                              : 'var(--color-primary-600)';
+                                    const toneBg =
+                                        label.tone === 'success'
+                                            ? 'var(--color-success-50, #ecfdf5)'
+                                            : label.tone === 'warning'
+                                              ? 'var(--color-warning-50, #fffbeb)'
+                                              : 'var(--color-primary-50, #eff6ff)';
+                                    return (
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: 'var(--space-2)',
+                                                padding: 'var(--space-2) var(--space-3)',
+                                                borderRadius: 'var(--radius-lg)',
+                                                background: toneBg,
+                                                color: toneColor,
+                                                fontSize: 'var(--text-sm)',
+                                                fontWeight: 'var(--font-medium)',
+                                                marginBottom: 'var(--space-3)',
+                                            }}
+                                        >
+                                            <Banknote size={15} /> {label.text}
+                                        </div>
+                                    );
+                                })()}
                                 <div className={styles.summaryRow}>
                                     <span>{t('bk.lblSubtotal')}</span>
-                                    <span dir="ltr">{BOOKING_DATA.financials.subtotal.toLocaleString()} EGP</span>
+                                    <span dir="ltr">{egp(BOOKING_DATA.financials.subtotal)}</span>
                                 </div>
                                 <div className={styles.summaryRow}>
                                     <span style={{ color: 'var(--color-success-600)' }}>
                                         {t('bk.lblDiscount')} ({BOOKING_DATA.financials.discountLabel})
                                     </span>
                                     <span style={{ color: 'var(--color-success-600)' }} dir="ltr">
-                                        -{BOOKING_DATA.financials.discount.toLocaleString()} EGP
+                                        -{egp(BOOKING_DATA.financials.discount)}
                                     </span>
                                 </div>
                                 <div className={styles.summaryRow}>
                                     <span>{t('bk.lblTax')} (14%)</span>
-                                    <span dir="ltr">{BOOKING_DATA.financials.tax.toLocaleString()} EGP</span>
+                                    <span dir="ltr">{egp(BOOKING_DATA.financials.tax)}</span>
                                 </div>
                                 <div className={styles.summaryTotal}>
                                     <span>{t('bk.lblTotal')}</span>
-                                    <span dir="ltr">{BOOKING_DATA.financials.total.toLocaleString()} EGP</span>
+                                    <span dir="ltr">{egp(BOOKING_DATA.financials.total)}</span>
                                 </div>
                                 {BOOKING_DATA.packageId && (
                                     <div
@@ -1059,12 +1217,12 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                         style={{ marginTop: 'var(--space-2)', color: '#1d4ed8' }}
                                     >
                                         <span>Package Credit ({BOOKING_DATA.packageName})</span>
-                                        <span dir="ltr">-{BOOKING_DATA.financials.subtotal.toLocaleString()} EGP</span>
+                                        <span dir="ltr">-{egp(BOOKING_DATA.financials.subtotal)}</span>
                                     </div>
                                 )}
                                 <div className={styles.summaryRow} style={{ marginTop: 'var(--space-2)' }}>
                                     <span>{t('bk.lblPaidDeposit')}</span>
-                                    <span dir="ltr">-{paid.toLocaleString()} EGP</span>
+                                    <span dir="ltr">-{egp(paid)}</span>
                                 </div>
                                 <div
                                     className={styles.summaryTotal}
@@ -1073,13 +1231,13 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                     }}
                                 >
                                     <span>{t('bk.lblBalanceDue')}</span>
-                                    <span dir="ltr">{due.toLocaleString()} EGP</span>
+                                    <span dir="ltr">{egp(due)}</span>
                                 </div>
 
                                 {due > 0 && !isCancelled && !isNoShow && (
                                     <div style={{ marginTop: 'var(--space-5)' }}>
                                         <Button fullWidth onClick={() => setShowPayment(true)}>
-                                            {t('bk.btnProcessPayment')} ({due.toLocaleString()} EGP)
+                                            {t('bk.btnProcessPayment')} ({egp(due)})
                                         </Button>
                                     </div>
                                 )}

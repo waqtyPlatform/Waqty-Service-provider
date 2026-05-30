@@ -32,12 +32,14 @@ import { isEmployeeOnShift, isEmployeeDuringBreak } from '@/lib/shiftData';
 import { resolveServicePrice } from '@/lib/priceResolver';
 import type { ServicePriceOverride } from '@/lib/priceResolver';
 import { providerApi, publicApi, bookingApi, type Branch, type Booking } from '@/lib/api';
+import { BUSINESS_TERMINOLOGY } from '@/lib/contract';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 interface Service {
     id: string;
     name: string;
+    nameAr?: string; // Arabic service name — rendered under the AR locale (FU/name_ar)
     duration: string;
     durationMins: number;
     price: number;
@@ -91,37 +93,167 @@ interface PatientForm {
 
 const SERVICES: Record<string, Service[]> = {
     barber: [
-        { id: 'B01', name: 'Classic Haircut', duration: '30 min', durationMins: 30, price: 80, category: 'Cut' },
-        { id: 'B02', name: 'Skin Fade', duration: '45 min', durationMins: 45, price: 120, category: 'Cut' },
-        { id: 'B03', name: 'Beard Trim & Shape', duration: '20 min', durationMins: 20, price: 60, category: 'Beard' },
-        { id: 'B04', name: 'Hair & Beard Combo', duration: '60 min', durationMins: 60, price: 160, category: 'Combo' },
-        { id: 'B05', name: 'Hot Towel Shave', duration: '30 min', durationMins: 30, price: 90, category: 'Shave' },
+        {
+            id: 'B01',
+            name: 'Classic Haircut',
+            nameAr: 'قص شعر كلاسيكي',
+            duration: '30 min',
+            durationMins: 30,
+            price: 80,
+            category: 'Cut',
+        },
+        {
+            id: 'B02',
+            name: 'Skin Fade',
+            nameAr: 'تدريج سكين فيد',
+            duration: '45 min',
+            durationMins: 45,
+            price: 120,
+            category: 'Cut',
+        },
+        {
+            id: 'B03',
+            name: 'Beard Trim & Shape',
+            nameAr: 'تهذيب وتشكيل اللحية',
+            duration: '20 min',
+            durationMins: 20,
+            price: 60,
+            category: 'Beard',
+        },
+        {
+            id: 'B04',
+            name: 'Hair & Beard Combo',
+            nameAr: 'باقة شعر ولحية',
+            duration: '60 min',
+            durationMins: 60,
+            price: 160,
+            category: 'Combo',
+        },
+        {
+            id: 'B05',
+            name: 'Hot Towel Shave',
+            nameAr: 'حلاقة بالمنشفة الساخنة',
+            duration: '30 min',
+            durationMins: 30,
+            price: 90,
+            category: 'Shave',
+        },
         {
             id: 'B06',
             name: 'Keratin Smoothing',
+            nameAr: 'فرد بالكيراتين',
             duration: '90 min',
             durationMins: 90,
             price: 350,
             category: 'Treatment',
         },
-        { id: 'B07', name: 'Kids Haircut', duration: '20 min', durationMins: 20, price: 50, category: 'Cut' },
+        {
+            id: 'B07',
+            name: 'Kids Haircut',
+            nameAr: 'قص شعر أطفال',
+            duration: '20 min',
+            durationMins: 20,
+            price: 50,
+            category: 'Cut',
+        },
     ],
     salon: [
-        { id: 'S01', name: 'Haircut & Styling', duration: '45 min', durationMins: 45, price: 150, category: 'Hair' },
-        { id: 'S02', name: 'Hair Coloring', duration: '90 min', durationMins: 90, price: 400, category: 'Hair' },
-        { id: 'S03', name: 'Keratin Treatment', duration: '120 min', durationMins: 120, price: 500, category: 'Hair' },
-        { id: 'S04', name: 'Classic Facial', duration: '60 min', durationMins: 60, price: 200, category: 'Skin' },
-        { id: 'S05', name: 'HydraFacial', duration: '75 min', durationMins: 75, price: 450, category: 'Skin' },
-        { id: 'S06', name: 'Gel Manicure', duration: '45 min', durationMins: 45, price: 150, category: 'Nails' },
-        { id: 'S07', name: 'Swedish Massage', duration: '60 min', durationMins: 60, price: 300, category: 'Body' },
-        { id: 'S08', name: 'Laser Hair Removal', duration: '30 min', durationMins: 30, price: 250, category: 'Laser' },
-        { id: 'S09', name: 'Bridal Makeup', duration: '120 min', durationMins: 120, price: 800, category: 'Makeup' },
-        { id: 'S10', name: 'Eyelash Extensions', duration: '90 min', durationMins: 90, price: 350, category: 'Lash' },
+        {
+            id: 'S01',
+            name: 'Haircut & Styling',
+            nameAr: 'قص وتصفيف الشعر',
+            duration: '45 min',
+            durationMins: 45,
+            price: 150,
+            category: 'Hair',
+        },
+        {
+            id: 'S02',
+            name: 'Hair Coloring',
+            nameAr: 'صبغ الشعر',
+            duration: '90 min',
+            durationMins: 90,
+            price: 400,
+            category: 'Hair',
+        },
+        {
+            id: 'S03',
+            name: 'Keratin Treatment',
+            nameAr: 'علاج بالكيراتين',
+            duration: '120 min',
+            durationMins: 120,
+            price: 500,
+            category: 'Hair',
+        },
+        {
+            id: 'S04',
+            name: 'Classic Facial',
+            nameAr: 'تنظيف بشرة كلاسيكي',
+            duration: '60 min',
+            durationMins: 60,
+            price: 200,
+            category: 'Skin',
+        },
+        {
+            id: 'S05',
+            name: 'HydraFacial',
+            nameAr: 'هيدرافيشل',
+            duration: '75 min',
+            durationMins: 75,
+            price: 450,
+            category: 'Skin',
+        },
+        {
+            id: 'S06',
+            name: 'Gel Manicure',
+            nameAr: 'مانيكير جل',
+            duration: '45 min',
+            durationMins: 45,
+            price: 150,
+            category: 'Nails',
+        },
+        {
+            id: 'S07',
+            name: 'Swedish Massage',
+            nameAr: 'مساج سويدي',
+            duration: '60 min',
+            durationMins: 60,
+            price: 300,
+            category: 'Body',
+        },
+        {
+            id: 'S08',
+            name: 'Laser Hair Removal',
+            nameAr: 'إزالة الشعر بالليزر',
+            duration: '30 min',
+            durationMins: 30,
+            price: 250,
+            category: 'Laser',
+        },
+        {
+            id: 'S09',
+            name: 'Bridal Makeup',
+            nameAr: 'مكياج عرائس',
+            duration: '120 min',
+            durationMins: 120,
+            price: 800,
+            category: 'Makeup',
+        },
+        {
+            id: 'S10',
+            name: 'Eyelash Extensions',
+            nameAr: 'تركيب رموش',
+            duration: '90 min',
+            durationMins: 90,
+            price: 350,
+            category: 'Lash',
+        },
     ],
     clinic: [
         {
             id: 'C01',
             name: 'General Consultation',
+            nameAr: 'كشف عام',
             duration: '30 min',
             durationMins: 30,
             price: 200,
@@ -130,17 +262,43 @@ const SERVICES: Record<string, Service[]> = {
         {
             id: 'C02',
             name: 'Follow-up Visit',
+            nameAr: 'زيارة متابعة',
             duration: '20 min',
             durationMins: 20,
             price: 120,
             category: 'Consultation',
         },
-        { id: 'C03', name: 'Dental Checkup', duration: '45 min', durationMins: 45, price: 250, category: 'Dental' },
-        { id: 'C04', name: 'Laser Session', duration: '30 min', durationMins: 30, price: 400, category: 'Laser' },
-        { id: 'C05', name: 'Botox Treatment', duration: '45 min', durationMins: 45, price: 800, category: 'Aesthetic' },
+        {
+            id: 'C03',
+            name: 'Dental Checkup',
+            nameAr: 'فحص أسنان',
+            duration: '45 min',
+            durationMins: 45,
+            price: 250,
+            category: 'Dental',
+        },
+        {
+            id: 'C04',
+            name: 'Laser Session',
+            nameAr: 'جلسة ليزر',
+            duration: '30 min',
+            durationMins: 30,
+            price: 400,
+            category: 'Laser',
+        },
+        {
+            id: 'C05',
+            name: 'Botox Treatment',
+            nameAr: 'علاج بوتوكس',
+            duration: '45 min',
+            durationMins: 45,
+            price: 800,
+            category: 'Aesthetic',
+        },
         {
             id: 'C06',
             name: 'Dermatology Exam',
+            nameAr: 'فحص جلدية',
             duration: '30 min',
             durationMins: 30,
             price: 300,
@@ -149,12 +307,21 @@ const SERVICES: Record<string, Service[]> = {
         {
             id: 'C07',
             name: 'Physiotherapy Session',
+            nameAr: 'جلسة علاج طبيعي',
             duration: '60 min',
             durationMins: 60,
             price: 350,
             category: 'Physio',
         },
-        { id: 'C08', name: 'Lab Tests', duration: '20 min', durationMins: 20, price: 150, category: 'Lab' },
+        {
+            id: 'C08',
+            name: 'Lab Tests',
+            nameAr: 'تحاليل معملية',
+            duration: '20 min',
+            durationMins: 20,
+            price: 150,
+            category: 'Lab',
+        },
     ],
 };
 
@@ -632,7 +799,7 @@ function ServiceBookingCard({
     priceOverrides: ServicePriceOverride[];
     branchId: string;
 }) {
-    const { t } = useTranslation();
+    const { t, tn } = useTranslation();
     const [showAvail, setShowAvail] = useState(false);
 
     const empBusy = busySlotsInRange(EMP_BUSY, item.employee.id, item.date, item.time, item.service.durationMins);
@@ -695,7 +862,7 @@ function ServiceBookingCard({
                     >
                         {services.map(sv => (
                             <option key={sv.id} value={sv.id}>
-                                {sv.name} — {sv.price} EGP ({sv.duration})
+                                {tn(sv.name, sv.nameAr)} — {sv.price} EGP ({sv.duration})
                             </option>
                         ))}
                     </select>
@@ -1222,6 +1389,7 @@ function BookingSummary({
     conflicts,
     onConfirm,
     t,
+    tn,
     priceOverrides,
     branchId,
     submitLabel,
@@ -1233,6 +1401,7 @@ function BookingSummary({
     conflicts: Set<string>;
     onConfirm: () => void;
     t: (key: string) => string;
+    tn: (base: string, ar?: string | null) => string;
     priceOverrides: ServicePriceOverride[];
     branchId: string;
     submitLabel?: string;
@@ -1279,7 +1448,7 @@ function BookingSummary({
                             >
                                 <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                     {conflicts.has(item.id) && <AlertTriangle size={12} color="#ef4444" />}
-                                    {item.service.name}
+                                    {tn(item.service.name, item.service.nameAr)}
                                 </span>
                                 <span>
                                     {resolved.source !== 'base' && (
@@ -1434,11 +1603,16 @@ function NewBookingPageInner() {
     const editId = searchParams.get('edit');
     const isEditMode = Boolean(editId);
     const { addToast } = useToast();
-    const { t } = useTranslation();
+    const { t, tn } = useTranslation();
     const { user } = useAuth();
 
-    const businessType = (user?.businessType ?? 'salon') as 'barber' | 'salon' | 'clinic';
-    const isClinic = businessType === 'clinic';
+    // PR-10: canonical category drives terminology + clinic intake deterministically.
+    const businessType = user?.businessType ?? 'salon';
+    const isClinic = BUSINESS_TERMINOLOGY[businessType].requiresIntake;
+    // The local mock catalogue only has barber/salon/clinic variants; map any
+    // other canonical category (spa/nails/other) onto the salon catalogue.
+    const catalogKey: keyof typeof SERVICES =
+        businessType === 'barber' || businessType === 'clinic' ? businessType : 'salon';
 
     // ── Edit mode: fetch existing booking ──
     const [editBooking, setEditBooking] = useState<Booking | null>(null);
@@ -1496,6 +1670,7 @@ function NewBookingPageInner() {
                     const mapped: Service[] = svcRes.value.data.map(s => ({
                         id: s.uuid,
                         name: s.name,
+                        nameAr: s.name_ar ?? undefined, // real bilingual name when the API supplies it (FU/name_ar)
                         duration: s.estimated_duration_minutes ? `${s.estimated_duration_minutes} min` : '30 min',
                         durationMins: s.estimated_duration_minutes ?? 30,
                         price: 0, // resolved via pricing API
@@ -1541,8 +1716,8 @@ function NewBookingPageInner() {
         };
     }, []);
 
-    const services = apiServices ?? SERVICES[businessType] ?? SERVICES.salon;
-    const employees = apiEmployees ?? EMPLOYEES[businessType] ?? EMPLOYEES.salon;
+    const services = apiServices ?? SERVICES[catalogKey] ?? SERVICES.salon;
+    const employees = apiEmployees ?? EMPLOYEES[catalogKey] ?? EMPLOYEES.salon;
 
     // ── Fetch available dates when branch/service/employee changes ──
     const _fetchAvailability = useCallback(
@@ -1584,13 +1759,13 @@ function NewBookingPageInner() {
     useEffect(() => {
         if (!dataLoading && services.length > 0 && employees.length > 0) {
             setItems(prev => {
-                if (prev.length === 1 && prev[0].service.id === (SERVICES[businessType] ?? SERVICES.salon)[0]?.id) {
+                if (prev.length === 1 && prev[0].service.id === (SERVICES[catalogKey] ?? SERVICES.salon)[0]?.id) {
                     return [initItem(services, employees)];
                 }
                 return prev;
             });
         }
-    }, [dataLoading, services, employees, businessType]);
+    }, [dataLoading, services, employees, catalogKey]);
     const [clientName, setClientName] = useState('');
     const [clientPhone, setClientPhone] = useState('');
     const [discount, setDiscount] = useState(0);
@@ -1760,7 +1935,7 @@ function NewBookingPageInner() {
         router.push('/bookings');
     };
 
-    const businessLabel = { barber: 'Barber', salon: 'Salon', clinic: 'Clinic' }[businessType];
+    const businessLabel = BUSINESS_TERMINOLOGY[businessType].label;
 
     // ── Loading state for edit mode ──
     if (editLoading) {
@@ -1935,6 +2110,7 @@ function NewBookingPageInner() {
                     conflicts={conflicts}
                     onConfirm={handleConfirm}
                     t={t}
+                    tn={tn}
                     priceOverrides={apiPriceOverrides}
                     branchId={apiBranches.find(b => b.is_main)?.uuid ?? CURRENT_BRANCH_ID}
                     submitLabel={isEditMode ? t('bookings.saveChanges') : undefined}

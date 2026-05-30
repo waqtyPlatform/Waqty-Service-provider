@@ -4,24 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { employeeApi, type ShiftDate } from '@/lib/api';
 
-function useEmployeeToken() {
-    return {
-        withToken: async <T,>(fn: () => Promise<T>): Promise<T> => {
-            const empToken = localStorage.getItem('hagzy_employee_token');
-            const origToken = localStorage.getItem('hagzy_token');
-            if (empToken) localStorage.setItem('hagzy_token', empToken);
-            try {
-                return await fn();
-            } finally {
-                if (origToken) localStorage.setItem('hagzy_token', origToken);
-                else localStorage.removeItem('hagzy_token');
-            }
-        },
-    };
-}
-
 export default function EmployeeShiftsPage() {
-    const { withToken } = useEmployeeToken();
+    // Employee endpoints are called directly — the API client uses the employee
+    // token on /employee-portal routes (X11), so no token swap is needed.
     const [shifts, setShifts] = useState<ShiftDate[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -29,7 +14,7 @@ export default function EmployeeShiftsPage() {
     useEffect(() => {
         (async () => {
             try {
-                const res = await withToken(() => employeeApi.getShifts());
+                const res = await employeeApi.getShifts();
                 if (res.success && res.data) {
                     setShifts(res.data);
                 }
@@ -39,7 +24,6 @@ export default function EmployeeShiftsPage() {
                 setLoading(false);
             }
         })();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const monthStr = currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });

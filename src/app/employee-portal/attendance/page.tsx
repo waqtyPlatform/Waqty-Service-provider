@@ -4,24 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { Clock, CheckCircle, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { employeeApi, type AttendanceRecord } from '@/lib/api';
 
-function useEmployeeToken() {
-    return {
-        withToken: async <T,>(fn: () => Promise<T>): Promise<T> => {
-            const empToken = localStorage.getItem('hagzy_employee_token');
-            const origToken = localStorage.getItem('hagzy_token');
-            if (empToken) localStorage.setItem('hagzy_token', empToken);
-            try {
-                return await fn();
-            } finally {
-                if (origToken) localStorage.setItem('hagzy_token', origToken);
-                else localStorage.removeItem('hagzy_token');
-            }
-        },
-    };
-}
-
 export default function EmployeeAttendancePage() {
-    const { withToken } = useEmployeeToken();
+    // Employee endpoints are called directly — the API client uses the employee
+    // token on /employee-portal routes (X11), so no token swap is needed.
     const [records, setRecords] = useState<AttendanceRecord[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -38,7 +23,7 @@ export default function EmployeeAttendancePage() {
 
         (async () => {
             try {
-                const res = await withToken(() => employeeApi.getAttendance({ date_from: dateFrom, date_to: dateTo }));
+                const res = await employeeApi.getAttendance({ date_from: dateFrom, date_to: dateTo });
                 if (res.success && res.data) {
                     setRecords(res.data);
                 }
@@ -48,7 +33,6 @@ export default function EmployeeAttendancePage() {
                 setLoading(false);
             }
         })();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [year, month]);
 
     const prevMonth = () =>

@@ -21,5 +21,15 @@ export function useTranslation() {
         [lang]
     );
 
-    return { t, lang };
+    // Localize a piece of dynamic, data-driven bilingual value (e.g. a service's
+    // name): returns the Arabic variant under the AR locale when present, else the
+    // base/English value — so provider-supplied Arabic data renders under `ar` (X10).
+    const tn = useMemo(
+        () =>
+            (base: string, ar?: string | null): string =>
+                lang === 'ar' && ar ? ar : base,
+        [lang]
+    );
+
+    return { t, tn, lang };
 }

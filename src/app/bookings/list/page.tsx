@@ -18,259 +18,58 @@ import {
 import styles from '../bookings.module.css';
 import BookingsTabs from '../BookingsTabs';
 import { useTranslation } from '@/hooks/useTranslation';
-import { providerApi, type Booking } from '@/lib/api';
+import { providerApi } from '@/lib/api';
+import type { BookingStatus } from '@/lib/contract';
+import { egp, fromMinor } from '@/lib/money';
+import {
+    type VisitView,
+    STATUS_LABEL_KEY,
+    STATUS_ORDER,
+    paymentBucket,
+    type PaymentBucket,
+    visitViewFromBooking,
+    mockVisitViews,
+    hhmm,
+} from '../_visits';
 
-const statusConfig: Record<string, { class: string; labelKey: string }> = {
-    confirmed: { class: styles.statusConfirmed, labelKey: 'bk.stConfirmed' },
-    completed: { class: styles.statusCompleted, labelKey: 'bk.stCompleted' },
-    arrived: { class: styles.statusArrived, labelKey: 'bk.stArrived' },
-    unconfirmed: { class: styles.statusUnconfirmed, labelKey: 'bk.stUnconfirmed' },
-    cancelled: { class: styles.statusCancelled, labelKey: 'bk.stCancelled' },
-    workDone: { class: styles.statusWorkDone, labelKey: 'bk.stWorkDone' },
-    waitingPay: { class: styles.statusWaitingPay, labelKey: 'bk.stWaitingPay' },
-    noShow: { class: styles.statusNoShow, labelKey: 'bk.stNoShow' },
+// Canonical 6-state status -> badge CSS (reuses the existing module classes).
+const statusClass: Record<BookingStatus, string> = {
+    pending: styles.statusUnconfirmed,
+    confirmed: styles.statusConfirmed,
+    in_progress: styles.statusArrived,
+    completed: styles.statusCompleted,
+    cancelled: styles.statusCancelled,
+    no_show: styles.statusNoShow,
 };
 
-const paymentConfig: Record<string, { class: string; labelKey: string }> = {
+const paymentConfig: Record<PaymentBucket, { class: string; labelKey: string }> = {
     paid: { class: styles.paymentPaid, labelKey: 'bk.payPaid' },
     partial: { class: styles.paymentPartial, labelKey: 'bk.payPartial' },
     unpaid: { class: styles.paymentUnpaid, labelKey: 'bk.payUnpaid' },
 };
 
-const bookings = [
-    {
-        id: 'BK-1042',
-        branch: 'Downtown',
-        client: 'Fatima Al-Rashid',
-        mobile: '+20 123 456 789',
-        date: 'Mar 23, 2026',
-        time: '09:00',
-        service: 'Hair Coloring',
-        employee: 'Sara Ahmed',
-        employeeLevel: 'Senior',
-        value: 520,
-        basePrice: 450,
-        priceSource: 'tier',
-        status: 'confirmed',
-        payment: 'paid',
-        payMethod: 'Card',
-    },
-    {
-        id: 'BK-1041',
-        branch: 'Downtown',
-        client: 'Aisha Mohammed',
-        mobile: '+20 111 222 333',
-        date: 'Mar 13, 2026',
-        time: '09:30',
-        service: 'Keratin Treatment',
-        employee: 'Nora Ali',
-        employeeLevel: 'Mid',
-        value: 800,
-        basePrice: 800,
-        priceSource: 'base',
-        status: 'arrived',
-        payment: 'paid',
-        payMethod: 'Cash',
-    },
-    {
-        id: 'BK-1040',
-        branch: 'Downtown',
-        client: 'Maryam Ibrahim',
-        mobile: '+20 100 200 300',
-        date: 'Mar 23, 2026',
-        time: '10:00',
-        service: 'Classic Facial',
-        employee: 'Layla Hassan',
-        employeeLevel: 'Mid',
-        value: 200,
-        basePrice: 200,
-        priceSource: 'base',
-        status: 'completed',
-        payment: 'paid',
-        payMethod: 'Card',
-    },
-    {
-        id: 'BK-1039',
-        branch: 'Downtown',
-        client: 'Huda Saleh',
-        mobile: '+20 155 666 777',
-        date: 'Mar 19, 2026',
-        time: '10:30',
-        service: 'Gel Manicure',
-        employee: 'Hana Youssef',
-        employeeLevel: 'Junior',
-        value: 130,
-        basePrice: 150,
-        priceSource: 'tier',
-        status: 'unconfirmed',
-        payment: 'unpaid',
-        payMethod: '—',
-    },
-    {
-        id: 'BK-1038',
-        branch: 'Downtown',
-        client: 'Noura Ahmed',
-        mobile: '+20 199 888 999',
-        date: 'Mar 19, 2026',
-        time: '11:00',
-        service: 'Swedish Massage',
-        employee: 'Reem Mohamed',
-        employeeLevel: 'Senior',
-        value: 350,
-        basePrice: 350,
-        priceSource: 'base',
-        status: 'confirmed',
-        payment: 'partial',
-        payMethod: 'Cash',
-    },
-    {
-        id: 'BK-1037',
-        branch: 'Mall of Arabia',
-        client: 'Rania Khalil',
-        mobile: '+20 133 444 555',
-        date: 'Mar 25, 2026',
-        time: '12:00',
-        service: 'HydraFacial',
-        employee: 'Nora Ali',
-        employeeLevel: 'Mid',
-        value: 600,
-        basePrice: 600,
-        priceSource: 'base',
-        status: 'waitingPay',
-        payment: 'unpaid',
-        payMethod: '—',
-    },
-    {
-        id: 'BK-1036',
-        branch: 'Downtown',
-        client: 'Dana Faris',
-        mobile: '+20 177 333 222',
-        date: 'Mar 12, 2026',
-        time: '14:00',
-        service: 'Olaplex Treatment',
-        employee: 'Sara Ahmed',
-        employeeLevel: 'Senior',
-        value: 350,
-        basePrice: 350,
-        priceSource: 'base',
-        status: 'workDone',
-        payment: 'paid',
-        payMethod: 'Card',
-    },
-    {
-        id: 'BK-1035',
-        branch: 'Downtown',
-        client: 'Joud Wahid',
-        mobile: '+20 144 555 666',
-        date: 'Mar 17, 2026',
-        time: '16:00',
-        service: 'Laser Hair Removal',
-        employee: 'Layla Hassan',
-        employeeLevel: 'Mid',
-        value: 250,
-        basePrice: 250,
-        priceSource: 'base',
-        status: 'cancelled',
-        payment: 'unpaid',
-        payMethod: '—',
-    },
-    {
-        id: 'BK-1034',
-        branch: 'New Cairo',
-        client: 'Sama Latif',
-        mobile: '+20 166 777 888',
-        date: 'Mar 19, 2026',
-        time: '09:00',
-        service: 'Haircut & Styling',
-        employee: 'Hana Youssef',
-        employeeLevel: 'Junior',
-        value: 100,
-        basePrice: 120,
-        priceSource: 'tier',
-        status: 'completed',
-        payment: 'paid',
-        payMethod: 'Cash',
-    },
-    {
-        id: 'BK-1033',
-        branch: 'Downtown',
-        client: 'Yara Bassam',
-        mobile: '+20 188 999 000',
-        date: 'Mar 17, 2026',
-        time: '10:00',
-        service: 'Pedicure',
-        employee: 'Reem Mohamed',
-        employeeLevel: 'Senior',
-        value: 180,
-        basePrice: 180,
-        priceSource: 'base',
-        status: 'noShow',
-        payment: 'unpaid',
-        payMethod: '—',
-    },
-];
+const isoDate = (iso: string) => iso.split('T')[0];
+const displayDate = (iso: string) =>
+    new Date(`${isoDate(iso)}T00:00:00`).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+    });
 
-interface ListBooking {
-    id: string;
-    branch: string;
-    client: string;
-    mobile: string;
-    date: string;
-    time: string;
-    service: string;
-    employee: string;
-    employeeLevel: string;
-    value: number;
-    basePrice: number;
-    priceSource: string;
-    status: string;
-    payment: string;
-    payMethod: string;
-}
-
-function mapApiToListBooking(b: Booking): ListBooking {
-    const dateObj = new Date(b.booking_date + 'T00:00:00');
-    const dateStr = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    // Map API status to UI status
-    const statusMap: Record<string, string> = {
-        pending: 'unconfirmed',
-        confirmed: 'confirmed',
-        completed: 'completed',
-        cancelled: 'cancelled',
-        no_show: 'noShow',
-    };
-    return {
-        id: b.uuid,
-        branch: b.branch?.name || 'Main', // GAP: branch name depends on eager-loading
-        client: b.user?.name || 'Walk-in', // GAP: no client info if user is null
-        mobile: b.user?.phone || '—', // GAP: no client phone if user is null
-        date: dateStr,
-        time: b.start_time?.slice(0, 5) || '—',
-        service: b.service?.name || 'Service', // GAP: service name depends on eager-loading
-        employee: b.employee?.name || 'Unassigned', // GAP: employee name depends on eager-loading
-        employeeLevel: '', // GAP: API has no employee level/tier
-        value: 0, // GAP: API has no price/payment data on bookings
-        basePrice: 0, // GAP: API has no price data
-        priceSource: 'base',
-        status: statusMap[b.status] || b.status,
-        payment: 'unpaid', // GAP: API has no payment status on bookings
-        payMethod: '—', // GAP: API has no payment method
-    };
-}
-
-/** Compute daily queue number for each booking (grouped by date, sorted by time) */
-function computeListQueueNumbers(list: ListBooking[]): Map<string, number> {
+/** Daily queue number per visit (grouped by date, sorted by start time). */
+function computeQueueNumbers(views: VisitView[]): Map<string, number> {
     const map = new Map<string, number>();
-    const byDate = new Map<string, typeof bookings>();
-    for (const b of list) {
-        if (b.status === 'cancelled') continue;
-        const dateList = byDate.get(b.date) || [];
-        dateList.push(b);
-        byDate.set(b.date, dateList);
+    const byDate = new Map<string, VisitView[]>();
+    for (const v of views) {
+        if (v.visit.status === 'cancelled') continue;
+        const key = isoDate(v.visit.scheduled_start);
+        const list = byDate.get(key) || [];
+        list.push(v);
+        byDate.set(key, list);
     }
-    for (const [, dateList] of byDate) {
-        dateList.sort((a, b) => a.time.localeCompare(b.time));
-        dateList.forEach((b, i) => map.set(b.id, i + 1));
+    for (const [, list] of byDate) {
+        list.sort((a, b) => a.visit.scheduled_start.localeCompare(b.visit.scheduled_start));
+        list.forEach((v, i) => map.set(v.visit.uuid, i + 1));
     }
     return map;
 }
@@ -364,23 +163,24 @@ function CancelConfirmModal({
 export default function BookingListPage() {
     const { t, lang } = useTranslation();
     const [search, setSearch] = useState('');
-    const [statusFilter, setStatusFilter] = useState('all');
-    const [paymentFilter, setPaymentFilter] = useState('all');
+    const [statusFilter, setStatusFilter] = useState<'all' | BookingStatus>('all');
+    const [paymentFilter, setPaymentFilter] = useState<'all' | PaymentBucket>('all');
     const [currentPage, setCurrentPage] = useState(1);
-    const [rows, setRows] = useState<ListBooking[]>(bookings);
+    const [rows, setRows] = useState<VisitView[]>(mockVisitViews);
     const [cancelTarget, setCancelTarget] = useState<string | null>(null);
     const [refreshKey, setRefreshKey] = useState(0);
     const router = useRouter();
     const { addToast } = useToast();
 
-    // Fetch bookings from API with graceful fallback
+    // Fetch bookings from the API (single-service rows) and lift each into a
+    // canonical VisitView; fall back to mock visits on error/empty.
     useEffect(() => {
         let cancelled = false;
         (async () => {
             try {
                 const res = await providerApi.getBookings({ per_page: 100 });
                 if (!cancelled && res.success && res.data && res.data.length > 0) {
-                    setRows(res.data.map(mapApiToListBooking));
+                    setRows(res.data.map(visitViewFromBooking));
                 }
             } catch {
                 // Keep fallback mock data
@@ -393,7 +193,7 @@ export default function BookingListPage() {
 
     const confirmCancel = async () => {
         if (!cancelTarget) return;
-        // If UUID format (API booking), update via API
+        // UUID format (API booking) -> persist via API; otherwise mock update.
         if (cancelTarget.includes('-') && cancelTarget.length > 10) {
             try {
                 await providerApi.updateBookingStatus(cancelTarget, 'cancelled');
@@ -403,24 +203,28 @@ export default function BookingListPage() {
                 addToast('error', 'Failed to cancel booking');
             }
         } else {
-            // Fallback mock update
             setRows(prev =>
-                prev.map(b => (b.id === cancelTarget ? { ...b, status: 'cancelled', payment: 'unpaid' } : b))
+                prev.map(v =>
+                    v.visit.uuid === cancelTarget
+                        ? { ...v, visit: { ...v.visit, status: 'cancelled' as BookingStatus } }
+                        : v
+                )
             );
             addToast('error', `Booking ${cancelTarget} cancelled`);
         }
         setCancelTarget(null);
     };
 
-    const listQueueNumbers = computeListQueueNumbers(rows);
+    const queueNumbers = computeQueueNumbers(rows);
 
-    const filtered = rows.filter(b => {
+    const filtered = rows.filter(v => {
+        const services = v.lines.map(l => l.serviceName).join(' ');
         const matchSearch =
-            b.client.toLowerCase().includes(search.toLowerCase()) ||
-            b.id.toLowerCase().includes(search.toLowerCase()) ||
-            b.service.toLowerCase().includes(search.toLowerCase());
-        const matchStatus = statusFilter === 'all' || b.status === statusFilter;
-        const matchPayment = paymentFilter === 'all' || b.payment === paymentFilter;
+            v.clientName.toLowerCase().includes(search.toLowerCase()) ||
+            v.visit.uuid.toLowerCase().includes(search.toLowerCase()) ||
+            services.toLowerCase().includes(search.toLowerCase());
+        const matchStatus = statusFilter === 'all' || v.visit.status === statusFilter;
+        const matchPayment = paymentFilter === 'all' || paymentBucket(v.visit.payment.status) === paymentFilter;
         return matchSearch && matchStatus && matchPayment;
     });
 
@@ -428,7 +232,6 @@ export default function BookingListPage() {
     const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
     const currentItems = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-    // Reset pagination if search/filters change
     React.useEffect(() => {
         setCurrentPage(1);
     }, [search, statusFilter, paymentFilter]);
@@ -465,22 +268,19 @@ export default function BookingListPage() {
                     <select
                         className={styles.selectFilter}
                         value={statusFilter}
-                        onChange={e => setStatusFilter(e.target.value)}
+                        onChange={e => setStatusFilter(e.target.value as 'all' | BookingStatus)}
                     >
                         <option value="all">{t('bk.allStatuses')}</option>
-                        <option value="confirmed">{t('bk.stConfirmed')}</option>
-                        <option value="completed">{t('bk.stCompleted')}</option>
-                        <option value="arrived">{t('bk.stArrived')}</option>
-                        <option value="unconfirmed">{t('bk.stUnconfirmed')}</option>
-                        <option value="cancelled">{t('bk.stCancelled')}</option>
-                        <option value="workDone">{t('bk.stWorkDone')}</option>
-                        <option value="waitingPay">{t('bk.stWaitingPay')}</option>
-                        <option value="noShow">{t('bk.stNoShow')}</option>
+                        {STATUS_ORDER.map(s => (
+                            <option key={s} value={s}>
+                                {t(STATUS_LABEL_KEY[s])}
+                            </option>
+                        ))}
                     </select>
                     <select
                         className={styles.selectFilter}
                         value={paymentFilter}
-                        onChange={e => setPaymentFilter(e.target.value)}
+                        onChange={e => setPaymentFilter(e.target.value as 'all' | PaymentBucket)}
                     >
                         <option value="all">{t('bk.allPayments')}</option>
                         <option value="paid">{t('bk.payPaid')}</option>
@@ -492,10 +292,15 @@ export default function BookingListPage() {
                         onClick={() => {
                             const csv = [
                                 'ID,Date,Time,Client,Service,Employee,Status,Payment,Value',
-                                ...filtered.map(
-                                    b =>
-                                        `${b.id},${b.date},${b.time},${b.client},"${b.service}",${b.employee},${b.status},${b.payment},${b.value}`
-                                ),
+                                ...filtered.map(v => {
+                                    const services = v.lines.map(l => l.serviceName).join(' | ');
+                                    const employees = v.lines.map(l => l.employeeName).join(' | ');
+                                    return `${v.visit.uuid},${displayDate(v.visit.scheduled_start)},${hhmm(
+                                        v.visit.scheduled_start
+                                    )},${v.clientName},"${services}","${employees}",${v.visit.status},${paymentBucket(
+                                        v.visit.payment.status
+                                    )},${fromMinor(v.visit.total)}`;
+                                }),
                             ].join('\n');
                             const blob = new Blob([csv], { type: 'text/csv' });
                             const a = document.createElement('a');
@@ -528,127 +333,150 @@ export default function BookingListPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {currentItems.map(b => (
-                                    <tr
-                                        key={b.id}
-                                        style={{ cursor: 'pointer' }}
-                                        onClick={() => router.push(`/bookings/${b.id}`)}
-                                    >
-                                        <td className={styles.bookingId}>
-                                            {listQueueNumbers.has(b.id) && (
-                                                <span
+                                {currentItems.map(v => {
+                                    const { visit } = v;
+                                    const payBucket = paymentBucket(visit.payment.status);
+                                    const multiLine = v.lines.length > 1;
+                                    return (
+                                        <tr
+                                            key={visit.uuid}
+                                            style={{ cursor: 'pointer' }}
+                                            onClick={() => router.push(`/bookings/${visit.uuid}`)}
+                                        >
+                                            <td className={styles.bookingId}>
+                                                {queueNumbers.has(visit.uuid) && (
+                                                    <span
+                                                        style={{
+                                                            display: 'inline-flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            minWidth: 20,
+                                                            height: 18,
+                                                            borderRadius: 'var(--radius-full)',
+                                                            background: 'var(--color-primary-50, #eff6ff)',
+                                                            color: 'var(--color-primary-600)',
+                                                            fontSize: 10,
+                                                            fontWeight: 700,
+                                                            marginRight: 4,
+                                                            padding: '0 4px',
+                                                        }}
+                                                    >
+                                                        #{queueNumbers.get(visit.uuid)}
+                                                    </span>
+                                                )}
+                                                {visit.uuid}
+                                            </td>
+                                            <td>{v.branchName}</td>
+                                            <td style={{ fontWeight: 'var(--font-medium)' }}>{v.clientName}</td>
+                                            <td style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
+                                                {v.clientPhone}
+                                            </td>
+                                            <td>
+                                                <div style={{ fontWeight: 'var(--font-medium)' }}>
+                                                    {displayDate(visit.scheduled_start)}
+                                                </div>
+                                                <div
                                                     style={{
-                                                        display: 'inline-flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        minWidth: 20,
-                                                        height: 18,
-                                                        borderRadius: 'var(--radius-full)',
-                                                        background: 'var(--color-primary-50, #eff6ff)',
-                                                        color: 'var(--color-primary-600)',
-                                                        fontSize: 10,
-                                                        fontWeight: 700,
-                                                        marginRight: 4,
-                                                        padding: '0 4px',
-                                                    }}
-                                                >
-                                                    #{listQueueNumbers.get(b.id)}
-                                                </span>
-                                            )}
-                                            {b.id}
-                                        </td>
-                                        <td>{b.branch}</td>
-                                        <td style={{ fontWeight: 'var(--font-medium)' }}>{b.client}</td>
-                                        <td style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
-                                            {b.mobile}
-                                        </td>
-                                        <td>
-                                            <div style={{ fontWeight: 'var(--font-medium)' }}>{b.date}</div>
-                                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
-                                                {b.time}
-                                            </div>
-                                        </td>
-                                        <td>{b.service}</td>
-                                        <td>{b.employee}</td>
-                                        <td style={{ fontWeight: 'var(--font-semibold)' }}>
-                                            {b.priceSource !== 'base' && (
-                                                <span
-                                                    style={{
-                                                        textDecoration: 'line-through',
-                                                        color: 'var(--text-tertiary)',
                                                         fontSize: 'var(--text-xs)',
-                                                        marginRight: 4,
+                                                        color: 'var(--text-tertiary)',
                                                     }}
                                                 >
-                                                    {b.basePrice}
+                                                    {hhmm(visit.scheduled_start)}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {v.lines.map((l, i) => (
+                                                    <div key={i}>
+                                                        {l.serviceName}
+                                                        {multiLine && (
+                                                            <span
+                                                                style={{
+                                                                    color: 'var(--text-tertiary)',
+                                                                    fontSize: 'var(--text-xs)',
+                                                                    marginLeft: 4,
+                                                                }}
+                                                            >
+                                                                {hhmm(l.line.start_time)}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </td>
+                                            <td>
+                                                {v.lines.map((l, i) => (
+                                                    <div key={i}>{l.employeeName}</div>
+                                                ))}
+                                            </td>
+                                            <td style={{ fontWeight: 'var(--font-semibold)' }}>
+                                                {multiLine ? (
+                                                    <>
+                                                        {v.lines.map((l, i) => (
+                                                            <div
+                                                                key={i}
+                                                                style={{
+                                                                    color: 'var(--text-tertiary)',
+                                                                    fontSize: 'var(--text-xs)',
+                                                                    fontWeight: 'var(--font-normal)',
+                                                                }}
+                                                            >
+                                                                {egp(l.line.price)}
+                                                            </div>
+                                                        ))}
+                                                        <div>{egp(visit.total)}</div>
+                                                    </>
+                                                ) : (
+                                                    egp(visit.total)
+                                                )}
+                                            </td>
+                                            <td>
+                                                <span className={`${styles.statusBadge} ${statusClass[visit.status]}`}>
+                                                    {t(STATUS_LABEL_KEY[visit.status])}
                                                 </span>
-                                            )}
-                                            {b.value} EGP
-                                            {b.priceSource !== 'base' && (
+                                            </td>
+                                            <td>
                                                 <span
-                                                    style={{
-                                                        marginLeft: 4,
-                                                        padding: '1px 5px',
-                                                        borderRadius: 'var(--radius-full)',
-                                                        fontSize: 10,
-                                                        fontWeight: 600,
-                                                        background: 'var(--color-primary-50, #eff6ff)',
-                                                        color: 'var(--color-primary-600)',
-                                                    }}
+                                                    className={`${styles.paymentBadge} ${paymentConfig[payBucket].class}`}
                                                 >
-                                                    {b.priceSource}
+                                                    {payBucket === 'paid' && <Check size={12} />}
+                                                    {payBucket === 'unpaid' && <X size={12} />}
+                                                    {t(paymentConfig[payBucket].labelKey)}
                                                 </span>
-                                            )}
-                                        </td>
-                                        <td>
-                                            <span className={`${styles.statusBadge} ${statusConfig[b.status]?.class}`}>
-                                                {statusConfig[b.status] ? t(statusConfig[b.status].labelKey) : b.status}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span
-                                                className={`${styles.paymentBadge} ${paymentConfig[b.payment]?.class}`}
-                                            >
-                                                {b.payment === 'paid' && <Check size={12} />}
-                                                {b.payment === 'unpaid' && <X size={12} />}
-                                                {paymentConfig[b.payment]
-                                                    ? t(paymentConfig[b.payment].labelKey)
-                                                    : b.payment}
-                                            </span>
-                                        </td>
-                                        <td onClick={e => e.stopPropagation()}>
-                                            <DropdownMenu
-                                                trigger={
-                                                    <button className={styles.actionBtn}>
-                                                        <MoreVertical size={16} />
-                                                    </button>
-                                                }
-                                                items={[
-                                                    {
-                                                        label: t('bk.actionView'),
-                                                        icon: <Eye size={14} />,
-                                                        onClick: () => router.push(`/bookings/${b.id}`),
-                                                    },
-                                                    {
-                                                        label: t('bk.actionEdit'),
-                                                        icon: <Edit size={14} />,
-                                                        onClick: () => router.push(`/bookings/new?edit=${b.id}`),
-                                                    },
-                                                    ...(b.status !== 'cancelled' && b.status !== 'completed'
-                                                        ? [
-                                                              {
-                                                                  label: t('bk.actionCancel'),
-                                                                  icon: <X size={14} />,
-                                                                  onClick: () => setCancelTarget(b.id),
-                                                                  destructive: true,
-                                                              },
-                                                          ]
-                                                        : []),
-                                                ]}
-                                            />
-                                        </td>
-                                    </tr>
-                                ))}
+                                            </td>
+                                            <td onClick={e => e.stopPropagation()}>
+                                                <DropdownMenu
+                                                    trigger={
+                                                        <button className={styles.actionBtn}>
+                                                            <MoreVertical size={16} />
+                                                        </button>
+                                                    }
+                                                    items={[
+                                                        {
+                                                            label: t('bk.actionView'),
+                                                            icon: <Eye size={14} />,
+                                                            onClick: () => router.push(`/bookings/${visit.uuid}`),
+                                                        },
+                                                        {
+                                                            label: t('bk.actionEdit'),
+                                                            icon: <Edit size={14} />,
+                                                            onClick: () =>
+                                                                router.push(`/bookings/new?edit=${visit.uuid}`),
+                                                        },
+                                                        ...(visit.status !== 'cancelled' && visit.status !== 'completed'
+                                                            ? [
+                                                                  {
+                                                                      label: t('bk.actionCancel'),
+                                                                      icon: <X size={14} />,
+                                                                      onClick: () => setCancelTarget(visit.uuid),
+                                                                      destructive: true,
+                                                                  },
+                                                              ]
+                                                            : []),
+                                                    ]}
+                                                />
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>
@@ -667,17 +495,9 @@ export default function BookingListPage() {
                             >
                                 <ChevronLeft size={16} style={{ transform: lang === 'ar' ? 'scaleX(-1)' : 'none' }} />
                             </button>
-
-                            {Array.from({ length: totalPages }).map((_, i) => (
-                                <button
-                                    key={i}
-                                    className={`${styles.pageBtn} ${currentPage === i + 1 ? styles.pageBtnActive : ''}`}
-                                    onClick={() => setCurrentPage(i + 1)}
-                                >
-                                    {i + 1}
-                                </button>
-                            ))}
-
+                            <span className={styles.pageCurrent}>
+                                {currentPage} / {totalPages}
+                            </span>
                             <button
                                 className={styles.pageBtn}
                                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}

@@ -6,6 +6,8 @@ import { Button } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useApiQuery } from '@/hooks/useApiQuery';
 import { settingsApi, type SubscriptionPlan } from '@/lib/api';
+import type { PlanFeature, PlanTier } from '@/lib/contract';
+import { formatMoney, toMinor } from '@/lib/money';
 
 // Removed hardcoded plans/stats from here as they need translation and have been moved into the component
 
@@ -137,68 +139,115 @@ export default function SubscriptionPage() {
         }
     };
 
-    const plans = [
+    // The provider's current plan tier. GAP: in production this comes from
+    // ProviderSubscription (apiPlans drives the catalogue); the active plan is
+    // matched by tier rather than a `current` flag baked into each plan (PR-5).
+    const currentTier: PlanTier = 'pro';
+
+    const feat = (key: string, label: string): PlanFeature => ({ key, label, label_ar: '', included: true });
+
+    // Canonical SubscriptionPlan[] + presentation-only extras. Prices are EGP
+    // minor units (PR-8); price_yearly is the discounted annual total.
+    type PlanView = SubscriptionPlan & {
+        color: string;
+        gradient: string;
+        borderColor: string;
+        icon: React.ReactNode;
+        desc: string;
+    };
+    const plans: PlanView[] = [
         {
+            uuid: 'plan-basic',
             name: t('settings.subscription.plans.starter'),
-            price: 499,
-            period: t('settings.subscription.mo'),
-            current: false,
+            name_ar: '',
+            tier: 'basic',
+            price_monthly: toMinor(499),
+            price_yearly: toMinor(499 * 12 * 0.8),
+            currency: 'EGP',
+            trial_days: 14,
+            active: true,
+            limits: { max_branches: 1, max_employees: 5, max_services: 20, max_bookings_per_month: 500, storage_gb: 1 },
+            features: [
+                feat('1branch', t('settings.subscription.feat.1branch')),
+                feat('5emp', t('settings.subscription.feat.5emp')),
+                feat('basicRep', t('settings.subscription.feat.basicRep')),
+                feat('sms', t('settings.subscription.feat.sms')),
+                feat('emailSup', t('settings.subscription.feat.emailSup')),
+            ],
             color: 'var(--color-gray-500)',
             gradient: 'linear-gradient(135deg, var(--color-gray-50), var(--color-gray-100))',
             borderColor: 'var(--border-color)',
             icon: <Zap size={24} />,
             desc: t('settings.subscription.starterDesc'),
-            features: [
-                t('settings.subscription.feat.1branch'),
-                t('settings.subscription.feat.5emp'),
-                t('settings.subscription.feat.basicRep'),
-                t('settings.subscription.feat.sms'),
-                t('settings.subscription.feat.emailSup'),
-            ],
         },
         {
+            uuid: 'plan-pro',
             name: t('settings.subscription.plans.pro'),
-            price: 999,
-            period: t('settings.subscription.mo'),
-            current: true,
+            name_ar: '',
+            tier: 'pro',
+            price_monthly: toMinor(999),
+            price_yearly: toMinor(999 * 12 * 0.8),
+            currency: 'EGP',
+            trial_days: 14,
+            active: true,
+            limits: {
+                max_branches: 3,
+                max_employees: 15,
+                max_services: 100,
+                max_bookings_per_month: 5000,
+                storage_gb: 10,
+            },
+            features: [
+                feat('3branches', t('settings.subscription.feat.3branches')),
+                feat('15emp', t('settings.subscription.feat.15emp')),
+                feat('advRep', t('settings.subscription.feat.advRep')),
+                feat('smsWa', t('settings.subscription.feat.smsWa')),
+                feat('prioSup', t('settings.subscription.feat.prioSup')),
+                feat('marketing', t('settings.subscription.feat.marketing')),
+                feat('integrations', t('settings.subscription.feat.integrations')),
+            ],
             color: 'var(--color-primary-500)',
             gradient: 'linear-gradient(135deg, var(--color-primary-50), rgba(99,102,241,0.08))',
             borderColor: 'var(--color-primary-500)',
             icon: <Star size={24} />,
             desc: t('settings.subscription.proDesc'),
-            features: [
-                t('settings.subscription.feat.3branches'),
-                t('settings.subscription.feat.15emp'),
-                t('settings.subscription.feat.advRep'),
-                t('settings.subscription.feat.smsWa'),
-                t('settings.subscription.feat.prioSup'),
-                t('settings.subscription.feat.marketing'),
-                t('settings.subscription.feat.integrations'),
-            ],
         },
         {
+            uuid: 'plan-enterprise',
             name: t('settings.subscription.plans.enterprise'),
-            price: 1999,
-            period: t('settings.subscription.mo'),
-            current: false,
+            name_ar: '',
+            tier: 'enterprise',
+            price_monthly: toMinor(1999),
+            price_yearly: toMinor(1999 * 12 * 0.8),
+            currency: 'EGP',
+            trial_days: 14,
+            active: true,
+            limits: {
+                max_branches: -1,
+                max_employees: -1,
+                max_services: -1,
+                max_bookings_per_month: -1,
+                storage_gb: 100,
+            },
+            features: [
+                feat('unlBranches', t('settings.subscription.feat.unlBranches')),
+                feat('unlEmp', t('settings.subscription.feat.unlEmp')),
+                feat('customRep', t('settings.subscription.feat.customRep')),
+                feat('allChan', t('settings.subscription.feat.allChan')),
+                feat('support247', t('settings.subscription.feat.support247')),
+                feat('fullMarketing', t('settings.subscription.feat.fullMarketing')),
+                feat('allIntegrations', t('settings.subscription.feat.allIntegrations')),
+                feat('api', t('settings.subscription.feat.api')),
+                feat('accManager', t('settings.subscription.feat.accManager')),
+            ],
             color: '#F59E0B',
             gradient: 'linear-gradient(135deg, #FFFBEB, rgba(245,158,11,0.06))',
             borderColor: '#F59E0B',
             icon: <Crown size={24} />,
             desc: t('settings.subscription.enterpriseDesc'),
-            features: [
-                t('settings.subscription.feat.unlBranches'),
-                t('settings.subscription.feat.unlEmp'),
-                t('settings.subscription.feat.customRep'),
-                t('settings.subscription.feat.allChan'),
-                t('settings.subscription.feat.support247'),
-                t('settings.subscription.feat.fullMarketing'),
-                t('settings.subscription.feat.allIntegrations'),
-                t('settings.subscription.feat.api'),
-                t('settings.subscription.feat.accManager'),
-            ],
         },
     ];
+    const currentPlan = plans.find(p => p.tier === currentTier);
 
     const usageStats = [
         { label: t('settings.subscription.teamMembers'), value: '8 / 15', icon: <Users size={18} />, percent: 53 },
@@ -237,7 +286,7 @@ export default function SubscriptionPage() {
                             }}
                         >
                             <Star size={20} style={{ color: 'var(--color-primary-500)' }} />{' '}
-                            {t('settings.subscription.plans.pro')}
+                            {currentPlan?.name ?? t('settings.subscription.plans.pro')}
                         </div>
                         <div
                             style={{
@@ -260,7 +309,8 @@ export default function SubscriptionPage() {
                                 color: 'var(--color-primary-600)',
                             }}
                         >
-                            999 <span style={{ fontSize: 'var(--text-sm)' }}>EGP</span>
+                            {currentPlan ? formatMoney(currentPlan.price_monthly, { withCurrency: false }) : '—'}{' '}
+                            <span style={{ fontSize: 'var(--text-sm)' }}>EGP</span>
                             <span
                                 style={{
                                     fontSize: 'var(--text-sm)',
@@ -353,19 +403,20 @@ export default function SubscriptionPage() {
             {/* Plans Grid */}
             <div style={s.grid}>
                 {plans.map(plan => {
-                    const displayPrice = billingCycle === 'annual' ? Math.round(plan.price * 0.8) : plan.price;
+                    const isCurrent = plan.tier === currentTier;
+                    // Annual shows the per-month-equivalent when billed yearly.
+                    const displayPrice =
+                        billingCycle === 'annual' ? Math.round(plan.price_yearly / 12) : plan.price_monthly;
                     return (
                         <div
-                            key={plan.name}
+                            key={plan.uuid}
                             style={{
                                 ...s.card,
-                                border: plan.current
-                                    ? `2px solid ${plan.borderColor}`
-                                    : '1px solid var(--border-color)',
+                                border: isCurrent ? `2px solid ${plan.borderColor}` : '1px solid var(--border-color)',
                                 background: plan.gradient,
                             }}
                         >
-                            {plan.current && (
+                            {isCurrent && (
                                 <div style={s.currentBadge}>
                                     <Star size={12} /> {t('settings.subscription.yourPlan')}
                                 </div>
@@ -381,31 +432,34 @@ export default function SubscriptionPage() {
                             <div style={s.planDesc}>{plan.desc}</div>
 
                             <div style={s.priceRow}>
-                                <span style={s.price}>{displayPrice}</span>
-                                <span style={s.period}>EGP{plan.period}</span>
+                                <span style={s.price}>{formatMoney(displayPrice, { withCurrency: false })}</span>
+                                <span style={s.period}>EGP{t('settings.subscription.mo')}</span>
                             </div>
 
                             <div style={s.divider} />
 
                             <div style={s.features}>
-                                {plan.features.map(f => (
-                                    <div key={f} style={s.feature}>
-                                        <Check size={16} style={{ color: 'var(--color-success)', flexShrink: 0 }} /> {f}
-                                    </div>
-                                ))}
+                                {plan.features
+                                    .filter(f => f.included)
+                                    .map(f => (
+                                        <div key={f.key} style={s.feature}>
+                                            <Check size={16} style={{ color: 'var(--color-success)', flexShrink: 0 }} />{' '}
+                                            {f.label}
+                                        </div>
+                                    ))}
                             </div>
 
                             <Button
-                                variant={plan.current ? 'ghost' : 'primary'}
+                                variant={isCurrent ? 'ghost' : 'primary'}
                                 style={{
                                     marginTop: 'var(--space-5)',
                                     width: '100%',
-                                    ...(plan.current ? {} : { background: plan.color }),
+                                    ...(isCurrent ? {} : { background: plan.color }),
                                 }}
-                                disabled={plan.current}
-                                onClick={() => !plan.current && handleChangePlan(plan.name)}
+                                disabled={isCurrent}
+                                onClick={() => !isCurrent && handleChangePlan(plan.tier)}
                             >
-                                {plan.current ? (
+                                {isCurrent ? (
                                     t('settings.subscription.currentPlanBtn')
                                 ) : (
                                     <>

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSidebar } from './SidebarContext';
 import { useAuth } from '@/contexts/AuthContext';
+import type { BusinessCategory } from '@/lib/contract';
 import {
     LayoutDashboard,
     ShoppingBag,
@@ -38,7 +39,7 @@ interface NavItem {
 
 const getNavigation = (
     t: (key: string) => string,
-    businessType: 'clinic' | 'salon' | 'barber' = 'salon',
+    businessType: BusinessCategory = 'salon',
     role: 'admin' | 'manager' | 'staff' = 'admin'
 ): NavItem[] => {
     const isClinic = businessType === 'clinic';

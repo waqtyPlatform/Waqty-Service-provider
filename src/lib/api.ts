@@ -1,3 +1,22 @@
+import type {
+    BookingStatus,
+    Visit,
+    VisitLineItem,
+    Payment,
+    CanonicalSubscriptionPlan,
+    CanonicalService,
+    CanonicalServicePrice,
+    CanonicalServiceCategory,
+    AvailabilitySlot,
+    AvailableDay,
+    Uuid,
+} from './contract';
+
+// The canonical ecosystem contract lives in `@/lib/contract` (this dashboard is
+// the agreed anchor — see PR-9). Re-export it here so screens can pull both the
+// live-API types and the canonical types from a single `@/lib/api` surface.
+export * from './contract';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://waqty.alemtayaz.shop/public';
 
 // Hard ceiling on how long any one request can hang. The external Waqty API
@@ -32,7 +51,14 @@ class ApiClient {
 
     private getToken(): string | null {
         if (typeof window === 'undefined') return null;
-        return localStorage.getItem('hagzy_token');
+        // Each surface keeps its own token key (X11): the employee portal
+        // authenticates separately from the provider app, so neither session can
+        // clobber the other and no token-swap is needed. Resolve the key from the
+        // active route rather than swapping a shared `hagzy_token` in and out.
+        const key = window.location.pathname.startsWith('/employee-portal')
+            ? 'hagzy_employee_token'
+            : 'hagzy_provider_token';
+        return localStorage.getItem(key);
     }
 
     private async fetchWithTimeout(url: string, init: RequestInit): Promise<Response> {
@@ -239,6 +265,7 @@ export interface Employee {
 export interface Service {
     uuid: string;
     name: string;
+    name_ar?: string | null; // bilingual name (FU/name_ar) — flows to CanonicalService when present
     description: string | null;
     sub_category_uuid: string | null;
     sub_category?: { uuid: string; name: string };
@@ -318,20 +345,221 @@ export interface Booking {
     booking_date: string;
     start_time: string;
     end_time: string | null;
-    status: string; // pending | confirmed | completed | cancelled | no_show
+    status: BookingStatus; // canonical 6-state union (incl. in_progress)
     notes: string | null;
     created_at: string;
     updated_at: string;
 }
 
 export interface BookingFilters {
-    status?: string;
+    status?: BookingStatus;
     branch_uuid?: string;
     employee_uuid?: string;
     booking_date?: string;
     from_date?: string;
     to_date?: string;
     per_page?: number;
+}
+
+// ── Canonical Visit adapter (PR-1) ──────────────────────────────────────────
+// The live backend still returns a single-service `Booking`. The ecosystem
+// contract models a booking as a multi-line `Visit` (a basket of line-items,
+// each with its own optional specialist and slot). This adapter lifts a live
+// Booking into a one-line canonical Visit so screens can render against the
+// canonical shape uniformly; genuine multi-service visits flow through unchanged
+// once the backend exposes `line_items`.
+function bookingDurationMinutes(b: Booking): number {
+    if (b.start_time && b.end_time) {
+        const [sh, sm] = b.start_time.split(':').map(Number);
+        const [eh, em] = b.end_time.split(':').map(Number);
+        const mins = eh * 60 + em - (sh * 60 + sm);
+        if (mins > 0) return mins;
+    }
+    return b.service?.estimated_duration_minutes ?? 60;
+}
+
+/**
+ * Resolve the effective line price (canonical Money — MINOR units) for a service
+ * from a list of `ServicePrice` rows, using the standard cascade (first match
+ * wins): branch+employee → employee-only → branch-only → pricing-group → base
+ * (the unscoped row for the service). Returns 0 when the catalogue carries no
+ * price for the service. This is what lets `bookingToVisit` (and the User app's
+ * booking flow against the shared catalogue) carry a real line price (X15).
+ */
+export function resolveServicePrice(
+    servicePrices: ServicePrice[],
+    sel: {
+        service_uuid: string;
+        employee_uuid?: string | null;
+        branch_uuid?: string | null;
+        pricing_group_uuid?: string | null;
+    }
+): number {
+    const rows = servicePrices.filter(p => p.active && p.service_uuid === sel.service_uuid);
+    if (rows.length === 0) return 0;
+    const { employee_uuid, branch_uuid, pricing_group_uuid } = sel;
+
+    const branchEmp =
+        employee_uuid && branch_uuid
+            ? rows.find(p => p.branch_uuid === branch_uuid && p.employee_uuid === employee_uuid)
+            : undefined;
+    if (branchEmp) return branchEmp.price;
+
+    const empOnly = employee_uuid ? rows.find(p => p.employee_uuid === employee_uuid && !p.branch_uuid) : undefined;
+    if (empOnly) return empOnly.price;
+
+    const branchOnly = branch_uuid
+        ? rows.find(p => p.branch_uuid === branch_uuid && !p.employee_uuid && !p.pricing_group_uuid)
+        : undefined;
+    if (branchOnly) return branchOnly.price;
+
+    const groupMatch = pricing_group_uuid
+        ? rows.find(p => p.pricing_group_uuid === pricing_group_uuid && !p.employee_uuid && !p.branch_uuid)
+        : undefined;
+    if (groupMatch) return groupMatch.price;
+
+    const base = rows.find(p => !p.employee_uuid && !p.branch_uuid && !p.pricing_group_uuid);
+    return base?.price ?? rows[0].price;
+}
+
+export function bookingToVisit(b: Booking, opts?: { servicePrices?: ServicePrice[]; providerUuid?: Uuid }): Visit {
+    const time = (b.start_time || '00:00').slice(0, 5);
+    const start = `${b.booking_date}T${time}:00`;
+    // Resolve the real line price from the provider's ServicePrice catalogue (X15);
+    // 0 only when the catalogue has no price for the service.
+    const linePrice = resolveServicePrice(opts?.servicePrices ?? [], {
+        service_uuid: b.service_uuid,
+        employee_uuid: b.employee_uuid,
+        branch_uuid: b.branch_uuid,
+    });
+    const line: VisitLineItem = {
+        uuid: `${b.uuid}-1`,
+        visit_uuid: b.uuid,
+        service_uuid: b.service_uuid,
+        employee_uuid: b.employee_uuid,
+        start_time: start,
+        duration_minutes: bookingDurationMinutes(b),
+        price: linePrice,
+        status: b.status,
+    };
+    const payment: Payment = {
+        visit_uuid: b.uuid,
+        model: 'cash',
+        method: null,
+        status: 'pending',
+        total: linePrice,
+        paid_amount: 0,
+        balance_amount: linePrice,
+        currency: 'EGP',
+        platform_fee: 0,
+        commission_amount: 0,
+        created_at: b.created_at,
+        updated_at: b.updated_at,
+    };
+    return {
+        uuid: b.uuid,
+        provider_uuid: opts?.providerUuid ?? '',
+        branch_uuid: b.branch_uuid,
+        customer_uuid: b.user?.uuid ?? '',
+        status: b.status,
+        scheduled_start: start,
+        scheduled_end: b.end_time ? `${b.booking_date}T${b.end_time.slice(0, 5)}:00` : null,
+        line_items: [line],
+        payment,
+        subtotal: linePrice,
+        discount_total: 0,
+        tip_total: 0,
+        total: linePrice,
+        currency: 'EGP',
+        notes: b.notes,
+        created_at: b.created_at,
+        updated_at: b.updated_at,
+    };
+}
+
+// ── Canonical catalogue adapters (PR-7) ─────────────────────────────────────
+// Map the dashboard's live-API catalogue rows into the canonical shapes the
+// User app books against, so a User-app booking resolves the provider's real
+// services, prices and slots. `provider_uuid` is supplied by the caller (the
+// authenticated provider context) since the live rows don't carry it yet.
+export function toCanonicalService(s: Service, providerUuid: Uuid = ''): CanonicalService {
+    return {
+        uuid: s.uuid,
+        provider_uuid: providerUuid,
+        sub_category_uuid: s.sub_category_uuid,
+        name: s.name,
+        name_ar: s.name_ar ?? s.name, // real bilingual name when the API supplies it; else fall back (FU/name_ar)
+        description: s.description,
+        description_ar: null,
+        estimated_duration_minutes: s.estimated_duration_minutes ?? 0,
+        image_url: s.image_url,
+        active: s.active,
+    };
+}
+
+export function toCanonicalServicePrice(sp: ServicePrice): CanonicalServicePrice {
+    return {
+        uuid: sp.uuid,
+        service_uuid: sp.service_uuid,
+        pricing_group_uuid: sp.pricing_group_uuid,
+        employee_uuid: sp.employee_uuid,
+        label: sp.pricing_group?.name ?? null,
+        label_ar: null,
+        price: sp.price,
+        currency: 'EGP',
+        active: sp.active,
+    };
+}
+
+export function toCanonicalServiceCategory(c: ServiceCategory, providerUuid: Uuid = ''): CanonicalServiceCategory {
+    return {
+        uuid: c.uuid,
+        provider_uuid: providerUuid,
+        parent_uuid: null,
+        name: c.name,
+        name_ar: c.name_ar ?? c.name, // real bilingual name when the API supplies it; else fall back (FU/name_ar)
+        active: c.active,
+    };
+}
+
+/**
+ * Build canonical bookable availability (X15) — the `AvailableDay[]` the User app
+ * reads when picking a slot for a line-item. Generates fixed-length slots across
+ * each day's working window and marks any `busy` start time as unavailable, so a
+ * User-app Visit resolves a real, bookable slot (not an empty calendar).
+ */
+export function buildAvailableDays(opts: {
+    dates: string[]; // IsoDate[] e.g. ["2026-06-01", ...]
+    open?: string; // "HH:mm", default "10:00"
+    close?: string; // "HH:mm", default "20:00"
+    slotMinutes?: number; // default 60
+    employeeUuid?: Uuid | null; // null = any available specialist
+    busy?: Record<string, string[]>; // date -> taken "HH:mm" starts
+}): AvailableDay[] {
+    const open = opts.open ?? '10:00';
+    const close = opts.close ?? '20:00';
+    const step = opts.slotMinutes ?? 60;
+    const [oh, om] = open.split(':').map(Number);
+    const [ch, cm] = close.split(':').map(Number);
+    const openMin = oh * 60 + om;
+    const closeMin = ch * 60 + cm;
+    const fmt = (mins: number) =>
+        `${String(Math.floor(mins / 60)).padStart(2, '0')}:${String(mins % 60).padStart(2, '0')}`;
+
+    return opts.dates.map(date => {
+        const busy = new Set(opts.busy?.[date] ?? []);
+        const slots: AvailabilitySlot[] = [];
+        for (let m = openMin; m + step <= closeMin; m += step) {
+            const startStr = fmt(m);
+            slots.push({
+                start_time: startStr,
+                end_time: fmt(m + step),
+                available: !busy.has(startStr),
+                employee_uuid: opts.employeeUuid ?? null,
+            });
+        }
+        return { date, has_availability: slots.some(s => s.available), slots };
+    });
 }
 
 export interface AttendanceRecord {
@@ -542,7 +770,7 @@ export const providerApi = {
         return api.get<Booking[]>(`/api/provider/bookings${qs ? `?${qs}` : ''}`);
     },
     getBooking: (uuid: string) => api.get<Booking>(`/api/provider/bookings/${uuid}`),
-    updateBookingStatus: (uuid: string, status: string) =>
+    updateBookingStatus: (uuid: string, status: BookingStatus) =>
         api.patch(`/api/provider/bookings/${uuid}/status`, { status }),
 
     // Attendance
@@ -764,7 +992,7 @@ export const employeeApi = {
         return api.get<Booking[]>(`/api/employee/bookings${qs ? `?${qs}` : ''}`);
     },
     getBooking: (uuid: string) => api.get<Booking>(`/api/employee/bookings/${uuid}`),
-    updateBookingStatus: (uuid: string, status: string) =>
+    updateBookingStatus: (uuid: string, status: BookingStatus) =>
         api.patch(`/api/employee/bookings/${uuid}/status`, { status }),
 };
 
@@ -1149,7 +1377,10 @@ export interface Expense {
     updated_at: string;
 }
 
-// Payroll
+// Payroll. PR-6: this is the dashboard's wire form of the canonical `Payslip`
+// (base + commission + tips − deductions → net). `tips` is surfaced so payroll
+// figures derive from canonical commissions + tips per visit and match the
+// Employee app's earnings.
 export interface PayrollRecord {
     uuid: string;
     employee_uuid: string;
@@ -1168,6 +1399,9 @@ export interface PayrollRecord {
     updated_at: string;
 }
 
+// PR-6: a commission accrual, now tied to the exact visit + line-item performed
+// (canonical EmployeeCommission). `booking_uuid` is retained for back-compat;
+// prefer `visit_uuid` / `line_item_uuid`.
 export interface Commission {
     uuid: string;
     employee_uuid: string;
@@ -1175,6 +1409,8 @@ export interface Commission {
     service_uuid: string;
     service?: Service;
     booking_uuid: string | null;
+    visit_uuid?: string | null;
+    line_item_uuid?: string | null; // ties to the exact VisitLineItem performed
     amount: number;
     rate: number;
     type: 'percentage' | 'fixed';
@@ -1185,6 +1421,7 @@ export interface Commission {
 export interface CommissionRule {
     uuid: string;
     name: string;
+    provider_uuid?: string; // PR-6: rules are scoped to a provider (canonical)
     service_uuid: string | null;
     service?: Service;
     type: 'percentage' | 'fixed';
@@ -1392,15 +1629,10 @@ export interface Integration {
     created_at: string;
 }
 
-export interface SubscriptionPlan {
-    uuid: string;
-    name: string;
-    price: number;
-    billing_cycle: 'monthly' | 'yearly';
-    features: string[];
-    limits: Record<string, number>;
-    current: boolean;
-}
+// PR-5: the plan shape is unified with SuperAdmin. `SubscriptionPlan` is now the
+// canonical plan (tier, price_monthly/yearly, PlanFeature[], PlanLimits, …); the
+// "which plan am I on" concern lives in `ProviderSubscription` (see contract).
+export type SubscriptionPlan = CanonicalSubscriptionPlan;
 
 export interface AuditLogEntry {
     uuid: string;
@@ -1449,6 +1681,7 @@ export interface PettyCashItem {
 export interface ServiceCategory {
     uuid: string;
     name: string;
+    name_ar?: string | null; // bilingual name (FU/name_ar) — flows to CanonicalServiceCategory when present
     sort_order: number;
     services_count: number;
     active: boolean;
@@ -1472,13 +1705,18 @@ export interface TipConfig {
     distribution_method: 'individual' | 'pool' | 'split';
 }
 
+// PR-6: a tip attributed to a specific staffer, now keyable to the visit
+// (canonical Tip). `booking_uuid`/`method` retained for back-compat; prefer
+// `visit_uuid`. Amounts are EGP minor units with an explicit `currency`.
 export interface Tip {
     uuid: string;
     booking_uuid: string | null;
+    visit_uuid?: string | null;
     customer_uuid: string | null;
     employee_uuid: string;
     employee?: Employee;
     amount: number;
+    currency?: string;
     method: string;
     created_at: string;
 }

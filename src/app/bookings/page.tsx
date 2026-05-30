@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight, Plus, Filter, CalendarDays, Clock, Building2, AlertTriangle } from 'lucide-react';
@@ -9,9 +9,22 @@ import styles from './bookings.module.css';
 import BookingsTabs from './BookingsTabs';
 import { useTranslation } from '@/hooks/useTranslation';
 import { isEmployeeOnShift } from '@/lib/shiftData';
-import { providerApi, getImageUrl, type Booking, type Employee } from '@/lib/api';
+import { providerApi, getImageUrl, type Employee } from '@/lib/api';
+import type { BookingStatus } from '@/lib/contract';
+import { egp } from '@/lib/money';
+import { type VisitView, type VisitSeed, buildVisitView, visitViewFromBooking, hhmm } from './_visits';
 
-const fallbackEmployees = [
+interface CalEmployee {
+    name: string;
+    initials: string;
+    color: string;
+    status: string;
+    empId: string;
+    role: string;
+    uuid: string;
+}
+
+const fallbackEmployees: CalEmployee[] = [
     {
         name: 'Sara A.',
         initials: 'SA',
@@ -19,7 +32,7 @@ const fallbackEmployees = [
         status: 'Available',
         empId: 'E001',
         role: 'Senior Stylist',
-        uuid: '',
+        uuid: 'emp-1',
     },
     {
         name: 'Nora A.',
@@ -28,7 +41,7 @@ const fallbackEmployees = [
         status: 'In Session',
         empId: 'E002',
         role: 'Skin Specialist',
-        uuid: '',
+        uuid: 'emp-2',
     },
     {
         name: 'Layla H.',
@@ -37,7 +50,7 @@ const fallbackEmployees = [
         status: 'Available',
         empId: 'E003',
         role: 'Senior Therapist',
-        uuid: '',
+        uuid: 'emp-3',
     },
     {
         name: 'Reem M.',
@@ -46,7 +59,7 @@ const fallbackEmployees = [
         status: 'Break',
         empId: 'E005',
         role: 'Massage Therapist',
-        uuid: '',
+        uuid: 'emp-4',
     },
     {
         name: 'Hana Y.',
@@ -55,13 +68,13 @@ const fallbackEmployees = [
         status: 'Available',
         empId: 'E004',
         role: 'Nail Technician',
-        uuid: '',
+        uuid: 'emp-5',
     },
 ];
 
 const empColors = ['#8B5CF6', '#EC4899', '#3B82F6', '#10B981', '#F59E0B', '#F97316', '#6366F1', '#14B8A6'];
 
-function mapApiEmployees(apiEmployees: Employee[]) {
+function mapApiEmployees(apiEmployees: Employee[]): CalEmployee[] {
     return apiEmployees.map((emp, i) => ({
         name: emp.name,
         initials: emp.name
@@ -76,44 +89,6 @@ function mapApiEmployees(apiEmployees: Employee[]) {
         role: '', // GAP: API has no employee role/title/specialization
         uuid: emp.uuid,
     }));
-}
-
-/** Map API booking to calendar BookingBlock */
-function mapBookingToBlock(booking: Booking, employeeList: { uuid: string }[], slots: string[]): BookingBlock | null {
-    const empIndex = employeeList.findIndex(e => e.uuid === booking.employee_uuid);
-    if (empIndex === -1) return null; // employee not in current view
-
-    const startSlot = slots.findIndex(s => s === booking.start_time?.slice(0, 5));
-    if (startSlot === -1) return null; // outside displayed time range
-
-    let span = 2; // default 1h (2 slots)
-    if (booking.end_time && booking.start_time) {
-        const [sh, sm] = booking.start_time.split(':').map(Number);
-        const [eh, em] = booking.end_time.split(':').map(Number);
-        const durationMins = eh * 60 + em - (sh * 60 + sm);
-        span = Math.max(1, Math.round(durationMins / 30));
-    } else if (booking.service?.estimated_duration_minutes) {
-        span = Math.max(1, Math.round(booking.service.estimated_duration_minutes / 30));
-    }
-
-    // Map API status to UI status
-    const statusMap: Record<string, string> = {
-        pending: 'unconfirmed',
-        confirmed: 'confirmed',
-        completed: 'completed',
-        cancelled: 'cancelled',
-        no_show: 'cancelled',
-    };
-
-    return {
-        empIndex,
-        startSlot,
-        span,
-        client: booking.user?.name || 'Walk-in', // GAP: no client name if user is null
-        service: booking.service?.name || 'Service', // GAP: service name depends on eager-loading
-        status: statusMap[booking.status] || booking.status,
-        id: booking.uuid,
-    };
 }
 
 const timeSlots = [
@@ -143,71 +118,194 @@ const timeSlots = [
     '20:30',
 ];
 
-interface BookingBlock {
+// A grid block = one canonical VisitLineItem positioned in an employee column.
+// A multi-line Visit therefore renders as several blocks (across columns/slots).
+interface CalBlock {
     empIndex: number;
     startSlot: number;
     span: number;
     client: string;
     service: string;
-    status: string;
-    id?: string;
+    status: BookingStatus;
+    visitId: string;
 }
 
-const bookingBlocks: BookingBlock[] = [
+/** Flatten canonical visits into positioned grid blocks (one per line item). */
+function visitsToBlocks(visits: VisitView[], employees: CalEmployee[], slots: string[]): CalBlock[] {
+    const blocks: CalBlock[] = [];
+    for (const v of visits) {
+        for (const l of v.lines) {
+            const empIndex = employees.findIndex(e => e.uuid && e.uuid === l.line.employee_uuid);
+            if (empIndex === -1) continue; // specialist not in current columns
+            const startSlot = slots.indexOf(hhmm(l.line.start_time));
+            if (startSlot === -1) continue; // outside displayed range
+            blocks.push({
+                empIndex,
+                startSlot,
+                span: Math.max(1, Math.round(l.line.duration_minutes / 30)),
+                client: v.clientName,
+                service: l.serviceName,
+                status: v.visit.status,
+                visitId: v.visit.uuid,
+            });
+        }
+    }
+    return blocks;
+}
+
+// Mock day, seeded as canonical visits (incl. two multi-line visits: BK-9006
+// runs across two specialists, BK-9007 chains two services on one specialist).
+const CAL_SEED: VisitSeed[] = [
     {
-        empIndex: 0,
-        startSlot: 0,
-        span: 3,
-        client: 'Fatima R.',
-        service: 'Hair Coloring',
-        status: 'confirmed',
         id: 'BK-1042',
-    },
-    { empIndex: 0, startSlot: 6, span: 2, client: 'Aisha M.', service: 'Haircut', status: 'completed', id: 'BK-1041' },
-    { empIndex: 0, startSlot: 10, span: 2, client: 'Maryam I.', service: 'Olaplex', status: 'arrived', id: 'BK-1040' },
-    { empIndex: 1, startSlot: 1, span: 4, client: 'Huda S.', service: 'Keratin', status: 'arrived', id: 'BK-1039' },
-    { empIndex: 1, startSlot: 8, span: 2, client: 'Noura A.', service: 'Facial', status: 'confirmed', id: 'BK-1038' },
-    {
-        empIndex: 1,
-        startSlot: 14,
-        span: 2,
-        client: 'Rania K.',
-        service: 'HydraFacial',
-        status: 'unconfirmed',
-        id: 'BK-1037',
-    },
-    { empIndex: 2, startSlot: 0, span: 2, client: 'Dana F.', service: 'Manicure', status: 'completed', id: 'BK-1036' },
-    {
-        empIndex: 2,
-        startSlot: 4,
-        span: 6,
-        client: 'Lina T.',
-        service: 'Keratin + Color',
+        branch: 'Downtown',
+        client: 'Fatima R.',
+        mobile: '+20 123 456 789',
+        date: '2026-03-23',
+        time: '09:00',
         status: 'confirmed',
-        id: 'BK-1035',
+        payment: 'paid',
+        payMethod: 'Card',
+        lines: [
+            { service: 'Hair Coloring', employee: 'Sara A.', employeeUuid: 'emp-1', priceMajor: 520, durationMin: 90 },
+        ],
     },
-    { empIndex: 2, startSlot: 12, span: 2, client: 'Sara Q.', service: 'Facial', status: 'workDone', id: 'BK-1034' },
-    { empIndex: 3, startSlot: 2, span: 4, client: 'Yara B.', service: 'Massage', status: 'confirmed', id: 'BK-1033' },
-    { empIndex: 3, startSlot: 8, span: 2, client: 'Nada H.', service: 'Pedicure', status: 'confirmed', id: 'BK-1032' },
-    { empIndex: 4, startSlot: 0, span: 2, client: 'Rana Z.', service: 'Laser', status: 'completed', id: 'BK-1031' },
-    { empIndex: 4, startSlot: 4, span: 2, client: 'Joud W.', service: 'Gel Nails', status: 'cancelled', id: 'BK-1030' },
     {
-        empIndex: 4,
-        startSlot: 10,
-        span: 4,
-        client: 'Sama L.',
-        service: 'Full Package',
+        id: 'BK-1041',
+        branch: 'Downtown',
+        client: 'Aisha M.',
+        mobile: '+20 111 222 333',
+        date: '2026-03-23',
+        time: '12:00',
+        status: 'completed',
+        payment: 'paid',
+        payMethod: 'Cash',
+        lines: [{ service: 'Haircut', employee: 'Sara A.', employeeUuid: 'emp-1', priceMajor: 180, durationMin: 60 }],
+    },
+    {
+        id: 'BK-1039',
+        branch: 'Downtown',
+        client: 'Huda S.',
+        mobile: '+20 155 666 777',
+        date: '2026-03-23',
+        time: '09:30',
+        status: 'in_progress',
+        payment: 'partial',
+        payMethod: 'Cash',
+        lines: [{ service: 'Keratin', employee: 'Nora A.', employeeUuid: 'emp-2', priceMajor: 800, durationMin: 120 }],
+    },
+    {
+        id: 'BK-1038',
+        branch: 'Downtown',
+        client: 'Noura A.',
+        mobile: '+20 199 888 999',
+        date: '2026-03-23',
+        time: '13:00',
         status: 'confirmed',
-        id: 'BK-1029',
+        payment: 'pending',
+        payMethod: '—',
+        lines: [{ service: 'Facial', employee: 'Nora A.', employeeUuid: 'emp-2', priceMajor: 300, durationMin: 60 }],
+    },
+    {
+        id: 'BK-9006',
+        branch: 'Downtown',
+        client: 'Mona Adel',
+        mobile: '+20 122 345 678',
+        date: '2026-03-23',
+        time: '10:30',
+        status: 'in_progress',
+        payment: 'partial',
+        payMethod: 'Cash',
+        lines: [
+            {
+                service: 'Haircut & Styling',
+                employee: 'Sara A.',
+                employeeUuid: 'emp-1',
+                priceMajor: 180,
+                durationMin: 60,
+            },
+            { service: 'Gel Manicure', employee: 'Hana Y.', employeeUuid: 'emp-5', priceMajor: 130, durationMin: 45 },
+        ],
+    },
+    {
+        id: 'BK-1036',
+        branch: 'Downtown',
+        client: 'Dana F.',
+        mobile: '+20 177 333 222',
+        date: '2026-03-23',
+        time: '09:00',
+        status: 'completed',
+        payment: 'paid',
+        payMethod: 'Card',
+        lines: [{ service: 'Manicure', employee: 'Layla H.', employeeUuid: 'emp-3', priceMajor: 200, durationMin: 60 }],
+    },
+    {
+        id: 'BK-9007',
+        branch: 'Downtown',
+        client: 'Sara Q.',
+        mobile: '+20 144 222 111',
+        date: '2026-03-23',
+        time: '14:00',
+        status: 'confirmed',
+        payment: 'pending',
+        payMethod: '—',
+        lines: [
+            { service: 'Facial', employee: 'Layla H.', employeeUuid: 'emp-3', priceMajor: 280, durationMin: 60 },
+            {
+                service: 'Swedish Massage',
+                employee: 'Layla H.',
+                employeeUuid: 'emp-3',
+                priceMajor: 350,
+                durationMin: 60,
+            },
+        ],
+    },
+    {
+        id: 'BK-1033',
+        branch: 'Downtown',
+        client: 'Yara B.',
+        mobile: '+20 188 999 000',
+        date: '2026-03-23',
+        time: '10:00',
+        status: 'confirmed',
+        payment: 'partial',
+        payMethod: 'Cash',
+        lines: [{ service: 'Massage', employee: 'Reem M.', employeeUuid: 'emp-4', priceMajor: 350, durationMin: 90 }],
+    },
+    {
+        id: 'BK-1030',
+        branch: 'Downtown',
+        client: 'Joud W.',
+        mobile: '+20 166 222 333',
+        date: '2026-03-23',
+        time: '09:00',
+        status: 'cancelled',
+        payment: 'pending',
+        payMethod: '—',
+        lines: [{ service: 'Gel Nails', employee: 'Hana Y.', employeeUuid: 'emp-5', priceMajor: 180, durationMin: 45 }],
+    },
+    {
+        id: 'BK-1031',
+        branch: 'Downtown',
+        client: 'Rana Z.',
+        mobile: '+20 155 222 444',
+        date: '2026-03-23',
+        time: '14:00',
+        status: 'no_show',
+        payment: 'pending',
+        payMethod: '—',
+        lines: [{ service: 'Laser', employee: 'Reem M.', employeeUuid: 'emp-4', priceMajor: 250, durationMin: 60 }],
     },
 ];
 
+const mockCalVisits: VisitView[] = CAL_SEED.map(buildVisitView);
+
 // ─── Queue numbering & expected start time ──────────────────────────────────
 
-/** Compute daily queue numbers per employee (sorted by startSlot) */
-function computeQueueNumbers(blocks: BookingBlock[]): Map<BookingBlock, number> {
-    const map = new Map<BookingBlock, number>();
-    const byEmp = new Map<number, BookingBlock[]>();
+/** Compute daily queue numbers per employee (sorted by startSlot). */
+function computeQueueNumbers(blocks: CalBlock[]): Map<CalBlock, number> {
+    const map = new Map<CalBlock, number>();
+    const byEmp = new Map<number, CalBlock[]>();
     for (const b of blocks) {
         if (b.status === 'cancelled') continue;
         const list = byEmp.get(b.empIndex) || [];
@@ -222,12 +320,12 @@ function computeQueueNumbers(blocks: BookingBlock[]): Map<BookingBlock, number> 
 }
 
 /**
- * Calculate expected start time for a booking block, considering preceding
- * bookings for the same employee. Completed/cancelled blocks don't cause delay.
+ * Calculate expected start time for a block, considering preceding blocks for
+ * the same employee. Completed/cancelled blocks don't cause delay.
  */
 function getExpectedStartTime(
-    block: BookingBlock,
-    allBlocks: BookingBlock[],
+    block: CalBlock,
+    allBlocks: CalBlock[],
     slots: string[]
 ): { expected: string; scheduled: string; delayMins: number } {
     const scheduled = slots[block.startSlot] || '09:00';
@@ -235,18 +333,14 @@ function getExpectedStartTime(
         .filter(b => b.empIndex === block.empIndex && b.status !== 'cancelled')
         .sort((a, b) => a.startSlot - b.startSlot);
 
-    // Walk through preceding blocks and track cumulative end time
     let runningEndMinutes = 0; // minutes from 09:00
     for (const b of empBlocks) {
         if (b === block) break;
-        const bScheduledStart = b.startSlot * 30; // minutes from 09:00
+        const bScheduledStart = b.startSlot * 30;
         const bDuration = b.span * 30;
-
         if (b.status === 'completed') {
-            // Completed on time — no delay contribution
             runningEndMinutes = bScheduledStart + bDuration;
         } else {
-            // Active/pending — takes full duration from max(scheduled, running)
             const actualStart = Math.max(bScheduledStart, runningEndMinutes);
             runningEndMinutes = actualStart + bDuration;
         }
@@ -256,7 +350,7 @@ function getExpectedStartTime(
     const expectedMinutes = Math.max(scheduledMinutes, runningEndMinutes);
     const delayMins = expectedMinutes - scheduledMinutes;
 
-    const baseHour = 9; // 09:00 start
+    const baseHour = 9;
     const expectedH = Math.floor(expectedMinutes / 60) + baseHour;
     const expectedM = expectedMinutes % 60;
     const expected = `${String(expectedH).padStart(2, '0')}:${String(expectedM).padStart(2, '0')}`;
@@ -264,13 +358,13 @@ function getExpectedStartTime(
     return { expected, scheduled, delayMins };
 }
 
-const statusBlockClass: Record<string, string> = {
+const statusBlockClass: Record<BookingStatus, string> = {
+    pending: styles.blockUnconfirmed,
     confirmed: styles.blockConfirmed,
+    in_progress: styles.blockArrived,
     completed: styles.blockCompleted,
-    arrived: styles.blockArrived,
-    unconfirmed: styles.blockUnconfirmed,
     cancelled: styles.blockCancelled,
-    workDone: styles.blockWorkDone,
+    no_show: styles.blockCancelled,
 };
 
 function formatDate(d: Date): string {
@@ -280,9 +374,8 @@ function formatDate(d: Date): string {
 export default function BookingsCalendarPage() {
     const [calendarView, setCalendarView] = useState<'day' | 'week' | 'month'>('day');
     const [currentDate, setCurrentDate] = useState(new Date());
-    const [apiBookings, setApiBookings] = useState<Booking[]>([]);
-    const [employees, setEmployees] = useState(fallbackEmployees);
-    const [blocks, setBlocks] = useState<BookingBlock[]>(bookingBlocks);
+    const [employees, setEmployees] = useState<CalEmployee[]>(fallbackEmployees);
+    const [visits, setVisits] = useState<VisitView[]>(mockCalVisits);
     const [apiLoaded, setApiLoaded] = useState(false);
     const router = useRouter();
     const { t } = useTranslation();
@@ -299,34 +392,28 @@ export default function BookingsCalendarPage() {
             .catch(() => {});
     }, []);
 
-    // Fetch bookings for the selected date
-    // GAP: API has no create-booking endpoint for provider
-    // GAP: API has no revenue/payment data on bookings
-    // GAP: API has no real-time employee availability status (Available/In Session/Break)
-    // GAP: API booking has no employee role/title
+    // Fetch bookings for the selected date and lift each into a canonical VisitView.
+    // GAP: API has no price/payment data on bookings (resolved via ServicePrice — X15).
     useEffect(() => {
         const dateStr = currentDate.toISOString().split('T')[0];
         providerApi
             .getBookings({ booking_date: dateStr, per_page: 100 })
             .then(res => {
-                if (res.success && res.data) {
-                    setApiBookings(res.data);
-                    const mapped = res.data
-                        .map(b => mapBookingToBlock(b, employees, timeSlots))
-                        .filter((b): b is BookingBlock => b !== null);
-                    if (mapped.length > 0) {
-                        setBlocks(mapped);
-                        setApiLoaded(true);
-                    }
+                if (res.success && res.data && res.data.length > 0) {
+                    setVisits(res.data.map(visitViewFromBooking));
+                    setApiLoaded(true);
                 }
             })
             .catch(() => {
                 // Keep fallback data
             });
-    }, [currentDate, employees]);
+    }, [currentDate]);
 
-    // Compute queue numbers for all blocks
+    const blocks = useMemo(() => visitsToBlocks(visits, employees, timeSlots), [visits, employees]);
     const queueMap = computeQueueNumbers(blocks);
+
+    const countBy = (s: BookingStatus) => visits.filter(v => v.visit.status === s).length;
+    const revenueToday = visits.reduce((sum, v) => (v.visit.status === 'cancelled' ? sum : sum + v.visit.total), 0);
 
     const goToday = () => setCurrentDate(new Date());
     const goPrev = () =>
@@ -409,8 +496,7 @@ export default function BookingsCalendarPage() {
                                         className={styles.empAvatar}
                                         style={{ background: emp.color, overflow: 'hidden', position: 'relative' }}
                                     >
-                                        {}
-                                        {emp.uuid && (
+                                        {emp.uuid && !emp.uuid.startsWith('emp-') && (
                                             <img
                                                 src={getImageUrl('employees', emp.uuid)}
                                                 alt={emp.name}
@@ -476,7 +562,7 @@ export default function BookingsCalendarPage() {
                                                         style={{ height: `${block.span * 64 - 4}px` }}
                                                         onClick={e => {
                                                             e.stopPropagation();
-                                                            if (block.id) router.push(`/bookings/${block.id}`);
+                                                            router.push(`/bookings/${block.visitId}`);
                                                         }}
                                                     >
                                                         <span className={styles.queueBadge}>
@@ -523,10 +609,10 @@ export default function BookingsCalendarPage() {
                 <div className={styles.sidePanel}>
                     {/* Next Appointment */}
                     {(() => {
-                        const activeBlocks = blocks.filter(b => b.status !== 'completed' && b.status !== 'cancelled');
-                        const nextBlock =
-                            activeBlocks.sort((a, b) => a.startSlot - b.startSlot)[0] ||
-                            blocks.find(b => b.id === 'BK-1040');
+                        const activeBlocks = blocks
+                            .filter(b => b.status !== 'completed' && b.status !== 'cancelled')
+                            .sort((a, b) => a.startSlot - b.startSlot);
+                        const nextBlock = activeBlocks[0];
                         if (!nextBlock) return null;
                         const nextQueue = queueMap.get(nextBlock) || 0;
                         const nextExpected = getExpectedStartTime(nextBlock, blocks, timeSlots);
@@ -538,7 +624,7 @@ export default function BookingsCalendarPage() {
                                 <div
                                     className={styles.nextApptCard}
                                     style={{ cursor: 'pointer' }}
-                                    onClick={() => router.push(`/bookings/${nextBlock.id}`)}
+                                    onClick={() => router.push(`/bookings/${nextBlock.visitId}`)}
                                 >
                                     <div
                                         style={{
@@ -595,24 +681,24 @@ export default function BookingsCalendarPage() {
                         </div>
                         <div className={styles.summaryGrid}>
                             <div className={styles.summaryItem}>
-                                <div className={styles.summaryValue}>{apiLoaded ? apiBookings.length : 14}</div>
+                                <div className={styles.summaryValue}>{visits.length}</div>
                                 <div className={styles.summaryLabel}>{t('bookings.total')}</div>
                             </div>
                             <div className={styles.summaryItem}>
                                 <div className={styles.summaryValue} style={{ color: 'var(--status-confirmed)' }}>
-                                    {apiLoaded ? apiBookings.filter(b => b.status === 'confirmed').length : 8}
+                                    {countBy('confirmed')}
                                 </div>
                                 <div className={styles.summaryLabel}>{t('bookings.confirmed')}</div>
                             </div>
                             <div className={styles.summaryItem}>
                                 <div className={styles.summaryValue} style={{ color: 'var(--status-completed)' }}>
-                                    {apiLoaded ? apiBookings.filter(b => b.status === 'completed').length : 3}
+                                    {countBy('completed')}
                                 </div>
                                 <div className={styles.summaryLabel}>{t('bookings.completed')}</div>
                             </div>
                             <div className={styles.summaryItem}>
                                 <div className={styles.summaryValue} style={{ color: 'var(--status-cancelled)' }}>
-                                    {apiLoaded ? apiBookings.filter(b => b.status === 'cancelled').length : 1}
+                                    {countBy('cancelled')}
                                 </div>
                                 <div className={styles.summaryLabel}>{t('bookings.cancelled')}</div>
                             </div>
@@ -632,7 +718,7 @@ export default function BookingsCalendarPage() {
                                     color: 'var(--color-primary-600)',
                                 }}
                             >
-                                4,280 EGP {/* GAP: API has no revenue/payment data on bookings */}
+                                {apiLoaded ? egp(0) : egp(revenueToday)}
                             </div>
                             <div
                                 style={{
@@ -641,10 +727,7 @@ export default function BookingsCalendarPage() {
                                     marginTop: 'var(--space-1)',
                                 }}
                             >
-                                {t('bookings.fromBookings').replace(
-                                    '%count%',
-                                    String(apiLoaded ? apiBookings.length : 14)
-                                )}
+                                {t('bookings.fromBookings').replace('%count%', String(visits.length))}
                             </div>
                         </div>
                     </div>

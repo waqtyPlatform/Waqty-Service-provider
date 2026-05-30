@@ -48,15 +48,11 @@ export default function EmployeePortalLayout({ children }: { children: React.Rea
             setLoading(false);
         }
 
-        // Verify token is still valid
+        // Verify token is still valid. The API client picks up the employee token
+        // automatically on /employee-portal routes (X11) — no swap needed.
         (async () => {
             try {
-                // Temporarily override the token for employee API calls
-                const origToken = localStorage.getItem('hagzy_token');
-                localStorage.setItem('hagzy_token', token);
                 const res = await employeeApi.me();
-                if (origToken) localStorage.setItem('hagzy_token', origToken);
-                else localStorage.removeItem('hagzy_token');
 
                 if (res.success && res.data) {
                     const emp: EmployeeUser = {
@@ -83,11 +79,8 @@ export default function EmployeePortalLayout({ children }: { children: React.Rea
         try {
             const token = localStorage.getItem('hagzy_employee_token');
             if (token) {
-                const origToken = localStorage.getItem('hagzy_token');
-                localStorage.setItem('hagzy_token', token);
+                // API client uses the employee token on this route (X11) — no swap.
                 await employeeApi.logout();
-                if (origToken) localStorage.setItem('hagzy_token', origToken);
-                else localStorage.removeItem('hagzy_token');
             }
         } catch {
             // Ignore logout errors

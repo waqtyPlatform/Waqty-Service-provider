@@ -5,25 +5,9 @@ import { Calendar, Clock, CheckCircle, Briefcase } from 'lucide-react';
 import { employeeApi, type Booking, type AttendanceRecord } from '@/lib/api';
 import { safeLocalStorageGet } from '@/lib/storage';
 
-function useEmployeeToken() {
-    // Swap token temporarily for employee API calls
-    return {
-        withToken: async <T,>(fn: () => Promise<T>): Promise<T> => {
-            const empToken = localStorage.getItem('hagzy_employee_token');
-            const origToken = localStorage.getItem('hagzy_token');
-            if (empToken) localStorage.setItem('hagzy_token', empToken);
-            try {
-                return await fn();
-            } finally {
-                if (origToken) localStorage.setItem('hagzy_token', origToken);
-                else localStorage.removeItem('hagzy_token');
-            }
-        },
-    };
-}
-
 export default function EmployeeDashboardPage() {
-    const { withToken } = useEmployeeToken();
+    // The API client reads the employee token on /employee-portal routes (X11),
+    // so employee endpoints are called directly — no token swap.
     const [todayBookings, setTodayBookings] = useState<Booking[]>([]);
     const [attendance, setAttendance] = useState<AttendanceRecord | null>(null);
     const [loading, setLoading] = useState(true);
@@ -36,8 +20,8 @@ export default function EmployeeDashboardPage() {
         (async () => {
             try {
                 const [bookingsRes, attendanceRes] = await Promise.allSettled([
-                    withToken(() => employeeApi.getBookings({ today: true })),
-                    withToken(() => employeeApi.getAttendance({ date_from: today, date_to: today })),
+                    employeeApi.getBookings({ today: true }),
+                    employeeApi.getAttendance({ date_from: today, date_to: today }),
                 ]);
 
                 if (bookingsRes.status === 'fulfilled' && bookingsRes.value.success && bookingsRes.value.data) {
@@ -62,7 +46,7 @@ export default function EmployeeDashboardPage() {
     const handleCheckIn = async () => {
         setCheckingIn(true);
         try {
-            const res = await withToken(() => employeeApi.checkIn({}));
+            const res = await employeeApi.checkIn({});
             if (res.success && res.data) {
                 setAttendance(res.data);
             }
@@ -76,7 +60,7 @@ export default function EmployeeDashboardPage() {
     const handleCheckOut = async () => {
         setCheckingIn(true);
         try {
-            const res = await withToken(() => employeeApi.checkOut({}));
+            const res = await employeeApi.checkOut({});
             if (res.success && res.data) {
                 setAttendance(res.data);
             }

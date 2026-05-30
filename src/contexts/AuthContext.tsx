@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { ApiError, authApi } from '@/lib/api';
+import { type BusinessCategory, normalizeBusinessCategory } from '@/lib/contract';
 import { safeJsonParse } from '@/lib/storage';
 
 // MOCK: replace with authApi.sendOtp / authApi.verifyOtp when the backend OTP flow ships.
@@ -11,7 +12,8 @@ const MOCK_OTP_REQUEST_DELAY_MS = 800;
 const MOCK_OTP_VERIFY_DELAY_MS = 1000;
 
 export type UserRole = 'admin' | 'manager' | 'staff';
-export type BusinessType = 'clinic' | 'salon' | 'barber';
+// PR-10: the canonical business category (salon|barber|clinic|spa|nails|other).
+export type BusinessType = BusinessCategory;
 
 export interface User {
     id: string;
@@ -132,7 +134,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     useEffect(() => {
         // Hydrate from localStorage — use queueMicrotask to avoid synchronous setState in effect
         const storedUser = localStorage.getItem('hagzy_user');
-        const storedToken = localStorage.getItem('hagzy_token');
+        const storedToken = localStorage.getItem('hagzy_provider_token');
         const parsed = safeJsonParse<User | null>(storedUser, null);
         if (parsed && storedToken) {
             queueMicrotask(() => {
@@ -143,7 +145,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } else {
             // Clear partial or corrupt state if token or user is missing/invalid
             localStorage.removeItem('hagzy_user');
-            localStorage.removeItem('hagzy_token');
+            localStorage.removeItem('hagzy_provider_token');
             setAuthCookie(false);
             queueMicrotask(() => setLoading(false));
         }
@@ -170,7 +172,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
             if (res.success && res.data) {
                 const { token, provider } = res.data;
-                localStorage.setItem('hagzy_token', token);
+                localStorage.setItem('hagzy_provider_token', token);
 
                 const loggedInUser: User = {
                     id: provider.uuid,
@@ -190,11 +192,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     const profile = await authApi.me();
                     if (profile.success && profile.data) {
                         if (profile.data.category?.name) {
-                            const cat = profile.data.category.name.toLowerCase();
-                            if (cat.includes('clinic') || cat.includes('عيادة')) loggedInUser.businessType = 'clinic';
-                            else if (cat.includes('barber') || cat.includes('حلاق'))
-                                loggedInUser.businessType = 'barber';
-                            else loggedInUser.businessType = 'salon';
+                            // PR-10: derive the canonical category deterministically.
+                            loggedInUser.businessType = normalizeBusinessCategory(profile.data.category.name);
                         }
                     }
                 } catch {
@@ -306,7 +305,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } catch {
             // Ignore logout API errors — clear local state regardless
         }
-        localStorage.removeItem('hagzy_token');
+        localStorage.removeItem('hagzy_provider_token');
         setUser(null);
         localStorage.removeItem('hagzy_user');
         setAuthCookie(false);

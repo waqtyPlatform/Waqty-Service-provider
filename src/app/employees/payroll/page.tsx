@@ -64,6 +64,7 @@ const employees = [
         level: 'Senior',
         baseSalary: 8000,
         commission: 2693.2, // Reflects resolved pricing: Hair Coloring 520×12 @10% + Keratin 900×5 @12%
+        tips: 650, // PR-6: canonical Tips per visit, surfaced in the payslip
         bonus: 1000,
         deductions: 500,
         deductionDetails: [
@@ -80,6 +81,7 @@ const employees = [
         level: 'Mid',
         baseSalary: 7000,
         commission: 1880,
+        tips: 420,
         bonus: 600,
         deductions: 450,
         deductionDetails: [
@@ -95,6 +97,7 @@ const employees = [
         level: 'Mid',
         baseSalary: 7500,
         commission: 1650,
+        tips: 380,
         bonus: 0,
         deductions: 480,
         deductionDetails: [
@@ -110,6 +113,7 @@ const employees = [
         level: 'Junior',
         baseSalary: 5500,
         commission: 920,
+        tips: 510,
         bonus: 0,
         deductions: 350,
         deductionDetails: [
@@ -125,6 +129,7 @@ const employees = [
         level: 'Senior',
         baseSalary: 6000,
         commission: 720,
+        tips: 290,
         bonus: 300,
         deductions: 380,
         deductionDetails: [
@@ -139,6 +144,7 @@ const employees = [
         position: 'Colorist',
         baseSalary: 6500,
         commission: 1100,
+        tips: 340,
         bonus: 0,
         deductions: 420,
         deductionDetails: [
@@ -153,6 +159,7 @@ const employees = [
         position: 'Front Desk',
         baseSalary: 4500,
         commission: 0,
+        tips: 0,
         bonus: 200,
         deductions: 280,
         deductionDetails: [
@@ -176,6 +183,11 @@ const initialPayrollStatus: Record<string, 'Pending' | 'Paid'> = {};
 employees.forEach(e => {
     initialPayrollStatus[e.id] = 'Pending';
 });
+
+// PR-6: canonical payslip net = base + commission + tips + bonus − deductions.
+// Used everywhere net pay is computed so tips are never silently dropped.
+const empNetPay = (e: { baseSalary: number; commission: number; bonus: number; tips?: number }, totalDed: number) =>
+    e.baseSalary + e.commission + e.bonus + (e.tips ?? 0) - totalDed;
 
 const initialPayoutHistory = [
     {
@@ -540,7 +552,7 @@ export default function PayrollPage() {
                 ...e,
                 deductions: totalDed,
                 deductionDetails: getEmpDeductions(e.id),
-                netPay: e.baseSalary + e.commission + e.bonus - totalDed,
+                netPay: empNetPay(e, totalDed),
                 status: payrollStatus[e.id] || 'Pending',
             };
         });
@@ -552,11 +564,12 @@ export default function PayrollPage() {
     const totals = useMemo(() => {
         const all = employees.map(e => {
             const totalDed = getEmpTotalDeductions(e.id);
-            return { ...e, netPay: e.baseSalary + e.commission + e.bonus - totalDed, deductions: totalDed };
+            return { ...e, netPay: empNetPay(e, totalDed), deductions: totalDed };
         });
         return {
             payroll: all.reduce((s, e) => s + e.netPay, 0),
             commissions: all.reduce((s, e) => s + e.commission, 0),
+            tips: all.reduce((s, e) => s + (e.tips ?? 0), 0),
             bonuses: all.reduce((s, e) => s + e.bonus, 0),
             deductions: all.reduce((s, e) => s + e.deductions, 0),
         };
@@ -564,7 +577,7 @@ export default function PayrollPage() {
 
     const handlePay = (empId: string) => {
         const emp = employees.find(e => e.id === empId)!;
-        const net = emp.baseSalary + emp.commission + emp.bonus - getEmpTotalDeductions(empId);
+        const net = empNetPay(emp, getEmpTotalDeductions(empId));
         const pm = getDefaultPm(empId);
         setPayrollStatus(prev => ({ ...prev, [empId]: 'Paid' }));
         const newPayout = {
@@ -595,7 +608,7 @@ export default function PayrollPage() {
         const newPayouts: typeof initialPayoutHistory = [];
         pending.forEach(emp => {
             updates[emp.id] = 'Paid';
-            const net = emp.baseSalary + emp.commission + emp.bonus - getEmpTotalDeductions(emp.id);
+            const net = empNetPay(emp, getEmpTotalDeductions(emp.id));
             newPayouts.push({
                 id: `PO-${generateId()}-${emp.id}`,
                 date: new Date().toISOString().slice(0, 10),
@@ -831,6 +844,22 @@ export default function PayrollPage() {
                                                     {totals.commissions.toLocaleString()} {t('payroll.egp')}
                                                 </div>
                                                 <div style={s.kpiLbl}>{t('payroll.commissions')}</div>
+                                            </div>
+                                        </div>
+                                        <div
+                                            style={{
+                                                ...(s.kpiCard as React.CSSProperties),
+                                                flexDirection: lang === 'ar' ? 'row-reverse' : 'row',
+                                            }}
+                                        >
+                                            <div style={{ ...s.kpiIcon, background: '#DCFCE7', color: '#15803D' }}>
+                                                <Banknote size={22} />
+                                            </div>
+                                            <div style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                                <div style={s.kpiVal}>
+                                                    {totals.tips.toLocaleString()} {t('payroll.egp')}
+                                                </div>
+                                                <div style={s.kpiLbl}>{lang === 'ar' ? 'البقشيش' : 'Tips'}</div>
                                             </div>
                                         </div>
                                         <div
@@ -1876,8 +1905,7 @@ export default function PayrollPage() {
                                                 <tbody>
                                                     {employees.map(emp => {
                                                         const slipDed = getEmpTotalDeductions(emp.id);
-                                                        const net =
-                                                            emp.baseSalary + emp.commission + emp.bonus - slipDed;
+                                                        const net = empNetPay(emp, slipDed);
                                                         return (
                                                             <tr
                                                                 key={emp.id}
@@ -1969,7 +1997,7 @@ export default function PayrollPage() {
                                     const emp = employees.find(e => e.id === confirmPay)!;
                                     const empDeductions = getEmpDeductions(confirmPay);
                                     const empTotalDed = getEmpTotalDeductions(confirmPay);
-                                    const net = emp.baseSalary + emp.commission + emp.bonus - empTotalDed;
+                                    const net = empNetPay(emp, empTotalDed);
                                     return (
                                         <Modal
                                             open
@@ -2551,7 +2579,7 @@ export default function PayrollPage() {
                                     const emp = selectedSlip;
                                     const slipDeductions = getEmpDeductions(emp.id);
                                     const slipTotalDed = getEmpTotalDeductions(emp.id);
-                                    const net = emp.baseSalary + emp.commission + emp.bonus - slipTotalDed;
+                                    const net = empNetPay(emp, slipTotalDed);
                                     return (
                                         <SlideOver
                                             open
@@ -2688,6 +2716,19 @@ export default function PayrollPage() {
                                                             </span>
                                                         </div>
                                                     )}
+                                                    {emp.tips > 0 && (
+                                                        <div
+                                                            style={{
+                                                                ...(s.slipRow as React.CSSProperties),
+                                                                flexDirection: lang === 'ar' ? 'row-reverse' : 'row',
+                                                            }}
+                                                        >
+                                                            <span>{lang === 'ar' ? 'البقشيش' : 'Tips'}</span>
+                                                            <span style={{ fontWeight: 'var(--font-semibold)' }}>
+                                                                {emp.tips.toLocaleString()} {t('payroll.egp')}
+                                                            </span>
+                                                        </div>
+                                                    )}
                                                     <div
                                                         style={{
                                                             ...s.slipRow,
@@ -2701,7 +2742,8 @@ export default function PayrollPage() {
                                                             {(
                                                                 emp.baseSalary +
                                                                 emp.commission +
-                                                                emp.bonus
+                                                                emp.bonus +
+                                                                emp.tips
                                                             ).toLocaleString()}{' '}
                                                             {t('payroll.egp')}
                                                         </span>

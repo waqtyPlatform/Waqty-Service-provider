@@ -36,6 +36,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# agent scratch (worktrees, transient analysis artifacts)
+.claude/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
