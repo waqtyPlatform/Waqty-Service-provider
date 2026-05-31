@@ -6,3 +6,7 @@ coverage
 *.md
 package-lock.json
 pnpm-lock.yaml
+
+# Vendored canonical contract — a VERBATIM copy of <repo-root>/contract/waqty_contract.ts,
+# guarded by scripts/check-contract.mjs. Never reformat it (formatting drift fails CI).
+src/lib/waqty_contract.ts

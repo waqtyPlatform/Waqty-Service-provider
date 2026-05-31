@@ -26,6 +26,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored canonical contract — a verbatim copy guarded by
+    // scripts/check-contract.mjs; must never be reformatted by eslint --fix.
+    "src/lib/waqty_contract.ts",
   ]),
 ]);
 
