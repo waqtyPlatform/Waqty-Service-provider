@@ -186,7 +186,6 @@ const getSalesData = (report: string) => {
             col3: String(r.amount),
             col4: String(Math.round(r.amount / r.count)),
             col5: r.status,
-            action: { label: 'View', href: '#' },
         })),
         chartData: common.chartData,
     };

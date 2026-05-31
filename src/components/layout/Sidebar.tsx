@@ -16,6 +16,7 @@ import {
     UserCog,
     Megaphone,
     BarChart3,
+    Wallet,
     Settings,
     ChevronLeft,
     ChevronDown,
@@ -117,6 +118,7 @@ const getNavigation = (
             icon: <Megaphone size={20} />,
             children: [
                 { label: t('sidebar.offers'), href: '/marketing/offers' },
+                { label: t('mktAds.title'), href: '/marketing/ads' },
                 { label: t('sidebar.campaigns'), href: '/marketing/packages' },
                 { label: t('sidebar.notifications'), href: '/marketing/notifications' },
                 { label: t('sidebar.promoCodes'), href: '/marketing/promo-codes' },
@@ -129,6 +131,11 @@ const getNavigation = (
             label: t('sidebar.reports'),
             icon: <BarChart3 size={20} />,
             href: '/reports',
+        },
+        {
+            label: t('sidebar.finance'),
+            icon: <Wallet size={20} />,
+            children: [{ label: t('sidebar.settlement'), href: '/finance/settlement' }],
         },
         {
             label: t('sidebar.settings'),
@@ -175,10 +182,21 @@ const getNavigation = (
     ];
 
     if (role === 'manager') {
-        return fullNav.filter(n => n.label !== t('sidebar.reports') && n.label !== t('sidebar.settings'));
+        return fullNav.filter(
+            n =>
+                n.label !== t('sidebar.reports') &&
+                n.label !== t('sidebar.settings') &&
+                n.label !== t('sidebar.finance')
+        );
     }
     if (role === 'staff') {
-        const excluded = [t('sidebar.returns'), employeesLabel, t('sidebar.reports'), t('sidebar.settings')];
+        const excluded = [
+            t('sidebar.returns'),
+            employeesLabel,
+            t('sidebar.reports'),
+            t('sidebar.settings'),
+            t('sidebar.finance'),
+        ];
         return fullNav.filter(n => !excluded.includes(n.label));
     }
 

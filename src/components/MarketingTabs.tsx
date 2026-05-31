@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Tag, Package, Bell, MessageSquare, Layers, Percent, Megaphone } from 'lucide-react';
+import { Tag, Package, Bell, MessageSquare, Layers, Percent, Megaphone, Star } from 'lucide-react';
 
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -13,6 +13,7 @@ export default function MarketingTabs() {
 
     const tabs = [
         { label: t('mkt.lblOffers'), href: '/marketing/offers', icon: <Tag size={16} /> },
+        { label: t('mktAds.title'), href: '/marketing/ads', icon: <Star size={16} /> },
         { label: t('mkt.lblCampaigns'), href: '/marketing/packages', icon: <Package size={16} /> },
         { label: t('mkt.lblNotifications'), href: '/marketing/notifications', icon: <Bell size={16} /> },
         { label: t('mkt.lblPromoCodes'), href: '/marketing/promo-codes', icon: <Percent size={16} /> },
