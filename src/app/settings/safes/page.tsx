@@ -107,7 +107,7 @@ export default function SafesPage() {
     const activeSafes = safesList.filter(s => s.status === 'Active').length;
 
     const handleAddSafe = async () => {
-        if (!newSafe.name) return addToast('error', 'Safe name is required');
+        if (!newSafe.name) return addToast('error', t('settings.safes.nameRequired'));
         try {
             await settingsApi.createSafe({
                 name: newSafe.name,
@@ -117,10 +117,10 @@ export default function SafesPage() {
             });
             setIsAddOpen(false);
             setNewSafe({ name: '', branch: 'downtown', balance: '', status: 'active' });
-            addToast('success', `"${newSafe.name}" created successfully`);
+            addToast('success', `"${newSafe.name}" ${t('settings.safes.createdSuffix')}`);
             refetch();
         } catch {
-            addToast('error', 'Failed to create safe');
+            addToast('error', t('settings.safes.createFailed'));
         }
     };
 
@@ -130,10 +130,10 @@ export default function SafesPage() {
             setSafesList(safesList.filter(s => String(s.id) !== String(selectedSafe?.id)));
             setIsDeleteOpen(false);
             setSelectedSafe(null);
-            addToast('success', 'Safe deleted permanently');
+            addToast('success', t('settings.safes.deletedPermanently'));
             refetch();
         } catch {
-            addToast('error', 'Failed to delete safe');
+            addToast('error', t('settings.safes.deleteFailed'));
         }
     };
 
@@ -301,7 +301,7 @@ export default function SafesPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                     <Input
                         label={t('settings.safes.safeName')}
-                        placeholder="e.g. Front Desk Safe"
+                        placeholder={t('settings.safes.namePh')}
                         value={newSafe.name}
                         onChange={e => setNewSafe({ ...newSafe, name: e.target.value })}
                     />
@@ -310,9 +310,9 @@ export default function SafesPage() {
                         value={newSafe.branch}
                         onChange={e => setNewSafe({ ...newSafe, branch: e.target.value })}
                         options={[
-                            { label: 'Downtown', value: 'downtown' },
-                            { label: 'Mall of Arabia', value: 'mall' },
-                            { label: 'New Cairo', value: 'newcairo' },
+                            { label: t('settings.safes.branchDowntown'), value: 'downtown' },
+                            { label: t('settings.safes.branchMall'), value: 'mall' },
+                            { label: t('settings.safes.branchNewCairo'), value: 'newcairo' },
                         ]}
                     />
                     <Input
@@ -356,10 +356,10 @@ export default function SafesPage() {
                                             active: selectedSafe.status === 'Active',
                                         });
                                     setIsEditOpen(false);
-                                    addToast('success', 'Safe updated successfully');
+                                    addToast('success', t('settings.safes.updated'));
                                     refetch();
                                 } catch {
-                                    addToast('error', 'Failed to update safe');
+                                    addToast('error', t('settings.safes.updateFailed'));
                                 }
                             }}
                         >

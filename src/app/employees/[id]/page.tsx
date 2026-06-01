@@ -76,13 +76,27 @@ const defaultEmployee = {
 };
 
 const schedule = [
-    { day: 'Monday', start: '10:00 AM', end: '08:00 PM', off: false, breakStart: '02:00 PM', breakEnd: '03:00 PM' },
-    { day: 'Tuesday', start: '10:00 AM', end: '08:00 PM', off: false, breakStart: '02:00 PM', breakEnd: '03:00 PM' },
-    { day: 'Wednesday', start: '10:00 AM', end: '08:00 PM', off: false, breakStart: '01:00 PM', breakEnd: '02:00 PM' },
-    { day: 'Thursday', start: '10:00 AM', end: '09:00 PM', off: false, breakStart: '03:00 PM', breakEnd: '04:00 PM' },
-    { day: 'Friday', start: '01:00 PM', end: '10:00 PM', off: false, breakStart: '', breakEnd: '' },
-    { day: 'Saturday', start: '-', end: '-', off: true, breakStart: '', breakEnd: '' },
-    { day: 'Sunday', start: '10:00 AM', end: '06:00 PM', off: false, breakStart: '01:00 PM', breakEnd: '01:30 PM' },
+    { dayKey: 'monday', start: '10:00 AM', end: '08:00 PM', off: false, breakStart: '02:00 PM', breakEnd: '03:00 PM' },
+    { dayKey: 'tuesday', start: '10:00 AM', end: '08:00 PM', off: false, breakStart: '02:00 PM', breakEnd: '03:00 PM' },
+    {
+        dayKey: 'wednesday',
+        start: '10:00 AM',
+        end: '08:00 PM',
+        off: false,
+        breakStart: '01:00 PM',
+        breakEnd: '02:00 PM',
+    },
+    {
+        dayKey: 'thursday',
+        start: '10:00 AM',
+        end: '09:00 PM',
+        off: false,
+        breakStart: '03:00 PM',
+        breakEnd: '04:00 PM',
+    },
+    { dayKey: 'friday', start: '01:00 PM', end: '10:00 PM', off: false, breakStart: '', breakEnd: '' },
+    { dayKey: 'saturday', start: '-', end: '-', off: true, breakStart: '', breakEnd: '' },
+    { dayKey: 'sunday', start: '10:00 AM', end: '06:00 PM', off: false, breakStart: '01:00 PM', breakEnd: '01:30 PM' },
 ];
 
 const revenueData = [
@@ -226,7 +240,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
     ]);
 
     const availableServices = [
-        { value: 'none', label: 'Select a service...' },
+        { value: 'none', label: t('empProfile.selectService') },
         { value: 'Beard Trim', label: 'Beard Trim' },
         { value: 'Root Touch Up', label: 'Root Touch Up' },
         { value: 'Balayage', label: 'Balayage' },
@@ -322,7 +336,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                         <div className={styles.card} style={{ marginTop: 'var(--space-4)' }}>
                             <div className={styles.cardHeader}>
                                 <span className={styles.cardTitle}>
-                                    <Target size={18} style={{ marginRight: 6 }} /> Target Progress
+                                    <Target size={18} style={{ marginRight: 6 }} /> {t('empProfile.targetProgress')}
                                 </span>
                             </div>
                             <div
@@ -331,15 +345,15 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                             >
                                 {[
                                     {
-                                        label: 'Revenue Target',
+                                        label: t('empProfile.revenueTarget'),
                                         achieved: revAchieved.toLocaleString() + ' EGP',
                                         target: revTarget.toLocaleString() + ' EGP',
                                         pct: revPct,
                                     },
                                     {
-                                        label: 'Bookings Target',
-                                        achieved: bkAchieved + ' appts',
-                                        target: bkTarget + ' appts',
+                                        label: t('empProfile.bookingsTarget'),
+                                        achieved: bkAchieved + ' ' + t('empProfile.appts'),
+                                        target: bkTarget + ' ' + t('empProfile.appts'),
                                         pct: bkPct,
                                     },
                                 ].map(bar => (
@@ -386,8 +400,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                                     }}
                                 >
                                     <div style={{ color: 'var(--text-secondary)', marginBottom: 4 }}>
-                                        At {revPct}% → <strong>Base bonus (1×)</strong>&nbsp;|&nbsp;Reach 120% →
-                                        1.5×&nbsp;|&nbsp;Reach 150% → 2×
+                                        {t('empProfile.bonusTiers').replace('{pct}', String(revPct))}
                                     </div>
                                     <div
                                         style={{
@@ -395,7 +408,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                                             color: 'var(--color-primary-600)',
                                         }}
                                     >
-                                        Estimated bonus at current pace: {projBonus.toLocaleString()} EGP
+                                        {t('empProfile.estimatedBonus').replace('{amount}', projBonus.toLocaleString())}
                                     </div>
                                 </div>
                             </div>
@@ -439,7 +452,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                                         border: '1px solid var(--border-color)',
                                         boxShadow: 'var(--shadow-md)',
                                     }}
-                                    formatter={value => [`${value || 0} EGP`, 'Revenue']}
+                                    formatter={value => [`${value || 0} EGP`, t('empProfile.revenueTooltip')]}
                                 />
                                 <Area
                                     type="monotone"
@@ -492,7 +505,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                     <div className={styles.cardHeader}>
                         <span className={styles.cardTitle}>
                             <Smartphone size={16} style={{ marginRight: 6 }} />
-                            Mobile App Access
+                            {t('empProfile.mobileAppAccess')}
                         </span>
                     </div>
                     <div className={styles.cardBody}>
@@ -512,10 +525,10 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                             >
                                 {pinSet ? (
                                     <>
-                                        <CheckCircle size={11} /> App Access: Active
+                                        <CheckCircle size={11} /> {t('empProfile.appAccessActive')}
                                     </>
                                 ) : (
-                                    'App Access: Not Configured'
+                                    t('empProfile.appAccessNotConfigured')
                                 )}
                             </span>
                         </div>
@@ -530,7 +543,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                                     setIsPinModalOpen(true);
                                 }}
                             >
-                                <Lock size={14} style={{ marginRight: 6 }} /> Set PIN
+                                <Lock size={14} style={{ marginRight: 6 }} /> {t('empProfile.setPin')}
                             </Button>
                             <Button
                                 size="sm"
@@ -540,10 +553,10 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                                     const token = Math.random().toString(36).substring(7);
                                     const link = `${window.location.origin}/invite/${token}?phone=${encodeURIComponent(employee.phone)}&role=staff`;
                                     navigator.clipboard.writeText(link);
-                                    addToast('success', 'App invite link copied to clipboard');
+                                    addToast('success', t('empProfile.toastAppInviteCopied'));
                                 }}
                             >
-                                <Copy size={14} style={{ marginRight: 6 }} /> Send App Invite
+                                <Copy size={14} style={{ marginRight: 6 }} /> {t('empProfile.sendAppInvite')}
                             </Button>
                         </div>
                     </div>
@@ -572,7 +585,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                     <div className={styles.scheduleGrid}>
                         {schedule.map((day, i) => (
                             <div key={i} className={styles.scheduleDay}>
-                                <div className={styles.dayName}>{day.day}</div>
+                                <div className={styles.dayName}>{t(`settings.hours.${day.dayKey}`)}</div>
                                 {day.off ? (
                                     <div className={styles.dayOff}>{t('empProfile.dayOff')}</div>
                                 ) : (
@@ -687,13 +700,13 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
 
     const renderNotifications = () => {
         const notifItems = [
-            { key: 'newBookings', label: 'New Bookings' },
-            { key: 'cancellations', label: 'Cancellations' },
-            { key: 'reminders', label: 'Appointment Reminders' },
-            { key: 'shiftReminders', label: 'Shift Reminders' },
-            { key: 'newReviews', label: 'New Reviews' },
-            { key: 'payslipAvailable', label: 'Payslip Available' },
-            { key: 'announcements', label: 'Manager Announcements' },
+            { key: 'newBookings', label: t('empProfile.notifNewBookings') },
+            { key: 'cancellations', label: t('empProfile.notifCancellations') },
+            { key: 'reminders', label: t('empProfile.notifReminders') },
+            { key: 'shiftReminders', label: t('empProfile.notifShiftReminders') },
+            { key: 'newReviews', label: t('empProfile.notifNewReviews') },
+            { key: 'payslipAvailable', label: t('empProfile.notifPayslipAvailable') },
+            { key: 'announcements', label: t('empProfile.notifAnnouncements') },
         ] as const;
         const enabledCount = notifItems.filter(i => notifPrefs[i.key]).length;
         return (
@@ -701,10 +714,12 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                 <div className={styles.card}>
                     <div className={styles.cardHeader}>
                         <span className={styles.cardTitle}>
-                            <Bell size={18} style={{ marginRight: 6 }} /> Notification Preferences
+                            <Bell size={18} style={{ marginRight: 6 }} /> {t('empProfile.notifPrefsTitle')}
                         </span>
                         <Badge color="neutral">
-                            {enabledCount}/{notifItems.length} enabled
+                            {t('empProfile.notifEnabled')
+                                .replace('{count}', String(enabledCount))
+                                .replace('{total}', String(notifItems.length))}
                         </Badge>
                     </div>
                     <div
@@ -744,11 +759,11 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                                 >
                                     {notifPrefs[item.key] ? (
                                         <>
-                                            <CheckCircle size={11} /> On
+                                            <CheckCircle size={11} /> {t('empProfile.notifOn')}
                                         </>
                                     ) : (
                                         <>
-                                            <XCircle size={11} /> Off
+                                            <XCircle size={11} /> {t('empProfile.notifOff')}
                                         </>
                                     )}
                                 </span>
@@ -761,7 +776,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                                 marginTop: 'var(--space-2)',
                             }}
                         >
-                            Employee controls these settings from their mobile app — changes sync automatically.
+                            {t('empProfile.notifFootnote')}
                         </p>
                     </div>
                 </div>
@@ -889,7 +904,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                     { key: 'schedule', label: t('empProfile.tabSchedule'), icon: <Calendar size={16} /> },
                     { key: 'attendance', label: t('empProfile.tabAttendance'), icon: <Clock size={16} /> },
                     { key: 'reviews', label: t('empProfile.tabReviews'), icon: <MessageSquare size={16} /> },
-                    { key: 'notifications', label: 'Notifications', icon: <Bell size={16} /> },
+                    { key: 'notifications', label: t('empProfile.tabNotifications'), icon: <Bell size={16} /> },
                 ]}
             />
 
@@ -945,9 +960,9 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                         value={editEmp.role}
                         onChange={e => setEditEmp({ ...editEmp, role: e.target.value })}
                         options={[
-                            { value: 'admin', label: 'Admin (Full Access)' },
-                            { value: 'manager', label: 'Manager (Branch Access)' },
-                            { value: 'employee', label: 'Employee (Limited Access)' },
+                            { value: 'admin', label: t('empProfile.roleAdminFull') },
+                            { value: 'manager', label: t('empProfile.roleManagerBranch') },
+                            { value: 'employee', label: t('empProfile.roleEmployeeLimited') },
                         ]}
                     />
 
@@ -1402,14 +1417,15 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
             </Modal>
 
             {/* Task 02: Set PIN Modal */}
-            <Modal open={isPinModalOpen} onClose={() => setIsPinModalOpen(false)} title="Set Employee PIN">
+            <Modal open={isPinModalOpen} onClose={() => setIsPinModalOpen(false)} title={t('empProfile.setPinTitle')}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                     <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)' }}>
-                        Set a 6-digit PIN for <strong>{employee.name}</strong>. They can use this PIN to log into the
-                        Hagzy Employee App.
+                        {t('empProfile.setPinDesc1')}
+                        <strong>{employee.name}</strong>
+                        {t('empProfile.setPinDesc2')}
                     </p>
                     <Input
-                        label="New PIN (6 digits)"
+                        label={t('empProfile.newPinLabel')}
                         type="password"
                         maxLength={6}
                         placeholder="••••••"
@@ -1417,7 +1433,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                         onChange={e => setPinValue(e.target.value.replace(/\D/g, '').slice(0, 6))}
                     />
                     <Input
-                        label="Confirm PIN"
+                        label={t('empProfile.confirmPinLabel')}
                         type="password"
                         maxLength={6}
                         placeholder="••••••"
@@ -1433,19 +1449,19 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                         }}
                     >
                         <Button variant="outline" onClick={() => setIsPinModalOpen(false)}>
-                            Cancel
+                            {t('empProfile.btnCancel')}
                         </Button>
                         <Button
                             disabled={pinValue.length < 6 || pinValue !== pinConfirm}
                             onClick={() => {
-                                if (pinValue.length < 6) return addToast('error', 'PIN must be 6 digits');
-                                if (pinValue !== pinConfirm) return addToast('error', 'PINs do not match');
+                                if (pinValue.length < 6) return addToast('error', t('empProfile.toastPinReq'));
+                                if (pinValue !== pinConfirm) return addToast('error', t('empProfile.toastPinMismatch'));
                                 setPinSet(true);
                                 setIsPinModalOpen(false);
-                                addToast('success', 'PIN set — employee can now log into the Hagzy Employee App');
+                                addToast('success', t('empProfile.toastPinSet'));
                             }}
                         >
-                            Save PIN
+                            {t('empProfile.savePin')}
                         </Button>
                     </div>
                 </div>
@@ -1491,7 +1507,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                                         color: day.off ? 'var(--text-tertiary)' : 'var(--text-primary)',
                                     }}
                                 >
-                                    {day.day}
+                                    {t(`settings.hours.${day.dayKey}`)}
                                 </div>
                                 <div
                                     style={{

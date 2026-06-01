@@ -203,7 +203,7 @@ export default function EmployeesPage() {
     }, []);
 
     const handleSaveAdd = async () => {
-        if (!newEmp.fname || !newEmp.lname) return addToast('error', 'First and Last name are required');
+        if (!newEmp.fname || !newEmp.lname) return addToast('error', t('employees.toastFirstLastReq'));
 
         if (apiLoaded) {
             try {
@@ -216,7 +216,7 @@ export default function EmployeesPage() {
                 };
                 if (newEmp.branch) payload.branch_uuid = newEmp.branch;
                 await providerApi.createEmployee(payload);
-                addToast('success', 'Employee added successfully');
+                addToast('success', t('employees.toastAddSuccess'));
                 setIsAddOpen(false);
                 setNewEmp({
                     fname: '',
@@ -231,7 +231,7 @@ export default function EmployeesPage() {
                 return;
             } catch (err: unknown) {
                 const error = err as { message?: string };
-                addToast('error', error.message || 'Failed to add employee');
+                addToast('error', error.message || t('employees.toastAddFail'));
                 return;
             }
         }
@@ -267,40 +267,40 @@ export default function EmployeesPage() {
             jobTitle: 'Junior Stylist',
             branch: '',
         });
-        addToast('success', 'User credentials generated and employee added');
+        addToast('success', t('employees.toastCredsAdded'));
     };
 
     const handleDelete = async () => {
         if (apiLoaded && selectedEmp) {
             try {
                 await providerApi.deleteEmployee(selectedEmp.id);
-                addToast('success', 'Employee removed successfully');
+                addToast('success', t('employees.toastRemoveSuccess'));
                 setIsDeleteOpen(false);
                 setRefreshKey(k => k + 1);
                 return;
             } catch (err: unknown) {
                 const error = err as { message?: string };
-                addToast('error', error.message || 'Failed to delete employee');
+                addToast('error', error.message || t('employees.toastRemoveFail'));
                 setIsDeleteOpen(false);
                 return;
             }
         }
         setEmpList(empList.filter(e => e.id !== selectedEmp?.id));
         setIsDeleteOpen(false);
-        addToast('success', 'Employee removed securely');
+        addToast('success', t('employees.toastRemoveSecure'));
     };
 
     const handleInvite = () => {
-        if (!inviteData.phoneOrEmail) return addToast('error', 'Contact info required');
+        if (!inviteData.phoneOrEmail) return addToast('error', t('employees.toastContactReq'));
         const token = Math.random().toString(36).substring(7);
         const link = `${window.location.origin}/invite/${token}`;
         setMagicLink(link);
-        addToast('success', 'Invitation link generated!');
+        addToast('success', t('employees.toastInviteGenerated'));
     };
 
     const handleCopyLink = () => {
         navigator.clipboard.writeText(magicLink);
-        addToast('success', 'Link copied to clipboard');
+        addToast('success', t('employees.toastLinkCopied'));
     };
 
     return (
@@ -323,7 +323,7 @@ export default function EmployeesPage() {
                     }}
                 >
                     <Mail size={16} style={{ marginRight: '8px' }} />
-                    Invite Staff
+                    {t('employees.inviteStaff')}
                 </Button>
             </div>
 
@@ -381,12 +381,12 @@ export default function EmployeesPage() {
                                             }
                                             items={[
                                                 {
-                                                    label: 'View Schedule',
+                                                    label: t('employees.viewSchedule'),
                                                     icon: <Users size={14} />,
                                                     onClick: () => router.push(`/employees/${emp.id}`),
                                                 },
                                                 {
-                                                    label: 'Edit',
+                                                    label: t('employees.edit'),
                                                     icon: <Edit size={14} />,
                                                     onClick: () => {
                                                         setSelectedEmp(emp);
@@ -394,7 +394,7 @@ export default function EmployeesPage() {
                                                     },
                                                 },
                                                 {
-                                                    label: 'Delete',
+                                                    label: t('employees.delete'),
                                                     destructive: true,
                                                     icon: <Trash2 size={14} />,
                                                     onClick: () => {
@@ -412,19 +412,19 @@ export default function EmployeesPage() {
                                 <div className={styles.statsRow}>
                                     <div className={styles.statItem}>
                                         <div className={styles.statVal}>{emp.bookingsToday}</div>
-                                        <div className={styles.statLabel}>Today</div>
+                                        <div className={styles.statLabel}>{t('employees.today')}</div>
                                     </div>
                                     <div className={styles.statItem}>
                                         <div className={styles.statVal} style={{ color: '#F59E0B' }}>
                                             ★ {emp.rating}
                                         </div>
-                                        <div className={styles.statLabel}>Rating</div>
+                                        <div className={styles.statLabel}>{t('employees.rating')}</div>
                                     </div>
                                     <div className={styles.statItem}>
                                         <div className={styles.statVal} style={{ color: 'var(--color-primary-600)' }}>
                                             {(emp.revenue / 1000).toFixed(1)}K
                                         </div>
-                                        <div className={styles.statLabel}>Revenue</div>
+                                        <div className={styles.statLabel}>{t('employees.revenue')}</div>
                                     </div>
                                 </div>
                                 <div
@@ -449,7 +449,9 @@ export default function EmployeesPage() {
                                             color: emp.appAccess ? 'var(--color-success)' : 'var(--color-gray-500)',
                                         }}
                                     >
-                                        {emp.appAccess ? '● App Access: Active' : '○ App Access: Not Configured'}
+                                        {emp.appAccess
+                                            ? `● ${t('employees.appAccessActive')}`
+                                            : `○ ${t('employees.appAccessNotConfigured')}`}
                                     </span>
                                 </div>
                             </div>
@@ -460,8 +462,8 @@ export default function EmployeesPage() {
                 <div style={{ padding: 'var(--space-12) 0' }}>
                     <EmptyState
                         icon={<Users size={32} color="var(--text-tertiary)" />}
-                        title="No employees found"
-                        description="We couldn't find any employees matching your search criteria."
+                        title={t('employees.noEmployeesFound')}
+                        description={t('employees.noEmployeesDesc')}
                     />
                 </div>
             )}
@@ -538,7 +540,7 @@ export default function EmployeesPage() {
                         options={
                             branches.length > 0
                                 ? [
-                                      { label: '— Select Branch —', value: '' },
+                                      { label: t('employees.selectBranch'), value: '' },
                                       ...branches.map(b => ({ label: b.name, value: b.uuid })),
                                   ]
                                 : [
@@ -572,13 +574,13 @@ export default function EmployeesPage() {
                                         // Note: Using defaultValue inputs means we can't easily read form values
                                         // A proper integration would use controlled inputs — keeping mock save for now
                                         // GAP: edit form uses uncontrolled inputs (defaultValue), can't extract values easily
-                                        addToast('success', 'Employee details updated');
+                                        addToast('success', t('employees.toastUpdated'));
                                     } catch (err: unknown) {
                                         const error = err as { message?: string };
-                                        addToast('error', error.message || 'Failed to update employee');
+                                        addToast('error', error.message || t('employees.toastUpdateFail'));
                                     }
                                 } else {
-                                    addToast('success', 'Employee details updated');
+                                    addToast('success', t('employees.toastUpdated'));
                                 }
                                 setIsEditOpen(false);
                             }}
@@ -667,14 +669,14 @@ export default function EmployeesPage() {
             <Modal
                 open={isInviteOpen}
                 onClose={() => setIsInviteOpen(false)}
-                title="Invite New Staff Member"
+                title={t('employees.inviteModalTitle')}
                 footer={
                     <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
                         <Button variant="ghost" onClick={() => setIsInviteOpen(false)}>
                             {t('employees.cancel')}
                         </Button>
-                        {!magicLink && <Button onClick={handleInvite}>Generate Invite</Button>}
-                        {magicLink && <Button onClick={() => setIsInviteOpen(false)}>Done</Button>}
+                        {!magicLink && <Button onClick={handleInvite}>{t('employees.generateInvite')}</Button>}
+                        {magicLink && <Button onClick={() => setIsInviteOpen(false)}>{t('employees.done')}</Button>}
                     </div>
                 }
             >
@@ -687,21 +689,21 @@ export default function EmployeesPage() {
                                 marginBottom: 'var(--space-2)',
                             }}
                         >
-                            Send a magical login link to a staff member so they can securely set up their profile.
+                            {t('employees.inviteIntro')}
                         </p>
                         <Input
-                            label="Phone or Email"
+                            label={t('employees.phoneOrEmail')}
                             placeholder="e.g. +20 100..."
                             value={inviteData.phoneOrEmail}
                             onChange={e => setInviteData({ ...inviteData, phoneOrEmail: e.target.value })}
                         />
                         <Select
-                            label="System Role"
+                            label={t('employees.inviteSystemRole')}
                             value={inviteData.role}
                             onChange={e => setInviteData({ ...inviteData, role: e.target.value })}
                             options={[
-                                { label: 'Service Provider / Staff', value: 'staff' },
-                                { label: 'Manager / Receptionist', value: 'manager' },
+                                { label: t('employees.roleStaff'), value: 'staff' },
+                                { label: t('employees.roleManager'), value: 'manager' },
                             ]}
                         />
                     </div>
@@ -731,9 +733,9 @@ export default function EmployeesPage() {
                         >
                             <Mail size={24} />
                         </div>
-                        <h4 style={{ margin: 0, color: 'var(--text-primary)' }}>Invitation Ready!</h4>
+                        <h4 style={{ margin: 0, color: 'var(--text-primary)' }}>{t('employees.inviteReady')}</h4>
                         <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', margin: 0 }}>
-                            Share this link with your staff member.
+                            {t('employees.inviteShare')}
                         </p>
                         <div
                             style={{
@@ -751,7 +753,7 @@ export default function EmployeesPage() {
                             <Button
                                 variant="secondary"
                                 onClick={handleCopyLink}
-                                title="Copy Link"
+                                title={t('employees.copyLink')}
                                 style={{ padding: '0 12px' }}
                             >
                                 <Copy size={16} />

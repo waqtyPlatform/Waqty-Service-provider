@@ -53,7 +53,10 @@ export default function NewServicePage() {
                 return (
                     <div className={styles.stepContent}>
                         <h2 className={styles.stepTitle}>{t('settings.services.new.basicInfo')}</h2>
-                        <Input label={t('settings.services.new.svcName')} placeholder="e.g. Hair Cut & Style" />
+                        <Input
+                            label={t('settings.services.new.svcName')}
+                            placeholder={t('settings.services.new.svcNamePh')}
+                        />
                         <Select
                             label={t('settings.services.new.category')}
                             options={[

@@ -273,13 +273,13 @@ export default function DashboardPage() {
     };
 
     const profileSetupItems = [
-        { icon: <Image size={18} aria-hidden />, label: 'Add your logo', href: '/settings', color: '#7C3AED' },
-        { icon: <Clock size={18} />, label: 'Set working hours', href: '/settings/hours', color: '#0EA5E9' },
-        { icon: <UserCog size={18} />, label: 'Add team members', href: '/employees', color: '#F59E0B' },
-        { icon: <Globe size={18} />, label: 'Add your services', href: '/settings/services', color: '#10B981' },
+        { icon: <Image size={18} aria-hidden />, label: t('dash.profileAddLogo'), href: '/settings', color: '#7C3AED' },
+        { icon: <Clock size={18} />, label: t('dash.profileWorkingHours'), href: '/settings/hours', color: '#0EA5E9' },
+        { icon: <UserCog size={18} />, label: t('dash.profileTeam'), href: '/employees', color: '#F59E0B' },
+        { icon: <Globe size={18} />, label: t('dash.profileServices'), href: '/settings/services', color: '#10B981' },
         {
             icon: <CreditCard size={18} />,
-            label: 'Add payment method',
+            label: t('dash.profilePayment'),
             href: '/settings/payment-methods',
             color: '#EF4444',
         },
@@ -566,10 +566,8 @@ export default function DashboardPage() {
                 <div className={styles.profileBanner}>
                     <div className={styles.profileBannerHeader}>
                         <div>
-                            <h3 className={styles.profileBannerTitle}>Complete your business profile</h3>
-                            <p className={styles.profileBannerDesc}>
-                                Finish setting up to unlock all features. Your 14-day free trial is active.
-                            </p>
+                            <h3 className={styles.profileBannerTitle}>{t('dash.profileTitle')}</h3>
+                            <p className={styles.profileBannerDesc}>{t('dash.profileDesc')}</p>
                         </div>
                         <button className={styles.profileBannerClose} onClick={dismissProfileBanner}>
                             <X size={18} />

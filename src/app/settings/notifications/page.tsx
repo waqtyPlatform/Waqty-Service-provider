@@ -65,10 +65,10 @@ export default function NotificationsSettingsPage() {
     const handleSave = async () => {
         try {
             await settingsApi.updateNotificationSettings({ settings } as Record<string, unknown>);
-            addToast('success', t('settings.notifications.saved') || 'Notification preferences saved!');
+            addToast('success', t('settings.notifications.saved'));
             refetch();
         } catch {
-            addToast('error', 'Failed to save notification settings');
+            addToast('error', t('settings.notifications.saveFailed'));
         }
     };
 

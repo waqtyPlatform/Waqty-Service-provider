@@ -3,8 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, CheckCircle, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { employeeApi, type AttendanceRecord } from '@/lib/api';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function EmployeeAttendancePage() {
+    const { t, lang } = useTranslation();
+    const locale = lang === 'ar' ? 'ar-EG' : 'en-US';
     // Employee endpoints are called directly — the API client uses the employee
     // token on /employee-portal routes (X11), so no token swap is needed.
     const [records, setRecords] = useState<AttendanceRecord[]>([]);
@@ -13,7 +16,7 @@ export default function EmployeeAttendancePage() {
 
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
-    const monthStr = currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    const monthStr = currentMonth.toLocaleDateString(locale, { month: 'long', year: 'numeric' });
 
     useEffect(() => {
         setLoading(true);
@@ -63,10 +66,10 @@ export default function EmployeeAttendancePage() {
                         marginBottom: 'var(--space-1)',
                     }}
                 >
-                    Attendance History
+                    {t('employeePortal.attendanceHistory')}
                 </h1>
                 <p style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)' }}>
-                    Track your check-in and check-out times
+                    {t('employeePortal.attendanceSubtitle')}
                 </p>
             </div>
 
@@ -148,7 +151,9 @@ export default function EmployeeAttendancePage() {
                     </div>
                     <div>
                         <div style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--font-bold)' }}>{present}</div>
-                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>Days Present</div>
+                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
+                            {t('employeePortal.daysPresent')}
+                        </div>
                     </div>
                 </div>
                 <div
@@ -180,7 +185,9 @@ export default function EmployeeAttendancePage() {
                         <div style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--font-bold)' }}>
                             {checkedInOnly}
                         </div>
-                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>In Progress</div>
+                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
+                            {t('employeePortal.inProgress')}
+                        </div>
                     </div>
                 </div>
                 <div
@@ -212,7 +219,9 @@ export default function EmployeeAttendancePage() {
                         <div style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--font-bold)' }}>
                             {totalHours.toFixed(1)}
                         </div>
-                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>Total Hours</div>
+                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
+                            {t('employeePortal.totalHours')}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -228,13 +237,13 @@ export default function EmployeeAttendancePage() {
             >
                 {loading ? (
                     <div style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--text-tertiary)' }}>
-                        Loading...
+                        {t('employeePortal.loadingShort')}
                     </div>
                 ) : records.length === 0 ? (
                     <div style={{ padding: 'var(--space-8)', textAlign: 'center' }}>
                         <Clock size={32} style={{ color: 'var(--text-tertiary)', marginBottom: 'var(--space-2)' }} />
                         <div style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)' }}>
-                            No attendance records for {monthStr}
+                            {t('employeePortal.noAttendanceFor').replace('{month}', monthStr)}
                         </div>
                     </div>
                 ) : (
@@ -252,7 +261,7 @@ export default function EmployeeAttendancePage() {
                                             textTransform: 'uppercase',
                                         }}
                                     >
-                                        Date
+                                        {t('employeePortal.colDate')}
                                     </th>
                                     <th
                                         style={{
@@ -264,7 +273,7 @@ export default function EmployeeAttendancePage() {
                                             textTransform: 'uppercase',
                                         }}
                                     >
-                                        Check In
+                                        {t('employeePortal.colCheckIn')}
                                     </th>
                                     <th
                                         style={{
@@ -276,7 +285,7 @@ export default function EmployeeAttendancePage() {
                                             textTransform: 'uppercase',
                                         }}
                                     >
-                                        Check Out
+                                        {t('employeePortal.colCheckOut')}
                                     </th>
                                     <th
                                         style={{
@@ -288,7 +297,7 @@ export default function EmployeeAttendancePage() {
                                             textTransform: 'uppercase',
                                         }}
                                     >
-                                        Hours
+                                        {t('employeePortal.colHours')}
                                     </th>
                                     <th
                                         style={{
@@ -300,7 +309,7 @@ export default function EmployeeAttendancePage() {
                                             textTransform: 'uppercase',
                                         }}
                                     >
-                                        Status
+                                        {t('employeePortal.colStatus')}
                                     </th>
                                 </tr>
                             </thead>
@@ -313,7 +322,7 @@ export default function EmployeeAttendancePage() {
                                             : '—';
                                         const isComplete = record.check_in && record.check_out;
                                         const dateStr = record.check_in
-                                            ? new Date(record.check_in).toLocaleDateString('en-US', {
+                                            ? new Date(record.check_in).toLocaleDateString(locale, {
                                                   weekday: 'short',
                                                   month: 'short',
                                                   day: 'numeric',
@@ -390,7 +399,9 @@ export default function EmployeeAttendancePage() {
                                                         }}
                                                     >
                                                         {isComplete ? <CheckCircle size={12} /> : <Clock size={12} />}
-                                                        {isComplete ? 'Complete' : 'In Progress'}
+                                                        {isComplete
+                                                            ? t('employeePortal.complete')
+                                                            : t('employeePortal.inProgress')}
                                                     </span>
                                                 </td>
                                             </tr>

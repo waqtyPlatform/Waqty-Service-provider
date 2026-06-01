@@ -1033,7 +1033,9 @@ export default function SchedulePage() {
                                         }}
                                     >
                                         <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
-                                            {selectedEmployees.length} employees × {selectedDays.length} days
+                                            {t('schedule.empByDays')
+                                                .replace('{emps}', String(selectedEmployees.length))
+                                                .replace('{days}', String(selectedDays.length))}
                                         </span>
                                         <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
                                             <Button variant="ghost" onClick={() => setIsAddOpen(false)}>
@@ -1099,8 +1101,8 @@ export default function SchedulePage() {
                                                                     fontSize: 'var(--text-xs)',
                                                                 }}
                                                             >
-                                                                {tpl.start} → {tpl.end} · Break: {tpl.breakStart}–
-                                                                {tpl.breakEnd}
+                                                                {tpl.start} → {tpl.end} · {t('shifts.colBreak')}:{' '}
+                                                                {tpl.breakStart}–{tpl.breakEnd}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1502,7 +1504,7 @@ export default function SchedulePage() {
                                         label={t('shifts.templateName')}
                                         value={tplForm.name}
                                         onChange={e => setTplForm({ ...tplForm, name: e.target.value })}
-                                        placeholder="e.g. Morning Shift"
+                                        placeholder={t('schedule.templateNamePlaceholder')}
                                     />
 
                                     <div>

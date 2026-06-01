@@ -75,11 +75,11 @@ export default function LocalizationSettingsPage() {
                 await settingsApi.updateLocalizationSettings(payload);
             }
             localStorage.setItem('hagzy_localization', JSON.stringify(payload));
-            addToast('success', t('settings.localization.saved') || 'Localization settings saved!');
+            addToast('success', t('settings.localization.saved'));
             refetch();
         } catch {
             localStorage.setItem('hagzy_localization', JSON.stringify({ timezone, currency, dateFormat }));
-            addToast('success', t('settings.localization.saved') || 'Localization settings saved!');
+            addToast('success', t('settings.localization.saved'));
         }
     };
 

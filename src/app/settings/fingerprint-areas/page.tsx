@@ -48,10 +48,10 @@ export default function FingerprintAreasPage() {
             if (settingsApi.deleteFingerprintArea) {
                 await settingsApi.deleteFingerprintArea(String(id));
             }
-            addToast('success', 'Area deleted');
+            addToast('success', t('fpAreas.areaDeleted'));
             refetch();
         } catch {
-            addToast('error', 'Failed to delete area');
+            addToast('error', t('fpAreas.deleteFailed'));
         }
     };
 
@@ -69,10 +69,10 @@ export default function FingerprintAreasPage() {
                                 if (settingsApi.createFingerprintArea) {
                                     await settingsApi.createFingerprintArea({ name: 'New Area' });
                                 }
-                                addToast('success', 'Area created');
+                                addToast('success', t('fpAreas.areaCreated'));
                                 refetch();
                             } catch {
-                                addToast('error', 'Failed to create area');
+                                addToast('error', t('fpAreas.createFailed'));
                             }
                         }}
                     >
@@ -87,7 +87,7 @@ export default function FingerprintAreasPage() {
                 data={areas}
                 emptyIcon={<MapPin size={48} />}
                 emptyTitle={t('fpAreas.definedAreas')}
-                emptyDescription="No fingerprint areas configured yet"
+                emptyDescription={t('fpAreas.emptyDesc')}
                 onRetry={refetch}
                 skeletonCount={3}
                 skeletonVariant="card"

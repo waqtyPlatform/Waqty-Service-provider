@@ -165,7 +165,7 @@ export default function DevicesPage() {
                 data={deviceList}
                 emptyIcon={<Monitor size={48} />}
                 emptyTitle={t('settings.devices.colDevice')}
-                emptyDescription="No devices registered yet"
+                emptyDescription={t('settings.devices.emptyDesc')}
                 onRetry={refetch}
                 skeletonCount={4}
                 skeletonVariant="card"

@@ -402,22 +402,22 @@ export default function ReviewModerationPage() {
                 </div>
                 <Select
                     options={[
-                        { value: 'all', label: 'All Statuses' },
-                        { value: 'pending', label: 'Pending' },
-                        { value: 'published', label: 'Published' },
-                        { value: 'reported', label: 'Reported' },
+                        { value: 'all', label: t('reviews.allStatuses') },
+                        { value: 'pending', label: t('reviews.statusPending') },
+                        { value: 'published', label: t('reviews.statusPublished') },
+                        { value: 'reported', label: t('reviews.statusReported') },
                     ]}
                     value={filterStatus}
                     onChange={e => setFilterStatus(e.target.value)}
                 />
                 <Select
                     options={[
-                        { value: 'all', label: 'All Ratings' },
-                        { value: '5', label: '5 Stars' },
-                        { value: '4', label: '4 Stars' },
-                        { value: '3', label: '3 Stars' },
-                        { value: '2', label: '2 Stars' },
-                        { value: '1', label: '1 Star' },
+                        { value: 'all', label: t('reviews.allRatings') },
+                        { value: '5', label: t('reviews.fiveStars') },
+                        { value: '4', label: t('reviews.fourStars') },
+                        { value: '3', label: t('reviews.threeStars') },
+                        { value: '2', label: t('reviews.twoStars') },
+                        { value: '1', label: t('reviews.oneStar') },
                     ]}
                     value={filterRating}
                     onChange={e => setFilterRating(e.target.value)}
@@ -476,7 +476,7 @@ export default function ReviewModerationPage() {
                                         </div>
                                         <div>
                                             <div style={{ fontWeight: 600, fontSize: '0.9375rem' }}>
-                                                {customer?.name || 'Unknown'}
+                                                {customer?.name || t('reviews.unknown')}
                                             </div>
                                             <div
                                                 style={{
@@ -491,13 +491,18 @@ export default function ReviewModerationPage() {
                                                 <span>&middot;</span>
                                                 <span>{review.service?.name}</span>
                                                 <span>&middot;</span>
-                                                <span>Staff: {employee?.name || '—'}</span>
+                                                <span>
+                                                    {t('reviews.staffPrefix')}
+                                                    {employee?.name || '—'}
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                         <Badge color={statusColors[review.status] || 'neutral'} size="sm">
-                                            {review.status}
+                                            {t(
+                                                `reviews.status${review.status.charAt(0).toUpperCase() + review.status.slice(1)}`
+                                            )}
                                         </Badge>
                                         <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>
                                             {new Date(review.created_at).toLocaleDateString()}
@@ -534,7 +539,7 @@ export default function ReviewModerationPage() {
                                         }}
                                     >
                                         <AlertTriangle size={14} />
-                                        This review has been reported and is under review by our team.
+                                        {t('reviews.reportedNotice')}
                                     </div>
                                 )}
 
@@ -574,18 +579,18 @@ export default function ReviewModerationPage() {
                         <Select
                             label={t('reviews.reportCategory')}
                             options={[
-                                { value: 'inappropriate', label: 'Inappropriate Language' },
-                                { value: 'fake', label: 'Fake / Spam Review' },
-                                { value: 'harassment', label: 'Harassment or Threat' },
-                                { value: 'wrong_business', label: 'Wrong Business' },
-                                { value: 'other', label: 'Other' },
+                                { value: 'inappropriate', label: t('reviews.catInappropriate') },
+                                { value: 'fake', label: t('reviews.catFake') },
+                                { value: 'harassment', label: t('reviews.catHarassment') },
+                                { value: 'wrong_business', label: t('reviews.catWrongBusiness') },
+                                { value: 'other', label: t('reviews.catOther') },
                             ]}
                             value={reportCategory}
                             onChange={e => setReportCategory(e.target.value)}
                         />
                         <Input
                             label={t('reviews.reportReason')}
-                            placeholder="Describe the issue with this review..."
+                            placeholder={t('reviews.reportReasonPlaceholder')}
                             value={reportReason}
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setReportReason(e.target.value)}
                         />

@@ -70,9 +70,9 @@ export default function LoyaltySettingsPage() {
                 tiers,
                 redemption_rate: redemptionRate,
             });
-            addToast('success', 'Loyalty settings saved');
+            addToast('success', t('loyalty.saved'));
         } catch {
-            addToast('error', 'Failed to save loyalty settings');
+            addToast('error', t('loyalty.saveFailed'));
         } finally {
             setIsSaving(false);
         }
@@ -83,7 +83,7 @@ export default function LoyaltySettingsPage() {
             <div>
                 <h1 style={{ fontSize: '1.5rem', fontWeight: 700 }}>{t('loyalty.title')}</h1>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginTop: 4 }}>
-                    {t('loyalty.subtitle') || 'Configure points, tiers, and rewards for your customers'}
+                    {t('loyalty.subtitleFull')}
                 </p>
             </div>
 
@@ -102,7 +102,7 @@ export default function LoyaltySettingsPage() {
                 <div>
                     <div style={{ fontWeight: 600 }}>{t('loyalty.enable')}</div>
                     <div style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', marginTop: 2 }}>
-                        Customers earn points and unlock rewards
+                        {t('loyalty.enableHint')}
                     </div>
                 </div>
                 <button
@@ -222,7 +222,7 @@ export default function LoyaltySettingsPage() {
                                         }}
                                     />
                                     <Input
-                                        label="Name"
+                                        label={t('loyalty.tierName')}
                                         value={tier.name}
                                         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                                             updateTier(i, 'name', e.target.value)
@@ -230,7 +230,7 @@ export default function LoyaltySettingsPage() {
                                     />
                                     <Input
                                         type="number"
-                                        label="Min Points"
+                                        label={t('loyalty.tierMinPoints')}
                                         value={String(tier.min_points)}
                                         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                                             updateTier(i, 'min_points', Number(e.target.value))
@@ -238,7 +238,7 @@ export default function LoyaltySettingsPage() {
                                     />
                                     <Input
                                         type="number"
-                                        label="Discount %"
+                                        label={t('loyalty.tierDiscount')}
                                         value={String(tier.discount_percentage)}
                                         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                                             updateTier(i, 'discount_percentage', Number(e.target.value))
@@ -256,7 +256,7 @@ export default function LoyaltySettingsPage() {
 
             <div>
                 <Button onClick={handleSave} disabled={isSaving}>
-                    <Save size={16} /> {isSaving ? 'Saving...' : t('common.save')}
+                    <Save size={16} /> {isSaving ? t('common.saving') : t('common.save')}
                 </Button>
             </div>
         </div>

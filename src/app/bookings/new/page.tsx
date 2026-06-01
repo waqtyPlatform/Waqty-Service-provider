@@ -355,16 +355,18 @@ const ROOMS: Room[] = [
     { id: 'R4', name: 'Room 4 – Laser' },
 ];
 
-const CHRONIC_CONDITIONS = [
-    'Diabetes',
-    'Hypertension',
-    'Heart Disease',
-    'Asthma',
-    'Thyroid Disorder',
-    'Kidney Disease',
-    'Liver Disease',
-    'Cancer',
-    'Autoimmune Disease',
+// Chronic conditions stored by canonical English value (used as logic/data key);
+// `tKey` maps each to its translation key for display under the active locale.
+const CHRONIC_CONDITIONS: { value: string; tKey: string }[] = [
+    { value: 'Diabetes', tKey: 'patient.condDiabetes' },
+    { value: 'Hypertension', tKey: 'patient.condHypertension' },
+    { value: 'Heart Disease', tKey: 'patient.condHeartDisease' },
+    { value: 'Asthma', tKey: 'patient.condAsthma' },
+    { value: 'Thyroid Disorder', tKey: 'patient.condThyroid' },
+    { value: 'Kidney Disease', tKey: 'patient.condKidney' },
+    { value: 'Liver Disease', tKey: 'patient.condLiver' },
+    { value: 'Cancer', tKey: 'patient.condCancer' },
+    { value: 'Autoimmune Disease', tKey: 'patient.condAutoimmune' },
 ];
 
 const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
@@ -695,32 +697,34 @@ const s: Record<string, React.CSSProperties> = {
 // ─── Small shared components ──────────────────────────────────────────────────
 
 function SlotHint({ empId, date, time, dur }: { empId: string; date: string; time: string; dur: number }) {
+    const { t } = useTranslation();
     const busy = busySlotsInRange(EMP_BUSY, empId, date, time, dur);
     return busy.length > 0 ? (
         <div style={s.hintErr}>
             <AlertTriangle size={11} />
-            Staff busy at: {busy.join(', ')}
+            {t('newBooking.staffBusyAt').replace('{list}', busy.join(', '))}
         </div>
     ) : (
         <div style={s.hintOk}>
             <CheckCircle size={11} />
-            Staff available
+            {t('newBooking.staffAvailable')}
         </div>
     );
 }
 
 function RoomHint({ roomId, date, time, dur }: { roomId: string; date: string; time: string; dur: number }) {
-    if (!roomId) return <div style={s.hint}>Room will be auto-assigned</div>;
+    const { t } = useTranslation();
+    if (!roomId) return <div style={s.hint}>{t('newBooking.roomAutoAssigned')}</div>;
     const busy = busySlotsInRange(ROOM_BUSY, roomId, date, time, dur);
     return busy.length > 0 ? (
         <div style={s.hintErr}>
             <AlertTriangle size={11} />
-            Room occupied at: {busy.join(', ')}
+            {t('newBooking.roomOccupiedAt').replace('{list}', busy.join(', '))}
         </div>
     ) : (
         <div style={s.hintOk}>
             <CheckCircle size={11} />
-            Room available
+            {t('bookings.roomAvailable')}
         </div>
     );
 }
@@ -819,7 +823,7 @@ function ServiceBookingCard({
                     {label} {index + 1}
                     {hasIssue && (
                         <span style={{ ...s.badge, background: '#fef2f2', color: '#dc2626' }}>
-                            <AlertTriangle size={10} /> Conflict
+                            <AlertTriangle size={10} /> {t('newBooking.conflict')}
                         </span>
                     )}
                 </span>
@@ -837,7 +841,7 @@ function ServiceBookingCard({
                             fontSize: 'var(--text-sm)',
                         }}
                     >
-                        <Trash2 size={15} /> Remove
+                        <Trash2 size={15} /> {t('newBooking.remove')}
                     </button>
                 )}
             </div>
@@ -845,7 +849,7 @@ function ServiceBookingCard({
             {hasInternalConflict && (
                 <div style={s.bannerErr}>
                     <AlertTriangle size={14} style={{ flexShrink: 0 }} />
-                    <span>This staff member is already assigned to another service at an overlapping time.</span>
+                    <span>{t('bookings.internalConflict')}</span>
                 </div>
             )}
 
@@ -917,10 +921,16 @@ function ServiceBookingCard({
                         <span style={{ ...s.dot, background: item.employee.color }} />
                         {item.employee.role}
                         {!isEmployeeOnShift(item.employee.id, item.employee.role, item.date) && (
-                            <span style={{ color: 'var(--color-warning-600)', fontWeight: 600 }}> — Off-shift</span>
+                            <span style={{ color: 'var(--color-warning-600)', fontWeight: 600 }}>
+                                {' '}
+                                — {t('newBooking.offShift')}
+                            </span>
                         )}
                         {isEmployeeDuringBreak(item.employee.id, item.employee.role, item.date, item.time) && (
-                            <span style={{ color: 'var(--color-warning-600)', fontWeight: 600 }}> — On break</span>
+                            <span style={{ color: 'var(--color-warning-600)', fontWeight: 600 }}>
+                                {' '}
+                                — {t('newBooking.onBreak')}
+                            </span>
                         )}
                     </span>
                 </div>
@@ -929,7 +939,7 @@ function ServiceBookingCard({
             {/* Date + Time */}
             <div style={s.row2}>
                 <div style={s.field}>
-                    <label style={s.label}>Date</label>
+                    <label style={s.label}>{t('bookings.date')}</label>
                     <input
                         style={s.input}
                         type="date"
@@ -939,7 +949,7 @@ function ServiceBookingCard({
                 </div>
 
                 <div style={s.field}>
-                    <label style={s.label}>Time</label>
+                    <label style={s.label}>{t('bookings.time')}</label>
                     <select
                         style={empBusy.length > 0 ? s.selectErr : s.select}
                         value={item.time}
@@ -949,7 +959,7 @@ function ServiceBookingCard({
                             const busy = EMP_BUSY[item.employee.id]?.[item.date]?.includes(ts);
                             return (
                                 <option key={ts} value={ts}>
-                                    {busy ? `⚠ ${ts} (busy)` : ts}
+                                    {busy ? `⚠ ${ts} (${t('newBooking.busyShort')})` : ts}
                                 </option>
                             );
                         })}
@@ -967,7 +977,8 @@ function ServiceBookingCard({
             <div style={{ marginTop: 'var(--space-2)' }}>
                 <button style={s.btnCollapse} onClick={() => setShowAvail(v => !v)}>
                     <Activity size={13} />
-                    {showAvail ? 'Hide' : 'Show'} staff availability at {item.time}
+                    {showAvail ? t('bookings.hideAvailability') : t('bookings.showAvailability')}{' '}
+                    {t('newBooking.availabilityAt').replace('{time}', item.time)}
                     {showAvail ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                 </button>
                 {showAvail && (
@@ -995,7 +1006,9 @@ function ServiceBookingCard({
                                             color: busy ? '#dc2626' : '#16a34a',
                                         }}
                                     >
-                                        {busy ? '● Busy' : '● Available'}
+                                        {busy
+                                            ? `● ${t('newBooking.statusBusy')}`
+                                            : `● ${t('newBooking.statusAvailable')}`}
                                     </span>
                                 </div>
                             );
@@ -1008,19 +1021,19 @@ function ServiceBookingCard({
             <div style={{ ...s.field, marginTop: 'var(--space-4)' }}>
                 <label style={s.label}>
                     <MapPin size={14} style={{ display: 'inline', marginRight: 4 }} />
-                    Room
+                    {t('bookings.room')}
                 </label>
                 <select
                     style={roomBusy.length > 0 ? s.selectErr : s.select}
                     value={item.room}
                     onChange={e => onUpdate(item.id, 'room', e.target.value)}
                 >
-                    <option value="">Auto-assign</option>
+                    <option value="">{t('bookings.autoAssign')}</option>
                     {ROOMS.map(r => {
                         const occ = ROOM_BUSY[r.id]?.[item.date]?.includes(item.time);
                         return (
                             <option key={r.id} value={r.id}>
-                                {occ ? `⚠ ${r.name} (occupied)` : `✓ ${r.name}`}
+                                {occ ? `⚠ ${r.name} (${t('newBooking.occupiedShort')})` : `✓ ${r.name}`}
                             </option>
                         );
                     })}
@@ -1066,7 +1079,7 @@ function PatientIntakeForm({
             {/* Personal Information */}
             <SectionHeader
                 icon={<User size={15} />}
-                label="Personal Information"
+                label={t('patient.personalInfo')}
                 open={sections.personal}
                 onToggle={() => toggle('personal')}
             />
@@ -1074,39 +1087,39 @@ function PatientIntakeForm({
                 <div style={{ marginBottom: 'var(--space-4)' }}>
                     <div style={s.row3}>
                         <div style={s.field}>
-                            <label style={s.label}>Age</label>
+                            <label style={s.label}>{t('patient.age')}</label>
                             <input
                                 style={s.input}
                                 type="number"
                                 min={0}
                                 max={150}
-                                placeholder="Years"
+                                placeholder={t('patient.years')}
                                 value={form.age}
                                 onChange={e => onChange('age', e.target.value)}
                             />
                         </div>
                         <div style={s.field}>
-                            <label style={s.label}>Gender</label>
+                            <label style={s.label}>{t('newBooking.gender')}</label>
                             <select
                                 style={s.select}
                                 value={form.gender}
                                 onChange={e => onChange('gender', e.target.value)}
                             >
-                                <option value="">Select…</option>
-                                <option value="male">Male</option>
-                                <option value="female">Female</option>
-                                <option value="other">Other</option>
-                                <option value="prefer_not">Prefer not to say</option>
+                                <option value="">{t('newBooking.selectPlaceholder')}</option>
+                                <option value="male">{t('newBooking.genderMale')}</option>
+                                <option value="female">{t('newBooking.genderFemale')}</option>
+                                <option value="other">{t('newBooking.genderOther')}</option>
+                                <option value="prefer_not">{t('newBooking.genderPreferNot')}</option>
                             </select>
                         </div>
                         <div style={s.field}>
-                            <label style={s.label}>Blood Type</label>
+                            <label style={s.label}>{t('newBooking.bloodType')}</label>
                             <select
                                 style={s.select}
                                 value={form.bloodType}
                                 onChange={e => onChange('bloodType', e.target.value)}
                             >
-                                <option value="">Unknown</option>
+                                <option value="">{t('newBooking.bloodUnknown')}</option>
                                 {BLOOD_TYPES.map(bt => (
                                     <option key={bt} value={bt}>
                                         {bt}
@@ -1123,7 +1136,7 @@ function PatientIntakeForm({
             {/* Medical History */}
             <SectionHeader
                 icon={<Heart size={15} />}
-                label="Medical History"
+                label={t('patient.medicalHistory')}
                 open={sections.medical}
                 onToggle={() => toggle('medical')}
             />
@@ -1136,28 +1149,28 @@ function PatientIntakeForm({
                                 checked={form.hasAllergies}
                                 onChange={e => onChange('hasAllergies', e.target.checked)}
                             />
-                            <span style={s.checkLabel}>Patient has known allergies</span>
+                            <span style={s.checkLabel}>{t('patient.hasAllergies')}</span>
                         </label>
                         {form.hasAllergies && (
                             <textarea
                                 style={{ ...s.textarea, minHeight: 60 }}
-                                placeholder="List allergies (e.g. Penicillin, Latex, Ibuprofen)..."
+                                placeholder={t('patient.allergiesList')}
                                 value={form.allergies}
                                 onChange={e => onChange('allergies', e.target.value)}
                             />
                         )}
                     </div>
                     <div style={s.field}>
-                        <label style={s.label}>Chronic Conditions</label>
+                        <label style={s.label}>{t('patient.chronicConditions')}</label>
                         <div style={s.condGrid}>
                             {CHRONIC_CONDITIONS.map(cond => (
-                                <label key={cond} style={s.checkRow}>
+                                <label key={cond.value} style={s.checkRow}>
                                     <input
                                         type="checkbox"
-                                        checked={form.chronicConditions.includes(cond)}
-                                        onChange={() => onConditionToggle(cond)}
+                                        checked={form.chronicConditions.includes(cond.value)}
+                                        onChange={() => onConditionToggle(cond.value)}
                                     />
-                                    <span style={s.checkLabel}>{cond}</span>
+                                    <span style={s.checkLabel}>{t(cond.tKey)}</span>
                                 </label>
                             ))}
                         </div>
@@ -1166,20 +1179,20 @@ function PatientIntakeForm({
                         <div style={s.field}>
                             <label style={s.label}>
                                 <Pill size={13} style={{ display: 'inline', marginRight: 4 }} />
-                                Current Medications
+                                {t('patient.currentMeds')}
                             </label>
                             <textarea
                                 style={{ ...s.textarea, minHeight: 60 }}
-                                placeholder="Medications and dosages..."
+                                placeholder={t('patient.medsPlaceholder')}
                                 value={form.currentMedications}
                                 onChange={e => onChange('currentMedications', e.target.value)}
                             />
                         </div>
                         <div style={s.field}>
-                            <label style={s.label}>Previous Surgeries / Procedures</label>
+                            <label style={s.label}>{t('patient.previousProcedures')}</label>
                             <textarea
                                 style={{ ...s.textarea, minHeight: 60 }}
-                                placeholder="Previous surgeries, major procedures..."
+                                placeholder={t('patient.prevProceduresPlaceholder')}
                                 value={form.previousProcedures}
                                 onChange={e => onChange('previousProcedures', e.target.value)}
                             />
@@ -1193,7 +1206,7 @@ function PatientIntakeForm({
             {/* Current Visit */}
             <SectionHeader
                 icon={<Activity size={15} />}
-                label="Current Visit"
+                label={t('patient.currentVisit')}
                 open={sections.visit}
                 onToggle={() => toggle('visit')}
                 required
@@ -1202,17 +1215,17 @@ function PatientIntakeForm({
                 <div style={{ marginBottom: 'var(--space-4)' }}>
                     <div style={s.field}>
                         <label style={s.label}>
-                            Chief Complaint / Reason for Visit <span style={{ color: '#ef4444' }}>*</span>
+                            {t('patient.chiefComplaint')} <span style={{ color: '#ef4444' }}>*</span>
                         </label>
                         <input
                             style={form.chiefComplaint ? s.input : s.inputErr}
-                            placeholder="Main reason for today's visit..."
+                            placeholder={t('patient.chiefComplaintPlaceholder')}
                             value={form.chiefComplaint}
                             onChange={e => onChange('chiefComplaint', e.target.value)}
                         />
                         {!form.chiefComplaint && (
                             <span style={s.hintErr}>
-                                <AlertTriangle size={11} /> Required
+                                <AlertTriangle size={11} /> {t('patient.required')}
                             </span>
                         )}
                     </div>
@@ -1229,36 +1242,36 @@ function PatientIntakeForm({
                     </div>
                     <div style={s.row3}>
                         <div style={s.field}>
-                            <label style={s.label}>Duration of Symptoms</label>
+                            <label style={s.label}>{t('patient.symptomsDuration')}</label>
                             <select
                                 style={s.select}
                                 value={form.symptomsDuration}
                                 onChange={e => onChange('symptomsDuration', e.target.value)}
                             >
-                                <option value="">Select…</option>
-                                <option value="today">Today</option>
-                                <option value="2-3days">2–3 days</option>
-                                <option value="1week">About a week</option>
-                                <option value="2weeks">2 weeks</option>
-                                <option value="1month">1 month</option>
-                                <option value="3months">2–3 months</option>
-                                <option value="6months+">6+ months</option>
-                                <option value="chronic">Chronic / ongoing</option>
+                                <option value="">{t('newBooking.selectPlaceholder')}</option>
+                                <option value="today">{t('newBooking.durToday')}</option>
+                                <option value="2-3days">{t('newBooking.dur23days')}</option>
+                                <option value="1week">{t('newBooking.dur1week')}</option>
+                                <option value="2weeks">{t('newBooking.dur2weeks')}</option>
+                                <option value="1month">{t('newBooking.dur1month')}</option>
+                                <option value="3months">{t('newBooking.dur3months')}</option>
+                                <option value="6months+">{t('newBooking.dur6months')}</option>
+                                <option value="chronic">{t('newBooking.durChronic')}</option>
                             </select>
                         </div>
                         <div style={s.field}>
-                            <label style={s.label}>Evaluated Before?</label>
+                            <label style={s.label}>{t('patient.evaluatedBefore')}</label>
                             <select
                                 style={s.select}
                                 value={form.evaluatedBefore ? 'yes' : 'no'}
                                 onChange={e => onChange('evaluatedBefore', e.target.value === 'yes')}
                             >
-                                <option value="no">No — first time</option>
-                                <option value="yes">Yes — follow-up</option>
+                                <option value="no">{t('newBooking.evalNoFirstTime')}</option>
+                                <option value="yes">{t('newBooking.evalYesFollowUp')}</option>
                             </select>
                         </div>
                         <div style={s.field}>
-                            <label style={s.label}>Pain Level (0–10)</label>
+                            <label style={s.label}>{t('patient.painLevel')}</label>
                             <div style={s.painTrack}>
                                 {Array.from({ length: 11 }, (_, i) => (
                                     <button
@@ -1300,7 +1313,7 @@ function PatientIntakeForm({
             {/* Emergency Contact */}
             <SectionHeader
                 icon={<Phone size={15} />}
-                label="Emergency Contact"
+                label={t('newBooking.emergencyContact')}
                 open={sections.emergency}
                 onToggle={() => toggle('emergency')}
             />
@@ -1308,37 +1321,37 @@ function PatientIntakeForm({
                 <div style={{ marginBottom: 'var(--space-4)' }}>
                     <div style={s.row3}>
                         <div style={s.field}>
-                            <label style={s.label}>Contact Name</label>
+                            <label style={s.label}>{t('newBooking.contactName')}</label>
                             <input
                                 style={s.input}
-                                placeholder="Full name"
+                                placeholder={t('newBooking.fullNamePlaceholder')}
                                 value={form.emergencyName}
                                 onChange={e => onChange('emergencyName', e.target.value)}
                             />
                         </div>
                         <div style={s.field}>
-                            <label style={s.label}>Phone</label>
+                            <label style={s.label}>{t('newBooking.phone')}</label>
                             <input
                                 style={s.input}
-                                placeholder="+20 1XX XXX XXXX"
+                                placeholder={t('newBooking.phonePlaceholder')}
                                 value={form.emergencyPhone}
                                 onChange={e => onChange('emergencyPhone', e.target.value)}
                             />
                         </div>
                         <div style={s.field}>
-                            <label style={s.label}>Relationship</label>
+                            <label style={s.label}>{t('newBooking.relationship')}</label>
                             <select
                                 style={s.select}
                                 value={form.emergencyRelation}
                                 onChange={e => onChange('emergencyRelation', e.target.value)}
                             >
-                                <option value="">Select…</option>
-                                <option value="spouse">Spouse</option>
-                                <option value="parent">Parent</option>
-                                <option value="child">Child</option>
-                                <option value="sibling">Sibling</option>
-                                <option value="friend">Friend</option>
-                                <option value="other">Other</option>
+                                <option value="">{t('newBooking.selectPlaceholder')}</option>
+                                <option value="spouse">{t('newBooking.relSpouse')}</option>
+                                <option value="parent">{t('newBooking.relParent')}</option>
+                                <option value="child">{t('newBooking.relChild')}</option>
+                                <option value="sibling">{t('newBooking.relSibling')}</option>
+                                <option value="friend">{t('newBooking.relFriend')}</option>
+                                <option value="other">{t('newBooking.relOther')}</option>
                             </select>
                         </div>
                     </div>
@@ -1350,26 +1363,26 @@ function PatientIntakeForm({
             {/* Insurance */}
             <SectionHeader
                 icon={<Shield size={15} />}
-                label="Insurance (Optional)"
+                label={t('patient.insurance')}
                 open={sections.insurance}
                 onToggle={() => toggle('insurance')}
             />
             {sections.insurance && (
                 <div style={s.row2}>
                     <div style={s.field}>
-                        <label style={s.label}>Insurance Provider</label>
+                        <label style={s.label}>{t('patient.insuranceProvider')}</label>
                         <input
                             style={s.input}
-                            placeholder="e.g. Allianz, AXA..."
+                            placeholder={t('patient.insuranceProviderPlaceholder')}
                             value={form.insuranceProvider}
                             onChange={e => onChange('insuranceProvider', e.target.value)}
                         />
                     </div>
                     <div style={s.field}>
-                        <label style={s.label}>Policy Number</label>
+                        <label style={s.label}>{t('patient.insurancePolicyNo')}</label>
                         <input
                             style={s.input}
-                            placeholder="Policy / card number"
+                            placeholder={t('patient.policyNoPlaceholder')}
                             value={form.insurancePolicyNo}
                             onChange={e => onChange('insurancePolicyNo', e.target.value)}
                         />
@@ -1495,12 +1508,14 @@ function BookingSummary({
                 })}
 
                 <div style={{ ...s.summaryRow, marginTop: 'var(--space-2)' }}>
-                    <span style={s.summaryLabel}>Subtotal</span>
+                    <span style={s.summaryLabel}>{t('newBooking.subtotal')}</span>
                     <span style={s.summaryValue}>{subtotal} EGP</span>
                 </div>
                 {discount > 0 && (
                     <div style={s.summaryRow}>
-                        <span style={s.summaryLabel}>Discount ({discount}%)</span>
+                        <span style={s.summaryLabel}>
+                            {t('newBooking.discountWithPct').replace('{pct}', String(discount))}
+                        </span>
                         <span style={{ ...s.summaryValue, color: '#ef4444' }}>-{discountAmt.toFixed(0)} EGP</span>
                     </div>
                 )}
@@ -1513,7 +1528,7 @@ function BookingSummary({
                     <div style={{ ...s.bannerWarn, margin: '0 0 var(--space-3)' }}>
                         <AlertTriangle size={14} style={{ flexShrink: 0, marginTop: 1 }} />
                         <span>
-                            Resolve {conflicts.size / 2} conflict{conflicts.size / 2 > 1 ? 's' : ''} before confirming.
+                            {t('newBooking.resolveConflictsBefore').replace('{count}', String(conflicts.size / 2))}
                         </span>
                     </div>
                 )}
@@ -1540,7 +1555,7 @@ function BookingSummary({
                         gap: 'var(--space-2)',
                     }}
                 >
-                    <UserCog size={15} /> Assigned Staff
+                    <UserCog size={15} /> {t('newBooking.assignedStaff')}
                 </div>
                 {uniqueStaff.map(emp => (
                     <div
@@ -1872,11 +1887,11 @@ function NewBookingPageInner() {
             return;
         }
         if (conflicts.size > 0) {
-            addToast('error', 'Resolve scheduling conflicts before confirming.');
+            addToast('error', t('bookings.resolveConflicts'));
             return;
         }
         if (isClinic && !patient.chiefComplaint.trim()) {
-            addToast('error', 'Reason for visit is required for clinic appointments.');
+            addToast('error', t('newBooking.clinicReasonRequired'));
             return;
         }
 
@@ -1893,7 +1908,12 @@ function NewBookingPageInner() {
                             date: item.date,
                         });
                         if (slotsRes.success && slotsRes.data && !slotsRes.data.includes(item.time)) {
-                            addToast('error', `Time ${item.time} is no longer available for ${item.service.name}`);
+                            addToast(
+                                'error',
+                                t('newBooking.timeNoLongerAvailable')
+                                    .replace('{time}', item.time)
+                                    .replace('{service}', tn(item.service.name, item.service.nameAr))
+                            );
                             return;
                         }
                     }
@@ -1924,7 +1944,7 @@ function NewBookingPageInner() {
                 addToast('success', t('bookings.updateSuccess'));
                 router.push(`/bookings/${editId}`);
             } catch {
-                addToast('error', 'Failed to update booking. Please try again.');
+                addToast('error', t('newBooking.updateFailed'));
             } finally {
                 setSubmitting(false);
             }
@@ -1961,7 +1981,7 @@ function NewBookingPageInner() {
                     style={s.btnGhost}
                     onClick={() => (isEditMode ? router.push(`/bookings/${editId}`) : router.push('/bookings'))}
                 >
-                    ← Back
+                    {t('newBooking.back')}
                 </button>
                 <h1 style={s.h1}>{isEditMode ? t('bookings.editBooking') : t('bookings.newBooking')}</h1>
                 <span
@@ -1982,8 +2002,8 @@ function NewBookingPageInner() {
                 <div style={s.bannerErr}>
                     <AlertTriangle size={16} style={{ flexShrink: 0, marginTop: 1 }} />
                     <div>
-                        <strong>Scheduling conflict detected.</strong> One or more services are assigned to the same
-                        staff member at overlapping times. Please adjust the times or assign different staff.
+                        <strong>{t('bookings.conflictDetected')}</strong> {t('bookings.conflictDesc')}{' '}
+                        {t('newBooking.conflictDescAdjust')}
                     </div>
                 </div>
             )}
@@ -2045,7 +2065,7 @@ function NewBookingPageInner() {
                     <button style={s.btnOutline} onClick={addItem}>
                         <Plus size={16} />
                         {isClinic
-                            ? 'Add Another Appointment'
+                            ? t('newBooking.addAnotherAppointment')
                             : t('bookings.addAnotherService') || 'Add Another Service'}
                     </button>
 
@@ -2123,17 +2143,18 @@ function NewBookingPageInner() {
 
 // ─── Suspense wrapper (required for useSearchParams) ─────────────────────────
 
+function NewBookingFallback() {
+    const { t } = useTranslation();
+    return (
+        <div style={{ padding: 'var(--space-8)', textAlign: 'center' as const, color: 'var(--text-secondary)' }}>
+            {t('common.loading')}
+        </div>
+    );
+}
+
 export default function NewBookingPage() {
     return (
-        <Suspense
-            fallback={
-                <div
-                    style={{ padding: 'var(--space-8)', textAlign: 'center' as const, color: 'var(--text-secondary)' }}
-                >
-                    Loading...
-                </div>
-            }
-        >
+        <Suspense fallback={<NewBookingFallback />}>
             <NewBookingPageInner />
         </Suspense>
     );

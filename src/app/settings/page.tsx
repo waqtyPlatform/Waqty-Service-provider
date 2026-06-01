@@ -54,7 +54,7 @@ export default function SettingsPage() {
         const file = e.target.files?.[0];
         if (!file) return;
         if (file.size > 2 * 1024 * 1024) {
-            addToast('error', 'Image must be under 2MB');
+            addToast('error', t('settings.branding.imageTooLarge'));
             return;
         }
         const reader = new FileReader();
@@ -73,7 +73,7 @@ export default function SettingsPage() {
         const file = e.dataTransfer.files?.[0];
         if (!file || !file.type.startsWith('image/')) return;
         if (file.size > 2 * 1024 * 1024) {
-            addToast('error', 'Image must be under 2MB');
+            addToast('error', t('settings.branding.imageTooLarge'));
             return;
         }
         const reader = new FileReader();
@@ -95,15 +95,13 @@ export default function SettingsPage() {
         <div className={styles.page} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
             {/* Branding Card */}
             <div className={styles.card}>
-                <div className={styles.cardTitle}>Branding</div>
-                <div className={styles.cardDesc}>
-                    Upload your business logo and banner image. These appear on your booking page and invoices.
-                </div>
+                <div className={styles.cardTitle}>{t('settings.branding.title')}</div>
+                <div className={styles.cardDesc}>{t('settings.branding.desc')}</div>
 
                 <div className={styles.brandingRow}>
                     {/* Logo Upload */}
                     <div className={styles.brandingCol}>
-                        <label className={styles.brandingLabel}>Logo</label>
+                        <label className={styles.brandingLabel}>{t('settings.branding.logo')}</label>
                         <div
                             className={`${styles.uploadZone} ${styles.uploadZoneLogo}`}
                             onClick={() => logoInputRef.current?.click()}
@@ -115,7 +113,7 @@ export default function SettingsPage() {
                                 <>
                                     <img
                                         src={logo}
-                                        alt="Logo"
+                                        alt={t('settings.branding.logo')}
                                         className={styles.uploadPreviewLogo}
                                         loading="lazy"
                                         decoding="async"
@@ -134,8 +132,8 @@ export default function SettingsPage() {
                             ) : (
                                 <div className={styles.uploadPlaceholder}>
                                     <ImageIcon size={28} />
-                                    <span>Upload Logo</span>
-                                    <span className={styles.uploadHint}>PNG, JPG up to 2MB</span>
+                                    <span>{t('settings.branding.uploadLogo')}</span>
+                                    <span className={styles.uploadHint}>{t('settings.branding.logoHint')}</span>
                                 </div>
                             )}
                         </div>
@@ -150,7 +148,7 @@ export default function SettingsPage() {
 
                     {/* Banner Upload */}
                     <div className={styles.brandingCol} style={{ flex: 2 }}>
-                        <label className={styles.brandingLabel}>Banner</label>
+                        <label className={styles.brandingLabel}>{t('settings.branding.banner')}</label>
                         <div
                             className={`${styles.uploadZone} ${styles.uploadZoneBanner}`}
                             onClick={() => bannerInputRef.current?.click()}
@@ -162,7 +160,7 @@ export default function SettingsPage() {
                                 <>
                                     <img
                                         src={banner}
-                                        alt="Banner"
+                                        alt={t('settings.branding.banner')}
                                         className={styles.uploadPreviewBanner}
                                         loading="lazy"
                                         decoding="async"
@@ -181,10 +179,8 @@ export default function SettingsPage() {
                             ) : (
                                 <div className={styles.uploadPlaceholder}>
                                     <Upload size={28} />
-                                    <span>Upload Banner</span>
-                                    <span className={styles.uploadHint}>
-                                        Recommended: 1200 x 300px, PNG or JPG up to 2MB
-                                    </span>
+                                    <span>{t('settings.branding.uploadBanner')}</span>
+                                    <span className={styles.uploadHint}>{t('settings.branding.bannerHint')}</span>
                                 </div>
                             )}
                         </div>

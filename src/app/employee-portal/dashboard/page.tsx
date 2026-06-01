@@ -4,8 +4,10 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, CheckCircle, Briefcase } from 'lucide-react';
 import { employeeApi, type Booking, type AttendanceRecord } from '@/lib/api';
 import { safeLocalStorageGet } from '@/lib/storage';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function EmployeeDashboardPage() {
+    const { t, lang } = useTranslation();
     // The API client reads the employee token on /employee-portal routes (X11),
     // so employee endpoints are called directly — no token swap.
     const [todayBookings, setTodayBookings] = useState<Booking[]>([]);
@@ -89,10 +91,13 @@ export default function EmployeeDashboardPage() {
                         marginBottom: 'var(--space-1)',
                     }}
                 >
-                    Welcome back, {empUser.name?.split(' ')[0] || 'Employee'}
+                    {t('employeePortal.welcomeBack').replace(
+                        '{name}',
+                        empUser.name?.split(' ')[0] || t('employeePortal.employee')
+                    )}
                 </h1>
                 <p style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)' }}>
-                    {new Date().toLocaleDateString('en-US', {
+                    {new Date().toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-US', {
                         weekday: 'long',
                         month: 'long',
                         day: 'numeric',
@@ -127,11 +132,15 @@ export default function EmployeeDashboardPage() {
                         }}
                     >
                         <Clock size={18} style={{ color: 'var(--color-primary-600)' }} />
-                        <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)' }}>Attendance</h3>
+                        <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)' }}>
+                            {t('employeePortal.attendance')}
+                        </h3>
                     </div>
 
                     {loading ? (
-                        <div style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)' }}>Loading...</div>
+                        <div style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)' }}>
+                            {t('employeePortal.loadingShort')}
+                        </div>
                     ) : isCheckedOut ? (
                         <div style={{ textAlign: 'center', padding: 'var(--space-3)' }}>
                             <CheckCircle
@@ -139,7 +148,7 @@ export default function EmployeeDashboardPage() {
                                 style={{ color: 'var(--color-success)', marginBottom: 'var(--space-2)' }}
                             />
                             <div style={{ fontWeight: 'var(--font-semibold)', color: 'var(--color-success)' }}>
-                                Shift Complete
+                                {t('employeePortal.shiftComplete')}
                             </div>
                             <div
                                 style={{
@@ -160,7 +169,7 @@ export default function EmployeeDashboardPage() {
                                     marginBottom: 'var(--space-3)',
                                 }}
                             >
-                                Checked in at <strong>{attendance?.check_in?.slice(0, 5)}</strong>
+                                {t('employeePortal.checkedInAt')} <strong>{attendance?.check_in?.slice(0, 5)}</strong>
                             </div>
                             <button
                                 onClick={handleCheckOut}
@@ -177,7 +186,7 @@ export default function EmployeeDashboardPage() {
                                     opacity: checkingIn ? 0.7 : 1,
                                 }}
                             >
-                                {checkingIn ? 'Processing...' : 'Check Out'}
+                                {checkingIn ? t('employeePortal.processing') : t('employeePortal.checkOut')}
                             </button>
                         </div>
                     ) : (
@@ -197,7 +206,7 @@ export default function EmployeeDashboardPage() {
                                 opacity: checkingIn ? 0.7 : 1,
                             }}
                         >
-                            {checkingIn ? 'Processing...' : 'Check In'}
+                            {checkingIn ? t('employeePortal.processing') : t('employeePortal.checkIn')}
                         </button>
                     )}
                 </div>
@@ -221,7 +230,7 @@ export default function EmployeeDashboardPage() {
                     >
                         <Briefcase size={18} style={{ color: 'var(--color-primary-600)' }} />
                         <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)' }}>
-                            Today&apos;s Bookings
+                            {t('employeePortal.todaysBookings')}
                         </h3>
                     </div>
 
@@ -243,7 +252,9 @@ export default function EmployeeDashboardPage() {
                             >
                                 {todayBookings.length}
                             </div>
-                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>Total</div>
+                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
+                                {t('employeePortal.total')}
+                            </div>
                         </div>
                         <div>
                             <div
@@ -255,7 +266,9 @@ export default function EmployeeDashboardPage() {
                             >
                                 {completed}
                             </div>
-                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>Done</div>
+                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
+                                {t('employeePortal.done')}
+                            </div>
                         </div>
                         <div>
                             <div
@@ -267,7 +280,9 @@ export default function EmployeeDashboardPage() {
                             >
                                 {confirmed + pending}
                             </div>
-                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>Upcoming</div>
+                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
+                                {t('employeePortal.upcoming')}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -293,7 +308,7 @@ export default function EmployeeDashboardPage() {
                 >
                     <Calendar size={18} style={{ color: 'var(--color-primary-600)' }} />
                     <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)' }}>
-                        Upcoming Appointments
+                        {t('employeePortal.upcomingAppointments')}
                     </h3>
                 </div>
 
@@ -306,13 +321,13 @@ export default function EmployeeDashboardPage() {
                             fontSize: 'var(--text-sm)',
                         }}
                     >
-                        Loading bookings...
+                        {t('employeePortal.loadingBookings')}
                     </div>
                 ) : todayBookings.length === 0 ? (
                     <div style={{ padding: 'var(--space-8)', textAlign: 'center' }}>
                         <Calendar size={32} style={{ color: 'var(--text-tertiary)', marginBottom: 'var(--space-2)' }} />
                         <div style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)' }}>
-                            No appointments today
+                            {t('employeePortal.noAppointmentsToday')}
                         </div>
                     </div>
                 ) : (
@@ -357,7 +372,7 @@ export default function EmployeeDashboardPage() {
                                                         fontSize: 'var(--text-sm)',
                                                     }}
                                                 >
-                                                    {booking.user?.name || 'Walk-in'}
+                                                    {booking.user?.name || t('employeePortal.walkIn')}
                                                 </div>
                                                 <div
                                                     style={{
@@ -365,7 +380,7 @@ export default function EmployeeDashboardPage() {
                                                         color: 'var(--text-tertiary)',
                                                     }}
                                                 >
-                                                    {booking.service?.name || 'Service'}
+                                                    {booking.service?.name || t('employeePortal.service')}
                                                     {booking.end_time &&
                                                         ` \u00B7 ${booking.start_time?.slice(0, 5)}-${booking.end_time?.slice(0, 5)}`}
                                                 </div>
@@ -382,7 +397,12 @@ export default function EmployeeDashboardPage() {
                                                 textTransform: 'capitalize',
                                             }}
                                         >
-                                            {booking.status.replace('_', ' ')}
+                                            {t(
+                                                `employeePortal.status${booking.status
+                                                    .split('_')
+                                                    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+                                                    .join('')}`
+                                            )}
                                         </span>
                                     </div>
                                 );

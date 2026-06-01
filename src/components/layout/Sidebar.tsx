@@ -273,19 +273,27 @@ function SidebarInner() {
                             <span className={styles.logoText}>Hagzy</span>
                         </Link>
                     ) : (
-                        <button className={styles.logoIconBtn} onClick={toggleSidebar} aria-label="Expand sidebar">
+                        <button
+                            className={styles.logoIconBtn}
+                            onClick={toggleSidebar}
+                            aria-label={t('nav.expandSidebar')}
+                        >
                             <div className={styles.logoIcon}>H</div>
                         </button>
                     )}
                     {!collapsed && (
-                        <button className={styles.collapseBtn} onClick={toggleSidebar} aria-label="Collapse sidebar">
+                        <button
+                            className={styles.collapseBtn}
+                            onClick={toggleSidebar}
+                            aria-label={t('nav.collapseSidebar')}
+                        >
                             <ChevronLeft size={18} />
                         </button>
                     )}
                     <button
                         className={styles.mobileCloseBtn}
                         onClick={() => setMobileOpen(false)}
-                        aria-label="Close menu"
+                        aria-label={t('nav.closeMenu')}
                     >
                         <X size={20} />
                     </button>

@@ -29,14 +29,14 @@ export default function InviteClaimPage() {
 
     const handleRequestOTP = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!phone.trim()) return addToast('error', 'Please enter your phone number');
+        if (!phone.trim()) return addToast('error', t('invite.toastPhoneReq'));
 
         setIsLoading(true);
         try {
             const res = await requestOTP(phone);
             if (res.success) {
                 setOtpSent(true);
-                addToast('success', 'Verification code sent');
+                addToast('success', t('invite.toastCodeSent'));
             }
         } catch (err) {
             addToast('error', t('auth.errorRequest'));
@@ -58,7 +58,7 @@ export default function InviteClaimPage() {
                 addToast('error', res.error || t('auth.errorVerify'));
                 setOtpCode(['', '', '', '', '', '']);
             } else {
-                addToast('success', 'Identity Verified!');
+                addToast('success', t('invite.toastIdentityVerified'));
                 setStep(2); // Move to profile setup
             }
         } catch (err) {
@@ -70,7 +70,7 @@ export default function InviteClaimPage() {
 
     const handleFinishSetup = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!fullName.trim()) return addToast('error', 'Please enter your name');
+        if (!fullName.trim()) return addToast('error', t('invite.toastNameReq'));
 
         // Mock saving name and role to the session
         const staffUser: User = {
@@ -82,7 +82,7 @@ export default function InviteClaimPage() {
         };
         localStorage.setItem('hagzy_user', JSON.stringify(staffUser));
 
-        addToast('success', 'Profile setup complete! Welcome aboard.');
+        addToast('success', t('invite.toastSetupComplete'));
         router.push('/');
     };
 
@@ -110,14 +110,10 @@ export default function InviteClaimPage() {
                 <div className={styles.header}>
                     <div className={styles.logo}>
                         <div className={styles.logoMark}></div>
-                        <span>Hagzy Invitation</span>
+                        <span>{t('invite.brand')}</span>
                     </div>
-                    <h1>{step === 1 ? 'Accept Invitation' : 'Complete Profile'}</h1>
-                    <p>
-                        {step === 1
-                            ? 'Verify your device to join the workspace.'
-                            : 'How should your colleagues and clients address you?'}
-                    </p>
+                    <h1>{step === 1 ? t('invite.acceptTitle') : t('invite.completeTitle')}</h1>
+                    <p>{step === 1 ? t('invite.acceptSubtitle') : t('invite.completeSubtitle')}</p>
                 </div>
 
                 <div className={styles.stepIndicator}>
@@ -134,7 +130,7 @@ export default function InviteClaimPage() {
                     (!otpSent ? (
                         <form className={styles.form} onSubmit={handleRequestOTP}>
                             <div className={styles.inputGroup}>
-                                <label className={styles.label}>Invited Phone Number</label>
+                                <label className={styles.label}>{t('invite.invitedPhone')}</label>
                                 <div style={{ position: 'relative' }}>
                                     <div
                                         style={{
@@ -160,14 +156,14 @@ export default function InviteClaimPage() {
                             </div>
                             <button type="submit" className={styles.loginBtn} disabled={isLoading}>
                                 {isLoading ? <RefreshCw size={18} className="spin" /> : <ArrowRight size={18} />}
-                                Send Verification Code
+                                {t('invite.sendCode')}
                             </button>
                         </form>
                     ) : (
                         <form className={styles.form} onSubmit={handleVerifyIdentity}>
                             <div className={styles.inputGroup}>
                                 <label className={styles.label} style={{ textAlign: 'center' }}>
-                                    Enter 6-digit Code
+                                    {t('invite.enterCode')}
                                 </label>
                                 <div
                                     style={{
@@ -211,7 +207,7 @@ export default function InviteClaimPage() {
                                 disabled={isLoading || otpCode.join('').length < 6}
                             >
                                 {isLoading ? <RefreshCw size={18} className="spin" /> : <ShieldCheck size={18} />}
-                                Verify Device
+                                {t('invite.verifyDevice')}
                             </button>
                         </form>
                     ))}
@@ -220,7 +216,7 @@ export default function InviteClaimPage() {
                 {step === 2 && (
                     <form className={styles.form} onSubmit={handleFinishSetup}>
                         <div className={styles.inputGroup}>
-                            <label className={styles.label}>Full Name</label>
+                            <label className={styles.label}>{t('invite.fullName')}</label>
                             <div style={{ position: 'relative' }}>
                                 <div
                                     style={{
@@ -247,7 +243,7 @@ export default function InviteClaimPage() {
 
                         <button type="submit" className={styles.loginBtn} style={{ marginTop: 'var(--space-4)' }}>
                             <ArrowRight size={18} />
-                            Join Workspace
+                            {t('invite.joinWorkspace')}
                         </button>
                     </form>
                 )}

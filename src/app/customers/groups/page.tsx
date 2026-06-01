@@ -265,8 +265,8 @@ export default function CustomerGroupsPage() {
                 data={groups}
                 onRetry={refetch}
                 emptyIcon={<Users size={48} />}
-                emptyTitle={t('custGroups.noGroups') || 'No groups found'}
-                emptyDescription={t('custGroups.noGroupsDesc') || 'Create your first customer group to get started.'}
+                emptyTitle={t('custGroups.noGroups') || t('custGroups.noGroupsFound')}
+                emptyDescription={t('custGroups.noGroupsDesc') || t('custGroups.noGroupsFoundDesc')}
                 emptyAction={
                     <button style={s.addBtn as React.CSSProperties} onClick={() => setIsAddOpen(true)}>
                         <Plus size={16} /> {t('custGroups.newGroup')}
@@ -356,8 +356,8 @@ export default function CustomerGroupsPage() {
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label={t('custGroups.groupName')} placeholder="e.g. VIP Clients" />
-                    <Input label={t('custGroups.description')} placeholder="Short description of this group..." />
+                    <Input label={t('custGroups.groupName')} placeholder={t('custGroups.groupNamePlaceholder')} />
+                    <Input label={t('custGroups.description')} placeholder={t('custGroups.descPlaceholder')} />
                     <Input label={t('custGroups.discountPercent')} type="number" defaultValue={0} />
                     <Select
                         label={t('custGroups.status')}

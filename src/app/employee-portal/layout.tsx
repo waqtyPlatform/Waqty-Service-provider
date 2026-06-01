@@ -6,6 +6,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { Home, Calendar, Clock, LogOut, Menu, X } from 'lucide-react';
 import { employeeApi } from '@/lib/api';
 import { safeJsonParse } from '@/lib/storage';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface EmployeeUser {
     uuid: string;
@@ -14,18 +15,19 @@ interface EmployeeUser {
     branch?: string;
 }
 
-const NAV_ITEMS = [
-    { href: '/employee-portal/dashboard', label: 'Dashboard', icon: Home },
-    { href: '/employee-portal/shifts', label: 'My Shifts', icon: Calendar },
-    { href: '/employee-portal/attendance', label: 'Attendance', icon: Clock },
-];
-
 export default function EmployeePortalLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const pathname = usePathname();
+    const { t } = useTranslation();
     const [employee, setEmployee] = useState<EmployeeUser | null>(null);
     const [loading, setLoading] = useState(true);
     const [menuOpen, setMenuOpen] = useState(false);
+
+    const NAV_ITEMS = [
+        { href: '/employee-portal/dashboard', label: t('employeePortal.navDashboard'), icon: Home },
+        { href: '/employee-portal/shifts', label: t('employeePortal.navMyShifts'), icon: Calendar },
+        { href: '/employee-portal/attendance', label: t('employeePortal.navAttendance'), icon: Clock },
+    ];
 
     useEffect(() => {
         // Skip auth check on login page
@@ -106,7 +108,9 @@ export default function EmployeePortalLayout({ children }: { children: React.Rea
                     background: 'var(--bg-secondary)',
                 }}
             >
-                <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)' }}>Loading...</div>
+                <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)' }}>
+                    {t('employeePortal.loading')}
+                </div>
             </div>
         );
     }
@@ -171,7 +175,7 @@ export default function EmployeePortalLayout({ children }: { children: React.Rea
                                     'linear-gradient(135deg, var(--color-primary-500), var(--color-primary-700))',
                             }}
                         />
-                        Employee Portal
+                        {t('employeePortal.title')}
                     </Link>
                 </div>
 
@@ -226,7 +230,7 @@ export default function EmployeePortalLayout({ children }: { children: React.Rea
                                 {employee?.name}
                             </div>
                             <div style={{ fontSize: 10, color: 'var(--text-tertiary)' }}>
-                                {employee?.branch || 'Employee'}
+                                {employee?.branch || t('employeePortal.employee')}
                             </div>
                         </div>
                     </div>
@@ -242,7 +246,7 @@ export default function EmployeePortalLayout({ children }: { children: React.Rea
                             display: 'flex',
                             alignItems: 'center',
                         }}
-                        title="Logout"
+                        title={t('employeePortal.logout')}
                     >
                         <LogOut size={16} />
                     </button>

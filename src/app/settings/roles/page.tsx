@@ -231,7 +231,7 @@ export default function RolesPage() {
                 data={rolesList}
                 emptyIcon={<ShieldCheck size={48} />}
                 emptyTitle={t('settings.roles.colRole')}
-                emptyDescription="No roles configured yet"
+                emptyDescription={t('settings.roles.emptyDesc')}
                 onRetry={refetch}
                 skeletonCount={4}
                 skeletonVariant="card"
@@ -336,11 +336,11 @@ export default function RolesPage() {
                                 try {
                                     await employeeExtApi.createRole({ name: 'New Role', permissions: {} });
                                     setIsAddOpen(false);
-                                    addToast('success', 'Role created successfully');
+                                    addToast('success', t('settings.roles.created'));
                                     refetch();
                                 } catch {
                                     setIsAddOpen(false);
-                                    addToast('success', 'Role created successfully');
+                                    addToast('success', t('settings.roles.created'));
                                 }
                             }}
                         >
@@ -350,7 +350,7 @@ export default function RolesPage() {
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label={t('settings.roles.roleName')} placeholder="e.g. Assistant Manager" />
+                    <Input label={t('settings.roles.roleName')} placeholder={t('settings.roles.namePh')} />
                     <div>
                         <label
                             style={{
@@ -514,11 +514,11 @@ export default function RolesPage() {
                                         });
                                     }
                                     setIsEditOpen(false);
-                                    addToast('success', 'Role permissions updated');
+                                    addToast('success', t('settings.roles.permsUpdated'));
                                     refetch();
                                 } catch {
                                     setIsEditOpen(false);
-                                    addToast('success', 'Role permissions updated');
+                                    addToast('success', t('settings.roles.permsUpdated'));
                                 }
                             }}
                         >
@@ -696,12 +696,12 @@ export default function RolesPage() {
                                     }
                                     setIsDeleteOpen(false);
                                     setSelectedRole(null);
-                                    addToast('error', 'Role deleted successfully');
+                                    addToast('error', t('settings.roles.deleted'));
                                     refetch();
                                 } catch {
                                     setIsDeleteOpen(false);
                                     setSelectedRole(null);
-                                    addToast('error', 'Role deleted successfully');
+                                    addToast('error', t('settings.roles.deleted'));
                                 }
                             }}
                         >

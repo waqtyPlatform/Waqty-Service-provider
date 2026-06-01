@@ -108,11 +108,8 @@ export default function PaymentMethodsPage() {
                                 error={error}
                                 data={methodsList}
                                 emptyIcon={<CreditCard size={48} />}
-                                emptyTitle={t('settings.paymentMethods.noMethods') || 'No payment methods'}
-                                emptyDescription={
-                                    t('settings.paymentMethods.noMethodsDesc') ||
-                                    'Add your first payment method to get started.'
-                                }
+                                emptyTitle={t('settings.paymentMethods.noMethods')}
+                                emptyDescription={t('settings.paymentMethods.noMethodsDesc')}
                                 onRetry={refetch}
                             >
                                 {methodsList.map(method => (
@@ -185,10 +182,10 @@ export default function PaymentMethodsPage() {
                                         active: true,
                                     });
                                     setIsAddOpen(false);
-                                    addToast('success', 'Payment method added');
+                                    addToast('success', t('settings.paymentMethods.added'));
                                     refetch();
                                 } catch {
-                                    addToast('error', 'Failed to add payment method');
+                                    addToast('error', t('settings.paymentMethods.addFailed'));
                                 }
                             }}
                         >
@@ -200,7 +197,7 @@ export default function PaymentMethodsPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                     <Input
                         label={t('settings.paymentMethods.methodName')}
-                        placeholder="e.g. Credit Card (Visa/Master)"
+                        placeholder={t('settings.paymentMethods.namePh')}
                     />
                     <Select
                         label={t('settings.paymentMethods.methodType')}
@@ -246,10 +243,10 @@ export default function PaymentMethodsPage() {
                                             active: selectedMethod.active,
                                         });
                                     setIsEditOpen(false);
-                                    addToast('success', 'Payment method updated');
+                                    addToast('success', t('settings.paymentMethods.updated'));
                                     refetch();
                                 } catch {
-                                    addToast('error', 'Failed to update payment method');
+                                    addToast('error', t('settings.paymentMethods.updateFailed'));
                                 }
                             }}
                         >
@@ -307,10 +304,10 @@ export default function PaymentMethodsPage() {
                                 try {
                                     if (selectedMethod) await settingsApi.deletePaymentMethod(selectedMethod.uuid);
                                     setIsDeleteOpen(false);
-                                    addToast('error', 'Payment method deleted');
+                                    addToast('error', t('settings.paymentMethods.deleted'));
                                     refetch();
                                 } catch {
-                                    addToast('error', 'Failed to delete payment method');
+                                    addToast('error', t('settings.paymentMethods.deleteFailed'));
                                 }
                             }}
                         >

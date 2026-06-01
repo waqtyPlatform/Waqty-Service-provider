@@ -212,10 +212,10 @@ export default function ResourcesPage() {
                                         branch_uuid: '',
                                     });
                                     setIsAddOpen(false);
-                                    addToast('success', 'Resource created successfully');
+                                    addToast('success', t('settings.resources.created'));
                                     refetch();
                                 } catch {
-                                    addToast('error', 'Failed to create resource');
+                                    addToast('error', t('settings.resources.createFailed'));
                                 }
                             }}
                         >
@@ -225,7 +225,7 @@ export default function ResourcesPage() {
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label={t('settings.resources.resName')} placeholder="e.g. Styling Station 3" />
+                    <Input label={t('settings.resources.resName')} placeholder={t('settings.resources.namePh')} />
                     <Select
                         label={t('settings.resources.resType')}
                         options={[
@@ -269,10 +269,10 @@ export default function ResourcesPage() {
                                             active: selectedResource.active,
                                         });
                                     setIsEditOpen(false);
-                                    addToast('success', 'Resource updated successfully');
+                                    addToast('success', t('settings.resources.updated'));
                                     refetch();
                                 } catch {
-                                    addToast('error', 'Failed to update resource');
+                                    addToast('error', t('settings.resources.updateFailed'));
                                 }
                             }}
                         >
@@ -330,10 +330,10 @@ export default function ResourcesPage() {
                                 try {
                                     if (selectedResource) await settingsApi.deleteResource(selectedResource.uuid);
                                     setIsDeleteOpen(false);
-                                    addToast('error', 'Resource deleted permanently');
+                                    addToast('error', t('settings.resources.deletedPermanently'));
                                     refetch();
                                 } catch {
-                                    addToast('error', 'Failed to delete resource');
+                                    addToast('error', t('settings.resources.deleteFailed'));
                                 }
                             }}
                         >

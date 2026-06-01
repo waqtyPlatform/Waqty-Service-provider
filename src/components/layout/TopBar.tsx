@@ -151,7 +151,7 @@ function TopBarInner() {
     return (
         <header className={styles.topbar}>
             {/* Mobile menu button */}
-            <button className={styles.mobileMenuBtn} onClick={() => setMobileOpen(true)} aria-label="Open menu">
+            <button className={styles.mobileMenuBtn} onClick={() => setMobileOpen(true)} aria-label={t('nav.openMenu')}>
                 <Menu size={22} />
             </button>
 
@@ -193,7 +193,7 @@ function TopBarInner() {
             {/* Right Actions */}
             <div className={styles.actions}>
                 {/* Theme toggle */}
-                <button className={styles.iconBtn} onClick={toggleTheme} aria-label="Toggle theme">
+                <button className={styles.iconBtn} onClick={toggleTheme} aria-label={t('nav.toggleTheme')}>
                     {resolvedTheme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
                 </button>
 
@@ -201,7 +201,7 @@ function TopBarInner() {
                 <button
                     className={styles.iconBtn}
                     onClick={toggleLanguage}
-                    aria-label="Toggle language"
+                    aria-label={t('nav.toggleLanguage')}
                     title={language === 'en' ? t('user.switchAr') : t('user.switchEn')}
                 >
                     <Languages size={20} />
@@ -212,7 +212,7 @@ function TopBarInner() {
                 <div className={styles.notifWrapper} ref={notifRef}>
                     <button
                         className={styles.iconBtn}
-                        aria-label="Notifications"
+                        aria-label={t('nav.notifications')}
                         onClick={() => setNotifOpen(!notifOpen)}
                     >
                         <Bell size={20} />

@@ -22,8 +22,8 @@ export default function BugReportPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!category) return addToast('error', 'Please select a category');
-        if (!description.trim()) return addToast('error', 'Please describe the issue');
+        if (!category) return addToast('error', t('bugReport.toastSelectCategory'));
+        if (!description.trim()) return addToast('error', t('bugReport.toastDescribe'));
 
         setIsSubmitting(true);
         try {
@@ -35,7 +35,7 @@ export default function BugReportPage() {
                     const uploadRes = await bugReportApi.uploadScreenshot(formData);
                     screenshotUrl = uploadRes.data?.url || null;
                 } catch {
-                    addToast('warning', 'Screenshot upload failed — report will be submitted without it');
+                    addToast('warning', t('bugReport.toastScreenshotFail'));
                 }
             }
 
@@ -51,9 +51,9 @@ export default function BugReportPage() {
             });
 
             setSubmitted(true);
-            addToast('success', 'Bug report submitted successfully');
+            addToast('success', t('bugReport.toastSubmitted'));
         } catch {
-            addToast('error', 'Failed to submit bug report. Please try again.');
+            addToast('error', t('bugReport.toastSubmitFail'));
         } finally {
             setIsSubmitting(false);
         }
@@ -74,10 +74,7 @@ export default function BugReportPage() {
             >
                 <CheckCircle size={64} color="var(--color-success-500)" />
                 <h2 style={{ fontSize: '1.5rem', fontWeight: 700 }}>{t('bugReport.submitted')}</h2>
-                <p style={{ color: 'var(--text-secondary)', maxWidth: 400 }}>
-                    Thank you for reporting this issue. Our team will review it and work on a fix. You&apos;ll be
-                    notified when it&apos;s resolved.
-                </p>
+                <p style={{ color: 'var(--text-secondary)', maxWidth: 400 }}>{t('bugReport.submittedThanks')}</p>
                 <div style={{ display: 'flex', gap: '0.75rem' }}>
                     <Button
                         variant="outline"
@@ -89,10 +86,10 @@ export default function BugReportPage() {
                             setScreenshot(null);
                         }}
                     >
-                        Report Another Issue
+                        {t('bugReport.reportAnother')}
                     </Button>
                     <Link href="/help">
-                        <Button variant="secondary">Back to Help Center</Button>
+                        <Button variant="secondary">{t('bugReport.backToHelp')}</Button>
                     </Link>
                 </div>
             </div>
@@ -114,7 +111,7 @@ export default function BugReportPage() {
                         marginBottom: 8,
                     }}
                 >
-                    <ArrowLeft size={14} /> Back to Help Center
+                    <ArrowLeft size={14} /> {t('bugReport.backToHelp')}
                 </Link>
                 <h1 style={{ fontSize: '1.5rem', fontWeight: 700 }}>{t('bugReport.title')}</h1>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginTop: 4 }}>
@@ -127,18 +124,18 @@ export default function BugReportPage() {
                     <Select
                         label={t('bugReport.category')}
                         options={[
-                            { value: '', label: 'Select category...' },
-                            { value: 'bookings', label: 'Bookings' },
-                            { value: 'customers', label: 'Customers' },
-                            { value: 'employees', label: 'Employees' },
-                            { value: 'payments', label: 'Payments & Transactions' },
-                            { value: 'marketing', label: 'Marketing' },
-                            { value: 'reports', label: 'Reports' },
-                            { value: 'settings', label: 'Settings' },
-                            { value: 'login', label: 'Login & Authentication' },
-                            { value: 'ui', label: 'UI / Display Issue' },
-                            { value: 'performance', label: 'Performance / Speed' },
-                            { value: 'other', label: 'Other' },
+                            { value: '', label: t('bugReport.selectCategory') },
+                            { value: 'bookings', label: t('bugReport.catBookings') },
+                            { value: 'customers', label: t('bugReport.catCustomers') },
+                            { value: 'employees', label: t('bugReport.catEmployees') },
+                            { value: 'payments', label: t('bugReport.catPayments') },
+                            { value: 'marketing', label: t('bugReport.catMarketing') },
+                            { value: 'reports', label: t('bugReport.catReports') },
+                            { value: 'settings', label: t('bugReport.catSettings') },
+                            { value: 'login', label: t('bugReport.catLogin') },
+                            { value: 'ui', label: t('bugReport.catUi') },
+                            { value: 'performance', label: t('bugReport.catPerformance') },
+                            { value: 'other', label: t('bugReport.catOther') },
                         ]}
                         value={category}
                         onChange={e => setCategory(e.target.value)}
@@ -146,10 +143,10 @@ export default function BugReportPage() {
                     <Select
                         label={t('bugReport.severity')}
                         options={[
-                            { value: 'low', label: 'Low — Minor inconvenience' },
-                            { value: 'medium', label: 'Medium — Feature not working' },
-                            { value: 'high', label: 'High — Blocking my work' },
-                            { value: 'critical', label: 'Critical — Data loss / security' },
+                            { value: 'low', label: t('bugReport.sevLow') },
+                            { value: 'medium', label: t('bugReport.sevMedium') },
+                            { value: 'high', label: t('bugReport.sevHigh') },
+                            { value: 'critical', label: t('bugReport.sevCritical') },
                         ]}
                         value={severity}
                         onChange={e => setSeverity(e.target.value)}
@@ -163,7 +160,7 @@ export default function BugReportPage() {
                     <textarea
                         value={description}
                         onChange={e => setDescription(e.target.value)}
-                        placeholder="Describe the issue you encountered..."
+                        placeholder={t('bugReport.descPlaceholder')}
                         rows={4}
                         style={{
                             width: '100%',
@@ -186,7 +183,7 @@ export default function BugReportPage() {
                     <textarea
                         value={steps}
                         onChange={e => setSteps(e.target.value)}
-                        placeholder={'1. Go to ...\n2. Click on ...\n3. See error ...'}
+                        placeholder={t('bugReport.stepsPlaceholder')}
                         rows={4}
                         style={{
                             width: '100%',
@@ -222,7 +219,7 @@ export default function BugReportPage() {
                         }}
                     >
                         <Upload size={18} />
-                        {screenshot ? screenshot.name : 'Click to upload a screenshot'}
+                        {screenshot ? screenshot.name : t('bugReport.uploadScreenshot')}
                         <input
                             type="file"
                             accept="image/*"
@@ -241,13 +238,13 @@ export default function BugReportPage() {
                         color: 'var(--text-tertiary)',
                     }}
                 >
-                    System info is automatically captured: browser version, current page, and your account role.
+                    {t('bugReport.systemInfoNote')}
                 </div>
 
                 <div>
                     <Button type="submit" disabled={isSubmitting}>
                         {isSubmitting ? (
-                            <>Submitting...</>
+                            <>{t('bugReport.submitting')}</>
                         ) : (
                             <>
                                 <Send size={16} /> {t('bugReport.submit')}

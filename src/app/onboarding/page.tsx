@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth, BusinessType } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui';
+import { useTranslation } from '@/hooks/useTranslation';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -174,6 +175,7 @@ const businessTypes = [
 export default function OnboardingPage() {
     const { requestOTP, verifyOTP, updateUser, user } = useAuth();
     const { addToast } = useToast();
+    const { t } = useTranslation();
     const router = useRouter();
 
     const [step, setStep] = useState(1);
@@ -250,14 +252,13 @@ export default function OnboardingPage() {
     // ── Step 1 Handlers ──
     const handleAccountSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!fullName.trim()) return addToast('error', 'Please enter your full name');
-        if (!email.trim()) return addToast('error', 'Please enter your email');
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return addToast('error', 'Please enter a valid email address');
-        if (!phoneNumber.trim()) return addToast('error', 'Please enter your phone number');
-        if (!isEgyptianPhone(phoneNumber))
-            return addToast('error', 'Enter a valid Egyptian phone number (01XXXXXXXXX)');
-        if (password.length < 6) return addToast('error', 'Password must be at least 6 characters');
-        if (!termsAccepted) return addToast('error', 'Please accept the Terms & Conditions');
+        if (!fullName.trim()) return addToast('error', t('onboarding.toastNameReq'));
+        if (!email.trim()) return addToast('error', t('onboarding.toastEmailReq'));
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return addToast('error', t('onboarding.toastEmailInvalid'));
+        if (!phoneNumber.trim()) return addToast('error', t('onboarding.toastPhoneReq'));
+        if (!isEgyptianPhone(phoneNumber)) return addToast('error', t('onboarding.toastPhoneInvalid'));
+        if (password.length < 6) return addToast('error', t('onboarding.toastPasswordShort'));
+        if (!termsAccepted) return addToast('error', t('onboarding.toastAcceptTerms'));
         setIsLoading(true);
         try {
             const res = await requestOTP(email);
@@ -266,10 +267,10 @@ export default function OnboardingPage() {
                 setAnimKey(k => k + 1);
                 setSubstep('otp');
                 setCountdown(60);
-                addToast('success', 'Verification code sent to your email');
+                addToast('success', t('onboarding.toastCodeSent'));
             }
         } catch {
-            addToast('error', 'Failed to send verification code');
+            addToast('error', t('onboarding.toastCodeFail'));
         } finally {
             setIsLoading(false);
         }
@@ -278,19 +279,19 @@ export default function OnboardingPage() {
     const handleVerifyOTP = async (e: React.FormEvent) => {
         e.preventDefault();
         const code = otpCode.join('');
-        if (code.length < 6) return addToast('error', 'Please enter the 6-digit code');
+        if (code.length < 6) return addToast('error', t('onboarding.toast6Digits'));
         setIsLoading(true);
         try {
             const res = await verifyOTP(email, code, false);
             if (!res.success) {
-                addToast('error', res.error || 'Invalid verification code');
+                addToast('error', res.error || t('onboarding.toastCodeInvalid'));
                 setOtpCode(['', '', '', '', '', '']);
             } else {
-                addToast('success', 'Identity verified!');
+                addToast('success', t('onboarding.toastVerified'));
                 goForward(2);
             }
         } catch {
-            addToast('error', 'Verification failed');
+            addToast('error', t('onboarding.toastVerifyFail'));
         } finally {
             setIsLoading(false);
         }
@@ -330,17 +331,17 @@ export default function OnboardingPage() {
     // ── Step 2 Handlers ──
     const handleBusinessSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedBusinessType) return addToast('error', 'Please select your business type');
-        if (!businessName.trim()) return addToast('error', 'Please enter your business name');
-        if (!governorate) return addToast('error', 'Please select your governorate');
-        if (!city) return addToast('error', 'Please select your city');
-        if (!street.trim()) return addToast('error', 'Please enter your street address');
+        if (!selectedBusinessType) return addToast('error', t('onboarding.toastSelectBizType'));
+        if (!businessName.trim()) return addToast('error', t('onboarding.toastBizNameReq'));
+        if (!governorate) return addToast('error', t('onboarding.toastGovReq'));
+        if (!city) return addToast('error', t('onboarding.toastCityReq'));
+        if (!street.trim()) return addToast('error', t('onboarding.toastStreetReq'));
 
         // Validate branch credentials (mandatory)
-        if (!branchEmail.trim()) return addToast('error', 'Please enter a branch email');
+        if (!branchEmail.trim()) return addToast('error', t('onboarding.toastBranchEmailReq'));
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(branchEmail))
-            return addToast('error', 'Please enter a valid branch email');
-        if (branchPassword.length < 6) return addToast('error', 'Branch password must be at least 6 characters');
+            return addToast('error', t('onboarding.toastBranchEmailInvalid'));
+        if (branchPassword.length < 6) return addToast('error', t('onboarding.toastBranchPwShort'));
 
         // Pre-select all suggested services
         setSelectedServices([...(suggestedServices[selectedBusinessType] || [])]);
@@ -349,7 +350,7 @@ export default function OnboardingPage() {
 
     const handlePinLocation = () => {
         setMapPinned(true);
-        addToast('success', 'Location pinned successfully');
+        addToast('success', t('onboarding.toastLocationPinned'));
     };
 
     // ── Step 3 Handlers ──
@@ -359,7 +360,7 @@ export default function OnboardingPage() {
         if (customService.trim() && !finalServices.includes(customService.trim())) {
             finalServices.push(customService.trim());
         }
-        if (finalServices.length === 0) return addToast('error', 'Please select at least one service');
+        if (finalServices.length === 0) return addToast('error', t('onboarding.toastSelectService'));
 
         // Save user with workspace data + auto-start free trial
         updateUser({
@@ -386,7 +387,7 @@ export default function OnboardingPage() {
             })
         );
 
-        addToast('success', 'Welcome to Hagzy! Your 14-day free trial has started.');
+        addToast('success', t('onboarding.toastWelcome'));
         router.push('/');
     };
 
@@ -402,16 +403,19 @@ export default function OnboardingPage() {
     };
 
     // ── Step Config ──
-    const stepLabels = ['Account', 'Business', 'Services'];
+    const stepLabels = [t('onboarding.stepAccount'), t('onboarding.stepBusiness'), t('onboarding.stepServices')];
     const stepTitles: Record<number, string> = {
-        1: substep === 'details' ? 'Create Your Account' : 'Verify Your Identity',
-        2: 'About Your Business',
-        3: 'Add Your Services',
+        1: substep === 'details' ? t('onboarding.titleCreateAccount') : t('onboarding.titleVerifyIdentity'),
+        2: t('onboarding.titleAboutBusiness'),
+        3: t('onboarding.titleAddServices'),
     };
     const stepDescriptions: Record<number, string> = {
-        1: substep === 'details' ? 'Fill in your details to get started' : `We sent a code to ${email}`,
-        2: 'Help us customize your workspace',
-        3: 'Select the services you offer — you can edit these anytime',
+        1:
+            substep === 'details'
+                ? t('onboarding.descCreateAccount')
+                : t('onboarding.descVerifyIdentity').replace('{email}', email),
+        2: t('onboarding.descAboutBusiness'),
+        3: t('onboarding.descAddServices'),
     };
 
     const formAnimClass = animDir === 'forward' ? styles.formAnimateForward : styles.formAnimateBack;
@@ -458,7 +462,7 @@ export default function OnboardingPage() {
                         onSubmit={handleAccountSubmit}
                     >
                         <div className={styles.inputGroup}>
-                            <label className={styles.label}>Full Name</label>
+                            <label className={styles.label}>{t('onboarding.fullName')}</label>
                             <div className={styles.inputWithIcon}>
                                 <div className={styles.inputIcon}>
                                     <User size={18} />
@@ -468,7 +472,7 @@ export default function OnboardingPage() {
                                     type="text"
                                     className={styles.loginInput}
                                     style={{ paddingInlineStart: 44 }}
-                                    placeholder="e.g., Ahmed Mohamed"
+                                    placeholder={t('onboarding.fullNamePlaceholder')}
                                     value={fullName}
                                     onChange={e => setFullName(e.target.value)}
                                     autoFocus
@@ -476,7 +480,7 @@ export default function OnboardingPage() {
                             </div>
                         </div>
                         <div className={styles.inputGroup}>
-                            <label className={styles.label}>Email</label>
+                            <label className={styles.label}>{t('onboarding.email')}</label>
                             <div className={styles.inputWithIcon}>
                                 <div className={styles.inputIcon}>
                                     <Mail size={18} />
@@ -492,7 +496,7 @@ export default function OnboardingPage() {
                             </div>
                         </div>
                         <div className={styles.inputGroup}>
-                            <label className={styles.label}>Phone Number</label>
+                            <label className={styles.label}>{t('onboarding.phoneNumber')}</label>
                             <div className={styles.inputWithIcon}>
                                 <div className={styles.inputIcon}>
                                     <Phone size={18} />
@@ -508,7 +512,7 @@ export default function OnboardingPage() {
                             </div>
                         </div>
                         <div className={styles.inputGroup}>
-                            <label className={styles.label}>Password</label>
+                            <label className={styles.label}>{t('onboarding.password')}</label>
                             <div className={styles.inputWithIcon}>
                                 <div className={styles.inputIcon}>
                                     <Lock size={18} />
@@ -517,7 +521,7 @@ export default function OnboardingPage() {
                                     type={showPassword ? 'text' : 'password'}
                                     className={styles.loginInput}
                                     style={{ paddingInlineStart: 44, paddingInlineEnd: 44 }}
-                                    placeholder="Min. 6 characters"
+                                    placeholder={t('onboarding.passwordPlaceholder')}
                                     value={password}
                                     onChange={e => setPassword(e.target.value)}
                                 />
@@ -548,30 +552,31 @@ export default function OnboardingPage() {
                                 onChange={e => setTermsAccepted(e.target.checked)}
                             />
                             <span>
-                                I agree to the{' '}
+                                {t('onboarding.agreeTo')}
                                 <button
                                     type="button"
                                     className={styles.termsLink}
                                     onClick={() => setShowTermsModal(true)}
                                 >
-                                    Terms &amp; Conditions
-                                </button>{' '}
-                                and{' '}
+                                    {t('onboarding.termsLink')}
+                                </button>
+                                {t('onboarding.and')}
                                 <button
                                     type="button"
                                     className={styles.termsLink}
                                     onClick={() => setShowTermsModal(true)}
                                 >
-                                    Privacy Policy
+                                    {t('onboarding.privacyLink')}
                                 </button>
                             </span>
                         </label>
                         <button type="submit" className={styles.loginBtn} disabled={isLoading || !termsAccepted}>
                             {isLoading ? <RefreshCw size={18} className="spin" /> : <ArrowRight size={18} />}
-                            {isLoading ? 'Sending...' : 'Continue'}
+                            {isLoading ? t('onboarding.sending') : t('onboarding.continue')}
                         </button>
                         <div className={styles.loginLink}>
-                            <span>Already have an account?</span> <Link href="/login">Log in</Link>
+                            <span>{t('onboarding.alreadyHaveAccount')}</span>{' '}
+                            <Link href="/login">{t('onboarding.logIn')}</Link>
                         </div>
                     </form>
                 )}
@@ -581,52 +586,26 @@ export default function OnboardingPage() {
                     <div className={styles.termsOverlay} onClick={() => setShowTermsModal(false)}>
                         <div className={styles.termsModal} onClick={e => e.stopPropagation()}>
                             <div className={styles.termsModalHeader}>
-                                <h2>Terms &amp; Conditions</h2>
+                                <h2>{t('onboarding.termsModalTitle')}</h2>
                                 <button className={styles.termsModalClose} onClick={() => setShowTermsModal(false)}>
                                     <X size={20} />
                                 </button>
                             </div>
                             <div className={styles.termsModalBody}>
-                                <h3>1. Acceptance of Terms</h3>
-                                <p>
-                                    By creating an account on Hagzy, you agree to be bound by these Terms and
-                                    Conditions. If you do not agree to these terms, please do not use the platform.
-                                </p>
-                                <h3>2. Account Registration</h3>
-                                <p>
-                                    You must provide accurate information when creating your account. You are
-                                    responsible for maintaining the confidentiality of your login credentials and for
-                                    all activities that occur under your account.
-                                </p>
-                                <h3>3. Service Provider Obligations</h3>
-                                <p>
-                                    As a service provider, you agree to provide accurate business information, honor
-                                    confirmed bookings, and maintain the quality of services offered through the
-                                    platform.
-                                </p>
-                                <h3>4. Payment Terms</h3>
-                                <p>
-                                    All payments are processed in Egyptian Pounds (EGP). Subscription fees are charged
-                                    according to the selected plan. Refunds are subject to our refund policy.
-                                </p>
-                                <h3>5. Data Privacy</h3>
-                                <p>
-                                    We collect and process your data in accordance with our Privacy Policy. Customer
-                                    data is handled with strict confidentiality and in compliance with applicable data
-                                    protection regulations.
-                                </p>
-                                <h3>6. Termination</h3>
-                                <p>
-                                    Either party may terminate this agreement at any time. Upon termination, your access
-                                    to the platform will be revoked, and your data will be handled according to our data
-                                    retention policy.
-                                </p>
-                                <h3>7. Limitation of Liability</h3>
-                                <p>
-                                    Hagzy shall not be liable for any indirect, incidental, or consequential damages
-                                    arising from the use of the platform. Our total liability shall not exceed the
-                                    subscription fees paid in the preceding 12 months.
-                                </p>
+                                <h3>{t('onboarding.terms1Title')}</h3>
+                                <p>{t('onboarding.terms1Body')}</p>
+                                <h3>{t('onboarding.terms2Title')}</h3>
+                                <p>{t('onboarding.terms2Body')}</p>
+                                <h3>{t('onboarding.terms3Title')}</h3>
+                                <p>{t('onboarding.terms3Body')}</p>
+                                <h3>{t('onboarding.terms4Title')}</h3>
+                                <p>{t('onboarding.terms4Body')}</p>
+                                <h3>{t('onboarding.terms5Title')}</h3>
+                                <p>{t('onboarding.terms5Body')}</p>
+                                <h3>{t('onboarding.terms6Title')}</h3>
+                                <p>{t('onboarding.terms6Body')}</p>
+                                <h3>{t('onboarding.terms7Title')}</h3>
+                                <p>{t('onboarding.terms7Body')}</p>
                             </div>
                             <div className={styles.termsModalFooter}>
                                 <button
@@ -636,7 +615,7 @@ export default function OnboardingPage() {
                                         setShowTermsModal(false);
                                     }}
                                 >
-                                    <Check size={18} /> Accept &amp; Continue
+                                    <Check size={18} /> {t('onboarding.acceptContinue')}
                                 </button>
                             </div>
                         </div>
@@ -652,7 +631,7 @@ export default function OnboardingPage() {
                     >
                         <div className={styles.inputGroup}>
                             <label className={styles.label} style={{ textAlign: 'center', justifyContent: 'center' }}>
-                                Enter 6-digit Code
+                                {t('invite.enterCode')}
                             </label>
                             <div className={styles.otpRow}>
                                 {otpCode.map((digit, idx) => (
@@ -679,7 +658,7 @@ export default function OnboardingPage() {
                             disabled={isLoading || otpCode.join('').length < 6}
                         >
                             {isLoading ? <RefreshCw size={18} className="spin" /> : <ShieldCheck size={18} />}
-                            {isLoading ? 'Verifying...' : 'Verify & Continue'}
+                            {isLoading ? t('onboarding.verifying') : t('onboarding.verifyContinue')}
                         </button>
                         <div style={{ textAlign: 'center' }}>
                             <button
@@ -692,12 +671,18 @@ export default function OnboardingPage() {
                                     cursor: countdown > 0 ? 'not-allowed' : 'pointer',
                                 }}
                             >
-                                {countdown > 0 ? `Resend in 0:${countdown.toString().padStart(2, '0')}` : 'Resend Code'}
+                                {countdown > 0
+                                    ? t('onboarding.resendIn').replace(
+                                          '{seconds}',
+                                          countdown.toString().padStart(2, '0')
+                                      )
+                                    : t('onboarding.resendCode')}
                             </button>
                         </div>
                         <div className={styles.tip}>
                             <p>
-                                Demo tip: Enter <strong>123456</strong>
+                                {t('onboarding.demoTip')}
+                                <strong>123456</strong>
                             </p>
                         </div>
                     </form>
@@ -712,7 +697,7 @@ export default function OnboardingPage() {
                     >
                         {/* Business Type Cards */}
                         <div className={styles.inputGroup}>
-                            <label className={styles.label}>Business Type</label>
+                            <label className={styles.label}>{t('onboarding.businessType')}</label>
                             <div className={styles.businessCards}>
                                 {businessTypes.map(bt => {
                                     const Icon = bt.icon;
@@ -734,8 +719,16 @@ export default function OnboardingPage() {
                                             >
                                                 <Icon size={22} />
                                             </div>
-                                            <div className={styles.businessCardLabel}>{bt.label}</div>
-                                            <div className={styles.businessCardDesc}>{bt.description}</div>
+                                            <div className={styles.businessCardLabel}>
+                                                {t(
+                                                    `onboarding.biz${bt.value.charAt(0).toUpperCase() + bt.value.slice(1)}Label`
+                                                )}
+                                            </div>
+                                            <div className={styles.businessCardDesc}>
+                                                {t(
+                                                    `onboarding.biz${bt.value.charAt(0).toUpperCase() + bt.value.slice(1)}Desc`
+                                                )}
+                                            </div>
                                         </button>
                                     );
                                 })}
@@ -744,7 +737,7 @@ export default function OnboardingPage() {
 
                         {/* Business Name */}
                         <div className={styles.inputGroup}>
-                            <label className={styles.label}>Business Name</label>
+                            <label className={styles.label}>{t('onboarding.businessName')}</label>
                             <div className={styles.inputWithIcon}>
                                 <div className={styles.inputIcon}>
                                     <Briefcase size={18} />
@@ -753,7 +746,7 @@ export default function OnboardingPage() {
                                     type="text"
                                     className={styles.loginInput}
                                     style={{ paddingInlineStart: 44 }}
-                                    placeholder="e.g., Elite Beauty Salon"
+                                    placeholder={t('onboarding.businessNamePlaceholder')}
                                     value={businessName}
                                     onChange={e => setBusinessName(e.target.value)}
                                 />
@@ -762,7 +755,7 @@ export default function OnboardingPage() {
 
                         {/* Governorate */}
                         <div className={styles.inputGroup}>
-                            <label className={styles.label}>Governorate</label>
+                            <label className={styles.label}>{t('onboarding.governorate')}</label>
                             <select
                                 className={styles.roleSelect}
                                 value={governorate}
@@ -772,7 +765,7 @@ export default function OnboardingPage() {
                                 }}
                             >
                                 <option value="" disabled>
-                                    Select Governorate...
+                                    {t('onboarding.selectGovernorate')}
                                 </option>
                                 {Object.keys(egyptLocations)
                                     .sort()
@@ -786,7 +779,7 @@ export default function OnboardingPage() {
 
                         {/* City */}
                         <div className={styles.inputGroup}>
-                            <label className={styles.label}>City / Area</label>
+                            <label className={styles.label}>{t('onboarding.cityArea')}</label>
                             <select
                                 className={styles.roleSelect}
                                 value={city}
@@ -794,7 +787,7 @@ export default function OnboardingPage() {
                                 disabled={!governorate}
                             >
                                 <option value="" disabled>
-                                    Select City / Area...
+                                    {t('onboarding.selectCityArea')}
                                 </option>
                                 {governorate &&
                                     egyptLocations[governorate]?.sort().map(c => (
@@ -807,12 +800,12 @@ export default function OnboardingPage() {
 
                         {/* Full Address */}
                         <div className={styles.inputGroup}>
-                            <label className={styles.label}>Full Address</label>
+                            <label className={styles.label}>{t('onboarding.fullAddress')}</label>
                             <div className={styles.addressGrid}>
                                 <input
                                     type="text"
                                     className={styles.loginInput}
-                                    placeholder="Street name"
+                                    placeholder={t('onboarding.streetName')}
                                     value={street}
                                     onChange={e => setStreet(e.target.value)}
                                 />
@@ -820,14 +813,14 @@ export default function OnboardingPage() {
                                     <input
                                         type="text"
                                         className={styles.loginInput}
-                                        placeholder="Building No."
+                                        placeholder={t('onboarding.buildingNo')}
                                         value={building}
                                         onChange={e => setBuilding(e.target.value)}
                                     />
                                     <input
                                         type="text"
                                         className={styles.loginInput}
-                                        placeholder="Floor / Apt"
+                                        placeholder={t('onboarding.floorApt')}
                                         value={floor}
                                         onChange={e => setFloor(e.target.value)}
                                     />
@@ -838,8 +831,8 @@ export default function OnboardingPage() {
                         {/* Google Maps Pin */}
                         <div className={styles.inputGroup}>
                             <label className={styles.label}>
-                                Pin on Map
-                                <span className={styles.optionalBadge}>Optional</span>
+                                {t('onboarding.pinOnMap')}
+                                <span className={styles.optionalBadge}>{t('onboarding.optional')}</span>
                             </label>
                             <div className={`${styles.mapSection} ${mapPinned ? styles.mapSectionPinned : ''}`}>
                                 {mapPinned ? (
@@ -847,24 +840,22 @@ export default function OnboardingPage() {
                                         <div className={styles.mapPinnedIcon}>
                                             <Check size={20} />
                                         </div>
-                                        <span className={styles.mapPinnedText}>Location pinned</span>
+                                        <span className={styles.mapPinnedText}>{t('onboarding.locationPinned')}</span>
                                         <button
                                             type="button"
                                             className={styles.mapChangeBtn}
                                             onClick={() => setMapPinned(false)}
                                         >
-                                            Change
+                                            {t('onboarding.change')}
                                         </button>
                                     </div>
                                 ) : (
                                     <div className={styles.mapContent}>
                                         <MapPin size={28} className={styles.mapIcon} />
-                                        <p className={styles.mapText}>
-                                            Pin your business on the map so customers can find you
-                                        </p>
+                                        <p className={styles.mapText}>{t('onboarding.mapHint')}</p>
                                         <button type="button" className={styles.btnOutline} onClick={handlePinLocation}>
                                             <Navigation size={16} />
-                                            Use My Location
+                                            {t('onboarding.useMyLocation')}
                                         </button>
                                     </div>
                                 )}
@@ -894,7 +885,7 @@ export default function OnboardingPage() {
                                         color: 'var(--color-primary-600)',
                                     }}
                                 />
-                                <span style={{ flex: 1, textAlign: 'start' }}>Branch login credentials</span>
+                                <span style={{ flex: 1, textAlign: 'start' }}>{t('onboarding.branchCredentials')}</span>
                                 <span
                                     style={{
                                         fontSize: 11,
@@ -905,7 +896,7 @@ export default function OnboardingPage() {
                                         fontWeight: 'var(--font-semibold, 600)',
                                     }}
                                 >
-                                    Required
+                                    {t('onboarding.required')}
                                 </span>
                             </div>
 
@@ -928,10 +919,10 @@ export default function OnboardingPage() {
                                         margin: 0,
                                     }}
                                 >
-                                    This allows this branch to log in independently
+                                    {t('onboarding.branchCredentialsHint')}
                                 </p>
                                 <div className={styles.inputGroup} style={{ marginBottom: 0 }}>
-                                    <label className={styles.label}>Branch Email</label>
+                                    <label className={styles.label}>{t('onboarding.branchEmail')}</label>
                                     <div className={styles.inputWithIcon}>
                                         <div className={styles.inputIcon}>
                                             <Mail size={18} />
@@ -947,7 +938,7 @@ export default function OnboardingPage() {
                                     </div>
                                 </div>
                                 <div className={styles.inputGroup} style={{ marginBottom: 0 }}>
-                                    <label className={styles.label}>Branch Password</label>
+                                    <label className={styles.label}>{t('onboarding.branchPassword')}</label>
                                     <div className={styles.inputWithIcon}>
                                         <div className={styles.inputIcon}>
                                             <Lock size={18} />
@@ -956,7 +947,7 @@ export default function OnboardingPage() {
                                             type={showBranchPassword ? 'text' : 'password'}
                                             className={styles.loginInput}
                                             style={{ paddingInlineStart: 44, paddingInlineEnd: 44 }}
-                                            placeholder="Min. 6 characters"
+                                            placeholder={t('onboarding.passwordPlaceholder')}
                                             value={branchPassword}
                                             onChange={e => setBranchPassword(e.target.value)}
                                         />
@@ -993,10 +984,10 @@ export default function OnboardingPage() {
                                     goBack(1);
                                 }}
                             >
-                                <ArrowLeft size={16} /> Back
+                                <ArrowLeft size={16} /> {t('onboarding.back')}
                             </button>
                             <button type="submit" className={styles.loginBtn} style={{ flex: 1 }}>
-                                <ArrowRight size={18} /> Continue
+                                <ArrowRight size={18} /> {t('onboarding.continue')}
                             </button>
                         </div>
                     </form>
@@ -1012,12 +1003,12 @@ export default function OnboardingPage() {
                         {/* Suggested services (pre-checked) */}
                         <div className={styles.inputGroup}>
                             <label className={styles.label}>
-                                Suggested for your{' '}
+                                {t('onboarding.suggestedFor')}
                                 {selectedBusinessType === 'clinic'
-                                    ? 'clinic'
+                                    ? t('onboarding.segClinic')
                                     : selectedBusinessType === 'salon'
-                                      ? 'salon'
-                                      : 'barbershop'}
+                                      ? t('onboarding.segSalon')
+                                      : t('onboarding.segBarbershop')}
                                 {selectedServices.length > 0 && (
                                     <span className={styles.serviceCount}>{selectedServices.length}</span>
                                 )}
@@ -1045,7 +1036,7 @@ export default function OnboardingPage() {
                             s => !(suggestedServices[selectedBusinessType as string] || []).includes(s)
                         ).length > 0 && (
                             <div className={styles.inputGroup}>
-                                <label className={styles.label}>Your custom services</label>
+                                <label className={styles.label}>{t('onboarding.yourCustomServices')}</label>
                                 <div className={styles.serviceChips}>
                                     {selectedServices
                                         .filter(
@@ -1069,7 +1060,7 @@ export default function OnboardingPage() {
 
                         {/* Add custom service */}
                         <div className={styles.inputGroup}>
-                            <label className={styles.label}>Add your own</label>
+                            <label className={styles.label}>{t('onboarding.addYourOwn')}</label>
                             <div className={styles.customServiceRow}>
                                 <div className={styles.inputWithIcon} style={{ flex: 1 }}>
                                     <div className={styles.inputIcon}>
@@ -1079,7 +1070,7 @@ export default function OnboardingPage() {
                                         type="text"
                                         className={styles.loginInput}
                                         style={{ paddingInlineStart: 44 }}
-                                        placeholder="e.g., Deep Conditioning"
+                                        placeholder={t('onboarding.customServicePlaceholder')}
                                         value={customService}
                                         onChange={e => setCustomService(e.target.value)}
                                         onKeyDown={e => {
@@ -1091,21 +1082,19 @@ export default function OnboardingPage() {
                                     />
                                 </div>
                                 <button type="button" className={styles.btnOutline} onClick={addCustomService}>
-                                    Add
+                                    {t('onboarding.addServiceBtn')}
                                 </button>
                             </div>
-                            <p className={styles.hint}>
-                                You can add prices, durations, and more details later in Settings.
-                            </p>
+                            <p className={styles.hint}>{t('onboarding.servicesHint')}</p>
                         </div>
 
                         {/* Navigation */}
                         <div className={styles.navRow}>
                             <button type="button" className={styles.backBtn} onClick={() => goBack(2)}>
-                                <ArrowLeft size={16} /> Back
+                                <ArrowLeft size={16} /> {t('onboarding.back')}
                             </button>
                             <button type="submit" className={styles.loginBtn} style={{ flex: 1 }}>
-                                Go to Dashboard
+                                {t('onboarding.goToDashboard')}
                             </button>
                         </div>
                     </form>

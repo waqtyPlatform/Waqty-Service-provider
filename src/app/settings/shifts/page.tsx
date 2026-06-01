@@ -222,7 +222,7 @@ export default function ShiftTemplatesPage() {
                 return;
             } catch (err: unknown) {
                 const error = err as { message?: string };
-                addToast('error', error.message || 'Failed to save template');
+                addToast('error', error.message || t('shifts.saveFailed'));
                 return;
             }
         }
@@ -257,7 +257,7 @@ export default function ShiftTemplatesPage() {
                 return;
             } catch (err: unknown) {
                 const error = err as { message?: string };
-                addToast('error', error.message || 'Failed to delete template');
+                addToast('error', error.message || t('shifts.deleteFailed'));
                 setIsDeleteOpen(false);
                 setDeleteTarget(null);
                 return;
@@ -436,7 +436,7 @@ export default function ShiftTemplatesPage() {
                         label={t('shifts.templateName')}
                         value={form.name}
                         onChange={e => setForm({ ...form, name: e.target.value })}
-                        placeholder="e.g. Morning Shift"
+                        placeholder={t('shifts.templateNamePh')}
                     />
 
                     {/* Color Picker */}

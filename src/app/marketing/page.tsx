@@ -407,15 +407,15 @@ export default function MarketingPage() {
                     >
                         <EmptyState
                             icon={<Gift size={48} color="var(--color-primary-500)" />}
-                            title="No offers yet"
-                            description="Ready to grow? Create your first promotional campaign to engage your clients."
+                            title={t('marketing.emptyOffersTitle')}
+                            description={t('marketing.emptyOffersDesc')}
                             action={
                                 <button
                                     className={styles.btnPrimary}
                                     onClick={() => setIsOfferAddOpen(true)}
                                     style={{ margin: '0 auto', display: 'flex', marginTop: '16px' }}
                                 >
-                                    <Plus size={16} style={{ marginInlineEnd: 4 }} /> Create Offer
+                                    <Plus size={16} style={{ marginInlineEnd: 4 }} /> {t('marketing.createOffer')}
                                 </button>
                             }
                         />
@@ -717,7 +717,12 @@ export default function MarketingPage() {
                             onClick={() => {
                                 setIsOfferAddOpen(false);
                                 setIsOfferEditOpen(false);
-                                addToast('success', isOfferEditOpen ? 'Offer updated successfully' : 'Offer created');
+                                addToast(
+                                    'success',
+                                    isOfferEditOpen
+                                        ? t('marketing.toastOfferUpdated')
+                                        : t('marketing.toastOfferCreated')
+                                );
                             }}
                         >
                             {isOfferEditOpen ? t('marketing.modal.update') : t('marketing.modal.create')}
@@ -776,7 +781,7 @@ export default function MarketingPage() {
                             variant="destructive"
                             onClick={() => {
                                 setIsOfferDeleteOpen(false);
-                                addToast('error', 'Offer deleted permanently');
+                                addToast('error', t('marketing.toastOfferDeleted'));
                             }}
                         >
                             {t('marketing.delete')}
@@ -815,7 +820,12 @@ export default function MarketingPage() {
                             onClick={() => {
                                 setIsPromoAddOpen(false);
                                 setIsPromoEditOpen(false);
-                                addToast('success', isPromoEditOpen ? 'Promo code updated' : 'Promo code created');
+                                addToast(
+                                    'success',
+                                    isPromoEditOpen
+                                        ? t('marketing.toastPromoUpdated')
+                                        : t('marketing.toastPromoCreated')
+                                );
                             }}
                         >
                             {isPromoEditOpen ? t('marketing.modal.update') : t('marketing.modal.create')}
@@ -896,7 +906,7 @@ export default function MarketingPage() {
                             variant="destructive"
                             onClick={() => {
                                 setIsPromoDeleteOpen(false);
-                                addToast('error', 'Promo code deleted');
+                                addToast('error', t('marketing.toastPromoDeleted'));
                             }}
                         >
                             {t('marketing.delete')}
@@ -935,7 +945,12 @@ export default function MarketingPage() {
                             onClick={() => {
                                 setIsMsgAddOpen(false);
                                 setIsMsgEditOpen(false);
-                                addToast('success', isMsgEditOpen ? 'Template updated' : 'Template created');
+                                addToast(
+                                    'success',
+                                    isMsgEditOpen
+                                        ? t('marketing.toastTemplateUpdated')
+                                        : t('marketing.toastTemplateCreated')
+                                );
                             }}
                         >
                             {isMsgEditOpen ? t('marketing.modal.update') : t('marketing.modal.create')}
@@ -1049,7 +1064,7 @@ export default function MarketingPage() {
                             variant="destructive"
                             onClick={() => {
                                 setIsMsgDeleteOpen(false);
-                                addToast('error', 'Template deleted');
+                                addToast('error', t('marketing.toastTemplateDeleted'));
                             }}
                         >
                             {t('marketing.delete')}

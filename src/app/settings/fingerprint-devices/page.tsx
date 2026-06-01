@@ -62,10 +62,10 @@ export default function FingerprintDevicesPage() {
             if (settingsApi.deleteFingerprintDevice) {
                 await settingsApi.deleteFingerprintDevice(String(id));
             }
-            addToast('success', 'Device removed');
+            addToast('success', t('settings.fingerprint.deviceRemoved'));
             refetch();
         } catch {
-            addToast('error', 'Failed to remove device');
+            addToast('error', t('settings.fingerprint.removeFailed'));
         }
     };
 
@@ -87,10 +87,10 @@ export default function FingerprintDevicesPage() {
                                 if (settingsApi.createFingerprintDevice) {
                                     await settingsApi.createFingerprintDevice({ name: 'New Device', ip: '' });
                                 }
-                                addToast('success', 'Device added');
+                                addToast('success', t('settings.fingerprint.deviceAdded'));
                                 refetch();
                             } catch {
-                                addToast('error', 'Failed to add device');
+                                addToast('error', t('settings.fingerprint.addFailed'));
                             }
                         }}
                     >
@@ -106,7 +106,7 @@ export default function FingerprintDevicesPage() {
                 data={devices}
                 emptyIcon={<Fingerprint size={48} />}
                 emptyTitle={t('settings.fingerprint.connected')}
-                emptyDescription="No fingerprint devices registered yet"
+                emptyDescription={t('settings.fingerprint.emptyDesc')}
                 onRetry={refetch}
                 skeletonCount={3}
                 skeletonVariant="card"

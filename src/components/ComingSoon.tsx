@@ -3,6 +3,7 @@
 import React from 'react';
 import { Clock, ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface ComingSoonProps {
     title: string;
@@ -12,14 +13,10 @@ interface ComingSoonProps {
     backHref?: string;
 }
 
-export function ComingSoon({
-    title,
-    description = 'This feature is currently under development and will be available soon.',
-    icon,
-    expectedDate,
-    backHref,
-}: ComingSoonProps) {
+export function ComingSoon({ title, description, icon, expectedDate, backHref }: ComingSoonProps) {
     const router = useRouter();
+    const { t } = useTranslation();
+    const resolvedDescription = description ?? t('comingSoon.defaultDesc');
 
     return (
         <div
@@ -71,7 +68,7 @@ export function ComingSoon({
                     lineHeight: 'var(--leading-relaxed)',
                 }}
             >
-                {description}
+                {resolvedDescription}
             </p>
 
             {/* Expected date badge */}
@@ -90,7 +87,7 @@ export function ComingSoon({
                     }}
                 >
                     <Clock size={12} />
-                    Expected: {expectedDate}
+                    {t('comingSoon.expected').replace('{date}', expectedDate)}
                 </span>
             )}
 
@@ -150,7 +147,7 @@ export function ComingSoon({
                     }}
                 >
                     <ArrowLeft size={16} />
-                    Go back
+                    {t('common.goBack')}
                 </button>
             )}
         </div>

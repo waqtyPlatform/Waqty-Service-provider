@@ -291,7 +291,7 @@ export default function PromoCodesPage() {
     const handleCopy = (code: string, e: React.MouseEvent) => {
         e.stopPropagation();
         navigator.clipboard.writeText(code);
-        addToast('success', `Copied ${code} to clipboard`);
+        addToast('success', t('mkt.msgCopiedToClipboard').replace('{code}', code));
     };
 
     const filtered = codes.filter(c => c.code.toLowerCase().includes(search.toLowerCase()));
@@ -772,7 +772,7 @@ export default function PromoCodesPage() {
                             <Input label={t('mkt.lblDiscountValue')} type="number" placeholder="0" />
                         </div>
                         <div style={{ flex: 1 }}>
-                            <Input label={t('mkt.lblUsageLimit')} type="number" placeholder="No Limit" />
+                            <Input label={t('mkt.lblUsageLimit')} type="number" placeholder={t('mkt.phNoLimit')} />
                         </div>
                     </div>
                     <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
@@ -783,7 +783,7 @@ export default function PromoCodesPage() {
                             <Input label={t('mkt.lblExpirationDate')} type="date" />
                         </div>
                     </div>
-                    <Input label={t('mkt.lblDescription')} placeholder="Brief description of this promo code" />
+                    <Input label={t('mkt.lblDescription')} placeholder={t('mkt.phPromoDescription')} />
                     <Select
                         label={t('mkt.lblStatus')}
                         options={[

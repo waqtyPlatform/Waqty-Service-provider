@@ -239,6 +239,21 @@ export default function AnnouncementsPage() {
         }
     };
 
+    const priorityLabel = (priority: string) => {
+        switch (priority) {
+            case 'low':
+                return t('mkt.lblLow') || 'Low';
+            case 'normal':
+                return t('mkt.lblNormal') || 'Normal';
+            case 'high':
+                return t('mkt.lblHigh') || 'High';
+            case 'urgent':
+                return t('mkt.lblUrgent') || 'Urgent';
+            default:
+                return priority;
+        }
+    };
+
     return (
         <div className={styles.page}>
             <MarketingTabs />
@@ -296,7 +311,7 @@ export default function AnnouncementsPage() {
                                     {t(`mkt.lbl${a.status.charAt(0).toUpperCase() + a.status.slice(1)}`) || a.status}
                                 </Badge>
                                 <Badge color={priorityBadge[a.priority] || 'neutral'} size="sm">
-                                    {a.priority.charAt(0).toUpperCase() + a.priority.slice(1)}
+                                    {priorityLabel(a.priority)}
                                 </Badge>
                                 <Badge color="neutral" size="sm">
                                     <Users size={10} style={{ marginRight: 4 }} />
@@ -390,8 +405,7 @@ export default function AnnouncementsPage() {
                             </div>
                             <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                                 <Badge color={priorityBadge[selected.priority] || 'neutral'} size="sm">
-                                    {selected.priority.charAt(0).toUpperCase() + selected.priority.slice(1)}{' '}
-                                    {t('mkt.lblPriority') || 'Priority'}
+                                    {priorityLabel(selected.priority)} {t('mkt.lblPriority') || 'Priority'}
                                 </Badge>
                                 <Badge color="neutral" size="sm">
                                     <Users size={10} style={{ marginRight: 4 }} />
@@ -469,7 +483,7 @@ export default function AnnouncementsPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                     <Input
                         label={t('mkt.lblAnnouncementTitle') || 'Title'}
-                        placeholder="e.g. New Policy Update"
+                        placeholder={t('mkt.phAnnouncementTitle') || 'e.g. New Policy Update'}
                         value={formTitle}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormTitle(e.target.value)}
                     />

@@ -371,13 +371,13 @@ export default function MessagesPage() {
             label: t('custProfile.lblFirstName') || 'First Name',
             description: t('custProfile.lblFirstNameDesc') || 'Client first name only',
         },
-        { key: '{date}', label: t('mkt.lblDate') || 'Date', description: 'Appointment or event date' },
-        { key: '{time}', label: t('mkt.lblTime') || 'Time', description: 'Appointment time' },
-        { key: '{service}', label: t('mkt.lblService') || 'Service', description: 'Booked service name' },
-        { key: '{discount}', label: t('mkt.lblDiscount') || 'Discount', description: 'Discount percentage or amount' },
-        { key: '{amount}', label: t('mkt.lblAmount') || 'Amount', description: 'Balance or order amount' },
-        { key: '{branch}', label: t('mkt.lblBranch') || 'Branch', description: 'Branch name or location' },
-        { key: '{link}', label: t('mkt.lblLink') || 'Link', description: 'Booking or review link' },
+        { key: '{date}', label: t('mkt.lblDate') || 'Date', description: t('mkt.phDescDate') },
+        { key: '{time}', label: t('mkt.lblTime') || 'Time', description: t('mkt.phDescTime') },
+        { key: '{service}', label: t('mkt.lblService') || 'Service', description: t('mkt.phDescService') },
+        { key: '{discount}', label: t('mkt.lblDiscount') || 'Discount', description: t('mkt.phDescDiscount') },
+        { key: '{amount}', label: t('mkt.lblAmount') || 'Amount', description: t('mkt.phDescAmount') },
+        { key: '{branch}', label: t('mkt.lblBranch') || 'Branch', description: t('mkt.phDescBranch') },
+        { key: '{link}', label: t('mkt.lblLink') || 'Link', description: t('mkt.phDescLink') },
     ];
 
     // Template CRUD
@@ -465,17 +465,24 @@ export default function MessagesPage() {
         };
         setHistory(prev => [newEntry, ...prev]);
         setIsComposeOpen(false);
-        addToast('success', `${t('mkt.lblMessages')} ${selectedRecipients.length}`);
+        addToast('success', t('mkt.msgMessageSent').replace('{count}', String(selectedRecipients.length)));
     };
 
     const handleAddTemplate = () => {
         if (!formName.trim()) {
-            addToast('error', 'Template name is required');
+            addToast('error', t('mkt.msgTemplateNameRequired'));
             return;
         }
         setTemplates(prev => [
             ...prev,
-            { id: Date.now(), name: formName, channel: formChannel, body: formBody, lastUsed: 'Never', usageCount: 0 },
+            {
+                id: Date.now(),
+                name: formName,
+                channel: formChannel,
+                body: formBody,
+                lastUsed: t('mkt.lblNever'),
+                usageCount: 0,
+            },
         ]);
         setIsAddOpen(false);
         addToast('success', t('mkt.btnSaveTemplate'));
@@ -483,7 +490,7 @@ export default function MessagesPage() {
 
     const handleEditTemplate = () => {
         if (!formName.trim()) {
-            addToast('error', 'Template name is required');
+            addToast('error', t('mkt.msgTemplateNameRequired'));
             return;
         }
         setTemplates(prev =>
@@ -814,7 +821,11 @@ export default function MessagesPage() {
                                             m.recipients[0]
                                         ) : (
                                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                                                <Users size={13} /> {m.recipients.length} recipients
+                                                <Users size={13} />{' '}
+                                                {t('mkt.lblRecipientsCount').replace(
+                                                    '{count}',
+                                                    String(m.recipients.length)
+                                                )}
                                             </span>
                                         )}
                                     </td>
@@ -857,7 +868,7 @@ export default function MessagesPage() {
                         </Button>
                         <Button
                             onClick={() => {
-                                addToast('success', 'Message resent');
+                                addToast('success', t('mkt.msgMessageResent'));
                                 setIsMessageDetailOpen(false);
                             }}
                         >
@@ -1003,7 +1014,7 @@ export default function MessagesPage() {
                                     whiteSpace: 'pre-wrap',
                                 }}
                             >
-                                {selectedMessage.message || 'No message content available.'}
+                                {selectedMessage.message || t('mkt.msgNoMessageContent')}
                             </div>
                         </div>
                     </div>
@@ -1250,7 +1261,7 @@ export default function MessagesPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                     <Input
                         label={t('mkt.lblTemplateName')}
-                        placeholder="e.g. Birthday Greeting"
+                        placeholder={t('mkt.phTemplateName')}
                         value={formName}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormName(e.target.value)}
                     />

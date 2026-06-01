@@ -69,9 +69,9 @@ export default function BranchSettingsPage({ params }: { params: Promise<{ id: s
                 geofence_radius: geoRadius,
                 require_gps: requireGps,
             });
-            addToast('success', 'Geofence settings saved');
+            addToast('success', t('branchSettings.geofenceSaved'));
         } catch {
-            addToast('error', 'Failed to save geofence settings');
+            addToast('error', t('branchSettings.geofenceSaveFailed'));
         } finally {
             setIsSaving(false);
         }
@@ -99,7 +99,7 @@ export default function BranchSettingsPage({ params }: { params: Promise<{ id: s
 
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
-                    <span className={styles.cardTitle}>Financial Settings</span>
+                    <span className={styles.cardTitle}>{t('branchSettings.financialSettings')}</span>
                 </div>
                 <div className={styles.cardBody}>
                     <div className={styles.row}>
@@ -110,8 +110,8 @@ export default function BranchSettingsPage({ params }: { params: Promise<{ id: s
                             <Select
                                 label={t('branchSettings.currency')}
                                 options={[
-                                    { value: 'EGP', label: 'EGP - Egyptian Pound' },
-                                    { value: 'USD', label: 'USD - US Dollar' },
+                                    { value: 'EGP', label: t('branchSettings.currencyEgp') },
+                                    { value: 'USD', label: t('branchSettings.currencyUsd') },
                                 ]}
                                 defaultValue={branch.currency}
                             />
@@ -126,14 +126,14 @@ export default function BranchSettingsPage({ params }: { params: Promise<{ id: s
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
                     <span className={styles.cardTitle}>
-                        <MapPin size={16} style={{ marginRight: 6 }} /> Location & Geofencing
+                        <MapPin size={16} style={{ marginRight: 6 }} /> {t('branchSettings.locationGeofencing')}
                     </span>
                 </div>
                 <div className={styles.cardBody}>
                     <div className={styles.row}>
                         <div className={styles.col}>
                             <Input
-                                label="Latitude"
+                                label={t('branchSettings.latitude')}
                                 type="number"
                                 value={geoLat}
                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setGeoLat(e.target.value)}
@@ -142,7 +142,7 @@ export default function BranchSettingsPage({ params }: { params: Promise<{ id: s
                         </div>
                         <div className={styles.col}>
                             <Input
-                                label="Longitude"
+                                label={t('branchSettings.longitude')}
                                 type="number"
                                 value={geoLng}
                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setGeoLng(e.target.value)}
@@ -157,7 +157,7 @@ export default function BranchSettingsPage({ params }: { params: Promise<{ id: s
                             marginBottom: 'var(--space-3)',
                         }}
                     >
-                        Paste your branch address into Google Maps, right-click the pin, and copy the coordinates.
+                        {t('branchSettings.coordsHint')}
                     </p>
                     <div style={{ marginBottom: 'var(--space-3)' }}>
                         <label
@@ -168,7 +168,7 @@ export default function BranchSettingsPage({ params }: { params: Promise<{ id: s
                                 marginBottom: 'var(--space-2)',
                             }}
                         >
-                            Geofence Radius: <strong>{geoRadius}m</strong>
+                            {t('branchSettings.geofenceRadius')}: <strong>{geoRadius}m</strong>
                         </label>
                         <input
                             type="range"
@@ -201,14 +201,14 @@ export default function BranchSettingsPage({ params }: { params: Promise<{ id: s
                             marginBottom: 'var(--space-3)',
                         }}
                     >
-                        Employees must be within <strong>{geoRadius}m</strong> of{' '}
+                        {t('branchSettings.geofenceMustBe1')} <strong>{geoRadius}m</strong> of{' '}
                         <strong>
                             [{geoLat || '—'}, {geoLng || '—'}]
                         </strong>{' '}
-                        to clock in via the mobile app.
+                        {t('branchSettings.geofenceMustBe2')}
                     </div>
                     <Checkbox
-                        label="Require GPS for clock-in"
+                        label={t('branchSettings.requireGps')}
                         checked={requireGps}
                         onChange={(val: boolean) => setRequireGps(val)}
                     />
@@ -223,7 +223,7 @@ export default function BranchSettingsPage({ params }: { params: Promise<{ id: s
                     </p>
                     <div style={{ marginTop: 'var(--space-4)' }}>
                         <Button onClick={handleSaveGeofence} disabled={isSaving}>
-                            <Save size={16} /> {isSaving ? 'Saving...' : 'Save Geofence Settings'}
+                            <Save size={16} /> {isSaving ? t('common.saving') : t('branchSettings.saveGeofence')}
                         </Button>
                     </div>
                 </div>
@@ -246,11 +246,14 @@ export default function BranchSettingsPage({ params }: { params: Promise<{ id: s
                             <div key={i} className={styles.dayRow}>
                                 <div className={styles.dayName}>{day.day}</div>
                                 <div className={styles.dayHours}>
-                                    <Checkbox label={day.closed ? 'Closed' : 'Open'} checked={!day.closed} />
+                                    <Checkbox
+                                        label={day.closed ? t('branchSettings.closed') : t('branchSettings.openStatus')}
+                                        checked={!day.closed}
+                                    />
                                     {!day.closed && (
                                         <>
                                             <Input type="time" defaultValue={day.open} style={{ width: 120 }} />
-                                            <span>to</span>
+                                            <span>{t('branchSettings.to')}</span>
                                             <Input type="time" defaultValue={day.close} style={{ width: 120 }} />
                                         </>
                                     )}
@@ -289,7 +292,9 @@ export default function BranchSettingsPage({ params }: { params: Promise<{ id: s
                                     <td>
                                         <Badge color="neutral">{room.type}</Badge>
                                     </td>
-                                    <td>{room.capacity} Person(s)</td>
+                                    <td>
+                                        {room.capacity} {t('branchSettings.persons')}
+                                    </td>
                                     <td>
                                         <div style={{ display: 'flex', gap: 8 }}>
                                             <Button variant="ghost" size="sm" iconOnly>
@@ -318,7 +323,11 @@ export default function BranchSettingsPage({ params }: { params: Promise<{ id: s
                     </div>
                     <h1>
                         {branch.name}
-                        <Badge color={branch.status === 'active' ? 'success' : 'neutral'}>{branch.status}</Badge>
+                        <Badge color={branch.status === 'active' ? 'success' : 'neutral'}>
+                            {branch.status === 'active'
+                                ? t('branchSettings.statusActive')
+                                : t('branchSettings.statusInactive')}
+                        </Badge>
                     </h1>
                 </div>
                 <div className={styles.actions}>
@@ -348,26 +357,26 @@ export default function BranchSettingsPage({ params }: { params: Promise<{ id: s
                 <div className={styles.sidePanel}>
                     <div className={styles.card}>
                         <div className={styles.cardHeader}>
-                            <span className={styles.cardTitle}>Branch Stats</span>
+                            <span className={styles.cardTitle}>{t('branchSettings.branchStats')}</span>
                         </div>
                         <div className={styles.cardBody}>
                             <div style={{ marginBottom: 12 }}>
                                 <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
-                                    Total Employees
+                                    {t('branchSettings.totalEmployees')}
                                 </div>
                                 <div style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--font-bold)' }}>12</div>
                             </div>
                             <div style={{ marginBottom: 12 }}>
                                 <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
-                                    Active Bookings
+                                    {t('branchSettings.activeBookings')}
                                 </div>
                                 <div style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--font-bold)' }}>8</div>
                             </div>
                             <div>
                                 <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
-                                    Last Sync
+                                    {t('branchSettings.lastSync')}
                                 </div>
-                                <div style={{ fontSize: 'var(--text-sm)' }}>Just now</div>
+                                <div style={{ fontSize: 'var(--text-sm)' }}>{t('branchSettings.justNow')}</div>
                             </div>
                         </div>
                     </div>

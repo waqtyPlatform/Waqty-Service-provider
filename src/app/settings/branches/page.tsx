@@ -257,7 +257,7 @@ function BranchForm({
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
             <Input
                 label={t('settings.branches.branchName')}
-                placeholder="e.g. Downtown Branch"
+                placeholder={t('settings.branches.namePh')}
                 defaultValue={defaultValues?.name}
             />
             <Input
@@ -267,7 +267,7 @@ function BranchForm({
             />
             <Input
                 label={t('settings.branches.managerName')}
-                placeholder="e.g. Sara Ahmed"
+                placeholder={t('settings.branches.managerPh')}
                 defaultValue={defaultValues?.manager}
             />
 
@@ -299,7 +299,7 @@ function BranchForm({
 
             <Input
                 label={t('settings.branches.fullAddress')}
-                placeholder="e.g. 15 Tahrir Street, Building 3, Floor 1"
+                placeholder={t('settings.branches.addressPh')}
                 defaultValue={defaultValues?.address}
             />
             <Input
@@ -324,7 +324,9 @@ function BranchForm({
                 <Input
                     label={t('settings.branches.branchPassword')}
                     type={showPassword ? 'text' : 'password'}
-                    placeholder={mode === 'edit' ? t('settings.branches.passwordHint') : 'Min. 6 characters'}
+                    placeholder={
+                        mode === 'edit' ? t('settings.branches.passwordHint') : t('settings.branches.passwordMinPh')
+                    }
                 />
                 <button
                     type="button"
@@ -340,7 +342,9 @@ function BranchForm({
                 <Input
                     label={t('settings.branches.confirmPassword')}
                     type={showConfirmPassword ? 'text' : 'password'}
-                    placeholder={mode === 'edit' ? t('settings.branches.passwordHint') : 'Confirm password'}
+                    placeholder={
+                        mode === 'edit' ? t('settings.branches.passwordHint') : t('settings.branches.confirmPasswordPh')
+                    }
                 />
                 <button
                     type="button"
@@ -407,7 +411,7 @@ export default function BranchesPage() {
             } catch {
                 // Revert on failure
                 setBranches(prev => prev.map(b => (b.id === id ? { ...b, status: branch.status } : b)));
-                addToast('error', 'Failed to update branch status');
+                addToast('error', t('settings.branches.statusUpdateFailed'));
             }
         }
     };
@@ -614,14 +618,14 @@ export default function BranchesPage() {
                                         // GAP: BranchForm uses uncontrolled inputs (defaultValue), can't read values
                                         // A proper integration needs controlled form state
                                         // For now we close and show success — actual API create needs form refactor
-                                        addToast('success', 'Branch created successfully');
+                                        addToast('success', t('settings.branches.created'));
                                     } catch (err: unknown) {
                                         const error = err as { message?: string };
-                                        addToast('error', error.message || 'Failed to create branch');
+                                        addToast('error', error.message || t('settings.branches.createFailed'));
                                         return;
                                     }
                                 } else {
-                                    addToast('success', 'Branch created successfully');
+                                    addToast('success', t('settings.branches.created'));
                                 }
                                 setIsAddOpen(false);
                                 setRefreshKey(k => k + 1);
@@ -652,7 +656,7 @@ export default function BranchesPage() {
                             onClick={async () => {
                                 // GAP: same uncontrolled form issue as Add
                                 setIsEditOpen(false);
-                                addToast('success', 'Branch updated successfully');
+                                addToast('success', t('settings.branches.updated'));
                                 if (apiLoaded) setRefreshKey(k => k + 1);
                             }}
                         >
@@ -683,14 +687,14 @@ export default function BranchesPage() {
                                 if (apiLoaded && selectedBranch?.uuid) {
                                     try {
                                         await providerApi.deleteBranch(selectedBranch.uuid);
-                                        addToast('error', 'Branch deleted');
+                                        addToast('error', t('settings.branches.deleted'));
                                         setRefreshKey(k => k + 1);
                                     } catch (err: unknown) {
                                         const error = err as { message?: string };
-                                        addToast('error', error.message || 'Failed to delete branch');
+                                        addToast('error', error.message || t('settings.branches.deleteFailed'));
                                     }
                                 } else {
-                                    addToast('error', 'Branch deleted');
+                                    addToast('error', t('settings.branches.deleted'));
                                 }
                                 setIsDeleteOpen(false);
                             }}
@@ -728,7 +732,7 @@ export default function BranchesPage() {
                         <Input
                             label={t('settings.branches.newPassword')}
                             type={showResetPassword ? 'text' : 'password'}
-                            placeholder="Min. 6 characters"
+                            placeholder={t('settings.branches.passwordMinPh')}
                             value={resetNewPassword}
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setResetNewPassword(e.target.value)}
                         />
@@ -746,7 +750,7 @@ export default function BranchesPage() {
                         <Input
                             label={t('settings.branches.confirmPassword')}
                             type={showResetConfirm ? 'text' : 'password'}
-                            placeholder="Confirm password"
+                            placeholder={t('settings.branches.confirmPasswordPh')}
                             value={resetConfirmPassword}
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                                 setResetConfirmPassword(e.target.value)

@@ -3,9 +3,11 @@
 import { Home, ArrowLeft, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function NotFound() {
     const router = useRouter();
+    const { t } = useTranslation();
 
     return (
         <div
@@ -55,7 +57,7 @@ export default function NotFound() {
                     color: 'var(--text-primary)',
                 }}
             >
-                Page not found
+                {t('notFound.title')}
             </h2>
 
             <p
@@ -66,8 +68,7 @@ export default function NotFound() {
                     lineHeight: 'var(--leading-relaxed)',
                 }}
             >
-                The page you&apos;re looking for doesn&apos;t exist or has been moved. Check the URL or navigate back to
-                the dashboard.
+                {t('notFound.description')}
             </p>
 
             <div style={{ display: 'flex', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
@@ -89,7 +90,7 @@ export default function NotFound() {
                     }}
                 >
                     <ArrowLeft size={16} />
-                    Go back
+                    {t('common.goBack')}
                 </button>
 
                 <Link
@@ -110,7 +111,7 @@ export default function NotFound() {
                     }}
                 >
                     <Home size={16} />
-                    Dashboard
+                    {t('sidebar.dashboard')}
                 </Link>
             </div>
         </div>

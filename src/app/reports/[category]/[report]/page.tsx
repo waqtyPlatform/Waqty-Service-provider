@@ -6,6 +6,7 @@ import { Calendar, Download, Filter, Search, ArrowRight, ArrowUpDown, ChevronLef
 import { Button, Select, Badge, Skeleton } from '@/components/ui';
 import styles from './page.module.css';
 import { useTranslation } from '@/hooks/useTranslation';
+import translations from '@/i18n/translations';
 import { useApiQuery, useApiMutation } from '@/hooks/useApiQuery';
 import { reportApi, type ReportData as ApiReportData, type ReportFilters } from '@/lib/api';
 import {
@@ -103,9 +104,15 @@ const getSalesData = (report: string) => {
 
     if (report === 'daily-revenue') {
         return {
-            title: 'Daily Revenue Report',
+            title: 'rptDynamic.t.dailyRevenue',
             chartType: 'bar' as const,
-            columns: ['Date', 'Transactions', 'Revenue', 'Avg Ticket', 'Status'],
+            columns: [
+                'rptDynamic.col.date',
+                'rptDynamic.col.transactions',
+                'rptDynamic.col.revenue',
+                'rptDynamic.col.avgTicket',
+                'rptDynamic.col.status',
+            ],
             rows: common.rows.map(r => ({
                 ...r,
                 col1: r.date,
@@ -113,16 +120,21 @@ const getSalesData = (report: string) => {
                 col3: `${r.amount} EGP`,
                 col4: `${Math.round(r.amount / r.count)} EGP`,
                 col5: r.status,
-                action: { label: 'View Day', href: r.link },
+                action: { label: 'rptDynamic.act.viewDay', href: r.link },
             })),
             chartData: common.chartData,
         };
     }
     if (report === 'payment-methods') {
         return {
-            title: 'Payment Methods Analysis',
+            title: 'rptDynamic.t.paymentMethods',
             chartType: 'bar' as const,
-            columns: ['Method', 'Transactions', 'Total Amount', '% of Total'],
+            columns: [
+                'rptDynamic.col.method',
+                'rptDynamic.col.transactions',
+                'rptDynamic.col.totalAmount',
+                'rptDynamic.col.pctOfTotal',
+            ],
             rows: [
                 { id: 1, col1: 'Cash', col2: '145', col3: '45,200 EGP', col4: '45%' },
                 { id: 2, col1: 'Credit Card', col2: '110', col3: '38,500 EGP', col4: '38%' },
@@ -139,9 +151,14 @@ const getSalesData = (report: string) => {
     }
     if (report === 'service-revenue') {
         return {
-            title: 'Revenue by Service',
+            title: 'rptDynamic.t.serviceRevenue',
             chartType: 'bar' as const,
-            columns: ['Service Name', 'Category', 'Qty Sold', 'Revenue'],
+            columns: [
+                'rptDynamic.col.serviceName',
+                'rptDynamic.col.category',
+                'rptDynamic.col.qtySold',
+                'rptDynamic.col.revenue',
+            ],
             rows: [
                 { id: 1, col1: 'Hair Cut & Style', col2: 'Hair', col3: '85', col4: '12,750 EGP' },
                 { id: 2, col1: 'Gel Manicure', col2: 'Nails', col3: '65', col4: '9,750 EGP' },
@@ -160,9 +177,14 @@ const getSalesData = (report: string) => {
     }
     if (report === 'tax-report') {
         return {
-            title: 'Tax Report',
+            title: 'rptDynamic.t.taxReport',
             chartType: 'bar' as const,
-            columns: ['Period', 'Gross Revenue', 'Tax (14%)', 'Net Revenue'],
+            columns: [
+                'rptDynamic.col.period',
+                'rptDynamic.col.grossRevenue',
+                'rptDynamic.col.tax14',
+                'rptDynamic.col.netRevenue',
+            ],
             rows: [
                 { id: 1, col1: 'February 2026', col2: '58,000 EGP', col3: '8,120 EGP', col4: '49,880 EGP' },
                 { id: 2, col1: 'January 2026', col2: '55,000 EGP', col3: '7,700 EGP', col4: '47,300 EGP' },
@@ -176,9 +198,15 @@ const getSalesData = (report: string) => {
         };
     }
     return {
-        title: 'Sales Report',
+        title: 'rptDynamic.t.salesReport',
         chartType: 'bar' as const,
-        columns: ['Date', 'Count', 'Amount', 'Avg', 'Status'],
+        columns: [
+            'rptDynamic.col.date',
+            'rptDynamic.col.count',
+            'rptDynamic.col.amount',
+            'rptDynamic.col.avg',
+            'rptDynamic.col.status',
+        ],
         rows: common.rows.map(r => ({
             ...r,
             col1: r.date,
@@ -194,9 +222,14 @@ const getSalesData = (report: string) => {
 const getBookingsData = (report: string) => {
     if (report === 'cancellations') {
         return {
-            title: 'Cancellation Report',
+            title: 'rptDynamic.t.cancellations',
             chartType: 'bar' as const,
-            columns: ['Date', 'Cancelled By', 'Reason', 'Lost Revenue'],
+            columns: [
+                'rptDynamic.col.date',
+                'rptDynamic.col.cancelledBy',
+                'rptDynamic.col.reason',
+                'rptDynamic.col.lostRevenue',
+            ],
             rows: [
                 {
                     id: 1,
@@ -204,7 +237,7 @@ const getBookingsData = (report: string) => {
                     col2: 'Client',
                     col3: 'Sick',
                     col4: '450 EGP',
-                    action: { label: 'View Booking', href: '/bookings/BK-28492' },
+                    action: { label: 'rptDynamic.act.viewBooking', href: '/bookings/BK-28492' },
                 },
                 {
                     id: 2,
@@ -212,7 +245,7 @@ const getBookingsData = (report: string) => {
                     col2: 'Client',
                     col3: 'Schedule Conflict',
                     col4: '300 EGP',
-                    action: { label: 'View Booking', href: '/bookings/BK-28491' },
+                    action: { label: 'rptDynamic.act.viewBooking', href: '/bookings/BK-28491' },
                 },
                 {
                     id: 3,
@@ -220,7 +253,7 @@ const getBookingsData = (report: string) => {
                     col2: 'System',
                     col3: 'No Show',
                     col4: '600 EGP',
-                    action: { label: 'View Booking', href: '/bookings/BK-28490' },
+                    action: { label: 'rptDynamic.act.viewBooking', href: '/bookings/BK-28490' },
                 },
                 {
                     id: 4,
@@ -228,7 +261,7 @@ const getBookingsData = (report: string) => {
                     col2: 'Client',
                     col3: 'Changed Mind',
                     col4: '250 EGP',
-                    action: { label: 'View Booking', href: '/bookings/BK-28489' },
+                    action: { label: 'rptDynamic.act.viewBooking', href: '/bookings/BK-28489' },
                 },
                 {
                     id: 5,
@@ -236,7 +269,7 @@ const getBookingsData = (report: string) => {
                     col2: 'Staff',
                     col3: 'Employee Absent',
                     col4: '500 EGP',
-                    action: { label: 'View Booking', href: '/bookings/BK-28488' },
+                    action: { label: 'rptDynamic.act.viewBooking', href: '/bookings/BK-28488' },
                 },
             ],
             chartData: [
@@ -251,9 +284,15 @@ const getBookingsData = (report: string) => {
     }
     if (report === 'history') {
         return {
-            title: 'Booking History',
+            title: 'rptDynamic.t.bookingHistory',
             chartType: 'none' as const,
-            columns: ['ID', 'Date', 'Client', 'Service', 'Status'],
+            columns: [
+                'rptDynamic.col.id',
+                'rptDynamic.col.date',
+                'rptDynamic.col.client',
+                'rptDynamic.col.service',
+                'rptDynamic.col.status',
+            ],
             rows: [
                 {
                     id: 1,
@@ -262,7 +301,7 @@ const getBookingsData = (report: string) => {
                     col3: 'Fatima Al-Rashid',
                     col4: 'Hair Cut',
                     col5: 'Completed',
-                    action: { label: 'View', href: '/bookings/BK-1001' },
+                    action: { label: 'rptDynamic.act.view', href: '/bookings/BK-1001' },
                 },
                 {
                     id: 2,
@@ -271,7 +310,7 @@ const getBookingsData = (report: string) => {
                     col3: 'Maha Mahmoud',
                     col4: 'Manicure',
                     col5: 'Confirmed',
-                    action: { label: 'View', href: '/bookings/BK-1002' },
+                    action: { label: 'rptDynamic.act.view', href: '/bookings/BK-1002' },
                 },
                 {
                     id: 3,
@@ -280,7 +319,7 @@ const getBookingsData = (report: string) => {
                     col3: 'Layla Ahmed',
                     col4: 'Facial',
                     col5: 'Cancelled',
-                    action: { label: 'View', href: '/bookings/BK-1003' },
+                    action: { label: 'rptDynamic.act.view', href: '/bookings/BK-1003' },
                 },
                 {
                     id: 4,
@@ -289,7 +328,7 @@ const getBookingsData = (report: string) => {
                     col3: 'Nora Salem',
                     col4: 'Massage',
                     col5: 'Completed',
-                    action: { label: 'View', href: '/bookings/BK-1004' },
+                    action: { label: 'rptDynamic.act.view', href: '/bookings/BK-1004' },
                 },
                 {
                     id: 5,
@@ -298,7 +337,7 @@ const getBookingsData = (report: string) => {
                     col3: 'Sara Khalil',
                     col4: 'Laser',
                     col5: 'Completed',
-                    action: { label: 'View', href: '/bookings/BK-1005' },
+                    action: { label: 'rptDynamic.act.view', href: '/bookings/BK-1005' },
                 },
                 {
                     id: 6,
@@ -307,7 +346,7 @@ const getBookingsData = (report: string) => {
                     col3: 'Reem Adel',
                     col4: 'Hair Color',
                     col5: 'Completed',
-                    action: { label: 'View', href: '/bookings/BK-1006' },
+                    action: { label: 'rptDynamic.act.view', href: '/bookings/BK-1006' },
                 },
                 {
                     id: 7,
@@ -316,7 +355,7 @@ const getBookingsData = (report: string) => {
                     col3: 'Huda Farouk',
                     col4: 'Pedicure',
                     col5: 'Completed',
-                    action: { label: 'View', href: '/bookings/BK-1007' },
+                    action: { label: 'rptDynamic.act.view', href: '/bookings/BK-1007' },
                 },
             ],
             chartData: [],
@@ -324,9 +363,15 @@ const getBookingsData = (report: string) => {
     }
     if (report === 'utilization') {
         return {
-            title: 'Room & Resource Utilization',
+            title: 'rptDynamic.t.utilization',
             chartType: 'bar' as const,
-            columns: ['Resource', 'Type', 'Total Hours', 'Used Hours', 'Utilization'],
+            columns: [
+                'rptDynamic.col.resource',
+                'rptDynamic.col.type',
+                'rptDynamic.col.totalHours',
+                'rptDynamic.col.usedHours',
+                'rptDynamic.col.utilization',
+            ],
             rows: [
                 { id: 1, col1: 'Room A — VIP Suite', col2: 'Treatment Room', col3: '176', col4: '152', col5: '86%' },
                 { id: 2, col1: 'Room B — Standard', col2: 'Treatment Room', col3: '176', col4: '141', col5: '80%' },
@@ -347,9 +392,15 @@ const getBookingsData = (report: string) => {
     }
     if (report === 'sources') {
         return {
-            title: 'Online vs Walk-in Bookings',
+            title: 'rptDynamic.t.sources',
             chartType: 'bar' as const,
-            columns: ['Source', 'Bookings', 'Revenue', '% of Total', 'Avg Ticket'],
+            columns: [
+                'rptDynamic.col.source',
+                'rptDynamic.col.bookings',
+                'rptDynamic.col.revenue',
+                'rptDynamic.col.pctOfTotal',
+                'rptDynamic.col.avgTicket',
+            ],
             rows: [
                 { id: 1, col1: 'Online — Website', col2: '320', col3: '68,000 EGP', col4: '38%', col5: '213 EGP' },
                 { id: 2, col1: 'Online — App', col2: '185', col3: '42,500 EGP', col4: '22%', col5: '230 EGP' },
@@ -367,9 +418,15 @@ const getBookingsData = (report: string) => {
         };
     }
     return {
-        title: 'Booking Report',
+        title: 'rptDynamic.t.bookingReport',
         chartType: 'bar' as const,
-        columns: ['Date', 'Total Bookings', 'Completed', 'Cancelled', 'Utilization'],
+        columns: [
+            'rptDynamic.col.date',
+            'rptDynamic.col.totalBookings',
+            'rptDynamic.col.completed',
+            'rptDynamic.col.cancelled',
+            'rptDynamic.col.utilization',
+        ],
         rows: [
             { id: 1, col1: 'Feb 18', col2: '45', col3: '40', col4: '2', col5: '88%' },
             { id: 2, col1: 'Feb 17', col2: '42', col3: '38', col4: '1', col5: '85%' },
@@ -388,9 +445,14 @@ const getBookingsData = (report: string) => {
 const getEmployeesData = (report: string) => {
     if (report === 'commissions') {
         return {
-            title: 'Commission Report',
+            title: 'rptDynamic.t.commissions',
             chartType: 'bar' as const,
-            columns: ['Employee', 'Service Revenue', 'Total Commission', 'Payout Status'],
+            columns: [
+                'rptDynamic.col.employee',
+                'rptDynamic.col.serviceRevenue',
+                'rptDynamic.col.totalCommission',
+                'rptDynamic.col.payoutStatus',
+            ],
             rows: [
                 {
                     id: 1,
@@ -398,7 +460,7 @@ const getEmployeesData = (report: string) => {
                     col2: '24,000 EGP',
                     col3: '2,600 EGP',
                     col4: 'Pending',
-                    action: { label: 'View Profile', href: '/employees/EMP-001' },
+                    action: { label: 'rptDynamic.act.viewProfile', href: '/employees/EMP-001' },
                 },
                 {
                     id: 2,
@@ -406,7 +468,7 @@ const getEmployeesData = (report: string) => {
                     col2: '18,000 EGP',
                     col3: '1,880 EGP',
                     col4: 'Paid',
-                    action: { label: 'View Profile', href: '/employees/EMP-002' },
+                    action: { label: 'rptDynamic.act.viewProfile', href: '/employees/EMP-002' },
                 },
                 {
                     id: 3,
@@ -414,7 +476,7 @@ const getEmployeesData = (report: string) => {
                     col2: '15,000 EGP',
                     col3: '1,650 EGP',
                     col4: 'Pending',
-                    action: { label: 'View Profile', href: '/employees/EMP-003' },
+                    action: { label: 'rptDynamic.act.viewProfile', href: '/employees/EMP-003' },
                 },
             ],
             chartData: [
@@ -426,9 +488,14 @@ const getEmployeesData = (report: string) => {
     }
     if (report === 'sales') {
         return {
-            title: 'Employee Sales Performance',
+            title: 'rptDynamic.t.employeeSales',
             chartType: 'bar' as const,
-            columns: ['Employee', 'Bookings', 'Revenue', 'Avg per Booking'],
+            columns: [
+                'rptDynamic.col.employee',
+                'rptDynamic.col.bookings',
+                'rptDynamic.col.revenue',
+                'rptDynamic.col.avgPerBooking',
+            ],
             rows: [
                 { id: 1, col1: 'Sara Ahmed', col2: '58', col3: '24,000 EGP', col4: '414 EGP' },
                 { id: 2, col1: 'Nora Ali', col2: '44', col3: '18,000 EGP', col4: '409 EGP' },
@@ -445,9 +512,15 @@ const getEmployeesData = (report: string) => {
     }
     if (report === 'attendance') {
         return {
-            title: 'Attendance Report',
+            title: 'rptDynamic.t.attendance',
             chartType: 'none' as const,
-            columns: ['Employee', 'Days Present', 'Days Absent', 'Late Arrivals', 'Utilization'],
+            columns: [
+                'rptDynamic.col.employee',
+                'rptDynamic.col.daysPresent',
+                'rptDynamic.col.daysAbsent',
+                'rptDynamic.col.lateArrivals',
+                'rptDynamic.col.utilization',
+            ],
             rows: [
                 { id: 1, col1: 'Sara Ahmed', col2: '22', col3: '1', col4: '2', col5: '92%' },
                 { id: 2, col1: 'Nora Ali', col2: '20', col3: '3', col4: '1', col5: '85%' },
@@ -457,9 +530,14 @@ const getEmployeesData = (report: string) => {
         };
     }
     return {
-        title: 'Employee Report',
+        title: 'rptDynamic.t.employeeReport',
         chartType: 'bar' as const,
-        columns: ['Employee', 'Rating', 'Reviews', 'Satisfaction'],
+        columns: [
+            'rptDynamic.col.employee',
+            'rptDynamic.col.rating',
+            'rptDynamic.col.reviews',
+            'rptDynamic.col.satisfaction',
+        ],
         rows: [
             { id: 1, col1: 'Sara Ahmed', col2: '4.9', col3: '45', col4: '98%' },
             { id: 2, col1: 'Nora Ali', col2: '4.7', col3: '38', col4: '95%' },
@@ -476,9 +554,15 @@ const getEmployeesData = (report: string) => {
 const getClientsData = (report: string) => {
     if (report === 'top-spenders') {
         return {
-            title: 'Top Spenders',
+            title: 'rptDynamic.t.topSpenders',
             chartType: 'bar' as const,
-            columns: ['Client', 'Total Spent', 'Visits', 'Avg Per Visit', 'Last Visit'],
+            columns: [
+                'rptDynamic.col.client',
+                'rptDynamic.col.totalSpent',
+                'rptDynamic.col.visits',
+                'rptDynamic.col.avgPerVisit',
+                'rptDynamic.col.lastVisit',
+            ],
             rows: [
                 { id: 1, col1: 'Fatima Al-Rashid', col2: '12,500 EGP', col3: '28', col4: '446 EGP', col5: 'Feb 18' },
                 { id: 2, col1: 'Maha Mahmoud', col2: '9,800 EGP', col3: '22', col4: '445 EGP', col5: 'Feb 16' },
@@ -499,9 +583,15 @@ const getClientsData = (report: string) => {
     }
     if (report === 'retention') {
         return {
-            title: 'Client Retention Rate',
+            title: 'rptDynamic.t.retention',
             chartType: 'bar' as const,
-            columns: ['Segment', 'Total Clients', 'Returned', 'Retention Rate', 'Avg Visits'],
+            columns: [
+                'rptDynamic.col.segment',
+                'rptDynamic.col.totalClients',
+                'rptDynamic.col.returned',
+                'rptDynamic.col.retentionRate',
+                'rptDynamic.col.avgVisits',
+            ],
             rows: [
                 { id: 1, col1: 'VIP (10+ visits)', col2: '45', col3: '42', col4: '93%', col5: '18.5' },
                 { id: 2, col1: 'Regular (5-9 visits)', col2: '120', col3: '98', col4: '82%', col5: '6.8' },
@@ -520,9 +610,15 @@ const getClientsData = (report: string) => {
     }
     if (report === 'feedback') {
         return {
-            title: 'Client Feedback & Ratings',
+            title: 'rptDynamic.t.feedback',
             chartType: 'bar' as const,
-            columns: ['Service', 'Avg Rating', 'Reviews', '5-Star %', 'Common Praise'],
+            columns: [
+                'rptDynamic.col.service',
+                'rptDynamic.col.avgRating',
+                'rptDynamic.col.reviews',
+                'rptDynamic.col.fiveStarPct',
+                'rptDynamic.col.commonPraise',
+            ],
             rows: [
                 { id: 1, col1: 'Full Body Massage', col2: '4.9', col3: '52', col4: '88%', col5: 'Relaxing atmosphere' },
                 { id: 2, col1: 'HydraFacial', col2: '4.8', col3: '85', col4: '82%', col5: 'Visible results' },
@@ -548,9 +644,15 @@ const getClientsData = (report: string) => {
     }
     if (report === 'demographics') {
         return {
-            title: 'Client Demographics',
+            title: 'rptDynamic.t.demographics',
             chartType: 'bar' as const,
-            columns: ['Segment', 'Clients', '% of Total', 'Avg Spend', 'Top Service'],
+            columns: [
+                'rptDynamic.col.segment',
+                'rptDynamic.col.clients',
+                'rptDynamic.col.pctOfTotal',
+                'rptDynamic.col.avgSpend',
+                'rptDynamic.col.topService',
+            ],
             rows: [
                 { id: 1, col1: 'Age 18-25', col2: '185', col3: '15%', col4: '280 EGP', col5: 'Gel Manicure' },
                 { id: 2, col1: 'Age 26-35', col2: '420', col3: '34%', col4: '450 EGP', col5: 'HydraFacial' },
@@ -568,9 +670,9 @@ const getClientsData = (report: string) => {
         };
     }
     return {
-        title: 'Client Report',
+        title: 'rptDynamic.t.clientReport',
         chartType: 'none' as const,
-        columns: ['Metric', 'Value', 'Change'],
+        columns: ['rptDynamic.col.metric', 'rptDynamic.col.value', 'rptDynamic.col.change'],
         rows: [
             { id: 1, col1: 'Overall Retention', col2: '78%', col3: '+2%' },
             { id: 2, col1: 'First Visit Return', col2: '62%', col3: '+5%' },
@@ -583,9 +685,15 @@ const getClientsData = (report: string) => {
 const getServicesData = (report: string) => {
     if (report === 'popularity') {
         return {
-            title: 'Service Popularity',
+            title: 'rptDynamic.t.popularity',
             chartType: 'bar' as const,
-            columns: ['Service', 'Category', 'Bookings', 'Revenue', 'Rating'],
+            columns: [
+                'rptDynamic.col.service',
+                'rptDynamic.col.category',
+                'rptDynamic.col.bookings',
+                'rptDynamic.col.revenue',
+                'rptDynamic.col.rating',
+            ],
             rows: [
                 { id: 1, col1: 'HydraFacial', col2: 'Skin', col3: '85', col4: '14,000 EGP', col5: '4.9' },
                 { id: 2, col1: 'Hair Cut & Style', col2: 'Hair', col3: '78', col4: '12,750 EGP', col5: '4.8' },
@@ -606,9 +714,15 @@ const getServicesData = (report: string) => {
     }
     if (report === 'revenue') {
         return {
-            title: 'Revenue per Service',
+            title: 'rptDynamic.t.serviceRevenuePer',
             chartType: 'bar' as const,
-            columns: ['Service', 'Category', 'Qty Sold', 'Revenue', '% of Total'],
+            columns: [
+                'rptDynamic.col.service',
+                'rptDynamic.col.category',
+                'rptDynamic.col.qtySold',
+                'rptDynamic.col.revenue',
+                'rptDynamic.col.pctOfTotal',
+            ],
             rows: [
                 { id: 1, col1: 'Laser Hair Removal', col2: 'Laser', col3: '25', col4: '18,750 EGP', col5: '24%' },
                 { id: 2, col1: 'Full Body Massage', col2: 'Body', col3: '52', col4: '15,000 EGP', col5: '19%' },
@@ -630,9 +744,15 @@ const getServicesData = (report: string) => {
     }
     if (report === 'duration') {
         return {
-            title: 'Service Duration Analysis',
+            title: 'rptDynamic.t.duration',
             chartType: 'bar' as const,
-            columns: ['Service', 'Scheduled Duration', 'Actual Avg', 'Variance', 'On-Time %'],
+            columns: [
+                'rptDynamic.col.service',
+                'rptDynamic.col.scheduledDuration',
+                'rptDynamic.col.actualAvg',
+                'rptDynamic.col.variance',
+                'rptDynamic.col.onTimePct',
+            ],
             rows: [
                 { id: 1, col1: 'Hair Cut & Style', col2: '45 min', col3: '42 min', col4: '-3 min', col5: '92%' },
                 { id: 2, col1: 'HydraFacial', col2: '60 min', col3: '58 min', col4: '-2 min', col5: '88%' },
@@ -653,9 +773,15 @@ const getServicesData = (report: string) => {
     }
     if (report === 'categories') {
         return {
-            title: 'Category Performance',
+            title: 'rptDynamic.t.categories',
             chartType: 'bar' as const,
-            columns: ['Category', 'Services', 'Bookings', 'Revenue', 'Avg Rating'],
+            columns: [
+                'rptDynamic.col.category',
+                'rptDynamic.col.services',
+                'rptDynamic.col.bookings',
+                'rptDynamic.col.revenue',
+                'rptDynamic.col.avgRating',
+            ],
             rows: [
                 { id: 1, col1: 'Hair', col2: '8', col3: '142', col4: '28,500 EGP', col5: '4.8' },
                 { id: 2, col1: 'Skin', col2: '6', col3: '125', col4: '22,000 EGP', col5: '4.8' },
@@ -673,9 +799,9 @@ const getServicesData = (report: string) => {
         };
     }
     return {
-        title: 'Service Report',
+        title: 'rptDynamic.t.serviceReport',
         chartType: 'bar' as const,
-        columns: ['Service', 'Value', 'Change'],
+        columns: ['rptDynamic.col.service', 'rptDynamic.col.value', 'rptDynamic.col.change'],
         rows: [
             { id: 1, col1: 'HydraFacial', col2: '14,000 EGP', col3: '+8%' },
             { id: 2, col1: 'Hair Cut & Style', col2: '12,750 EGP', col3: '+5%' },
@@ -692,9 +818,15 @@ const getServicesData = (report: string) => {
 const getCustomData = (report: string) => {
     if (report === 'revenue-bookings') {
         return {
-            title: 'Revenue vs Bookings Correlation',
+            title: 'rptDynamic.t.revenueBookings',
             chartType: 'bar' as const,
-            columns: ['Period', 'Bookings', 'Revenue', 'Revenue/Booking', 'Change'],
+            columns: [
+                'rptDynamic.col.period',
+                'rptDynamic.col.bookings',
+                'rptDynamic.col.revenue',
+                'rptDynamic.col.revenuePerBooking',
+                'rptDynamic.col.change',
+            ],
             rows: [
                 { id: 1, col1: 'February 2026', col2: '270', col3: '58,000 EGP', col4: '215 EGP', col5: '+12%' },
                 { id: 2, col1: 'January 2026', col2: '235', col3: '55,000 EGP', col4: '234 EGP', col5: '+8%' },
@@ -713,9 +845,15 @@ const getCustomData = (report: string) => {
     }
     if (report === 'employee-efficiency') {
         return {
-            title: 'Employee Efficiency Analysis',
+            title: 'rptDynamic.t.employeeEfficiency',
             chartType: 'bar' as const,
-            columns: ['Employee', 'Hours Worked', 'Revenue Generated', 'Revenue/Hour', 'Clients Served'],
+            columns: [
+                'rptDynamic.col.employee',
+                'rptDynamic.col.hoursWorked',
+                'rptDynamic.col.revenueGenerated',
+                'rptDynamic.col.revenuePerHour',
+                'rptDynamic.col.clientsServed',
+            ],
             rows: [
                 { id: 1, col1: 'Sara Ahmed', col2: '168', col3: '24,000 EGP', col4: '143 EGP', col5: '58' },
                 { id: 2, col1: 'Nora Ali', col2: '160', col3: '18,000 EGP', col4: '113 EGP', col5: '44' },
@@ -734,9 +872,15 @@ const getCustomData = (report: string) => {
     }
     if (report === 'client-ltv') {
         return {
-            title: 'Client Lifetime Value',
+            title: 'rptDynamic.t.clientLtv',
             chartType: 'bar' as const,
-            columns: ['Segment', 'Clients', 'Avg LTV', 'Total Value', 'Avg Visits'],
+            columns: [
+                'rptDynamic.col.segment',
+                'rptDynamic.col.clients',
+                'rptDynamic.col.avgLtv',
+                'rptDynamic.col.totalValue',
+                'rptDynamic.col.avgVisits',
+            ],
             rows: [
                 { id: 1, col1: 'Platinum (>10K)', col2: '25', col3: '14,200 EGP', col4: '355,000 EGP', col5: '32' },
                 { id: 2, col1: 'Gold (5K-10K)', col2: '68', col3: '7,500 EGP', col4: '510,000 EGP', col5: '18' },
@@ -755,9 +899,15 @@ const getCustomData = (report: string) => {
     }
     if (report === 'monthly-summary') {
         return {
-            title: 'Monthly Executive Summary',
+            title: 'rptDynamic.t.monthlySummary',
             chartType: 'bar' as const,
-            columns: ['Metric', 'This Month', 'Last Month', 'Change', 'Target'],
+            columns: [
+                'rptDynamic.col.metric',
+                'rptDynamic.col.thisMonth',
+                'rptDynamic.col.lastMonth',
+                'rptDynamic.col.change',
+                'rptDynamic.col.target',
+            ],
             rows: [
                 {
                     id: 1,
@@ -792,7 +942,12 @@ const getCustomData = (report: string) => {
     return {
         title: report.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
         chartType: 'bar' as const,
-        columns: ['Metric', 'Current', 'Previous', 'Change'],
+        columns: [
+            'rptDynamic.col.metric',
+            'rptDynamic.col.current',
+            'rptDynamic.col.previous',
+            'rptDynamic.col.change',
+        ],
         rows: [
             { id: 1, col1: 'Revenue', col2: '58,000 EGP', col3: '51,500 EGP', col4: '+12.6%' },
             { id: 2, col1: 'Bookings', col2: '270', col3: '235', col4: '+14.9%' },
@@ -818,7 +973,12 @@ const generateData = (category: string, report: string): ReportData => {
     return {
         title: `${report.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`,
         chartType: 'bar',
-        columns: ['Metric', 'Current', 'Previous', 'Change'],
+        columns: [
+            'rptDynamic.col.metric',
+            'rptDynamic.col.current',
+            'rptDynamic.col.previous',
+            'rptDynamic.col.change',
+        ],
         rows: [
             { id: 1, col1: 'Revenue', col2: '58,000 EGP', col3: '51,500 EGP', col4: '+12.6%' },
             { id: 2, col1: 'Bookings', col2: '270', col3: '235', col4: '+14.9%' },
@@ -914,7 +1074,12 @@ export default function DynamicReportPage({ params }: { params: Promise<{ catego
 
     const fallbackApiData: ApiReportData = {
         labels: fallbackData.chartData.map(d => d.name),
-        datasets: [{ label: fallbackData.title, data: fallbackData.chartData.map(d => d.value) }],
+        datasets: [
+            {
+                label: fallbackData.title.startsWith('rptDynamic.t.') ? t(fallbackData.title) : fallbackData.title,
+                data: fallbackData.chartData.map(d => d.value),
+            },
+        ],
         summary: {},
     };
 
@@ -986,7 +1151,26 @@ export default function DynamicReportPage({ params }: { params: Promise<{ catego
         return rows;
     }, [data.rows, search, sortCol, sortDir]);
 
-    const breadcrumb = `${category.charAt(0).toUpperCase() + category.slice(1)} › ${report.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`;
+    /* Translate a title that may be an i18n key (rptDynamic.t.*) or a slug-derived
+       fallback string; pass-through when it is not a known key. */
+    const titleText = data.title.startsWith('rptDynamic.t.') ? t(data.title) : data.title;
+
+    /* Map a status DATA identifier to its localized display label (logic keeps the
+       raw identifier; only the badge text is localized). */
+    const statusLabelMap: Record<string, string> = {
+        Completed: 'bk.stCompleted',
+        Confirmed: 'bk.stConfirmed',
+        Cancelled: 'bk.stCancelled',
+        Pending: 'bk.stPending',
+        Paid: 'bk.payPaid',
+        OK: 'rptDynamic.statusOk',
+    };
+    const statusLabel = (val: string) => (statusLabelMap[val] ? t(statusLabelMap[val]) : val);
+
+    /* Localized breadcrumb: localized category name › localized (or slug-derived) report title */
+    const catKey = `rptDynamic.cat.${category}`;
+    const catLabel = translations[catKey] ? t(catKey) : category.charAt(0).toUpperCase() + category.slice(1);
+    const breadcrumb = `${catLabel} › ${titleText}`;
 
     return (
         <div className={styles.page} style={{ direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
@@ -1007,7 +1191,7 @@ export default function DynamicReportPage({ params }: { params: Promise<{ catego
                     >
                         <ChevronLeft size={16} /> {t('rptDynamic.backToReports')}
                     </Link>
-                    <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' }}>{data.title}</h1>
+                    <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' }}>{titleText}</h1>
                     <div className={styles.subtitle}>{breadcrumb}</div>
                 </div>
                 <div className={styles.actions}>
@@ -1030,10 +1214,10 @@ export default function DynamicReportPage({ params }: { params: Promise<{ catego
                         value={dateRange}
                         onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setDateRange(e.target.value)}
                         options={[
-                            { value: '7d', label: 'Last 7 Days' },
-                            { value: '30d', label: 'Last 30 Days' },
-                            { value: 'tm', label: 'This Month' },
-                            { value: '90d', label: 'Last Quarter' },
+                            { value: '7d', label: t('rptDynamic.last7Days') },
+                            { value: '30d', label: t('rptDynamic.last30Days') },
+                            { value: 'tm', label: t('rptDynamic.thisMonth') },
+                            { value: '90d', label: t('rptDynamic.lastQuarter') },
                         ]}
                         style={{ width: 150 }}
                     />
@@ -1044,10 +1228,10 @@ export default function DynamicReportPage({ params }: { params: Promise<{ catego
                         value={branch}
                         onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setBranch(e.target.value)}
                         options={[
-                            { value: 'all', label: 'All Branches' },
-                            { value: 'downtown', label: 'Downtown' },
-                            { value: 'mall', label: 'Mall of Arabia' },
-                            { value: 'newcairo', label: 'New Cairo' },
+                            { value: 'all', label: t('rptDynamic.allBranches') },
+                            { value: 'downtown', label: t('rptDynamic.downtown') },
+                            { value: 'mall', label: t('rptDynamic.mall') },
+                            { value: 'newcairo', label: t('rptDynamic.newCairo') },
                         ]}
                         style={{ width: 150 }}
                     />
@@ -1173,9 +1357,9 @@ export default function DynamicReportPage({ params }: { params: Promise<{ catego
             {/* Data Table */}
             <div className={styles.tableCard}>
                 <div className={styles.tableHeader}>
-                    <span className={styles.tableTitle}>Detailed Data</span>
+                    <span className={styles.tableTitle}>{t('rptDynamic.detailedData')}</span>
                     <Badge color="neutral" size="sm">
-                        {filteredRows.length} {filteredRows.length === 1 ? 'row' : 'rows'}
+                        {filteredRows.length} {filteredRows.length === 1 ? t('rptDynamic.row') : t('rptDynamic.rows')}
                     </Badge>
                 </div>
                 {loading ? (
@@ -1192,13 +1376,15 @@ export default function DynamicReportPage({ params }: { params: Promise<{ catego
                                             onClick={() => handleSort(i)}
                                         >
                                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                                                {col}
+                                                {col.startsWith('rptDynamic.col.') ? t(col) : col}
                                                 <ArrowUpDown size={12} style={{ opacity: sortCol === i ? 1 : 0.3 }} />
                                             </span>
                                         </th>
                                     ))}
                                     {data.rows.some((r: ReportRow) => r.action) && (
-                                        <th style={tableStyles.th as React.CSSProperties}>Action</th>
+                                        <th style={tableStyles.th as React.CSSProperties}>
+                                            {t('rptDynamic.colAction')}
+                                        </th>
                                     )}
                                 </tr>
                             </thead>
@@ -1262,7 +1448,7 @@ export default function DynamicReportPage({ params }: { params: Promise<{ catego
                                                                 }
                                                                 size="sm"
                                                             >
-                                                                {val}
+                                                                {statusLabel(val as string)}
                                                             </Badge>
                                                         ) : (
                                                             (val ?? '—')
@@ -1285,7 +1471,10 @@ export default function DynamicReportPage({ params }: { params: Promise<{ catego
                                                                 textDecoration: 'none',
                                                             }}
                                                         >
-                                                            {row.action.label} <ArrowRight size={14} />
+                                                            {row.action.label.startsWith('rptDynamic.act.')
+                                                                ? t(row.action.label)
+                                                                : row.action.label}{' '}
+                                                            <ArrowRight size={14} />
                                                         </Link>
                                                     )}
                                                 </td>

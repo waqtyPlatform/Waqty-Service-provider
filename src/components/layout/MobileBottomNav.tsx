@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, CalendarDays, Users, ShoppingBag, Menu } from 'lucide-react';
 import { useSidebar } from './SidebarContext';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface NavItem {
     label: string;
@@ -13,16 +14,17 @@ interface NavItem {
     matchPrefix?: string;
 }
 
-const NAV_ITEMS: NavItem[] = [
-    { label: 'Home', href: '/', icon: <LayoutDashboard size={20} /> },
-    { label: 'Bookings', href: '/bookings', icon: <CalendarDays size={20} />, matchPrefix: '/bookings' },
-    { label: 'Sales', href: '/sales', icon: <ShoppingBag size={20} />, matchPrefix: '/sales' },
-    { label: 'Clients', href: '/customers', icon: <Users size={20} />, matchPrefix: '/customers' },
-];
-
 function MobileBottomNavInner() {
     const pathname = usePathname();
     const { setMobileOpen } = useSidebar();
+    const { t } = useTranslation();
+
+    const NAV_ITEMS: NavItem[] = [
+        { label: t('nav.home'), href: '/', icon: <LayoutDashboard size={20} /> },
+        { label: t('nav.bookings'), href: '/bookings', icon: <CalendarDays size={20} />, matchPrefix: '/bookings' },
+        { label: t('nav.sales'), href: '/sales', icon: <ShoppingBag size={20} />, matchPrefix: '/sales' },
+        { label: t('nav.clients'), href: '/customers', icon: <Users size={20} />, matchPrefix: '/customers' },
+    ];
 
     const isActive = (item: NavItem) => {
         if (item.href === '/') return pathname === '/';
@@ -30,7 +32,7 @@ function MobileBottomNavInner() {
     };
 
     return (
-        <nav className="mobileBottomNav" aria-label="Mobile navigation">
+        <nav className="mobileBottomNav" aria-label={t('nav.mobileNavigation')}>
             {NAV_ITEMS.map(item => (
                 <Link
                     key={item.href}
@@ -73,10 +75,10 @@ function MobileBottomNavInner() {
                     border: 'none',
                     cursor: 'pointer',
                 }}
-                aria-label="Open full menu"
+                aria-label={t('nav.openFullMenu')}
             >
                 <Menu size={20} />
-                <span>More</span>
+                <span>{t('nav.more')}</span>
             </button>
         </nav>
     );

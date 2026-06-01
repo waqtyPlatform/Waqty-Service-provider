@@ -29,6 +29,7 @@ import {
     Lock,
     Wallet,
 } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface CommandItem {
     id: string;
@@ -39,212 +40,255 @@ interface CommandItem {
     keywords?: string[];
 }
 
-const COMMANDS: CommandItem[] = [
-    // ── Navigation ──
-    { id: 'dashboard', label: 'Dashboard', href: '/', icon: <LayoutDashboard size={16} />, group: 'Navigation' },
-    {
-        id: 'bookings-calendar',
-        label: 'Bookings Calendar',
-        href: '/bookings',
-        icon: <CalendarDays size={16} />,
-        group: 'Navigation',
-        keywords: ['appointments', 'schedule'],
-    },
-    {
-        id: 'bookings-list',
-        label: 'Bookings List',
-        href: '/bookings/list',
-        icon: <CalendarDays size={16} />,
-        group: 'Navigation',
-    },
-    {
-        id: 'customers',
-        label: 'Customers',
-        href: '/customers',
-        icon: <Users size={16} />,
-        group: 'Navigation',
-        keywords: ['clients', 'patients'],
-    },
-    {
-        id: 'employees',
-        label: 'Employees',
-        href: '/employees',
-        icon: <UserCog size={16} />,
-        group: 'Navigation',
-        keywords: ['staff', 'team'],
-    },
-    { id: 'sales', label: 'Sales / POS', href: '/sales', icon: <ShoppingBag size={16} />, group: 'Navigation' },
-    {
-        id: 'transactions',
-        label: 'Transactions',
-        href: '/transactions',
-        icon: <Receipt size={16} />,
-        group: 'Navigation',
-    },
-    { id: 'expenses', label: 'Expenses', href: '/expenses', icon: <Wallet size={16} />, group: 'Navigation' },
-    { id: 'returns', label: 'Returns', href: '/returns', icon: <RotateCcw size={16} />, group: 'Navigation' },
-    { id: 'marketing', label: 'Marketing', href: '/marketing', icon: <Megaphone size={16} />, group: 'Navigation' },
-    { id: 'reports', label: 'Reports', href: '/reports', icon: <BarChart3 size={16} />, group: 'Navigation' },
-
-    // ── Quick Actions ──
-    {
-        id: 'new-booking',
-        label: 'New Booking',
-        href: '/bookings/new',
-        icon: <Plus size={16} />,
-        group: 'Quick Actions',
-        keywords: ['create appointment'],
-    },
-    {
-        id: 'new-service',
-        label: 'Add New Service',
-        href: '/settings/services/new',
-        icon: <Plus size={16} />,
-        group: 'Quick Actions',
-    },
-    {
-        id: 'print-bookings',
-        label: 'Print Bookings',
-        href: '/bookings/print',
-        icon: <FileText size={16} />,
-        group: 'Quick Actions',
-    },
-
-    // ── Employee Management ──
-    {
-        id: 'payroll',
-        label: 'Payroll',
-        href: '/employees/payroll',
-        icon: <CreditCard size={16} />,
-        group: 'Employees',
-        keywords: ['salary', 'wages'],
-    },
-    {
-        id: 'attendance',
-        label: 'Attendance',
-        href: '/employees/attendance',
-        icon: <Clock size={16} />,
-        group: 'Employees',
-    },
-    {
-        id: 'schedule',
-        label: 'Employee Schedule',
-        href: '/employees/schedule',
-        icon: <CalendarDays size={16} />,
-        group: 'Employees',
-        keywords: ['shifts', 'roster'],
-    },
-    {
-        id: 'performance',
-        label: 'Performance',
-        href: '/employees/performance',
-        icon: <Target size={16} />,
-        group: 'Employees',
-    },
-    {
-        id: 'commissions',
-        label: 'Commissions',
-        href: '/employees/commissions',
-        icon: <CreditCard size={16} />,
-        group: 'Employees',
-    },
-    {
-        id: 'deductions',
-        label: 'Deductions',
-        href: '/employees/deductions',
-        icon: <CreditCard size={16} />,
-        group: 'Employees',
-    },
-    {
-        id: 'permissions',
-        label: 'Permissions',
-        href: '/employees/permissions',
-        icon: <Shield size={16} />,
-        group: 'Employees',
-    },
-
-    // ── Transactions ──
-    {
-        id: 'cash-sales',
-        label: 'Cash Sales',
-        href: '/transactions/cash-sales',
-        icon: <Receipt size={16} />,
-        group: 'Transactions',
-    },
-    {
-        id: 'daily-settlements',
-        label: 'Daily Settlements',
-        href: '/transactions/dailies',
-        icon: <Receipt size={16} />,
-        group: 'Transactions',
-    },
-    {
-        id: 'petty-cash',
-        label: 'Petty Cash',
-        href: '/transactions/petty-cash',
-        icon: <Wallet size={16} />,
-        group: 'Transactions',
-    },
-
-    // ── Settings ──
-    { id: 'settings', label: 'Settings', href: '/settings', icon: <Settings size={16} />, group: 'Settings' },
-    {
-        id: 'settings-branches',
-        label: 'Branch Settings',
-        href: '/settings/branches',
-        icon: <Building2 size={16} />,
-        group: 'Settings',
-    },
-    {
-        id: 'settings-appearance',
-        label: 'Appearance',
-        href: '/settings/appearance',
-        icon: <Palette size={16} />,
-        group: 'Settings',
-        keywords: ['theme', 'branding'],
-    },
-    {
-        id: 'settings-services',
-        label: 'Service Catalog',
-        href: '/settings/services',
-        icon: <ShoppingBag size={16} />,
-        group: 'Settings',
-    },
-    {
-        id: 'settings-notifications',
-        label: 'Notifications',
-        href: '/settings/notifications',
-        icon: <Bell size={16} />,
-        group: 'Settings',
-    },
-    {
-        id: 'settings-localization',
-        label: 'Localization',
-        href: '/settings/localization',
-        icon: <Globe size={16} />,
-        group: 'Settings',
-        keywords: ['language', 'arabic'],
-    },
-    {
-        id: 'settings-data',
-        label: 'Data Management',
-        href: '/settings/data',
-        icon: <Database size={16} />,
-        group: 'Settings',
-        keywords: ['import', 'export'],
-    },
-    {
-        id: 'settings-security',
-        label: 'Security',
-        href: '/settings/security',
-        icon: <Lock size={16} />,
-        group: 'Settings',
-    },
-];
-
 export default function CommandPalette() {
     const [open, setOpen] = useState(false);
     const router = useRouter();
+    const { t } = useTranslation();
+
+    const COMMANDS: CommandItem[] = [
+        // ── Navigation ──
+        {
+            id: 'dashboard',
+            label: t('cmd.dashboard'),
+            href: '/',
+            icon: <LayoutDashboard size={16} />,
+            group: t('cmd.groupNavigation'),
+        },
+        {
+            id: 'bookings-calendar',
+            label: t('cmd.bookingsCalendar'),
+            href: '/bookings',
+            icon: <CalendarDays size={16} />,
+            group: t('cmd.groupNavigation'),
+            keywords: ['appointments', 'schedule'],
+        },
+        {
+            id: 'bookings-list',
+            label: t('cmd.bookingsList'),
+            href: '/bookings/list',
+            icon: <CalendarDays size={16} />,
+            group: t('cmd.groupNavigation'),
+        },
+        {
+            id: 'customers',
+            label: t('cmd.customers'),
+            href: '/customers',
+            icon: <Users size={16} />,
+            group: t('cmd.groupNavigation'),
+            keywords: ['clients', 'patients'],
+        },
+        {
+            id: 'employees',
+            label: t('cmd.employees'),
+            href: '/employees',
+            icon: <UserCog size={16} />,
+            group: t('cmd.groupNavigation'),
+            keywords: ['staff', 'team'],
+        },
+        {
+            id: 'sales',
+            label: t('cmd.salesPos'),
+            href: '/sales',
+            icon: <ShoppingBag size={16} />,
+            group: t('cmd.groupNavigation'),
+        },
+        {
+            id: 'transactions',
+            label: t('cmd.transactions'),
+            href: '/transactions',
+            icon: <Receipt size={16} />,
+            group: t('cmd.groupNavigation'),
+        },
+        {
+            id: 'expenses',
+            label: t('cmd.expenses'),
+            href: '/expenses',
+            icon: <Wallet size={16} />,
+            group: t('cmd.groupNavigation'),
+        },
+        {
+            id: 'returns',
+            label: t('cmd.returns'),
+            href: '/returns',
+            icon: <RotateCcw size={16} />,
+            group: t('cmd.groupNavigation'),
+        },
+        {
+            id: 'marketing',
+            label: t('cmd.marketing'),
+            href: '/marketing',
+            icon: <Megaphone size={16} />,
+            group: t('cmd.groupNavigation'),
+        },
+        {
+            id: 'reports',
+            label: t('cmd.reports'),
+            href: '/reports',
+            icon: <BarChart3 size={16} />,
+            group: t('cmd.groupNavigation'),
+        },
+
+        // ── Quick Actions ──
+        {
+            id: 'new-booking',
+            label: t('cmd.newBooking'),
+            href: '/bookings/new',
+            icon: <Plus size={16} />,
+            group: t('cmd.groupQuickActions'),
+            keywords: ['create appointment'],
+        },
+        {
+            id: 'new-service',
+            label: t('cmd.addNewService'),
+            href: '/settings/services/new',
+            icon: <Plus size={16} />,
+            group: t('cmd.groupQuickActions'),
+        },
+        {
+            id: 'print-bookings',
+            label: t('cmd.printBookings'),
+            href: '/bookings/print',
+            icon: <FileText size={16} />,
+            group: t('cmd.groupQuickActions'),
+        },
+
+        // ── Employee Management ──
+        {
+            id: 'payroll',
+            label: t('cmd.payroll'),
+            href: '/employees/payroll',
+            icon: <CreditCard size={16} />,
+            group: t('cmd.groupEmployees'),
+            keywords: ['salary', 'wages'],
+        },
+        {
+            id: 'attendance',
+            label: t('cmd.attendance'),
+            href: '/employees/attendance',
+            icon: <Clock size={16} />,
+            group: t('cmd.groupEmployees'),
+        },
+        {
+            id: 'schedule',
+            label: t('cmd.employeeSchedule'),
+            href: '/employees/schedule',
+            icon: <CalendarDays size={16} />,
+            group: t('cmd.groupEmployees'),
+            keywords: ['shifts', 'roster'],
+        },
+        {
+            id: 'performance',
+            label: t('cmd.performance'),
+            href: '/employees/performance',
+            icon: <Target size={16} />,
+            group: t('cmd.groupEmployees'),
+        },
+        {
+            id: 'commissions',
+            label: t('cmd.commissions'),
+            href: '/employees/commissions',
+            icon: <CreditCard size={16} />,
+            group: t('cmd.groupEmployees'),
+        },
+        {
+            id: 'deductions',
+            label: t('cmd.deductions'),
+            href: '/employees/deductions',
+            icon: <CreditCard size={16} />,
+            group: t('cmd.groupEmployees'),
+        },
+        {
+            id: 'permissions',
+            label: t('cmd.permissions'),
+            href: '/employees/permissions',
+            icon: <Shield size={16} />,
+            group: t('cmd.groupEmployees'),
+        },
+
+        // ── Transactions ──
+        {
+            id: 'cash-sales',
+            label: t('cmd.cashSales'),
+            href: '/transactions/cash-sales',
+            icon: <Receipt size={16} />,
+            group: t('cmd.groupTransactions'),
+        },
+        {
+            id: 'daily-settlements',
+            label: t('cmd.dailySettlements'),
+            href: '/transactions/dailies',
+            icon: <Receipt size={16} />,
+            group: t('cmd.groupTransactions'),
+        },
+        {
+            id: 'petty-cash',
+            label: t('cmd.pettyCash'),
+            href: '/transactions/petty-cash',
+            icon: <Wallet size={16} />,
+            group: t('cmd.groupTransactions'),
+        },
+
+        // ── Settings ──
+        {
+            id: 'settings',
+            label: t('cmd.settings'),
+            href: '/settings',
+            icon: <Settings size={16} />,
+            group: t('cmd.groupSettings'),
+        },
+        {
+            id: 'settings-branches',
+            label: t('cmd.branchSettings'),
+            href: '/settings/branches',
+            icon: <Building2 size={16} />,
+            group: t('cmd.groupSettings'),
+        },
+        {
+            id: 'settings-appearance',
+            label: t('cmd.appearance'),
+            href: '/settings/appearance',
+            icon: <Palette size={16} />,
+            group: t('cmd.groupSettings'),
+            keywords: ['theme', 'branding'],
+        },
+        {
+            id: 'settings-services',
+            label: t('cmd.serviceCatalog'),
+            href: '/settings/services',
+            icon: <ShoppingBag size={16} />,
+            group: t('cmd.groupSettings'),
+        },
+        {
+            id: 'settings-notifications',
+            label: t('cmd.notifications'),
+            href: '/settings/notifications',
+            icon: <Bell size={16} />,
+            group: t('cmd.groupSettings'),
+        },
+        {
+            id: 'settings-localization',
+            label: t('cmd.localization'),
+            href: '/settings/localization',
+            icon: <Globe size={16} />,
+            group: t('cmd.groupSettings'),
+            keywords: ['language', 'arabic'],
+        },
+        {
+            id: 'settings-data',
+            label: t('cmd.dataManagement'),
+            href: '/settings/data',
+            icon: <Database size={16} />,
+            group: t('cmd.groupSettings'),
+            keywords: ['import', 'export'],
+        },
+        {
+            id: 'settings-security',
+            label: t('cmd.security'),
+            href: '/settings/security',
+            icon: <Lock size={16} />,
+            group: t('cmd.groupSettings'),
+        },
+    ];
 
     // Toggle with Ctrl+K
     useEffect(() => {
@@ -313,7 +357,7 @@ export default function CommandPalette() {
                         boxShadow: 'var(--shadow-xl)',
                         overflow: 'hidden',
                     }}
-                    label="Global Search"
+                    label={t('cmd.label')}
                 >
                     {/* Search Input */}
                     <div
@@ -327,7 +371,7 @@ export default function CommandPalette() {
                     >
                         <Search size={18} style={{ color: 'var(--text-tertiary)', flexShrink: 0 }} />
                         <Command.Input
-                            placeholder="Search pages, actions, settings..."
+                            placeholder={t('cmd.searchPlaceholder')}
                             style={{
                                 flex: 1,
                                 border: 'none',
@@ -368,7 +412,7 @@ export default function CommandPalette() {
                                 color: 'var(--text-tertiary)',
                             }}
                         >
-                            No results found
+                            {t('cmd.noResults')}
                         </Command.Empty>
 
                         {Object.entries(groups).map(([group, items]) => (
@@ -417,9 +461,9 @@ export default function CommandPalette() {
                             color: 'var(--text-tertiary)',
                         }}
                     >
-                        <span>↑↓ Navigate</span>
-                        <span>↵ Open</span>
-                        <span>ESC Close</span>
+                        <span>↑↓ {t('cmd.footerNavigate')}</span>
+                        <span>↵ {t('cmd.footerOpen')}</span>
+                        <span>ESC {t('cmd.footerClose')}</span>
                     </div>
                 </Command>
             </div>

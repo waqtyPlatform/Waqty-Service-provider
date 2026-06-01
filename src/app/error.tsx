@@ -3,8 +3,10 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { RefreshCw, Home, AlertTriangle } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+    const { t } = useTranslation();
     useEffect(() => {
         console.error('[Page Error]', error);
     }, [error]);
@@ -45,7 +47,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
                     color: 'var(--text-primary)',
                 }}
             >
-                Oops! Something went wrong
+                {t('error.title')}
             </h2>
 
             <p
@@ -56,8 +58,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
                     lineHeight: 'var(--leading-relaxed)',
                 }}
             >
-                We encountered an unexpected error while loading this page. You can try again or go back to the
-                dashboard.
+                {t('error.description')}
             </p>
 
             {error?.digest && (
@@ -91,7 +92,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
                     }}
                 >
                     <RefreshCw size={16} />
-                    Try again
+                    {t('error.tryAgain')}
                 </button>
 
                 <Link
@@ -112,7 +113,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
                     }}
                 >
                     <Home size={16} />
-                    Dashboard
+                    {t('sidebar.dashboard')}
                 </Link>
             </div>
         </div>

@@ -605,7 +605,7 @@ export default function AttendancePage() {
                                                             <button
                                                                 style={s.btnIcon}
                                                                 onClick={() => openEdit(row)}
-                                                                title="Edit Record"
+                                                                title={t('attendance.editRecordTooltip')}
                                                             >
                                                                 <Edit size={14} />
                                                             </button>
@@ -615,7 +615,7 @@ export default function AttendancePage() {
                                                                     setSelectedRecord(row);
                                                                     setIsDeleteOpen(true);
                                                                 }}
-                                                                title="Delete Record"
+                                                                title={t('attendance.deleteRecordTooltip')}
                                                             >
                                                                 <Trash2 size={14} />
                                                             </button>

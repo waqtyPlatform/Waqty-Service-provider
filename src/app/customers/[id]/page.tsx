@@ -104,14 +104,16 @@ const fallbackClient = {
     },
 };
 
-// Task 07: Customer preference tags
+// Task 07: Customer preference tags. `key` drives the i18n label + colour; the
+// stored preference value is the key so display can be localized without breaking
+// the toggle/equality logic.
 const PRESET_PREFERENCES = [
-    { label: 'Prefers morning slots', category: 'scheduling' },
-    { label: 'Prefers female staff', category: 'scheduling' },
-    { label: 'Sensitive scalp', category: 'service' },
-    { label: 'Quiet service preferred', category: 'service' },
-    { label: 'Latex allergy', category: 'health' },
-    { label: 'Requires wheelchair access', category: 'health' },
+    { key: 'prefMorningSlots', category: 'scheduling' },
+    { key: 'prefFemaleStaff', category: 'scheduling' },
+    { key: 'prefSensitiveScalp', category: 'service' },
+    { key: 'prefQuietService', category: 'service' },
+    { key: 'prefLatexAllergy', category: 'health' },
+    { key: 'prefWheelchair', category: 'health' },
 ];
 const PREF_COLORS: Record<string, { bg: string; color: string }> = {
     health: { bg: '#fee2e2', color: '#b91c1c' },
@@ -324,11 +326,16 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [apiStaffNotes]);
 
+    // Values are preset keys (e.g. 'prefSensitiveScalp') or raw custom strings.
     const [preferences, setPreferences] = useState<string[]>([
-        'Sensitive scalp',
-        'Latex allergy',
-        'Prefers morning slots',
+        'prefSensitiveScalp',
+        'prefLatexAllergy',
+        'prefMorningSlots',
     ]);
+    // A preference that matches a preset key gets a localized label; custom text
+    // is rendered verbatim.
+    const prefLabel = (pref: string) =>
+        PRESET_PREFERENCES.some(p => p.key === pref) ? t(`custProfile.${pref}`) : pref;
     const [showPrefPopover, setShowPrefPopover] = useState(false);
     const [customPref, setCustomPref] = useState('');
 
@@ -429,13 +436,17 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                             >
                                 {currentMedical.conditions.length > 0 && (
                                     <div style={{ fontSize: 'var(--text-sm)' }}>
-                                        <strong style={{ color: 'var(--text-secondary)' }}>Conditions:</strong>{' '}
+                                        <strong style={{ color: 'var(--text-secondary)' }}>
+                                            {t('custProfile.conditionsLabel')}
+                                        </strong>{' '}
                                         {currentMedical.conditions.join(', ')}
                                     </div>
                                 )}
                                 {currentMedical.medications.length > 0 && (
                                     <div style={{ fontSize: 'var(--text-sm)' }}>
-                                        <strong style={{ color: 'var(--text-secondary)' }}>Medications:</strong>{' '}
+                                        <strong style={{ color: 'var(--text-secondary)' }}>
+                                            {t('custProfile.medicationsLabel')}
+                                        </strong>{' '}
                                         {currentMedical.medications.join(', ')}
                                     </div>
                                 )}
@@ -451,7 +462,7 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                                 paddingTop: 'var(--space-3)',
                             }}
                         >
-                            {currentMedical.generalNotes || 'No general notes available.'}
+                            {currentMedical.generalNotes || t('custProfile.noGeneralNotes')}
                         </p>
                     </div>
                 </div>
@@ -459,7 +470,7 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                 <Modal
                     open={isMedicalModalOpen}
                     onClose={() => setIsMedicalModalOpen(false)}
-                    title="Edit Medical & Notes"
+                    title={t('custProfile.editMedicalTitle')}
                     footer={
                         <div
                             style={{
@@ -470,16 +481,16 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                             }}
                         >
                             <Button variant="outline" onClick={() => setIsMedicalModalOpen(false)}>
-                                Cancel
+                                {t('custProfile.btnCancel')}
                             </Button>
-                            <Button onClick={handleSaveMedical}>Save Changes</Button>
+                            <Button onClick={handleSaveMedical}>{t('custProfile.btnSaveChanges')}</Button>
                         </div>
                     }
                 >
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                         <div className={styles.inputGroup}>
                             <Input
-                                label="Allergies (comma separated)"
+                                label={t('custProfile.lblAllergiesCsv')}
                                 value={editedMedical.allergies.join(', ')}
                                 onChange={e =>
                                     setEditedMedical({
@@ -490,12 +501,12 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                                             .filter(Boolean),
                                     })
                                 }
-                                placeholder="e.g., Latex, Penicillin"
+                                placeholder={t('custProfile.phAllergies')}
                             />
                         </div>
                         <div className={styles.inputGroup}>
                             <Input
-                                label="Chronic Conditions"
+                                label={t('custProfile.lblChronicConditions')}
                                 value={editedMedical.conditions.join(', ')}
                                 onChange={e =>
                                     setEditedMedical({
@@ -506,12 +517,12 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                                             .filter(Boolean),
                                     })
                                 }
-                                placeholder="e.g., Asthma, Diabetes"
+                                placeholder={t('custProfile.phConditions')}
                             />
                         </div>
                         <div className={styles.inputGroup}>
                             <Input
-                                label="Current Medications"
+                                label={t('custProfile.lblCurrentMeds')}
                                 value={editedMedical.medications.join(', ')}
                                 onChange={e =>
                                     setEditedMedical({
@@ -522,15 +533,15 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                                             .filter(Boolean),
                                     })
                                 }
-                                placeholder="e.g., Albuterol"
+                                placeholder={t('custProfile.phMeds')}
                             />
                         </div>
                         <div className={styles.inputGroup}>
                             <Textarea
-                                label="General Notes"
+                                label={t('custProfile.lblGeneralNotes')}
                                 value={editedMedical.generalNotes}
                                 onChange={e => setEditedMedical({ ...editedMedical, generalNotes: e.target.value })}
-                                placeholder="Add any operational or behavioral notes here..."
+                                placeholder={t('custProfile.phGeneralNotes')}
                                 rows={4}
                             />
                         </div>
@@ -600,16 +611,16 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                 {/* Task 07: Structured Preference Tags */}
                 <div className={styles.card} style={{ position: 'relative' }}>
                     <div className={styles.cardHeader}>
-                        <span className={styles.cardTitle}>Preferences</span>
+                        <span className={styles.cardTitle}>{t('custProfile.preferences')}</span>
                         <Button variant="ghost" size="sm" onClick={() => setShowPrefPopover(!showPrefPopover)}>
-                            <Plus size={14} /> Add
+                            <Plus size={14} /> {t('custProfile.add')}
                         </Button>
                     </div>
                     <div className={styles.cardBody}>
                         {preferences.length > 0 ? (
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
                                 {preferences.map(pref => {
-                                    const preset = PRESET_PREFERENCES.find(p => p.label === pref);
+                                    const preset = PRESET_PREFERENCES.find(p => p.key === pref);
                                     const colors = preset ? PREF_COLORS[preset.category] : PREF_COLORS.service;
                                     return (
                                         <span
@@ -627,7 +638,7 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                                                 cursor: 'default',
                                             }}
                                         >
-                                            {pref}
+                                            {prefLabel(pref)}
                                             <span
                                                 style={{ cursor: 'pointer', fontWeight: 700, marginLeft: 2 }}
                                                 onClick={() => setPreferences(p => p.filter(x => x !== pref))}
@@ -640,7 +651,7 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                             </div>
                         ) : (
                             <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)' }}>
-                                No preferences added yet.
+                                {t('custProfile.noPreferences')}
                             </p>
                         )}
                     </div>
@@ -667,9 +678,9 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                                     marginBottom: 'var(--space-3)',
                                 }}
                             >
-                                {PRESET_PREFERENCES.filter(p => !preferences.includes(p.label)).map(p => (
+                                {PRESET_PREFERENCES.filter(p => !preferences.includes(p.key)).map(p => (
                                     <button
-                                        key={p.label}
+                                        key={p.key}
                                         style={{
                                             textAlign: 'left',
                                             padding: 'var(--space-2) var(--space-3)',
@@ -681,11 +692,11 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                                             color: 'var(--text-primary)',
                                         }}
                                         onClick={() => {
-                                            setPreferences(prev => [...prev, p.label]);
+                                            setPreferences(prev => [...prev, p.key]);
                                             setShowPrefPopover(false);
                                         }}
                                     >
-                                        {p.label}
+                                        {t(`custProfile.${p.key}`)}
                                     </button>
                                 ))}
                             </div>
@@ -693,7 +704,7 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                                 <input
                                     value={customPref}
                                     onChange={e => setCustomPref(e.target.value)}
-                                    placeholder="Custom preference…"
+                                    placeholder={t('custProfile.customPrefPlaceholder')}
                                     style={{
                                         flex: 1,
                                         height: 34,
@@ -722,7 +733,7 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                                         }
                                     }}
                                 >
-                                    Add
+                                    {t('custProfile.add')}
                                 </button>
                             </div>
                         </div>
@@ -806,7 +817,11 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                                                           : 'neutral'
                                                 }
                                             >
-                                                {b.status}
+                                                {b.status === 'completed'
+                                                    ? t('custProfile.statusBookingCompleted')
+                                                    : b.status === 'confirmed'
+                                                      ? t('custProfile.statusBookingConfirmed')
+                                                      : b.status}
                                             </Badge>
                                         </td>
                                     </tr>
@@ -855,7 +870,9 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                                         <td>{s.items}</td>
                                         <td style={{ fontWeight: 'var(--font-bold)' }}>{s.total} EGP</td>
                                         <td>
-                                            <Badge color="success">{s.status}</Badge>
+                                            <Badge color="success">
+                                                {s.status === 'paid' ? t('custProfile.statusPaid') : s.status}
+                                            </Badge>
                                         </td>
                                     </tr>
                                 ))}
@@ -1087,16 +1104,18 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                                         <td>
                                             {form.status === 'Completed' ? (
                                                 <Badge color="success">
-                                                    <CheckCircle2 size={12} className="mr-1 inline-block" /> Completed
+                                                    <CheckCircle2 size={12} className="mr-1 inline-block" />{' '}
+                                                    {t('custProfile.statusCompleted')}
                                                 </Badge>
                                             ) : (
                                                 <Badge color="warning">
-                                                    <Clock size={12} className="mr-1 inline-block" /> Pending
+                                                    <Clock size={12} className="mr-1 inline-block" />{' '}
+                                                    {t('custProfile.statusPending')}
                                                 </Badge>
                                             )}
                                         </td>
                                         <td style={{ color: form.dateCompleted ? 'inherit' : 'var(--text-tertiary)' }}>
-                                            {form.dateCompleted || 'N/A'}
+                                            {form.dateCompleted || t('custProfile.notAvailable')}
                                         </td>
                                         <td>
                                             {form.relatedBooking ? (
@@ -1155,10 +1174,11 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
                     <span className={styles.cardTitle}>
-                        <MessageSquare size={18} className={lang === 'ar' ? 'ml-2' : 'mr-2'} /> Staff Notes
+                        <MessageSquare size={18} className={lang === 'ar' ? 'ml-2' : 'mr-2'} />{' '}
+                        {t('custProfile.staffNotesTitle')}
                     </span>
                     <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
-                        Internal — not visible to client
+                        {t('custProfile.staffNotesInternal')}
                     </span>
                 </div>
                 {staffNotes.length > 0 ? (
@@ -1212,10 +1232,12 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                                                     fontSize: 'var(--text-sm)',
                                                 }}
                                             >
-                                                Note from {note.employee}
+                                                {t('custProfile.noteFrom')}
+                                                {note.employee}
                                             </div>
                                             <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
-                                                After {note.service} • {note.date}
+                                                {t('custProfile.afterService')}
+                                                {note.service} • {note.date}
                                             </div>
                                         </div>
                                     </div>
@@ -1251,7 +1273,7 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                                                     // fallback: remove from local state
                                                 }
                                                 setStaffNotes(prev => prev.filter(n => n.id !== note.id));
-                                                addToast('success', 'Note removed');
+                                                addToast('success', t('custProfile.toastNoteRemoved'));
                                             }}
                                         >
                                             <Flag size={13} />
@@ -1274,8 +1296,8 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                     <div style={{ padding: 'var(--space-8) 0' }}>
                         <EmptyState
                             icon={<MessageSquare size={32} color="var(--text-tertiary)" />}
-                            title="No staff notes"
-                            description="Employees can write post-service notes about this client from the mobile app."
+                            title={t('custProfile.noStaffNotesTitle')}
+                            description={t('custProfile.noStaffNotesDesc')}
                         />
                     </div>
                 )}
@@ -1291,8 +1313,8 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                 data={client ? [client] : []}
                 onRetry={refetchCustomer}
                 emptyIcon={<User size={48} />}
-                emptyTitle="Customer not found"
-                emptyDescription="The customer profile could not be loaded."
+                emptyTitle={t('custProfile.notFoundTitle')}
+                emptyDescription={t('custProfile.notFoundDesc')}
                 skeletonCount={3}
             >
                 {/* Header */}
@@ -1377,12 +1399,12 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                         { key: 'reviews', label: t('custProfile.tabReviews'), icon: <MessageSquare size={16} /> },
                         {
                             key: 'staffNotes',
-                            label: `Staff Notes${staffNotes.length > 0 ? ` (${staffNotes.length})` : ''}`,
+                            label: `${t('custProfile.staffNotesTab')}${staffNotes.length > 0 ? ` (${staffNotes.length})` : ''}`,
                             icon: <MessageSquare size={16} />,
                         },
                         {
                             key: 'files',
-                            label: t('custProfile.tabFiles') || 'Files & Forms',
+                            label: t('custProfile.tabFiles') || t('custProfile.filesTab'),
                             icon: <FileText size={16} />,
                         },
                     ]}

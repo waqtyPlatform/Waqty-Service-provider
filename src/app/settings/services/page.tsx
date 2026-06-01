@@ -194,7 +194,7 @@ export default function ServicesSettingsPage() {
                             <td style={s.td}>{svc.category}</td>
                             <td style={s.td}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                    <Clock size={12} /> {svc.duration} min
+                                    <Clock size={12} /> {svc.duration} {t('settings.services.min')}
                                 </div>
                             </td>
                             <td style={{ ...s.td, fontWeight: 'var(--font-semibold)' }}>{svc.price} EGP</td>
@@ -254,7 +254,7 @@ export default function ServicesSettingsPage() {
                         <Button
                             onClick={() => {
                                 setIsAddOpen(false);
-                                addToast('success', 'Service added successfully');
+                                addToast('success', t('settings.services.added'));
                             }}
                         >
                             {t('settings.services.saveService')}
@@ -263,7 +263,7 @@ export default function ServicesSettingsPage() {
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label={t('settings.services.serviceName')} placeholder="e.g. Balayage" />
+                    <Input label={t('settings.services.serviceName')} placeholder={t('settings.services.namePh')} />
                     <Select
                         label={t('settings.services.category')}
                         options={[
@@ -296,7 +296,7 @@ export default function ServicesSettingsPage() {
                         <Button
                             onClick={() => {
                                 setIsEditOpen(false);
-                                addToast('success', 'Service updated successfully');
+                                addToast('success', t('settings.services.updated'));
                             }}
                         >
                             {t('settings.services.saveChanges')}
@@ -352,14 +352,14 @@ export default function ServicesSettingsPage() {
                                 if (apiLoaded && selectedService?.uuid) {
                                     try {
                                         await providerApi.deleteService(selectedService.uuid);
-                                        addToast('error', 'Service permanently removed');
+                                        addToast('error', t('settings.services.removed'));
                                         setRefreshKey(k => k + 1);
                                     } catch (err: unknown) {
                                         const error = err as { message?: string };
-                                        addToast('error', error.message || 'Failed to delete service');
+                                        addToast('error', error.message || t('settings.services.deleteFailed'));
                                     }
                                 } else {
-                                    addToast('error', 'Service permanently removed');
+                                    addToast('error', t('settings.services.removed'));
                                 }
                                 setIsDeleteOpen(false);
                             }}

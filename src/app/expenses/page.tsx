@@ -208,7 +208,7 @@ export default function ExpensesPage() {
                 </div>
                 <div className={styles.summaryCard}>
                     <div className={styles.summaryLabel}>{t('expenses.topCategory')}</div>
-                    <div className={styles.summaryValueNormal}>Salary</div>
+                    <div className={styles.summaryValueNormal}>{t('exp.catSalary')}</div>
                 </div>
             </div>
 
@@ -246,14 +246,14 @@ export default function ExpensesPage() {
                 >
                     <EmptyState
                         icon={<Receipt size={48} color="var(--color-primary-500)" />}
-                        title="No expenses logged"
-                        description="Track your money flowing out. Log your first business expense."
+                        title={t('expenses.emptyNewWorkspaceTitle')}
+                        description={t('expenses.emptyNewWorkspaceDesc')}
                         action={
                             <button
                                 className={styles.btnPrimary}
                                 style={{ margin: '0 auto', display: 'flex', marginTop: '16px' }}
                             >
-                                <Plus size={16} style={{ marginInlineEnd: 4 }} /> Add Expense
+                                <Plus size={16} style={{ marginInlineEnd: 4 }} /> {t('expenses.add')}
                             </button>
                         }
                     />
@@ -265,7 +265,7 @@ export default function ExpensesPage() {
                     data={filtered}
                     emptyIcon={<Receipt size={48} />}
                     emptyTitle={t('expenses.title')}
-                    emptyDescription="No expenses found"
+                    emptyDescription={t('expenses.noExpensesFound')}
                     onRetry={refetchExpenses}
                 >
                     <div className={styles.card}>
@@ -291,7 +291,9 @@ export default function ExpensesPage() {
                                             <tr
                                                 key={exp.id}
                                                 className={`${styles.tr} ${styles.trInteractive}`}
-                                                onClick={() => addToast('info', `Viewing expense ${exp.id} details`)}
+                                                onClick={() =>
+                                                    addToast('info', t('expenses.toastViewing').replace('{id}', exp.id))
+                                                }
                                             >
                                                 <td className={`${styles.td} ${styles.idCell}`}>{exp.id}</td>
                                                 <td className={styles.td}>{exp.date}</td>
@@ -335,12 +337,13 @@ export default function ExpensesPage() {
                                                                 label: t('exp.actionView'),
                                                                 icon: <Search size={14} />,
                                                                 onClick: () =>
-                                                                    addToast('info', 'Viewing expense details'),
+                                                                    addToast('info', t('expenses.toastViewingDetails')),
                                                             },
                                                             {
                                                                 label: t('exp.actionEdit'),
                                                                 icon: <FileText size={14} />,
-                                                                onClick: () => addToast('info', 'Edit expense mode'),
+                                                                onClick: () =>
+                                                                    addToast('info', t('expenses.toastEditMode')),
                                                             },
                                                             {
                                                                 label: t('exp.actionDelete'),
@@ -352,7 +355,7 @@ export default function ExpensesPage() {
                                                                     } catch {
                                                                         /* fallback */
                                                                     }
-                                                                    addToast('error', 'Expense deleted');
+                                                                    addToast('error', t('expenses.toastDeleted'));
                                                                 },
                                                                 destructive: true,
                                                             },

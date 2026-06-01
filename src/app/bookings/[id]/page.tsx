@@ -25,6 +25,7 @@ import { Button, Badge, Stepper, useToast } from '@/components/ui';
 import styles from './page.module.css';
 import { useTranslation } from '@/hooks/useTranslation';
 import { providerApi, type Booking, type BookingStatus } from '@/lib/api';
+import { checkInCode } from '@/lib/waqty_contract';
 import type { CanonicalPaymentMethod, PaymentModel } from '@/lib/contract';
 import { egp, fromMinor, toMinor, formatMoney, DEFAULT_CURRENCY } from '@/lib/money';
 import type { PriceSource } from '@/lib/priceResolver';
@@ -194,21 +195,22 @@ const ELIGIBLE_STAFF: { uuid: string; name: string }[] = [
 // Human messaging for the three canonical payment models (PR-4).
 function paymentModelLabel(
     model: PaymentModel,
-    balanceDue: number
+    balanceDue: number,
+    t: (key: string) => string
 ): { text: string; tone: 'info' | 'warning' | 'success' } {
     const balance = egp(balanceDue);
     switch (model) {
         case 'online_upfront':
-            return { text: 'Paid online in full', tone: 'success' };
+            return { text: t('bk.payModelOnlineFull'), tone: 'success' };
         case 'deposit_balance':
             return balanceDue > 0
-                ? { text: `Deposit paid online · ${balance} balance due at shop`, tone: 'warning' }
-                : { text: 'Deposit + balance settled', tone: 'success' };
+                ? { text: t('bk.payModelDepositBalance').replace('{balance}', balance), tone: 'warning' }
+                : { text: t('bk.payModelDepositSettled'), tone: 'success' };
         case 'cash':
         default:
             return balanceDue > 0
-                ? { text: `${balance} due at shop (cash)`, tone: 'warning' }
-                : { text: 'Paid in cash', tone: 'success' };
+                ? { text: t('bk.payModelCashDue').replace('{balance}', balance), tone: 'warning' }
+                : { text: t('bk.payModelPaidCash'), tone: 'success' };
     }
 }
 
@@ -292,7 +294,7 @@ function CancelModal({ onConfirm, onClose }: { onConfirm: (reason: string) => vo
                         <option value="other">{t('bk.reasonOther')}</option>
                     </select>
                 </div>
-                <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
+                <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end', direction: 'ltr' }}>
                     <Button variant="outline" onClick={onClose}>
                         {t('bk.btnKeepBooking')}
                     </Button>
@@ -443,7 +445,7 @@ function PaymentModal({
                     </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
+                <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end', direction: 'ltr' }}>
                     <Button variant="outline" onClick={onClose}>
                         {t('bk.btnCancel2')}
                     </Button>
@@ -473,6 +475,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
     const [bookingItems, setBookingItems] = useState<BookingItem[]>(BOOKING_DATA.items);
     const [assignTarget, setAssignTarget] = useState<number | null>(null);
     const [assignForm, setAssignForm] = useState({ employee: '', time: '', room: '' });
+    const [codeInput, setCodeInput] = useState('');
 
     // Fetch booking from API if id looks like a UUID
     useEffect(() => {
@@ -543,6 +546,10 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
     const canComplete = status === 'inService';
     const canStartService = status === 'arrived';
     const canMarkNoShow = status === 'confirmed' || status === 'arrived';
+    // Manual check-in code (no-scanner fallback). Derived from the SAME visit id
+    // the customer's app uses, via the shared canonical helper, so the code the
+    // customer reads matches what we compute here — no backend round-trip.
+    const expectedCheckInCode = checkInCode(displayData?.id ?? id);
     const pendingItems = bookingItems.filter(i => i.itemStatus === 'pending_assignment');
 
     // Assign (or reassign) a line to an eligible specialist. `assignForm.employee`
@@ -568,10 +575,14 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
             )
         );
         addLog(
-            wasUnassigned ? 'Service Assigned' : 'Service Reassigned',
-            `${target?.name} ${wasUnassigned ? 'assigned to' : 'reassigned to'} ${staff.name} at ${assignForm.time || target?.time}${assignForm.room ? ' in ' + assignForm.room : ''}`
+            wasUnassigned ? t('bk.logServiceAssigned') : t('bk.logServiceReassigned'),
+            (wasUnassigned ? t('bk.logAssignDetail') : t('bk.logReassignDetail'))
+                .replace('{service}', target?.name ?? '')
+                .replace('{staff}', staff.name)
+                .replace('{time}', assignForm.time || target?.time || '') +
+                (assignForm.room ? t('bk.logInRoom').replace('{room}', assignForm.room) : '')
         );
-        addToast('success', wasUnassigned ? 'Service assigned successfully' : 'Specialist reassigned');
+        addToast('success', wasUnassigned ? t('bk.toastServiceAssigned') : t('bk.toastSpecialistReassigned'));
         setAssignTarget(null);
         setAssignForm({ employee: '', time: '', room: '' });
     };
@@ -612,39 +623,50 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
 
     const handleCheckIn = () => {
         setStatus('arrived');
-        addLog('Client Arrived', 'Check-in completed');
-        addToast('success', 'Client checked in successfully');
+        addLog(t('bk.logClientArrived'), t('bk.logCheckInCompleted'));
+        addToast('success', t('bk.toastCheckedIn'));
         // GAP: API has no "arrived" status — only pending/confirmed/completed/cancelled/no_show
         updateApiStatus('confirmed');
     };
 
+    // No-scanner path: reception enters the code the customer reads from their
+    // app; a match against the shared-derived code confirms arrival.
+    const handleVerifyCode = () => {
+        if (codeInput.trim() === expectedCheckInCode) {
+            handleCheckIn();
+            setCodeInput('');
+        } else {
+            addToast('error', t('bk.toastCodeMismatch'));
+        }
+    };
+
     const handleStartService = () => {
         setStatus('inService');
-        addLog('Service Started', 'In progress');
-        addToast('success', 'Service started');
+        addLog(t('bk.logServiceStarted'), t('bk.logInProgress'));
+        addToast('success', t('bk.toastServiceStarted'));
         // Canonical `in_progress` persists the in-service display state.
         updateApiStatus('in_progress');
     };
 
     const handleComplete = () => {
         setStatus('completed');
-        addLog('Service Completed', 'Awaiting payment');
-        addToast('success', 'Booking marked as completed');
+        addLog(t('bk.logServiceCompleted'), t('bk.logAwaitingPayment'));
+        addToast('success', t('bk.toastMarkedCompleted'));
         updateApiStatus('completed');
     };
 
     const handleCancel = (reason: string) => {
         setStatus('cancelled');
         setShowCancel(false);
-        addLog('Cancelled', reason.replace(/_/g, ' '));
-        addToast('error', 'Booking cancelled');
+        addLog(t('bk.logCancelled'), reason.replace(/_/g, ' '));
+        addToast('error', t('bk.toastBookingCancelled'));
         updateApiStatus('cancelled');
     };
 
     const handleNoShow = () => {
         setStatus('no_show');
-        addLog('No-Show', 'Marked by Reception');
-        addToast('warning', 'Client marked as no-show');
+        addLog(t('bk.logNoShow'), t('bk.logMarkedByReception'));
+        addToast('warning', t('bk.toastMarkedNoShow'));
         updateApiStatus('no_show');
     };
 
@@ -652,13 +674,16 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
         // `amount` is EGP minor units (from PaymentModal).
         setPaid(prev => prev + amount);
         setShowPayment(false);
-        addLog('Payment Received', `${egp(amount)} via ${method}`);
-        addToast('success', `${egp(amount)} collected`);
+        addLog(
+            t('bk.logPaymentReceived'),
+            t('bk.logPaymentVia').replace('{amount}', egp(amount)).replace('{method}', method)
+        );
+        addToast('success', t('bk.toastAmountCollected').replace('{amount}', egp(amount)));
     };
 
     const handlePrint = () => {
         window.print();
-        addToast('info', 'Printing booking receipt…');
+        addToast('info', t('bk.toastPrintingReceipt'));
     };
 
     return (
@@ -797,6 +822,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                 gap: 'var(--space-3)',
                                 justifyContent: 'flex-end',
                                 marginTop: 'var(--space-5)',
+                                direction: 'ltr', // primary stays on the right in RTL
                             }}
                         >
                             <Button variant="outline" onClick={() => setAssignTarget(null)}>
@@ -825,7 +851,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                     onClick={() => router.push('/bookings/list')}
                 >
                     <ChevronRight size={14} style={{ transform: lang === 'ar' ? 'none' : 'scaleX(-1)' }} />
-                    Back to bookings
+                    {t('bookingDetail.backToBookings')}
                 </div>
 
                 <div className={styles.header}>
@@ -837,7 +863,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                         <h1>
                             {t('bk.lblBooking')} {id.startsWith('#') ? id : `#${id}`}
                             <Badge color={BADGE_COLOR[status] ?? 'neutral'} style={{ marginLeft: 8 }}>
-                                {status.replace('inService', 'In Service')}
+                                {status === 'inService' ? t('bk.stepInService') : status}
                             </Badge>
                         </h1>
                     </div>
@@ -915,7 +941,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                         }}
                     >
                         <AlertTriangle size={16} />
-                        <strong>Booking is cancelled.</strong> No further actions can be taken.
+                        <strong>{t('bookingDetail.cancelledTitle')}</strong> {t('bookingDetail.noFurtherActions')}
                     </div>
                 ) : (
                     <div
@@ -933,7 +959,73 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                         }}
                     >
                         <AlertTriangle size={16} />
-                        <strong>Client did not show up.</strong> No further actions can be taken.
+                        <strong>{t('bookingDetail.noShowTitle')}</strong> {t('bookingDetail.noFurtherActions')}
+                    </div>
+                )}
+
+                {/* Check-in by code — no-scanner fallback. The customer reads the
+                    code from their app ("I've arrived"); reception enters it to
+                    confirm arrival. Same code is derived on both sides. */}
+                {canCheckIn && (
+                    <div
+                        style={{
+                            padding: 'var(--space-4)',
+                            background: '#ecfdf5',
+                            border: '1px solid #a7f3d0',
+                            borderRadius: 'var(--radius-lg)',
+                            marginBottom: 'var(--space-4)',
+                        }}
+                    >
+                        <div
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 'var(--space-2)',
+                                marginBottom: 'var(--space-2)',
+                                fontSize: 'var(--text-sm)',
+                                fontWeight: 600,
+                                color: '#065f46',
+                            }}
+                        >
+                            <CheckCircle size={16} /> {t('bookingDetail.checkInNoScanner')}
+                        </div>
+                        <div
+                            style={{
+                                fontSize: 'var(--text-sm)',
+                                color: '#047857',
+                                marginBottom: 'var(--space-3)',
+                            }}
+                        >
+                            {t('bookingDetail.checkInCodeHint')}{' '}
+                            <strong style={{ letterSpacing: 2 }}>{expectedCheckInCode}</strong>
+                        </div>
+                        <div
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 'var(--space-3)',
+                                flexWrap: 'wrap',
+                            }}
+                        >
+                            <input
+                                value={codeInput}
+                                onChange={e => setCodeInput(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                placeholder={t('bookingDetail.enterCode')}
+                                inputMode="numeric"
+                                maxLength={6}
+                                style={{
+                                    padding: 'var(--space-2) var(--space-3)',
+                                    border: '1px solid var(--border)',
+                                    borderRadius: 'var(--radius-md)',
+                                    fontSize: 'var(--text-base)',
+                                    letterSpacing: 3,
+                                    width: 160,
+                                }}
+                            />
+                            <Button onClick={handleVerifyCode}>
+                                <CheckCircle size={16} /> {t('bookingDetail.confirmCheckIn')}
+                            </Button>
+                        </div>
                     </div>
                 )}
 
@@ -1034,7 +1126,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                                                     color: '#92400e',
                                                                 }}
                                                             >
-                                                                Pending Assignment
+                                                                {t('bookingDetail.pendingAssignment')}
                                                             </span>
                                                         )}
                                                     </div>
@@ -1067,7 +1159,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                                 <td>
                                                     {item.employee || (
                                                         <span style={{ color: 'var(--text-tertiary)' }}>
-                                                            Unassigned
+                                                            {t('bookingDetail.unassigned')}
                                                         </span>
                                                     )}
                                                 </td>
@@ -1159,7 +1251,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                             </div>
                             <div className={styles.cardBody}>
                                 {(() => {
-                                    const label = paymentModelLabel(BOOKING_DATA.payment.model, due);
+                                    const label = paymentModelLabel(BOOKING_DATA.payment.model, due, t);
                                     const toneColor =
                                         label.tone === 'success'
                                             ? 'var(--color-success-600)'
@@ -1251,7 +1343,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                             fontWeight: 'var(--font-medium)',
                                         }}
                                     >
-                                        ✓ Fully paid
+                                        {t('bookingDetail.fullyPaid')}
                                     </div>
                                 )}
                             </div>
@@ -1264,7 +1356,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                         <div className={styles.card}>
                             <div className={styles.cardHeader}>
                                 <span className={styles.cardTitle}>
-                                    <Timer size={18} /> Expected Service Time
+                                    <Timer size={18} /> {t('bookingDetail.expectedServiceTime')}
                                 </span>
                                 <Badge color="neutral" size="sm">
                                     #{BOOKING_DATA.queue.number} of {BOOKING_DATA.queue.totalToday}
@@ -1297,11 +1389,12 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                     </div>
                                     <div>
                                         <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
-                                            Queue Position
+                                            {t('bookingDetail.queuePosition')}
                                         </div>
                                         <div style={{ fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-sm)' }}>
-                                            Appointment #{BOOKING_DATA.queue.number} of {BOOKING_DATA.queue.totalToday}{' '}
-                                            today
+                                            {t('bookingDetail.appointmentOfToday')
+                                                .replace('{n}', String(BOOKING_DATA.queue.number))
+                                                .replace('{total}', String(BOOKING_DATA.queue.totalToday))}
                                         </div>
                                     </div>
                                 </div>
@@ -1324,7 +1417,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                         }}
                                     >
                                         <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)' }}>
-                                            Expected Start
+                                            {t('bookingDetail.expectedStart')}
                                         </span>
                                         <span
                                             style={{
@@ -1344,7 +1437,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                         }}
                                     >
                                         <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)' }}>
-                                            Scheduled
+                                            {t('bookingDetail.scheduled')}
                                         </span>
                                         <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
                                             {BOOKING_DATA.queue.scheduledStart}
@@ -1365,8 +1458,11 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                                 fontWeight: 'var(--font-medium)',
                                             }}
                                         >
-                                            <AlertTriangle size={12} />+{BOOKING_DATA.queue.delayMins} min delay from
-                                            schedule
+                                            <AlertTriangle size={12} />
+                                            {t('bookingDetail.delayFromSchedule').replace(
+                                                '{n}',
+                                                String(BOOKING_DATA.queue.delayMins)
+                                            )}
                                         </div>
                                     )}
                                 </div>

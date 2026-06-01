@@ -281,7 +281,7 @@ export default function MarketingPackagesPage() {
                                     <Users size={12} style={{ display: 'inline', marginRight: 4 }} /> {pkg.sold}{' '}
                                     {t('mkt.lblSold')}
                                 </span>
-                                <span>{pkg.active ? `🟢 ${t('mkt.lblActive')}` : '⚪ Inactive'}</span>
+                                <span>{pkg.active ? `🟢 ${t('mkt.lblActive')}` : `⚪ ${t('mkt.lblInactive')}`}</span>
                             </div>
                         </div>
                     ))}
@@ -343,7 +343,7 @@ export default function MarketingPackagesPage() {
                                         {selectedPackage.originalPrice} {t('mkt.lblEGP')}
                                     </span>
                                     <Badge color={selectedPackage.active ? 'success' : 'neutral'} size="sm">
-                                        {selectedPackage.active ? t('mkt.lblActive') : 'Inactive'}
+                                        {selectedPackage.active ? t('mkt.lblActive') : t('mkt.lblInactive')}
                                     </Badge>
                                 </div>
                             </div>
@@ -431,13 +431,13 @@ export default function MarketingPackagesPage() {
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label={t('mkt.lblPackageName')} placeholder="e.g. Summer Glow" />
-                    <Input label={t('mkt.lblDescription')} placeholder="Brief description" />
+                    <Input label={t('mkt.lblPackageName')} placeholder={t('mkt.phPackageName')} />
+                    <Input label={t('mkt.lblDescription')} placeholder={t('mkt.phBriefDescription')} />
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
                         <Input label={t('mkt.lblPrice')} type="number" placeholder="0.00" />
                         <Input label={t('mkt.lblOriginalPrice')} type="number" placeholder="0.00" />
                     </div>
-                    <Input label={t('mkt.lblTargetAudience')} placeholder="e.g. New Clients" />
+                    <Input label={t('mkt.lblTargetAudience')} placeholder={t('mkt.phTargetAudience')} />
                     <Select
                         label={t('mkt.lblStatus')}
                         options={[

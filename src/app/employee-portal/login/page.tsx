@@ -4,9 +4,11 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Mail, ArrowRight, Lock, Eye, EyeOff, RefreshCw } from 'lucide-react';
 import { employeeApi } from '@/lib/api';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function EmployeeLoginPage() {
     const router = useRouter();
+    const { t } = useTranslation();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -17,8 +19,8 @@ export default function EmployeeLoginPage() {
         e.preventDefault();
         setError('');
 
-        if (!email.trim()) return setError('Email is required');
-        if (!password.trim()) return setError('Password is required');
+        if (!email.trim()) return setError(t('employeePortal.emailRequired'));
+        if (!password.trim()) return setError(t('employeePortal.passwordRequired'));
 
         setIsLoading(true);
         try {
@@ -41,11 +43,11 @@ export default function EmployeeLoginPage() {
 
                 router.push('/employee-portal/dashboard');
             } else {
-                setError(res.message || 'Invalid credentials');
+                setError(res.message || t('employeePortal.invalidCredentials'));
             }
         } catch (err: unknown) {
             const apiErr = err as { message?: string };
-            setError(apiErr.message || 'Invalid email or password');
+            setError(apiErr.message || t('employeePortal.invalidEmailOrPassword'));
         } finally {
             setIsLoading(false);
         }
@@ -105,10 +107,10 @@ export default function EmployeeLoginPage() {
                             marginBottom: 'var(--space-2)',
                         }}
                     >
-                        Employee Portal
+                        {t('employeePortal.title')}
                     </h1>
                     <p style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)' }}>
-                        Sign in with your employee credentials
+                        {t('employeePortal.signInWithCreds')}
                     </p>
                 </div>
 
@@ -142,7 +144,7 @@ export default function EmployeeLoginPage() {
                                 color: 'var(--text-secondary)',
                             }}
                         >
-                            Email
+                            {t('employeePortal.email')}
                         </label>
                         <div style={{ position: 'relative' }}>
                             <div
@@ -185,7 +187,7 @@ export default function EmployeeLoginPage() {
                                 color: 'var(--text-secondary)',
                             }}
                         >
-                            Password
+                            {t('employeePortal.password')}
                         </label>
                         <div style={{ position: 'relative' }}>
                             <div
@@ -201,7 +203,7 @@ export default function EmployeeLoginPage() {
                             </div>
                             <input
                                 type={showPassword ? 'text' : 'password'}
-                                placeholder="Enter your password"
+                                placeholder={t('employeePortal.passwordPlaceholder')}
                                 value={password}
                                 onChange={e => setPassword(e.target.value)}
                                 style={{
@@ -257,7 +259,7 @@ export default function EmployeeLoginPage() {
                         }}
                     >
                         {isLoading ? <RefreshCw size={18} className="spin" /> : <ArrowRight size={18} />}
-                        {isLoading ? 'Signing in...' : 'Sign In'}
+                        {isLoading ? t('employeePortal.signingIn') : t('employeePortal.signIn')}
                     </button>
                 </form>
 
@@ -269,7 +271,7 @@ export default function EmployeeLoginPage() {
                         color: 'var(--text-tertiary)',
                     }}
                 >
-                    This portal is for employees only. Providers should use the{' '}
+                    {t('employeePortal.employeesOnlyPrefix')}
                     <a
                         href="/login"
                         style={{
@@ -278,7 +280,7 @@ export default function EmployeeLoginPage() {
                             fontWeight: 'var(--font-medium)',
                         }}
                     >
-                        main login
+                        {t('employeePortal.mainLogin')}
                     </a>
                     .
                 </div>

@@ -3,9 +3,11 @@
 import React from 'react';
 import { WifiOff } from 'lucide-react';
 import { useServiceWorker } from '@/hooks/useServiceWorker';
+import { useTranslation } from '@/hooks/useTranslation';
 
 function OfflineBannerInner() {
     const { isOffline } = useServiceWorker();
+    const { t } = useTranslation();
 
     if (!isOffline) return null;
 
@@ -33,7 +35,7 @@ function OfflineBannerInner() {
             }}
         >
             <WifiOff size={16} />
-            <span>You are offline</span>
+            <span>{t('offline.youAreOffline')}</span>
         </div>
     );
 }

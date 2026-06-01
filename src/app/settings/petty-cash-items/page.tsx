@@ -103,7 +103,7 @@ export default function PettyCashItemsPage() {
                 data={items}
                 emptyIcon={<ShoppingBag size={48} />}
                 emptyTitle={t('settings.petty.expenseItems')}
-                emptyDescription="No petty cash items configured yet"
+                emptyDescription={t('settings.petty.emptyDesc')}
                 onRetry={refetch}
                 skeletonCount={4}
                 skeletonVariant="card"
@@ -224,7 +224,7 @@ export default function PettyCashItemsPage() {
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label={t('settings.petty.itemName')} placeholder="e.g. Office Supplies" />
+                    <Input label={t('settings.petty.itemName')} placeholder={t('settings.petty.itemNamePh')} />
                     <Select
                         label={t('settings.petty.colCategory')}
                         options={[

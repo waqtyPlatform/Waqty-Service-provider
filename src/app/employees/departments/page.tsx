@@ -879,7 +879,7 @@ export default function DepartmentsPage() {
                     setIsAddStaffOpen(false);
                     setNewStaffSelection('');
                 }}
-                title={`${t('departments.addStaffModalTitle')} ${selectedDept?.name || 'Department'}`}
+                title={`${t('departments.addStaffModalTitle')} ${selectedDept?.name || t('departments.deptFallback')}`}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
                         <Button

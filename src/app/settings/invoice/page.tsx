@@ -95,10 +95,10 @@ export default function InvoiceSettingsPage() {
     const handleSave = async () => {
         try {
             await settingsApi.updateInvoiceSettings(form as unknown as Record<string, unknown>);
-            addToast('success', t('settings.invoice.saved') || 'Invoice settings saved!');
+            addToast('success', t('settings.invoice.saved'));
             refetch();
         } catch {
-            addToast('error', 'Failed to save invoice settings');
+            addToast('error', t('settings.invoice.saveFailed'));
         }
     };
 

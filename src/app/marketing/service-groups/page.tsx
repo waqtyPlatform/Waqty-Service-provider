@@ -467,7 +467,7 @@ export default function ServiceGroupsPage() {
                                             background: g.active ? 'var(--color-primary-500)' : 'var(--bg-tertiary)',
                                         }}
                                         onClick={() => toggleActive(g.id)}
-                                        title={g.active ? 'Deactivate' : 'Activate'}
+                                        title={g.active ? t('common.deactivate') : t('common.activate')}
                                     >
                                         <div
                                             style={{
@@ -516,7 +516,7 @@ export default function ServiceGroupsPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                     <Input
                         label={t('mkt.lblGroupName')}
-                        placeholder="e.g. Hair Care"
+                        placeholder={t('mkt.phGroupName')}
                         value={formName}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormName(e.target.value)}
                     />

@@ -58,9 +58,9 @@ export default function TippingSettingsPage() {
                 allow_custom: allowCustom,
                 distribution_method: distribution,
             });
-            addToast('success', 'Tipping settings saved');
+            addToast('success', t('tipping.saved'));
         } catch {
-            addToast('error', 'Failed to save tipping settings');
+            addToast('error', t('tipping.saveFailed'));
         } finally {
             setIsSaving(false);
         }
@@ -71,7 +71,7 @@ export default function TippingSettingsPage() {
             <div>
                 <h1 style={{ fontSize: '1.5rem', fontWeight: 700 }}>{t('tipping.title')}</h1>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginTop: 4 }}>
-                    {t('tipping.subtitle') || 'Configure tipping options for your customers'}
+                    {t('tipping.subtitleFull')}
                 </p>
             </div>
 
@@ -144,13 +144,13 @@ export default function TippingSettingsPage() {
                         <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
                             <Input
                                 type="number"
-                                placeholder="e.g., 25"
+                                placeholder={t('tipping.addPercentagePh')}
                                 value={newPercentage}
                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewPercentage(e.target.value)}
-                                label="Add percentage"
+                                label={t('tipping.addPercentage')}
                             />
                             <Button size="sm" variant="outline" onClick={addPercentage}>
-                                <Plus size={14} /> Add
+                                <Plus size={14} /> {t('tipping.add')}
                             </Button>
                         </div>
                     </div>
@@ -170,7 +170,7 @@ export default function TippingSettingsPage() {
                         <div>
                             <div style={{ fontWeight: 600, fontSize: '0.9375rem' }}>{t('tipping.customAmount')}</div>
                             <div style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', marginTop: 2 }}>
-                                Customers can enter any tip amount in EGP
+                                {t('tipping.customAmountDesc')}
                             </div>
                         </div>
                         <button
@@ -200,11 +200,11 @@ export default function TippingSettingsPage() {
                             {t('tipping.distribution')}
                         </div>
                         <Select
-                            label="How should tips be distributed?"
+                            label={t('tipping.distributionLabel')}
                             options={[
-                                { value: 'individual', label: 'Individual — Goes to the assigned employee' },
-                                { value: 'pool', label: 'Pool — Split equally among all staff' },
-                                { value: 'split', label: 'Split — Custom split by role/position' },
+                                { value: 'individual', label: t('tipping.individual') },
+                                { value: 'pool', label: t('tipping.pool') },
+                                { value: 'split', label: t('tipping.split') },
                             ]}
                             value={distribution}
                             onChange={e => setDistribution(e.target.value as TipConfig['distribution_method'])}
@@ -215,7 +215,7 @@ export default function TippingSettingsPage() {
 
             <div>
                 <Button onClick={handleSave} disabled={isSaving}>
-                    <Save size={16} /> {isSaving ? 'Saving...' : t('common.save')}
+                    <Save size={16} /> {isSaving ? t('common.saving') : t('common.save')}
                 </Button>
             </div>
         </div>

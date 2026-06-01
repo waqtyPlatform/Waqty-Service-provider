@@ -175,20 +175,20 @@ export default function WaitlistPage() {
         try {
             await waitlistApi.notifyWaitlistEntry(uuid);
         } catch {
-            addToast('warning', 'Could not reach server — updated locally');
+            addToast('warning', t('waitlist.toastOffline'));
         }
         setWaitlist(prev => (prev || []).map(e => (e.uuid === uuid ? { ...e, status: 'notified' as const } : e)));
-        addToast('success', 'Customer notified about available slot');
+        addToast('success', t('waitlist.toastNotified'));
     };
 
     const handleRemove = async (uuid: string) => {
         try {
             await waitlistApi.removeFromWaitlist(uuid);
         } catch {
-            addToast('warning', 'Could not reach server — updated locally');
+            addToast('warning', t('waitlist.toastOffline'));
         }
         setWaitlist(prev => (prev || []).filter(e => e.uuid !== uuid));
-        addToast('success', 'Removed from waitlist');
+        addToast('success', t('waitlist.toastRemoved'));
     };
 
     const waitingCount = (waitlist || []).filter(e => e.status === 'waiting').length;
@@ -204,7 +204,7 @@ export default function WaitlistPage() {
                     </p>
                 </div>
                 <Badge color="warning" size="md">
-                    {waitingCount} waiting
+                    {t('waitlist.waitingCount').replace('{count}', String(waitingCount))}
                 </Badge>
             </div>
 
@@ -219,11 +219,11 @@ export default function WaitlistPage() {
                 </div>
                 <Select
                     options={[
-                        { value: 'all', label: 'All Statuses' },
-                        { value: 'waiting', label: 'Waiting' },
-                        { value: 'notified', label: 'Notified' },
-                        { value: 'booked', label: 'Booked' },
-                        { value: 'cancelled', label: 'Cancelled' },
+                        { value: 'all', label: t('waitlist.allStatuses') },
+                        { value: 'waiting', label: t('waitlist.waiting') },
+                        { value: 'notified', label: t('waitlist.notified') },
+                        { value: 'booked', label: t('waitlist.booked') },
+                        { value: 'cancelled', label: t('waitlist.cancelled') },
                     ]}
                     value={filterStatus}
                     onChange={e => setFilterStatus(e.target.value)}
@@ -277,7 +277,7 @@ export default function WaitlistPage() {
                                     <div style={{ flex: 1 }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                             <span style={{ fontWeight: 600, fontSize: '0.9375rem' }}>
-                                                {customer?.name || 'Unknown'}
+                                                {customer?.name || t('waitlist.unknown')}
                                             </span>
                                             {customer?.vip && (
                                                 <Badge color="amber" size="sm">
@@ -296,8 +296,14 @@ export default function WaitlistPage() {
                                             {entry.preferred_date && (
                                                 <span>
                                                     {' '}
-                                                    &middot; Preferred: {entry.preferred_date}
-                                                    {entry.preferred_time ? ` at ${entry.preferred_time}` : ''}
+                                                    &middot;{' '}
+                                                    {t('waitlist.preferred').replace('{date}', entry.preferred_date)}
+                                                    {entry.preferred_time
+                                                        ? t('waitlist.preferredAt').replace(
+                                                              '{time}',
+                                                              entry.preferred_time
+                                                          )
+                                                        : ''}
                                                 </span>
                                             )}
                                         </div>
@@ -305,11 +311,11 @@ export default function WaitlistPage() {
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                     <Badge color={statusColors[entry.status] || 'neutral'} size="sm">
-                                        {entry.status}
+                                        {t(`waitlist.${entry.status}`)}
                                     </Badge>
                                     {entry.status === 'waiting' && (
                                         <Button size="sm" variant="outline" onClick={() => handleNotify(entry.uuid)}>
-                                            <Bell size={14} /> Notify
+                                            <Bell size={14} /> {t('waitlist.notify')}
                                         </Button>
                                     )}
                                     <Button size="sm" variant="ghost" onClick={() => handleRemove(entry.uuid)}>

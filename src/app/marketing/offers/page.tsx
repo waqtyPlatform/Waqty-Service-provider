@@ -564,7 +564,7 @@ export default function OffersPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                     <Input
                         label={t('mkt.lblOfferName')}
-                        placeholder="e.g. Summer Special"
+                        placeholder={t('mkt.phOfferName')}
                         value={draft.name ?? ''}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                             setDraft(d => ({ ...d, name: e.target.value }))
@@ -572,7 +572,7 @@ export default function OffersPage() {
                     />
                     <Input
                         label={t('mkt.lblDescription')}
-                        placeholder="Brief description of the offer"
+                        placeholder={t('mkt.phOfferDescription')}
                         value={draft.description ?? ''}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                             setDraft(d => ({ ...d, description: e.target.value }))

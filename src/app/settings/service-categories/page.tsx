@@ -166,10 +166,10 @@ export default function ServiceCategoriesPage() {
                                 try {
                                     await settingsApi.createServiceCategory({ name: 'New Category', active: true });
                                     setIsAddOpen(false);
-                                    addToast('success', 'Category created successfully');
+                                    addToast('success', t('settings.serviceCategories.created'));
                                     refetch();
                                 } catch {
-                                    addToast('error', 'Failed to create category');
+                                    addToast('error', t('settings.serviceCategories.createFailed'));
                                 }
                             }}
                         >
@@ -179,7 +179,10 @@ export default function ServiceCategoriesPage() {
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label={t('settings.serviceCategories.categoryName')} placeholder="e.g. Hair Styling" />
+                    <Input
+                        label={t('settings.serviceCategories.categoryName')}
+                        placeholder={t('settings.serviceCategories.namePh')}
+                    />
                     <Select
                         label={t('settings.serviceCategories.colorTag')}
                         options={[
@@ -214,10 +217,10 @@ export default function ServiceCategoriesPage() {
                                             name: selectedCat.name,
                                         });
                                     setIsEditOpen(false);
-                                    addToast('success', 'Category updated successfully');
+                                    addToast('success', t('settings.serviceCategories.updated'));
                                     refetch();
                                 } catch {
-                                    addToast('error', 'Failed to update category');
+                                    addToast('error', t('settings.serviceCategories.updateFailed'));
                                 }
                             }}
                         >
@@ -263,10 +266,10 @@ export default function ServiceCategoriesPage() {
                                 try {
                                     if (selectedCat) await settingsApi.deleteServiceCategory(selectedCat.uuid);
                                     setIsDeleteOpen(false);
-                                    addToast('error', 'Category deleted');
+                                    addToast('error', t('settings.serviceCategories.deleted'));
                                     refetch();
                                 } catch {
-                                    addToast('error', 'Failed to delete category');
+                                    addToast('error', t('settings.serviceCategories.deleteFailed'));
                                 }
                             }}
                         >

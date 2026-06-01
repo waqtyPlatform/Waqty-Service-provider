@@ -471,7 +471,7 @@ export default function NotificationsPage() {
                         <Button
                             variant="ghost"
                             onClick={() => {
-                                addToast('success', 'Notification resent');
+                                addToast('success', t('mkt.msgNotificationResent'));
                                 setIsDetailOpen(false);
                             }}
                         >
@@ -650,7 +650,7 @@ export default function NotificationsPage() {
                                     >
                                         {recipientData[Number(selected.id)]
                                             ? t('mkt.msgNoRecipientsMatch')
-                                            : 'No recipient data available'}
+                                            : t('mkt.msgNoRecipientData')}
                                     </div>
                                 ) : (
                                     filteredRecipients.map((r, i) => (
@@ -772,7 +772,7 @@ export default function NotificationsPage() {
                         <Button
                             onClick={() => {
                                 setIsAddOpen(false);
-                                addToast('success', 'Notification scheduled');
+                                addToast('success', t('mkt.msgNotificationScheduled'));
                             }}
                         >
                             {t('mkt.btnScheduleNotification')}
@@ -781,7 +781,7 @@ export default function NotificationsPage() {
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label={t('mkt.lblCampaignTitle')} placeholder="e.g. End of Summer Sale" />
+                    <Input label={t('mkt.lblCampaignTitle')} placeholder={t('mkt.phCampaignTitle')} />
                     <Select
                         label={t('mkt.lblChannel')}
                         options={[
@@ -794,9 +794,9 @@ export default function NotificationsPage() {
                     <Select
                         label={t('mkt.lblAudience')}
                         options={[
-                            { label: 'All Clients', value: 'All Clients' },
-                            { label: 'VIP Group', value: 'VIP Group' },
-                            { label: 'Inactive > 30 days', value: 'Inactive > 30 days' },
+                            { label: t('mkt.lblAllClients'), value: 'All Clients' },
+                            { label: t('mkt.lblVipGroup'), value: 'VIP Group' },
+                            { label: t('mkt.lblInactive30'), value: 'Inactive > 30 days' },
                         ]}
                     />
                     <Input label={t('mkt.lblSendDate')} type="date" />
@@ -844,7 +844,7 @@ export default function NotificationsPage() {
                         <Button
                             onClick={() => {
                                 setIsEditOpen(false);
-                                addToast('success', 'Notification updated');
+                                addToast('success', t('mkt.msgNotificationUpdated'));
                             }}
                         >
                             {t('settings.saveChanges')}
@@ -869,11 +869,11 @@ export default function NotificationsPage() {
                             label={t('mkt.lblAudience')}
                             defaultValue={selected.audience}
                             options={[
-                                { label: 'All Clients', value: 'All Clients' },
-                                { label: 'VIP Group', value: 'VIP Group' },
-                                { label: 'Inactive > 30 days', value: 'Inactive > 30 days' },
-                                { label: 'Booked Clients', value: 'Booked Clients' },
-                                { label: 'Birthday Today', value: 'Birthday Today' },
+                                { label: t('mkt.lblAllClients'), value: 'All Clients' },
+                                { label: t('mkt.lblVipGroup'), value: 'VIP Group' },
+                                { label: t('mkt.lblInactive30'), value: 'Inactive > 30 days' },
+                                { label: t('mkt.lblBookedClients'), value: 'Booked Clients' },
+                                { label: t('mkt.lblBirthdayToday'), value: 'Birthday Today' },
                             ]}
                         />
                         <Input label={t('mkt.lblSendDate')} type="date" defaultValue={selected.date} />
@@ -883,10 +883,7 @@ export default function NotificationsPage() {
                             options={[
                                 { label: t('mkt.lblDraft'), value: 'draft' },
                                 { label: t('mkt.lblScheduled'), value: 'scheduled' },
-                                {
-                                    label: t('mkt.lblSentAt') /* Using Sent At since we don't have just Sent */,
-                                    value: 'sent',
-                                },
+                                { label: t('mkt.lblSent'), value: 'sent' },
                             ]}
                         />
                         <div>

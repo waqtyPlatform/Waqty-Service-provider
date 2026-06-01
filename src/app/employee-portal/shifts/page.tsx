@@ -3,8 +3,21 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { employeeApi, type ShiftDate } from '@/lib/api';
+import { useTranslation } from '@/hooks/useTranslation';
+
+const DAY_KEYS = [
+    'employeePortal.daySun',
+    'employeePortal.dayMon',
+    'employeePortal.dayTue',
+    'employeePortal.dayWed',
+    'employeePortal.dayThu',
+    'employeePortal.dayFri',
+    'employeePortal.daySat',
+];
 
 export default function EmployeeShiftsPage() {
+    const { t, lang } = useTranslation();
+    const locale = lang === 'ar' ? 'ar-EG' : 'en-US';
     // Employee endpoints are called directly — the API client uses the employee
     // token on /employee-portal routes (X11), so no token swap is needed.
     const [shifts, setShifts] = useState<ShiftDate[]>([]);
@@ -26,7 +39,7 @@ export default function EmployeeShiftsPage() {
         })();
     }, []);
 
-    const monthStr = currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    const monthStr = currentMonth.toLocaleDateString(locale, { month: 'long', year: 'numeric' });
 
     const prevMonth = () =>
         setCurrentMonth(d => {
@@ -75,10 +88,10 @@ export default function EmployeeShiftsPage() {
                         marginBottom: 'var(--space-1)',
                     }}
                 >
-                    My Shifts
+                    {t('employeePortal.myShifts')}
                 </h1>
                 <p style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)' }}>
-                    View your assigned shifts and schedule
+                    {t('employeePortal.myShiftsSubtitle')}
                 </p>
             </div>
 
@@ -127,7 +140,7 @@ export default function EmployeeShiftsPage() {
 
             {loading ? (
                 <div style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--text-tertiary)' }}>
-                    Loading shifts...
+                    {t('employeePortal.loadingShifts')}
                 </div>
             ) : (
                 <>
@@ -149,9 +162,9 @@ export default function EmployeeShiftsPage() {
                                 background: 'var(--bg-secondary)',
                             }}
                         >
-                            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
+                            {DAY_KEYS.map(dk => (
                                 <div
-                                    key={d}
+                                    key={dk}
                                     style={{
                                         padding: 'var(--space-2)',
                                         textAlign: 'center',
@@ -161,7 +174,7 @@ export default function EmployeeShiftsPage() {
                                         textTransform: 'uppercase',
                                     }}
                                 >
-                                    {d}
+                                    {t(dk)}
                                 </div>
                             ))}
                         </div>
@@ -217,7 +230,7 @@ export default function EmployeeShiftsPage() {
                                                 }}
                                             >
                                                 <Clock size={10} style={{ display: 'inline', marginRight: 2 }} />
-                                                Shift
+                                                {t('employeePortal.shift')}
                                             </div>
                                         )}
                                     </div>
@@ -247,7 +260,7 @@ export default function EmployeeShiftsPage() {
                                 }}
                             >
                                 <Calendar size={16} style={{ color: 'var(--color-primary-600)' }} />
-                                Shifts This Month ({monthShifts.length})
+                                {t('employeePortal.shiftsThisMonth').replace('{count}', String(monthShifts.length))}
                             </div>
                             {monthShifts.map(shift => {
                                 const d = new Date(shift.date + 'T00:00:00');
@@ -283,7 +296,7 @@ export default function EmployeeShiftsPage() {
                                                 }}
                                             >
                                                 <span style={{ fontSize: 9, textTransform: 'uppercase' }}>
-                                                    {d.toLocaleDateString('en-US', { weekday: 'short' })}
+                                                    {d.toLocaleDateString(locale, { weekday: 'short' })}
                                                 </span>
                                                 {d.getDate()}
                                             </div>
@@ -294,7 +307,7 @@ export default function EmployeeShiftsPage() {
                                                         fontWeight: 'var(--font-medium)',
                                                     }}
                                                 >
-                                                    {d.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
+                                                    {d.toLocaleDateString(locale, { month: 'long', day: 'numeric' })}
                                                 </div>
                                                 <div
                                                     style={{
@@ -302,7 +315,10 @@ export default function EmployeeShiftsPage() {
                                                         color: 'var(--text-tertiary)',
                                                     }}
                                                 >
-                                                    Shift #{shift.uuid.slice(0, 8)}
+                                                    {t('employeePortal.shiftNum').replace(
+                                                        '{id}',
+                                                        shift.uuid.slice(0, 8)
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -317,7 +333,7 @@ export default function EmployeeShiftsPage() {
                                                     color: 'var(--color-primary-700)',
                                                 }}
                                             >
-                                                Today
+                                                {t('employeePortal.today')}
                                             </span>
                                         )}
                                     </div>
@@ -341,7 +357,7 @@ export default function EmployeeShiftsPage() {
                                 style={{ color: 'var(--text-tertiary)', marginBottom: 'var(--space-2)' }}
                             />
                             <div style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)' }}>
-                                No shifts assigned for {monthStr}
+                                {t('employeePortal.noShiftsFor').replace('{month}', monthStr)}
                             </div>
                         </div>
                     )}

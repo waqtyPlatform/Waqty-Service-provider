@@ -83,6 +83,7 @@ function CancelConfirmModal({
     onConfirm: () => void;
     onClose: () => void;
 }) {
+    const { t } = useTranslation();
     const overlay: React.CSSProperties = {
         position: 'fixed',
         inset: 0,
@@ -113,7 +114,7 @@ function CancelConfirmModal({
                 >
                     <AlertTriangle size={20} color="#ef4444" />
                     <h3 style={{ fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-lg)' }}>
-                        Cancel Booking {bookingId}?
+                        {t('bk.cancelBookingNumTitle').replace('{id}', bookingId)}
                     </h3>
                 </div>
                 <p
@@ -123,9 +124,9 @@ function CancelConfirmModal({
                         marginBottom: 'var(--space-5)',
                     }}
                 >
-                    This booking will be marked as cancelled. The client will be notified.
+                    {t('bk.cancelBookingBody')}
                 </p>
-                <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
+                <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end', direction: 'ltr' }}>
                     <button
                         onClick={onClose}
                         style={{
@@ -137,7 +138,7 @@ function CancelConfirmModal({
                             fontSize: 'var(--text-sm)',
                         }}
                     >
-                        Keep Booking
+                        {t('bk.btnKeepBooking')}
                     </button>
                     <button
                         onClick={onConfirm}
@@ -152,7 +153,7 @@ function CancelConfirmModal({
                             fontWeight: 'var(--font-medium)',
                         }}
                     >
-                        Confirm Cancel
+                        {t('bk.btnConfirmCancel')}
                     </button>
                 </div>
             </div>
@@ -197,10 +198,10 @@ export default function BookingListPage() {
         if (cancelTarget.includes('-') && cancelTarget.length > 10) {
             try {
                 await providerApi.updateBookingStatus(cancelTarget, 'cancelled');
-                addToast('error', 'Booking cancelled');
+                addToast('error', t('bk.toastBookingCancelled'));
                 setRefreshKey(k => k + 1);
             } catch {
-                addToast('error', 'Failed to cancel booking');
+                addToast('error', t('bk.toastFailedCancel'));
             }
         } else {
             setRows(prev =>
@@ -210,7 +211,7 @@ export default function BookingListPage() {
                         : v
                 )
             );
-            addToast('error', `Booking ${cancelTarget} cancelled`);
+            addToast('error', t('bk.toastBookingNumCancelled').replace('{id}', cancelTarget));
         }
         setCancelTarget(null);
     };

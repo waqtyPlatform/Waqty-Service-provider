@@ -301,14 +301,14 @@ export default function ServicePricingPage() {
                             style={{ position: 'absolute', left: 10, top: 10, color: 'var(--text-tertiary)' }}
                         />
                         <Input
-                            placeholder="Search services..."
+                            placeholder={t('servicePricing.searchPh')}
                             value={search}
                             onChange={e => setSearch(e.target.value)}
                             style={{ paddingLeft: 32, width: 200 }}
                         />
                     </div>
                     <Button onClick={handleSave}>
-                        <Save size={16} /> Save
+                        <Save size={16} /> {t('servicePricing.save')}
                     </Button>
                 </div>
             </div>
@@ -484,8 +484,7 @@ export default function ServicePricingPage() {
                                 {employeeOverrides.length === 0 ? (
                                     <tr>
                                         <td colSpan={6} className={styles.emptyRow}>
-                                            No employee price overrides yet. Click &quot;Add Override&quot; to create
-                                            one.
+                                            {t('servicePricing.emptyOverrides')}
                                         </td>
                                     </tr>
                                 ) : (
@@ -544,14 +543,14 @@ export default function ServicePricingPage() {
                                                         <button
                                                             className={styles.btnIcon}
                                                             onClick={() => openEditModal(o)}
-                                                            title="Edit"
+                                                            title={t('servicePricing.editTooltip')}
                                                         >
                                                             <Edit size={14} />
                                                         </button>
                                                         <button
                                                             className={styles.btnIcon}
                                                             onClick={() => removeOverride(o.id)}
-                                                            title="Delete"
+                                                            title={t('servicePricing.deleteTooltip')}
                                                         >
                                                             <Trash2 size={14} />
                                                         </button>
@@ -571,13 +570,13 @@ export default function ServicePricingPage() {
             <Modal
                 open={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                title={editingOverrideId ? 'Edit Override' : t('servicePricing.addOverride')}
+                title={editingOverrideId ? t('servicePricing.editOverride') : t('servicePricing.addOverride')}
                 footer={
                     <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
                         <Button variant="ghost" onClick={() => setIsModalOpen(false)}>
-                            Cancel
+                            {t('servicePricing.cancel')}
                         </Button>
-                        <Button onClick={handleSaveOverride}>Save</Button>
+                        <Button onClick={handleSaveOverride}>{t('servicePricing.save')}</Button>
                     </div>
                 }
             >
@@ -586,7 +585,7 @@ export default function ServicePricingPage() {
                         <Select
                             label={t('servicePricing.service')}
                             options={[
-                                { label: '— Select Service —', value: '' },
+                                { label: t('servicePricing.selectService'), value: '' },
                                 ...services.map(s => ({ label: `${s.name} (${s.price} EGP)`, value: s.id })),
                             ]}
                             value={formOverride.serviceId}
@@ -618,14 +617,14 @@ export default function ServicePricingPage() {
                     <Select
                         label={t('servicePricing.employee')}
                         options={[
-                            { label: '— Select Employee —', value: '' },
+                            { label: t('servicePricing.selectEmployee'), value: '' },
                             ...employees.map(e => ({ label: `${e.name} (${e.role})`, value: e.id })),
                         ]}
                         value={formOverride.employeeId}
                         onChange={e => setFormOverride(prev => ({ ...prev, employeeId: e.target.value }))}
                     />
                     <Select
-                        label={`${t('servicePricing.branch')} (optional)`}
+                        label={`${t('servicePricing.branch')} (${t('servicePricing.optional')})`}
                         options={[
                             { label: t('servicePricing.allBranches'), value: '' },
                             ...branches.map(b => ({ label: b.name, value: b.id })),
@@ -657,7 +656,7 @@ export default function ServicePricingPage() {
                                         }}
                                     >
                                         {diff > 0 ? '+' : ''}
-                                        {diff} EGP vs base price
+                                        {diff} EGP {t('servicePricing.vsBasePrice')}
                                     </div>
                                 );
                             })()}

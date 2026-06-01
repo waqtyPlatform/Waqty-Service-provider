@@ -126,10 +126,10 @@ export default function WorkingHoursPage() {
                     is_closed: !h.isOpen,
                 })),
             });
-            addToast('success', 'Working hours updated successfully');
+            addToast('success', t('settings.hours.saved'));
             refetch();
         } catch {
-            addToast('error', 'Failed to update working hours');
+            addToast('error', t('settings.hours.saveFailed'));
         }
     };
 
