@@ -483,6 +483,126 @@ export interface ClientFilters {
     page?: number;
 }
 
+// ── Real-API backend types — PR-B (dashboard, ratings, statements, grid, quick-sale) ──
+
+/** Activity-log entry for a booking (`/api/provider/bookings/{uuid}/activities`). */
+export interface BookingActivity {
+    uuid: string;
+    event: string;
+    label: string;
+    actor_type: string | null;
+    actor_name: string | null;
+    metadata: Record<string, unknown> | null;
+    created_at: string;
+}
+
+export interface ProviderRating {
+    uuid: string;
+    rating: number;
+    comment?: string | null;
+    active: boolean;
+    user?: { uuid: string; name: string };
+    booking?: { uuid: string; booking_date: string };
+    created_at: string;
+}
+
+export interface ProviderRatingFilters {
+    booking_uuid?: string;
+    employee_uuid?: string;
+    branch_uuid?: string;
+    from_date?: string;
+    to_date?: string;
+    rating?: number;
+    active?: boolean;
+    per_page?: number;
+}
+
+/** One row of the aggregated client-statements list (`/api/provider/clients/statements`). */
+export interface ClientStatementRow {
+    uuid: string;
+    name: string;
+    email: string | null;
+    phone: string | null;
+    total_bookings: number;
+    completed_bookings: number;
+    cancelled_bookings: number;
+    total_charged: number;
+    total_paid: number;
+    outstanding: number;
+    last_booking_date: string | null;
+}
+
+/** Detailed single-client statement (`/api/provider/clients/{uuid}/statement`). */
+export interface ClientStatementDetail {
+    client: { uuid: string; name: string; email: string | null; phone: string | null };
+    summary: {
+        total_bookings: number;
+        completed_bookings: number;
+        cancelled_bookings: number;
+        total_charged: number;
+        total_paid: number;
+        outstanding: number;
+        last_booking_date: string | null;
+    };
+    bookings: Array<{
+        uuid: string;
+        status: string;
+        payment_status: string | null;
+        booking_date: string;
+        price: number | null;
+        service: { name: string } | null;
+        payment: { payment_method: string; amount: number; status: string } | null;
+    }>;
+}
+
+/** Aggregated dashboard stats (`/api/provider/dashboard`). */
+export interface ProviderDashboard {
+    bookings: {
+        total: number;
+        by_status: {
+            pending: number;
+            confirmed: number;
+            arrived: number;
+            in_service: number;
+            completed: number;
+            cancelled: number;
+            no_show: number;
+        };
+        today: {
+            total: number;
+            by_status: {
+                pending: number;
+                confirmed: number;
+                arrived: number;
+                in_service: number;
+                completed: number;
+                cancelled: number;
+                no_show: number;
+            };
+        };
+    };
+    revenue: { total: number; today: number };
+    employees: { total: number; active: number; blocked: number };
+    branches: { total: number; active: number };
+    ratings: { total: number; average: number };
+    payments: { total_collected: number };
+}
+
+/** Payload for a walk-in quick sale (`/api/provider/quick-sale`). */
+export interface QuickSalePayload {
+    service_uuid: string;
+    employee_uuid?: string;
+    user_name?: string;
+    user_phone?: string;
+    price?: number;
+    payment_method?: 'cash' | 'card';
+    payment_amount?: number;
+    booking_date?: string;
+    booking_time?: string;
+    notes?: string;
+    [key: string]: unknown;
+}
+
 // ── Canonical Visit adapter (PR-1) ──────────────────────────────────────────
 // The live backend still returns a single-service `Booking`. The ecosystem
 // contract models a booking as a multi-line `Visit` (a basket of line-items,
@@ -970,6 +1090,52 @@ export const providerApi = {
         const qs = params.toString();
         return api.get<Booking[]>(`/api/provider/clients/${uuid}/bookings${qs ? `?${qs}` : ''}`);
     },
+    getClientStatements: (filters?: { search?: string; branch_uuid?: string; per_page?: number }) =>
+        api.get<ClientStatementRow[]>(`/api/provider/clients/statements${buildQueryString(filters)}`),
+    getClientStatement: (uuid: string, filters?: { per_page?: number }) =>
+        api.get<ClientStatementDetail>(`/api/provider/clients/${uuid}/statement${buildQueryString(filters)}`),
+
+    // Branch active toggle
+    toggleBranchActive: (uuid: string, active: boolean) =>
+        api.patch(`/api/provider/branches/${uuid}/active`, { active }),
+
+    // Employee booking counts
+    getEmployeeBookingCounts: (filters?: { branch_uuid?: string; start_date?: string; end_date?: string }) =>
+        api.get<{ employee_uuid: string; employee_name: string; booking_count: number }[]>(
+            `/api/provider/employees/booking-counts${buildQueryString(filters)}`
+        ),
+
+    // Service assignment
+    assignService: (uuid: string) => api.post<Service>(`/api/provider/services/${uuid}/assign`, {}),
+    bulkAttachServices: (services: { uuid?: string; name_ar?: string; name_en?: string }[]) =>
+        api.post<Service[]>('/api/provider/services/bulk-attach', { services }),
+
+    // Booking grid / upcoming / lifecycle actions
+    getNextUpcomingBooking: () => api.get<Booking | null>('/api/provider/bookings/next-upcoming'),
+    getBookingGrid: (date: string, branchUuid?: string) => {
+        const params = new URLSearchParams({ date });
+        if (branchUuid) params.set('branch_uuid', branchUuid);
+        return api.get<unknown>(`/api/provider/bookings/grid?${params.toString()}`);
+    },
+    advanceBooking: (uuid: string) => api.post<Booking>(`/api/provider/bookings/${uuid}/advance`, {}),
+    cancelBooking: (uuid: string, cancellation_reason?: string) =>
+        api.post<Booking>(`/api/provider/bookings/${uuid}/cancel`, cancellation_reason ? { cancellation_reason } : {}),
+    getBookingActivities: (uuid: string) => api.get<BookingActivity[]>(`/api/provider/bookings/${uuid}/activities`),
+
+    // Ratings
+    getRatings: (filters?: ProviderRatingFilters) => {
+        const params = new URLSearchParams();
+        if (filters) {
+            for (const [key, val] of Object.entries(filters)) {
+                if (val !== undefined && val !== null && val !== '') params.set(key, String(val));
+            }
+        }
+        const qs = params.toString();
+        return api.get<ProviderRating[]>(`/api/provider/ratings${qs ? `?${qs}` : ''}`);
+    },
+
+    // Aggregated dashboard stats
+    getDashboard: () => api.get<ProviderDashboard>('/api/provider/dashboard'),
 };
 
 // ── Public API ──────────────────────────────────────────
@@ -2186,6 +2352,7 @@ export const salesApi = {
         api.get<Sale[]>(`/api/provider/sales${buildQueryString(filters)}`),
     getSale: (uuid: string) => api.get<Sale>(`/api/provider/sales/${uuid}`),
     createSale: (data: Record<string, unknown>) => api.post<Sale>('/api/provider/sales', data),
+    quickSale: (data: QuickSalePayload) => api.post<Sale>('/api/provider/quick-sale', data),
     voidSale: (uuid: string) => api.patch(`/api/provider/sales/${uuid}/void`),
 
     // Packages
