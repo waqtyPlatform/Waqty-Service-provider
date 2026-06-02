@@ -73,6 +73,7 @@ const getNavigation = (
                 { label: t('sidebar.newBooking'), href: '/bookings/new' },
                 { label: t('sidebar.rooms'), href: '/bookings/rooms' },
                 { label: t('waitlist.title'), href: '/bookings/waitlist' },
+                { label: t('sidebar.payments'), href: '/bookings/payments' },
             ],
         },
         {
@@ -93,6 +94,7 @@ const getNavigation = (
             icon: <Users size={20} />,
             children: [
                 { label: customersLabel, href: '/customers' },
+                { label: t('sidebar.clientAccounts'), href: '/customers/clients' },
                 { label: t('sidebar.groups'), href: '/customers/groups' },
                 { label: t('sidebar.statements'), href: '/customers/statements' },
                 { label: t('sidebar.lastVisits'), href: '/customers/last-visits' },
@@ -104,6 +106,7 @@ const getNavigation = (
             icon: <UserCog size={20} />,
             children: [
                 { label: employeesLabel, href: '/employees' },
+                { label: t('sidebar.availability'), href: '/employees/availability' },
                 { label: t('sidebar.departments'), href: '/employees/departments' },
                 { label: t('sidebar.schedule'), href: '/employees/schedule' },
                 { label: t('sidebar.attendance'), href: '/employees/attendance' },
@@ -130,7 +133,10 @@ const getNavigation = (
         {
             label: t('sidebar.reports'),
             icon: <BarChart3 size={20} />,
-            href: '/reports',
+            children: [
+                { label: t('sidebar.reports'), href: '/reports' },
+                { label: t('sidebar.revenue'), href: '/reports/revenue' },
+            ],
         },
         {
             label: t('sidebar.finance'),
@@ -142,12 +148,14 @@ const getNavigation = (
             icon: <Settings size={20} />,
             children: [
                 { label: t('sidebar.general'), href: '/settings' },
+                { label: t('sidebar.profile'), href: '/settings/profile' },
                 { label: t('sidebar.branches'), href: '/settings/branches' },
                 { label: t('sidebar.roles'), href: '/settings/roles' },
                 { label: t('sidebar.services'), href: '/settings/services' },
                 { label: t('sidebar.svcCategories'), href: '/settings/service-categories' },
                 { label: t('sidebar.svcEmployees'), href: '/settings/service-employees' },
                 { label: t('sidebar.svcPricing'), href: '/settings/service-pricing' },
+                { label: t('sidebar.pricingGroups'), href: '/settings/pricing-groups' },
                 { label: t('sidebar.hours'), href: '/settings/hours' },
                 { label: t('sidebar.resources'), href: '/settings/resources' },
                 { label: t('sidebar.paymentMethods'), href: '/settings/payment-methods' },

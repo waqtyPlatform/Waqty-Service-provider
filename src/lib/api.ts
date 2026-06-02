@@ -17,6 +17,21 @@ import type {
 // live-API types and the canonical types from a single `@/lib/api` surface.
 export * from './contract';
 
+/**
+ * Coerce a possibly-localized API value into a plain string. The Waqty API
+ * sometimes returns `{ en, ar }` objects for localized fields; this picks a
+ * sensible string (en → ar → ''). Ported with the real-API pages (X-merge).
+ */
+export function extractStr(val: unknown): string {
+    if (!val) return '';
+    if (typeof val === 'string') return val;
+    if (typeof val === 'object') {
+        const o = val as Record<string, string>;
+        return o.en || o.ar || '';
+    }
+    return String(val);
+}
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://waqty.alemtayaz.shop/public';
 
 // Hard ceiling on how long any one request can hang. The external Waqty API
@@ -30,15 +45,23 @@ interface ApiResponse<T = unknown> {
     data?: T;
 }
 
+// Field-level validation errors returned by the backend on HTTP 422.
+export interface ValidationErrors {
+    [field: string]: string[];
+}
+
 export class ApiError extends Error {
     status: number;
     payload: ApiResponse | undefined;
+    /** Field-level validation errors (HTTP 422) */
+    validationErrors?: ValidationErrors;
 
-    constructor(status: number, message: string, payload?: ApiResponse) {
+    constructor(status: number, message: string, payload?: ApiResponse, validationErrors?: ValidationErrors) {
         super(message);
         this.name = 'ApiError';
         this.status = status;
         this.payload = payload;
+        this.validationErrors = validationErrors;
     }
 }
 
@@ -100,7 +123,14 @@ class ApiClient {
         const data: ApiResponse<T> = await response.json();
 
         if (!response.ok) {
-            throw new ApiError(response.status, data.message || `Request failed with status ${response.status}`, data);
+            const validationErrors =
+                response.status === 422 ? (data as { errors?: ValidationErrors }).errors : undefined;
+            throw new ApiError(
+                response.status,
+                data.message || `Request failed with status ${response.status}`,
+                data,
+                validationErrors
+            );
         }
 
         return data;
@@ -156,7 +186,14 @@ class ApiClient {
         }
         const data: ApiResponse<T> = await response.json();
         if (!response.ok) {
-            throw new ApiError(response.status, data.message || `Request failed with status ${response.status}`, data);
+            const validationErrors =
+                response.status === 422 ? (data as { errors?: ValidationErrors }).errors : undefined;
+            throw new ApiError(
+                response.status,
+                data.message || `Request failed with status ${response.status}`,
+                data,
+                validationErrors
+            );
         }
         return data;
     }
@@ -194,6 +231,8 @@ export interface ProviderProfile {
     active: boolean;
     blocked: boolean;
     banned: boolean;
+    logo_url?: string | null; // live API field (ported real-API page, X-merge)
+    city?: { uuid: string; name: string }; // live API field (ported real-API page, X-merge)
     category?: { uuid: string; name: string };
     branches?: Array<{ uuid: string; name: string; phone: string }>;
     created_at: string;
@@ -346,6 +385,8 @@ export interface Booking {
     start_time: string;
     end_time: string | null;
     status: BookingStatus; // canonical 6-state union (incl. in_progress)
+    payment_status?: string | null; // live API: paid | unpaid | partial (not part of canonical Visit)
+    price?: number | null; // live booking price snapshot (ported real-API field, X-merge)
     notes: string | null;
     created_at: string;
     updated_at: string;
@@ -359,6 +400,87 @@ export interface BookingFilters {
     from_date?: string;
     to_date?: string;
     per_page?: number;
+}
+
+// ── Real-API backend types (ported from the old dashboard, X-merge) ─────────
+// These mirror the live Waqty backend response shapes for the real-API pages
+// brought over from `origin` (payments, clients, availability, revenue). They
+// are deliberately distinct from the canonical contract types (e.g. the
+// contract `Payment` is Visit-based; `BookingPayment` below is booking-based).
+
+/** Booking-based payment record as returned by `/api/provider/payments`. */
+export interface BookingPayment {
+    uuid: string;
+    booking_uuid: string;
+    booking?: { uuid: string; booking_date: string; service?: { name: string } };
+    payment_method: 'cash' | 'paymob';
+    amount: number;
+    status: 'pending' | 'completed' | 'failed' | 'refunded';
+    transaction_id?: string | null;
+    notes?: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface PaymentFilters {
+    payment_method?: 'cash' | 'paymob';
+    status?: 'pending' | 'completed' | 'failed' | 'refunded';
+    booking_uuid?: string;
+    from_date?: string;
+    to_date?: string;
+    per_page?: number;
+}
+
+export interface CreatePaymentData {
+    booking_uuid: string;
+    payment_method: 'cash' | 'paymob';
+    amount: number;
+    status?: 'pending' | 'completed' | 'failed' | 'refunded';
+    transaction_id?: string;
+    notes?: string;
+}
+
+export interface ProviderRevenue {
+    total_revenue: number;
+    by_branch: Array<{ branch_uuid: string; branch_name: string; revenue: number }>;
+    by_employee: Array<{ employee_uuid: string; employee_name: string; revenue: number }>;
+}
+
+export interface ProviderRevenueFilters {
+    branch_uuid?: string;
+    employee_uuid?: string;
+    start_date?: string;
+    end_date?: string;
+}
+
+export interface EmployeeAvailabilityStatus {
+    employee_uuid: string;
+    employee_name: string;
+    branch_uuid: string;
+    branch_name: string;
+    is_available: boolean;
+    next_available_at: string | null;
+}
+
+export interface AvailabilityFilters {
+    branch_uuid?: string;
+    employee_uuid?: string;
+}
+
+export interface ProviderClient {
+    uuid: string;
+    name: string;
+    email: string;
+    phone: string;
+    total_bookings: number;
+    last_booking_date: string;
+}
+
+export interface ClientFilters {
+    search?: string;
+    branch_uuid?: string;
+    per_page?: number;
+    page?: number;
 }
 
 // ── Canonical Visit adapter (PR-1) ──────────────────────────────────────────
@@ -783,6 +905,70 @@ export const providerApi = {
         }
         const qs = params.toString();
         return api.get<AttendanceRecord[]>(`/api/provider/attendance${qs ? `?${qs}` : ''}`);
+    },
+
+    // ── Real-API methods ported from the old dashboard (X-merge) ────────────
+    // Payments
+    getPayments: (filters?: PaymentFilters) => {
+        const params = new URLSearchParams();
+        if (filters) {
+            for (const [key, val] of Object.entries(filters)) {
+                if (val !== undefined && val !== null && val !== '') params.set(key, String(val));
+            }
+        }
+        const qs = params.toString();
+        return api.get<BookingPayment[]>(`/api/provider/payments${qs ? `?${qs}` : ''}`);
+    },
+    getPayment: (uuid: string) => api.get<BookingPayment>(`/api/provider/payments/${uuid}`),
+    createPayment: (data: CreatePaymentData) =>
+        api.post<BookingPayment>('/api/provider/payments', data as unknown as Record<string, unknown>),
+    updatePayment: (uuid: string, data: Partial<CreatePaymentData>) =>
+        api.put<BookingPayment>(`/api/provider/payments/${uuid}`, data as unknown as Record<string, unknown>),
+
+    // Revenue
+    getRevenue: (filters?: ProviderRevenueFilters) => {
+        const params = new URLSearchParams();
+        if (filters) {
+            for (const [key, val] of Object.entries(filters)) {
+                if (val !== undefined && val !== null && val !== '') params.set(key, String(val));
+            }
+        }
+        const qs = params.toString();
+        return api.get<ProviderRevenue>(`/api/provider/revenue${qs ? `?${qs}` : ''}`);
+    },
+
+    // Availability
+    getAvailability: (filters?: AvailabilityFilters) => {
+        const params = new URLSearchParams();
+        if (filters) {
+            for (const [key, val] of Object.entries(filters)) {
+                if (val !== undefined && val !== null && val !== '') params.set(key, String(val));
+            }
+        }
+        const qs = params.toString();
+        return api.get<EmployeeAvailabilityStatus[]>(`/api/provider/availability${qs ? `?${qs}` : ''}`);
+    },
+
+    // Clients (users who have booked)
+    getClients: (filters?: ClientFilters) => {
+        const params = new URLSearchParams();
+        if (filters) {
+            for (const [key, val] of Object.entries(filters)) {
+                if (val !== undefined && val !== null && val !== '') params.set(key, String(val));
+            }
+        }
+        const qs = params.toString();
+        return api.get<ProviderClient[]>(`/api/provider/clients${qs ? `?${qs}` : ''}`);
+    },
+    getClientBookings: (uuid: string, filters?: { per_page?: number; page?: number }) => {
+        const params = new URLSearchParams();
+        if (filters) {
+            for (const [key, val] of Object.entries(filters)) {
+                if (val !== undefined && val !== null) params.set(key, String(val));
+            }
+        }
+        const qs = params.toString();
+        return api.get<Booking[]>(`/api/provider/clients/${uuid}/bookings${qs ? `?${qs}` : ''}`);
     },
 };
 

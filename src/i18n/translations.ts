@@ -63,6 +63,13 @@ const translations: Translations = {
     'sidebar.svcCategories': { en: 'Service Categories', ar: 'تصنيفات الخدمات' },
     'sidebar.svcEmployees': { en: 'Service Employees', ar: 'موظفي الخدمات' },
     'sidebar.svcPricing': { en: 'Service Pricing', ar: 'تسعير الخدمات' },
+    // Real-API pages ported from the old dashboard (X-merge)
+    'sidebar.payments': { en: 'Payments', ar: 'المدفوعات' },
+    'sidebar.clientAccounts': { en: 'Client Accounts', ar: 'حسابات العملاء' },
+    'sidebar.availability': { en: 'Availability', ar: 'التوفر' },
+    'sidebar.revenue': { en: 'Revenue', ar: 'الإيرادات' },
+    'sidebar.pricingGroups': { en: 'Pricing Groups', ar: 'مجموعات التسعير' },
+    'sidebar.profile': { en: 'Business Profile', ar: 'ملف النشاط التجاري' },
 
     // Employees Layout
     'empLayout.title': { en: 'Employees', ar: 'الموظفين' },
