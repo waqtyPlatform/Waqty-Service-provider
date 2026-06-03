@@ -20,6 +20,21 @@ export {
     BUSINESS_CATEGORIES,
     normalizeBusinessCategory,
     BUSINESS_TERMINOLOGY,
+    // lifecycle (F-A) + settlement (F-B) + check-in — the dashboard's displayStatus
+    // layer and reception flow consume these directly from the canonical contract.
+    BOOKING_TRANSITIONS,
+    canTransition,
+    deriveVisitStatus,
+    settlePayment,
+    isFullyPaid,
+    checkInCode,
+    // market registry + money primitives (G5) — single-sourced from the contract.
+    EGYPT_MARKET,
+    MARKETS,
+    toMinorUnits,
+    toMajorUnits,
+    vatAmount,
+    minorFractionDigits,
 } from './waqty_contract';
 
 // --- canonical re-exports (types the dashboard refers to by their plain name) ---
@@ -71,7 +86,6 @@ export type {
 // --- Canonical* aliases: the dashboard keeps legacy local types under these
 //     plain names, so it refers to the canonical entities via a Canonical* prefix.
 import type {
-    MarketConfig as MarketConfigT,
     PaymentMethod,
     Customer,
     ServiceCategory,
@@ -99,13 +113,5 @@ export type CanonicalWaitlistEntry = WaitlistEntry;
 export type CanonicalSubscriptionPlan = SubscriptionPlan;
 export type CanonicalCommissionRule = CommissionRule;
 
-// --- dashboard-local app config (NOT part of the canonical contract; each app
-//     owns its market registry — cf. SuperAdmin's src/lib/market.ts) ---
-export const EGYPT_MARKET: MarketConfigT = {
-    country: 'EG',
-    currency: 'EGP',
-    default_locale: 'ar',
-    dialing_code: '+20',
-    minor_units_per_major: 100,
-    vat_rate: 0.14,
-};
+// EGYPT_MARKET / MARKETS are re-exported from the canonical contract above (G5) —
+// the dashboard no longer keeps its own copy of the market registry.

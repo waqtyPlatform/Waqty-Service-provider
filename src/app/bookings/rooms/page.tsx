@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, Filter } from 'lucide-react';
 import styles from '../bookings.module.css';
 import BookingsTabs from '../BookingsTabs';
 import { useTranslation } from '@/hooks/useTranslation';
+import type { DisplayStatus } from '@/lib/displayStatus';
 
 const rooms = [
     { id: 'R1', name: 'Room 1 – VIP', color: '#8B5CF6' },
@@ -19,9 +20,11 @@ const timeSlots = Array.from({ length: 24 }, (_, i) => {
     return `${h.toString().padStart(2, '0')}:${m}`;
 });
 
+// Demo room board. `status` uses the shared DisplayStatus vocabulary (G2); the
+// legacy ad-hoc 'workDone' is gone (it collapses to canonical-derived 'completed').
 const roomBookings: Record<
     string,
-    Array<{ start: number; span: number; title: string; client: string; status: string }>
+    Array<{ start: number; span: number; title: string; client: string; status: DisplayStatus }>
 > = {
     R1: [
         { start: 0, span: 3, title: 'Hair Coloring', client: 'Fatima', status: 'confirmed' },
@@ -31,7 +34,7 @@ const roomBookings: Record<
     R2: [
         { start: 1, span: 2, title: 'Classic Facial', client: 'Maryam', status: 'completed' },
         { start: 4, span: 2, title: 'Swedish Massage', client: 'Noura', status: 'confirmed' },
-        { start: 10, span: 2, title: 'Keratin Treatment', client: 'Dana', status: 'workDone' },
+        { start: 10, span: 2, title: 'Keratin Treatment', client: 'Dana', status: 'completed' },
     ],
     R3: [
         { start: 2, span: 2, title: 'Deep Tissue Massage', client: 'Huda', status: 'confirmed' },
@@ -45,11 +48,14 @@ const roomBookings: Record<
     ],
 };
 
-const statusColors: Record<string, { bg: string; border: string }> = {
+const statusColors: Record<DisplayStatus, { bg: string; border: string }> = {
+    draft: { bg: '#F3F4F6', border: '#9CA3AF' },
     confirmed: { bg: 'var(--color-info-light)', border: 'var(--color-info)' },
-    completed: { bg: 'var(--color-success-light)', border: 'var(--color-success)' },
     arrived: { bg: '#EDE9FE', border: '#7C3AED' },
-    workDone: { bg: 'var(--color-warning-light)', border: 'var(--color-warning)' },
+    inService: { bg: 'var(--color-warning-light)', border: 'var(--color-warning)' },
+    completed: { bg: 'var(--color-success-light)', border: 'var(--color-success)' },
+    cancelled: { bg: '#FEE2E2', border: '#EF4444' },
+    no_show: { bg: '#FEE2E2', border: '#EF4444' },
 };
 
 export default function RoomCalendarPage() {

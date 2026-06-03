@@ -37,9 +37,11 @@ export interface VisitView {
     lines: VisitLineView[];
 }
 
-// Canonical 6-state status in display order (X3) — replaces the legacy web set
-// (arrived / workDone / waitingPay / unconfirmed / noShow). `BOOKING_STATUSES`
-// is the canonical ordered list from the contract.
+// Canonical 6-state PERSISTENT status in display order (X3) — `BOOKING_STATUSES`
+// is the canonical ordered list from the contract. The richer reception DISPLAY
+// vocabulary (arrived / inService, derived from check-in + time) is single-sourced
+// in `@/lib/displayStatus` (G2); legacy ad-hoc states (workDone / waitingPay /
+// unconfirmed) are gone.
 export const STATUS_ORDER: readonly BookingStatus[] = BOOKING_STATUSES;
 
 export const STATUS_LABEL_KEY: Record<BookingStatus, string> = {

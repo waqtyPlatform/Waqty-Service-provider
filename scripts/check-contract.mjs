@@ -2,11 +2,12 @@
 /**
  * Self-contained contract drift check (X1) — runs in this repo's CI with no deps.
  *
- * `src/lib/waqty_contract.ts` is a VERBATIM copy of the canonical contract, synced
- * from <repo-root>/contract/ by `node ../contract/sync.mjs`. `src/lib/contract.ts`
- * is the dashboard's thin local shim over it (Canonical* aliases) and is NOT
- * guarded here. This fingerprints the vendored canonical and compares to the
- * committed baseline `src/lib/contract.lock`, so drift fails CI.
+ * `src/lib/waqty_contract.ts` and `src/lib/platform_finance.ts` are VERBATIM copies
+ * of the canonical contract, synced from <repo-root>/contract/ by
+ * `node ../contract/sync.mjs`. `src/lib/contract.ts` is the dashboard's thin local
+ * shim over them (Canonical* aliases) and is NOT guarded here. This fingerprints the
+ * vendored canonicals and compares to the committed baseline `src/lib/contract.lock`,
+ * so drift fails CI.
  *
  *   node scripts/check-contract.mjs            # verify (exit 1 on drift)
  *   node scripts/check-contract.mjs --write    # re-baseline after a genuine re-sync
@@ -17,8 +18,11 @@ import { fileURLToPath } from 'node:url';
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const LOCK = join(repoRoot, 'src/lib/contract.lock');
-// Vendored canonical copy this repo guards (relative to repoRoot).
-const FILES = ['src/lib/waqty_contract.ts'];
+// Vendored canonical copies this repo guards (relative to repoRoot).
+const FILES = [
+  'src/lib/waqty_contract.ts',
+  'src/lib/platform_finance.ts',
+];
 
 const norm = (s) => s.replace(/\r\n/g, '\n');
 function digest(rel) {

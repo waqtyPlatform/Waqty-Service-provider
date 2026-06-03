@@ -12,7 +12,7 @@
  */
 
 import type { CurrencyCode, Money, MarketConfig } from './contract';
-import { EGYPT_MARKET } from './contract';
+import { EGYPT_MARKET, toMinorUnits, toMajorUnits } from './contract';
 
 /**
  * The active market for this deployment (X8 — app config, NOT the contract;
@@ -24,14 +24,14 @@ export const activeMarket: MarketConfig = EGYPT_MARKET;
 export const DEFAULT_CURRENCY: CurrencyCode = activeMarket.currency;
 const MINOR_PER_MAJOR = activeMarket.minor_units_per_major;
 
-/** Major units (e.g. 12.5 EGP) -> minor units (1250). Rounds to nearest piastre. */
+/** Major units (e.g. 12.5 EGP) -> minor units (1250). Delegates to the contract. */
 export function toMinor(major: number): Money {
-    return Math.round(major * MINOR_PER_MAJOR);
+    return toMinorUnits(major, activeMarket);
 }
 
 /** Minor units (1250) -> major units (12.5). For charts/inputs only — render with formatMoney. */
 export function fromMinor(minor: Money): number {
-    return minor / MINOR_PER_MAJOR;
+    return toMajorUnits(minor, activeMarket);
 }
 
 interface FormatMoneyOptions {

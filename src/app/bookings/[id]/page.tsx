@@ -29,26 +29,13 @@ import { checkInCode } from '@/lib/waqty_contract';
 import type { CanonicalPaymentMethod, PaymentModel } from '@/lib/contract';
 import { egp, fromMinor, toMinor, formatMoney, DEFAULT_CURRENCY } from '@/lib/money';
 import type { PriceSource } from '@/lib/priceResolver';
+import { type DisplayStatus, STEP_INDEX, statusToDisplay } from '@/lib/displayStatus';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-// Time-derived DISPLAY lifecycle (distinct from the canonical persistent
-// `BookingStatus`). The contract separates display state (arrived/inService)
-// from persistent status; `inService` persists as canonical `in_progress`.
-type DisplayStatus = 'draft' | 'confirmed' | 'arrived' | 'inService' | 'completed' | 'cancelled' | 'no_show';
-
-const STATUS_STEPS: DisplayStatus[] = ['draft', 'confirmed', 'arrived', 'inService', 'completed'];
-const STEP_INDEX: Record<DisplayStatus, number> = {
-    draft: 0,
-    confirmed: 1,
-    arrived: 2,
-    inService: 3,
-    completed: 4,
-    cancelled: -1,
-    no_show: -1,
-};
-
-// ─── Types ────────────────────────────────────────────────────────────────────
+// DisplayStatus / STATUS_STEPS / STEP_INDEX are single-sourced from
+// `@/lib/displayStatus` (G2) — imported above — so the detail page, rooms board
+// and home charts share one display vocabulary.
 
 type ItemStatus = 'confirmed' | 'pending_assignment';
 
@@ -486,16 +473,8 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                 const res = await providerApi.getBooking(id);
                 if (!cancelled && res.success && res.data) {
                     setApiBooking(res.data);
-                    // Map canonical persistent status -> display lifecycle.
-                    const statusMap: Record<BookingStatus, DisplayStatus> = {
-                        pending: 'draft',
-                        confirmed: 'confirmed',
-                        in_progress: 'inService',
-                        completed: 'completed',
-                        cancelled: 'cancelled',
-                        no_show: 'no_show',
-                    };
-                    setStatus(statusMap[res.data.status] || 'confirmed');
+                    // Map canonical persistent status -> display lifecycle (shared single source, G2).
+                    setStatus(statusToDisplay(res.data.status));
                 }
             } catch {
                 // Keep fallback mock data
@@ -543,7 +522,11 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
     const isTerminal = isCancelled || isNoShow || status === 'completed';
     const isCompleted = status === 'completed';
     const canCheckIn = status === 'confirmed';
-    const canComplete = status === 'inService';
+    // F-B: a visit can only be completed once its balance is settled (due === 0).
+    // For cash / deposit visits reception must Collect Balance (the payment action)
+    // first; online-upfront visits already have due === 0. Mirrors the contract's
+    // settlePayment / isFullyPaid invariant — a visit is billable only once paid.
+    const canComplete = status === 'inService' && due <= 0;
     const canStartService = status === 'arrived';
     const canMarkNoShow = status === 'confirmed' || status === 'arrived';
     // Manual check-in code (no-scanner fallback). Derived from the SAME visit id
@@ -622,10 +605,14 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
     };
 
     const handleCheckIn = () => {
+        // `arrived` is a DERIVED display state (see @/lib/displayStatus): the
+        // persistent canonical status stays `confirmed`. Check-in is recorded as
+        // `Visit.checked_in_at` on the canonical write — a cross-app-visible signal
+        // that staff and the User app both read (matched via checkInCode), NOT a
+        // phantom status. So we show `arrived` and persist canonical `confirmed`.
         setStatus('arrived');
         addLog(t('bk.logClientArrived'), t('bk.logCheckInCompleted'));
         addToast('success', t('bk.toastCheckedIn'));
-        // GAP: API has no "arrived" status — only pending/confirmed/completed/cancelled/no_show
         updateApiStatus('confirmed');
     };
 
