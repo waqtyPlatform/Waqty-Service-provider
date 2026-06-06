@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { cookies } from 'next/headers';
 import { IBM_Plex_Sans, IBM_Plex_Sans_Arabic, IBM_Plex_Mono } from 'next/font/google';
 import './globals.css';
 import './responsive.css';
@@ -54,15 +55,19 @@ export const metadata: Metadata = {
     },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
     children,
 }: Readonly<{
     children: React.ReactNode;
 }>) {
+    // Render the correct locale server-side from the `waqty_lang` cookie so first
+    // paint already has the right lang/dir (no LTR→RTL flash for Arabic users).
+    // LanguageContext keeps this cookie in sync; runtime toggles update the DOM.
+    const locale = (await cookies()).get('waqty_lang')?.value === 'ar' ? 'ar' : 'en';
     return (
         <html
-            lang="en"
-            dir="ltr"
+            lang={locale === 'ar' ? 'ar-EG' : 'en'}
+            dir={locale === 'ar' ? 'rtl' : 'ltr'}
             suppressHydrationWarning
             className={`${plexSans.variable} ${plexArabic.variable} ${plexMono.variable}`}
         >
