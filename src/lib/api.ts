@@ -67,9 +67,19 @@ export class ApiError extends Error {
 
 class ApiClient {
     private baseUrl: string;
+    // Short-TTL in-flight/result cache for idempotent GETs — dedupes the same
+    // endpoint being fetched by multiple components/routes within a few seconds
+    // (e.g. employees/branches re-fetched on every navigation). Cleared on any
+    // mutation so writes are never served stale. Client-only (see get()).
+    private getCache = new Map<string, { ts: number; promise: Promise<ApiResponse<unknown>> }>();
+    private readonly GET_TTL_MS = 5000;
 
     constructor(baseUrl: string) {
         this.baseUrl = baseUrl;
+    }
+
+    private invalidateGetCache(): void {
+        this.getCache.clear();
     }
 
     private getToken(): string | null {
@@ -137,6 +147,7 @@ class ApiClient {
     }
 
     async post<T>(endpoint: string, body: Record<string, unknown>): Promise<ApiResponse<T>> {
+        this.invalidateGetCache();
         return this.request<T>(endpoint, {
             method: 'POST',
             body: JSON.stringify(body),
@@ -144,10 +155,31 @@ class ApiClient {
     }
 
     async get<T>(endpoint: string): Promise<ApiResponse<T>> {
-        return this.request<T>(endpoint, { method: 'GET' });
+        // Cache/dedupe only on the client (the api singleton must not share cache
+        // across users on the server — though data fetching here is client-only).
+        if (typeof window === 'undefined') {
+            return this.request<T>(endpoint, { method: 'GET' });
+        }
+        const lang = localStorage.getItem('waqty_language') || 'en';
+        const key = `${endpoint}|${this.getToken() ?? 'anon'}|${lang}`;
+        const now = Date.now();
+        const cached = this.getCache.get(key);
+        if (cached && now - cached.ts < this.GET_TTL_MS) {
+            return cached.promise as Promise<ApiResponse<T>>;
+        }
+        const promise = this.request<T>(endpoint, { method: 'GET' });
+        this.getCache.set(key, { ts: now, promise: promise as Promise<ApiResponse<unknown>> });
+        // Don't cache failures — drop the entry so the next call retries.
+        promise.catch(() => {
+            if (this.getCache.get(key)?.promise === (promise as Promise<ApiResponse<unknown>>)) {
+                this.getCache.delete(key);
+            }
+        });
+        return promise;
     }
 
     async put<T>(endpoint: string, body: Record<string, unknown>): Promise<ApiResponse<T>> {
+        this.invalidateGetCache();
         return this.request<T>(endpoint, {
             method: 'PUT',
             body: JSON.stringify(body),
@@ -155,6 +187,7 @@ class ApiClient {
     }
 
     async patch<T>(endpoint: string, body?: Record<string, unknown>): Promise<ApiResponse<T>> {
+        this.invalidateGetCache();
         return this.request<T>(endpoint, {
             method: 'PATCH',
             body: body ? JSON.stringify(body) : undefined,
@@ -162,10 +195,12 @@ class ApiClient {
     }
 
     async delete<T>(endpoint: string): Promise<ApiResponse<T>> {
+        this.invalidateGetCache();
         return this.request<T>(endpoint, { method: 'DELETE' });
     }
 
     async postFormData<T>(endpoint: string, formData: FormData): Promise<ApiResponse<T>> {
+        this.invalidateGetCache();
         const token = this.getToken();
         const headers: Record<string, string> = {
             Accept: 'application/json',

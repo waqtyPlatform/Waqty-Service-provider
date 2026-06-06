@@ -288,7 +288,7 @@ const packages = [
         name: 'Bridal Glow Package',
         price: 2500,
         originalPrice: 3200,
-        validity: '30 days',
+        validity: 30,
         sold: 24,
         services: ['Classic Facial', 'Hair Coloring', 'Gel Manicure', 'Pedicure', 'Swedish Massage', 'Teeth Whitening'],
     },
@@ -297,7 +297,7 @@ const packages = [
         name: 'Monthly Maintenance',
         price: 600,
         originalPrice: 850,
-        validity: '30 days',
+        validity: 30,
         sold: 67,
         services: ['Haircut & Styling', 'Classic Manicure', 'Pedicure', 'Classic Facial'],
     },
@@ -306,7 +306,7 @@ const packages = [
         name: 'Relaxation Retreat',
         price: 900,
         originalPrice: 1150,
-        validity: '14 days',
+        validity: 14,
         sold: 18,
         services: ['Swedish Massage', 'Hot Stone Therapy', 'HydraFacial', 'Body Scrub & Wrap'],
     },
@@ -315,7 +315,7 @@ const packages = [
         name: 'Hair Transformation',
         price: 1200,
         originalPrice: 1650,
-        validity: '7 days',
+        validity: 7,
         sold: 31,
         services: ['Keratin Treatment', 'Hair Coloring', 'Olaplex Treatment', 'Haircut & Styling'],
     },
@@ -560,7 +560,7 @@ export default function SalesPage() {
                                                 </span>
                                                 <span className={styles.serviceDuration}>
                                                     <Clock size={14} />
-                                                    {service.duration} min
+                                                    {service.duration} {t('sales.minutesShort')}
                                                 </span>
                                             </div>
                                             <div className={styles.serviceActions}>
@@ -623,9 +623,11 @@ export default function SalesPage() {
                                     </div>
                                 </div>
                                 <div className={styles.packageFooter}>
-                                    <span className={styles.packageValidity}>Valid for {pkg.validity}</span>
+                                    <span className={styles.packageValidity}>
+                                        {t('sales.validForDays').replace('{n}', String(pkg.validity))}
+                                    </span>
                                     <span className={styles.packageSold}>
-                                        <Star size={12} /> {pkg.sold} sold
+                                        <Star size={12} /> {t('sales.soldCount').replace('{n}', String(pkg.sold))}
                                     </span>
                                 </div>
                             </div>

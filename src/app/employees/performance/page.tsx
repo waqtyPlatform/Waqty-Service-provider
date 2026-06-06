@@ -1,11 +1,16 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { BarChart3, Star, DollarSign, Users, Award, Search, Target } from 'lucide-react';
 import { Select } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
 import SubTabs from '@/components/SubTabs';
-import TargetsPage from '@/app/employees/targets/page';
+// Lazy-load the sibling tab panel — its chunk loads only when that tab is opened.
+const TargetsPage = dynamic(() => import('@/app/employees/targets/page'), {
+    ssr: false,
+    loading: () => <div style={{ minHeight: 320 }} />,
+});
 import { useApiQuery } from '@/hooks/useApiQuery';
 import { egpLabel } from '@/lib/money';
 import { employeeExtApi, type EmployeePerformance } from '@/lib/api';
@@ -462,7 +467,7 @@ export default function PerformancePage() {
                             </div>
                         </DataGuard>
                     ),
-                    targets: <TargetsPage />,
+                    targets: () => <TargetsPage />,
                 }}
             </SubTabs>
         </div>

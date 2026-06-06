@@ -189,6 +189,7 @@ export function NewBookingFlow() {
     }, [dataLoading, services, employees, catalogKey]);
     const [clientName, setClientName] = useState('');
     const [clientPhone, setClientPhone] = useState('');
+    const [clientEmail, setClientEmail] = useState('');
     const [discount, setDiscount] = useState(0);
     const [notes, setNotes] = useState('');
     const [step, setStep] = useState(0);
@@ -302,27 +303,39 @@ export function NewBookingFlow() {
             return;
         }
 
-        // If using real API data, validate availability
+        // If using real API data, validate availability. Run all per-service slot
+        // checks CONCURRENTLY (Promise.all) instead of awaiting each in series —
+        // confirm latency no longer scales linearly with the number of services.
         if (apiServices && items.length > 0) {
             try {
-                for (const item of items) {
-                    const mainBranch = apiBranches.find(b => b.is_main) ?? apiBranches[0];
-                    if (mainBranch) {
-                        const slotsRes = await publicApi.getAvailableSlots({
-                            branch_uuid: mainBranch.uuid,
-                            service_uuid: item.service.id,
-                            employee_uuid: item.employee.id,
-                            date: item.date,
-                        });
-                        if (slotsRes.success && slotsRes.data && !slotsRes.data.includes(item.time)) {
-                            addToast(
-                                'error',
-                                t('newBooking.timeNoLongerAvailable')
-                                    .replace('{time}', item.time)
-                                    .replace('{service}', tn(item.service.name, item.service.nameAr))
-                            );
-                            return;
-                        }
+                const mainBranch = apiBranches.find(b => b.is_main) ?? apiBranches[0];
+                if (mainBranch) {
+                    const checks = await Promise.all(
+                        items.map(item =>
+                            publicApi
+                                .getAvailableSlots({
+                                    branch_uuid: mainBranch.uuid,
+                                    service_uuid: item.service.id,
+                                    employee_uuid: item.employee.id,
+                                    date: item.date,
+                                })
+                                .then(res => ({ item, res }))
+                        )
+                    );
+                    const unavailable = checks.find(
+                        ({ item, res }) => res.success && res.data && !res.data.includes(item.time)
+                    );
+                    if (unavailable) {
+                        addToast(
+                            'error',
+                            t('newBooking.timeNoLongerAvailable')
+                                .replace('{time}', unavailable.item.time)
+                                .replace(
+                                    '{service}',
+                                    tn(unavailable.item.service.name, unavailable.item.service.nameAr)
+                                )
+                        );
+                        return;
                     }
                 }
             } catch {
@@ -485,7 +498,13 @@ export function NewBookingFlow() {
                                 </div>
                                 <div style={s.field}>
                                     <label style={s.label}>{t('bookings.email')}</label>
-                                    <input style={s.input} type="email" placeholder="client@email.com" />
+                                    <input
+                                        style={s.input}
+                                        type="email"
+                                        placeholder="client@email.com"
+                                        value={clientEmail}
+                                        onChange={e => setClientEmail(e.target.value)}
+                                    />
                                 </div>
                             </div>
                         </div>

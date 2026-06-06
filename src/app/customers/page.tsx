@@ -1,21 +1,20 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { DropdownMenu, EmptyState, useToast, SlideOver, Input, Select, Modal, Button } from '@/components/ui';
-import { useRouter } from 'next/navigation';
 import {
-    Search,
-    ChevronLeft,
-    ChevronRight,
-    MoreVertical,
-    Phone,
-    Mail,
-    Star,
-    AlertTriangle,
-    Users,
-    UserPlus,
-    CreditCard,
-} from 'lucide-react';
+    DropdownMenu,
+    EmptyState,
+    useToast,
+    SlideOver,
+    Input,
+    Select,
+    Modal,
+    Button,
+    Pagination,
+    DataTable,
+} from '@/components/ui';
+import { useRouter } from 'next/navigation';
+import { Search, MoreVertical, Phone, Mail, Star, AlertTriangle, Users, UserPlus, CreditCard } from 'lucide-react';
 import styles from './customers.module.css';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useApiQuery } from '@/hooks/useApiQuery';
@@ -448,7 +447,6 @@ export default function CustomersPage() {
         return matchSearch && matchGroup;
     });
 
-    const totalPages = Math.ceil(filtered.length / itemsPerPage);
     const paginated = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     return (
@@ -562,215 +560,194 @@ export default function CustomersPage() {
                 <div className={styles.tableCard}>
                     {filtered.length > 0 ? (
                         <>
-                            <div className={styles.tableScroll}>
-                                <table className={styles.dataTable}>
-                                    <thead>
-                                        <tr>
-                                            <th>{t('customers.colClient')}</th>
-                                            <th>{t('customers.colContact')}</th>
-                                            <th>{t('customers.colGroup')}</th>
-                                            <th>{t('customers.colVisits')}</th>
-                                            <th>{t('customers.colTotalSpend')}</th>
-                                            <th>{t('customers.colLastVisit')}</th>
-                                            <th>{t('customers.colFlags')}</th>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {paginated.map(c => {
-                                            const groupName = c.group?.name ?? 'Regular';
-                                            return (
-                                                <tr
-                                                    key={c.uuid}
-                                                    onClick={() => router.push(`/customers/${c.uuid}`)}
-                                                    style={{ cursor: 'pointer' }}
-                                                >
-                                                    <td>
-                                                        <div
-                                                            style={{
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                gap: 'var(--space-3)',
-                                                            }}
-                                                        >
-                                                            <div className={styles.avatar}>
-                                                                {c.name
-                                                                    .split(' ')
-                                                                    .map(n => n[0])
-                                                                    .join('')
-                                                                    .slice(0, 2)}
-                                                            </div>
-                                                            <div>
-                                                                <div
-                                                                    style={{
-                                                                        fontWeight: 'var(--font-semibold)',
-                                                                        display: 'flex',
-                                                                        alignItems: 'center',
-                                                                        gap: 'var(--space-1)',
-                                                                    }}
-                                                                >
-                                                                    {c.name}
-                                                                    {c.vip && (
-                                                                        <Star
-                                                                            size={14}
-                                                                            fill="#F59E0B"
-                                                                            stroke="#F59E0B"
-                                                                        />
-                                                                    )}
-                                                                </div>
-                                                                <div
-                                                                    style={{
-                                                                        fontSize: 'var(--text-xs)',
-                                                                        color: 'var(--text-tertiary)',
-                                                                    }}
-                                                                >
-                                                                    {c.uuid}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <div
-                                                            style={{
-                                                                display: 'flex',
-                                                                flexDirection: 'column',
-                                                                gap: '2px',
-                                                            }}
-                                                        >
-                                                            <span
-                                                                style={{
-                                                                    display: 'flex',
-                                                                    alignItems: 'center',
-                                                                    gap: 'var(--space-1)',
-                                                                    fontSize: 'var(--text-sm)',
-                                                                }}
-                                                            >
-                                                                <Phone
-                                                                    size={12}
-                                                                    style={{ color: 'var(--text-tertiary)' }}
-                                                                />{' '}
-                                                                {c.phone}
-                                                            </span>
-                                                            <span
-                                                                style={{
-                                                                    display: 'flex',
-                                                                    alignItems: 'center',
-                                                                    gap: 'var(--space-1)',
-                                                                    fontSize: 'var(--text-xs)',
-                                                                    color: 'var(--text-tertiary)',
-                                                                }}
-                                                            >
-                                                                <Mail size={12} /> {c.email ?? '-'}
-                                                            </span>
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <span
-                                                            className={`${styles.groupBadge} ${styles[`group${groupName}`]}`}
-                                                        >
-                                                            {groupName}
-                                                        </span>
-                                                    </td>
-                                                    <td style={{ fontWeight: 'var(--font-medium)' }}>
-                                                        {c.total_visits}
-                                                    </td>
-                                                    <td
+                            <DataTable
+                                rows={paginated}
+                                rowKey={c => c.uuid}
+                                onRowClick={c => router.push(`/customers/${c.uuid}`)}
+                                columns={[
+                                    {
+                                        key: 'client',
+                                        header: t('customers.colClient'),
+                                        render: c => (
+                                            <div
+                                                style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}
+                                            >
+                                                <div className={styles.avatar}>
+                                                    {c.name
+                                                        .split(' ')
+                                                        .map(n => n[0])
+                                                        .join('')
+                                                        .slice(0, 2)}
+                                                </div>
+                                                <div>
+                                                    <div
                                                         style={{
                                                             fontWeight: 'var(--font-semibold)',
-                                                            color: 'var(--color-primary-600)',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: 'var(--space-1)',
                                                         }}
                                                     >
-                                                        {c.total_spent.toLocaleString()} {egpLabel()}
-                                                    </td>
-                                                    <td>
-                                                        <span
-                                                            style={{
-                                                                color: !c.last_visit
-                                                                    ? 'var(--color-error)'
-                                                                    : 'var(--text-secondary)',
-                                                            }}
-                                                        >
-                                                            {c.last_visit ?? '-'}
-                                                        </span>
-                                                    </td>
-                                                    <td>
-                                                        <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
-                                                            {c.allergies && (
-                                                                <span
-                                                                    className={styles.flagBadge}
-                                                                    title={t('customers.hasAllergies')}
-                                                                >
-                                                                    <AlertTriangle size={12} /> {t('customers.allergy')}
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <DropdownMenu
-                                                            trigger={
-                                                                <button className={styles.actionBtn}>
-                                                                    <MoreVertical size={16} />
-                                                                </button>
-                                                            }
-                                                            items={[
-                                                                {
-                                                                    label: t('customers.viewProfile'),
-                                                                    icon: <Users size={14} />,
-                                                                    onClick: () => router.push(`/customers/${c.uuid}`),
-                                                                },
-                                                                {
-                                                                    label: t('customers.edit'),
-                                                                    icon: <CreditCard size={14} />,
-                                                                    onClick: () => openEdit(c),
-                                                                },
-                                                                {
-                                                                    label: t('customers.delete'),
-                                                                    destructive: true,
-                                                                    icon: <AlertTriangle size={14} />,
-                                                                    onClick: () => {
-                                                                        setSelectedClient(c);
-                                                                        setIsDeleteOpen(true);
-                                                                    },
-                                                                },
-                                                            ]}
-                                                        />
-                                                    </td>
-                                                </tr>
+                                                        {c.name}
+                                                        {c.vip && <Star size={14} fill="#F59E0B" stroke="#F59E0B" />}
+                                                    </div>
+                                                    <div
+                                                        style={{
+                                                            fontSize: 'var(--text-xs)',
+                                                            color: 'var(--text-tertiary)',
+                                                        }}
+                                                    >
+                                                        {c.uuid}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ),
+                                    },
+                                    {
+                                        key: 'contact',
+                                        header: t('customers.colContact'),
+                                        render: c => (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                                <span
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: 'var(--space-1)',
+                                                        fontSize: 'var(--text-sm)',
+                                                    }}
+                                                >
+                                                    <Phone size={12} style={{ color: 'var(--text-tertiary)' }} />{' '}
+                                                    {c.phone}
+                                                </span>
+                                                <span
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: 'var(--space-1)',
+                                                        fontSize: 'var(--text-xs)',
+                                                        color: 'var(--text-tertiary)',
+                                                    }}
+                                                >
+                                                    <Mail size={12} /> {c.email ?? '-'}
+                                                </span>
+                                            </div>
+                                        ),
+                                    },
+                                    {
+                                        key: 'group',
+                                        header: t('customers.colGroup'),
+                                        render: c => {
+                                            const groupName = c.group?.name ?? 'Regular';
+                                            return (
+                                                <span className={`${styles.groupBadge} ${styles[`group${groupName}`]}`}>
+                                                    {groupName}
+                                                </span>
                                             );
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div className={styles.pagination}>
-                                <span className={styles.pageInfo}>
-                                    {t('customers.showing')} {filtered.length} {t('customers.of')} {allClients.length}
-                                </span>
-                                <div className={styles.pageButtons}>
-                                    <button
-                                        className={styles.pageBtn}
-                                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                                        disabled={currentPage === 1}
-                                    >
-                                        <ChevronLeft size={16} />
-                                    </button>
-                                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                                        <button
-                                            key={p}
-                                            className={`${styles.pageBtn} ${currentPage === p ? styles.pageBtnActive : ''}`}
-                                            onClick={() => setCurrentPage(p)}
-                                        >
-                                            {p}
-                                        </button>
-                                    ))}
-                                    <button
-                                        className={styles.pageBtn}
-                                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                                        disabled={currentPage === totalPages}
-                                    >
-                                        <ChevronRight size={16} />
-                                    </button>
-                                </div>
-                            </div>
+                                        },
+                                    },
+                                    {
+                                        key: 'visits',
+                                        header: t('customers.colVisits'),
+                                        render: c => (
+                                            <span style={{ fontWeight: 'var(--font-medium)' }}>{c.total_visits}</span>
+                                        ),
+                                    },
+                                    {
+                                        key: 'spend',
+                                        header: t('customers.colTotalSpend'),
+                                        render: c => (
+                                            <span
+                                                style={{
+                                                    fontWeight: 'var(--font-semibold)',
+                                                    color: 'var(--color-primary-600)',
+                                                }}
+                                            >
+                                                {c.total_spent.toLocaleString()} {egpLabel()}
+                                            </span>
+                                        ),
+                                    },
+                                    {
+                                        key: 'lastVisit',
+                                        header: t('customers.colLastVisit'),
+                                        render: c => (
+                                            <span
+                                                style={{
+                                                    color: !c.last_visit
+                                                        ? 'var(--color-error)'
+                                                        : 'var(--text-secondary)',
+                                                }}
+                                            >
+                                                {c.last_visit ?? '-'}
+                                            </span>
+                                        ),
+                                    },
+                                    {
+                                        key: 'flags',
+                                        header: t('customers.colFlags'),
+                                        render: c => (
+                                            <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
+                                                {c.allergies && (
+                                                    <span
+                                                        className={styles.flagBadge}
+                                                        title={t('customers.hasAllergies')}
+                                                    >
+                                                        <AlertTriangle size={12} /> {t('customers.allergy')}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        ),
+                                    },
+                                    {
+                                        key: 'actions',
+                                        header: '',
+                                        align: 'end',
+                                        // Stop row-click navigation when interacting with the menu.
+                                        render: c => (
+                                            <div onClick={e => e.stopPropagation()}>
+                                                <DropdownMenu
+                                                    trigger={
+                                                        <button
+                                                            className={styles.actionBtn}
+                                                            aria-label={t('common.moreOptions')}
+                                                        >
+                                                            <MoreVertical size={16} />
+                                                        </button>
+                                                    }
+                                                    items={[
+                                                        {
+                                                            label: t('customers.viewProfile'),
+                                                            icon: <Users size={14} />,
+                                                            onClick: () => router.push(`/customers/${c.uuid}`),
+                                                        },
+                                                        {
+                                                            label: t('customers.edit'),
+                                                            icon: <CreditCard size={14} />,
+                                                            onClick: () => openEdit(c),
+                                                        },
+                                                        {
+                                                            label: t('customers.delete'),
+                                                            destructive: true,
+                                                            icon: <AlertTriangle size={14} />,
+                                                            onClick: () => {
+                                                                setSelectedClient(c);
+                                                                setIsDeleteOpen(true);
+                                                            },
+                                                        },
+                                                    ]}
+                                                />
+                                            </div>
+                                        ),
+                                    },
+                                ]}
+                            />
+                            {/* Shared compact Pagination (prev/next + range) — replaces the
+                                bespoke one-button-per-page strip that overflowed at scale. */}
+                            <Pagination
+                                page={currentPage}
+                                pageSize={itemsPerPage}
+                                total={filtered.length}
+                                onPageChange={setCurrentPage}
+                            />
                         </>
                     ) : (
                         <div style={{ padding: 'var(--space-12) 0' }}>

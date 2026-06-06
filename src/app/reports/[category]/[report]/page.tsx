@@ -1308,7 +1308,10 @@ function TableSkeleton() {
 
 export default function DynamicReportPage({ params }: { params: Promise<{ category: string; report: string }> }) {
     const { category, report } = React.use(params);
-    const fallbackData = generateData(category, report);
+    // Memoized so the mock dataset (fresh arrays/objects) isn't regenerated on every
+    // keystroke/sort/filter — which also kept `data.rows` identity unstable and
+    // forced the downstream filteredRows memo to recompute on unrelated state changes.
+    const fallbackData = React.useMemo(() => generateData(category, report), [category, report]);
     const { t, lang } = useTranslation();
 
     const [search, setSearch] = useState('');
@@ -1331,16 +1334,19 @@ export default function DynamicReportPage({ params }: { params: Promise<{ catego
         [category, report, dateRange, branch]
     );
 
-    const fallbackApiData: ApiReportData = {
-        labels: fallbackData.chartData.map(d => d.name),
-        datasets: [
-            {
-                label: fallbackData.title.startsWith('rptDynamic.t.') ? t(fallbackData.title) : fallbackData.title,
-                data: fallbackData.chartData.map(d => d.value),
-            },
-        ],
-        summary: {},
-    };
+    const fallbackApiData: ApiReportData = React.useMemo(
+        () => ({
+            labels: fallbackData.chartData.map(d => d.name),
+            datasets: [
+                {
+                    label: fallbackData.title.startsWith('rptDynamic.t.') ? t(fallbackData.title) : fallbackData.title,
+                    data: fallbackData.chartData.map(d => d.value),
+                },
+            ],
+            summary: {},
+        }),
+        [fallbackData, t]
+    );
 
     const { data: apiData, loading } = useApiQuery<ApiReportData>(fetchReport, [category, report, dateRange, branch], {
         fallbackData: fallbackApiData,

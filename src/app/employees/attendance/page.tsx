@@ -1,13 +1,24 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { Search, Download, Clock, Plus, Edit, Trash2, Fingerprint, Settings, Smartphone } from 'lucide-react';
 import { SlideOver, Modal, Input, Select, Button, useToast, EmptyState } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
 import SubTabs from '@/components/SubTabs';
-import AttendMethodsPage from '@/app/employees/attend-methods/page';
-import AttendanceSettingsPage from '@/app/employees/attendance-settings/page';
-import FingerprintsPage from '@/app/employees/fingerprints/page';
+// Lazy-load sibling tab panels — only the active tab's chunk is fetched (see payroll host).
+const AttendMethodsPage = dynamic(() => import('@/app/employees/attend-methods/page'), {
+    ssr: false,
+    loading: () => <div style={{ minHeight: 320 }} />,
+});
+const AttendanceSettingsPage = dynamic(() => import('@/app/employees/attendance-settings/page'), {
+    ssr: false,
+    loading: () => <div style={{ minHeight: 320 }} />,
+});
+const FingerprintsPage = dynamic(() => import('@/app/employees/fingerprints/page'), {
+    ssr: false,
+    loading: () => <div style={{ minHeight: 320 }} />,
+});
 import { providerApi, type AttendanceRecord, type Employee as ApiEmployee } from '@/lib/api';
 
 const initialData = [
@@ -787,9 +798,9 @@ export default function AttendancePage() {
                             </Modal>
                         </>
                     ),
-                    attendMethods: <AttendMethodsPage />,
-                    attendSettings: <AttendanceSettingsPage />,
-                    fingerprints: <FingerprintsPage />,
+                    attendMethods: () => <AttendMethodsPage />,
+                    attendSettings: () => <AttendanceSettingsPage />,
+                    fingerprints: () => <FingerprintsPage />,
                 }}
             </SubTabs>
         </div>

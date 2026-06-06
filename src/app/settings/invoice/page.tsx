@@ -92,10 +92,18 @@ export default function InvoiceSettingsPage() {
     const [formOverride, setFormOverride] = useState<InvoiceSettings | null>(null);
     const form = formOverride ?? invoiceSettings ?? fallbackInvoice;
     const setForm = setFormOverride;
+    // Phone + currency aren't part of the InvoiceSettings contract type, so they live
+    // in local state (were previously uncontrolled inputs whose values were dropped).
+    const [phone, setPhone] = useState('+20 2 2345 6789');
+    const [currency, setCurrency] = useState('EGP');
 
     const handleSave = async () => {
         try {
-            await settingsApi.updateInvoiceSettings(form as unknown as Record<string, unknown>);
+            await settingsApi.updateInvoiceSettings({
+                ...(form as unknown as Record<string, unknown>),
+                phone,
+                currency,
+            });
             addToast('success', t('settings.invoice.saved'));
             refetch();
         } catch {
@@ -134,7 +142,7 @@ export default function InvoiceSettingsPage() {
                     </div>
                     <div style={s.row}>
                         <div style={s.label}>{t('settings.invoice.phone')}</div>
-                        <input style={s.input} defaultValue="+20 2 2345 6789" />
+                        <input style={s.input} value={phone} onChange={e => setPhone(e.target.value)} />
                     </div>
                 </div>
 
@@ -168,11 +176,11 @@ export default function InvoiceSettingsPage() {
                     </div>
                     <div style={s.row}>
                         <div style={s.label}>{t('settings.invoice.currency')}</div>
-                        <select style={s.select}>
-                            <option>{egpLabel()}</option>
-                            <option>USD</option>
-                            <option>EUR</option>
-                            <option>SAR</option>
+                        <select style={s.select} value={currency} onChange={e => setCurrency(e.target.value)}>
+                            <option value="EGP">{egpLabel()}</option>
+                            <option value="USD">USD</option>
+                            <option value="EUR">EUR</option>
+                            <option value="SAR">SAR</option>
                         </select>
                     </div>
                 </div>

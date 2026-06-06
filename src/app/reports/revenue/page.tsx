@@ -104,7 +104,13 @@ const presetRanges = [
 
 function getDateRange(preset: string): { start_date: string; end_date: string } | undefined {
     const today = new Date();
-    const fmt = (d: Date) => d.toISOString().split('T')[0];
+    // Local-date YYYY-MM-DD — plain toISOString() shifts local-midnight boundaries
+    // to the previous day for UTC+ timezones, skewing the range edges.
+    const fmt = (d: Date) => {
+        const x = new Date(d);
+        x.setMinutes(x.getMinutes() - x.getTimezoneOffset());
+        return x.toISOString().split('T')[0];
+    };
     if (preset === 'month') {
         return { start_date: fmt(new Date(today.getFullYear(), today.getMonth(), 1)), end_date: fmt(today) };
     }
@@ -150,7 +156,15 @@ export default function RevenuePage() {
                 }
                 const res = await providerApi.getRevenue(filters);
                 if (!cancelled && res.success && res.data) {
-                    setData(res.data);
+                    // The live /provider/revenue envelope can omit the nested
+                    // breakdowns (empty period / partial response). Normalize so the
+                    // render-time `.map()`s below never hit undefined → render crash.
+                    setData({
+                        ...res.data,
+                        total_revenue: res.data.total_revenue ?? 0,
+                        by_branch: Array.isArray(res.data.by_branch) ? res.data.by_branch : [],
+                        by_employee: Array.isArray(res.data.by_employee) ? res.data.by_employee : [],
+                    });
                 }
             } catch {
                 if (!cancelled) setData(mockRevenue);
@@ -163,8 +177,11 @@ export default function RevenuePage() {
         };
     }, [preset, refreshKey]);
 
-    const maxBranch = Math.max(...data.by_branch.map(b => b.revenue), 1);
-    const maxEmployee = Math.max(...data.by_employee.map(e => e.revenue), 1);
+    const byBranch = Array.isArray(data.by_branch) ? data.by_branch : [];
+    const byEmployee = Array.isArray(data.by_employee) ? data.by_employee : [];
+    const totalRevenue = data.total_revenue ?? 0;
+    const maxBranch = Math.max(...byBranch.map(b => b.revenue), 1);
+    const maxEmployee = Math.max(...byEmployee.map(e => e.revenue), 1);
 
     return (
         <div style={{ ...s.page, direction: dir }}>
@@ -201,7 +218,7 @@ export default function RevenuePage() {
             <DataGuard
                 loading={loading}
                 error={error}
-                data={data.by_branch.length > 0 ? data.by_branch : null}
+                data={byBranch.length > 0 ? byBranch : null}
                 emptyIcon={<DollarSign size={40} />}
                 emptyTitle="No revenue data"
                 emptyDescription="Revenue data will appear here once bookings are processed."
@@ -217,7 +234,7 @@ export default function RevenuePage() {
                             Total Revenue
                         </span>
                         <span style={s.totalValue}>
-                            {data.total_revenue.toLocaleString()} {egpLabel()}
+                            {totalRevenue.toLocaleString()} {egpLabel()}
                         </span>
                     </div>
 
@@ -227,7 +244,7 @@ export default function RevenuePage() {
                             <Building2 size={18} /> Revenue by Branch
                         </span>
                         <div style={s.grid}>
-                            {data.by_branch.map((b, i) => (
+                            {byBranch.map((b, i) => (
                                 <div key={b.branch_uuid} style={s.card}>
                                     <div style={s.cardTop}>
                                         <div
@@ -254,7 +271,7 @@ export default function RevenuePage() {
                                         />
                                     </div>
                                     <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
-                                        {Math.round((b.revenue / data.total_revenue) * 100)}% of total
+                                        {totalRevenue > 0 ? Math.round((b.revenue / totalRevenue) * 100) : 0}% of total
                                     </span>
                                 </div>
                             ))}
@@ -267,7 +284,7 @@ export default function RevenuePage() {
                             <Users size={18} /> Revenue by Employee
                         </span>
                         <div style={s.grid}>
-                            {data.by_employee.map((e, i) => {
+                            {byEmployee.map((e, i) => {
                                 const initials = e.employee_name
                                     .split(' ')
                                     .map(n => n[0])
@@ -301,7 +318,8 @@ export default function RevenuePage() {
                                             />
                                         </div>
                                         <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
-                                            {Math.round((e.revenue / data.total_revenue) * 100)}% of total
+                                            {totalRevenue > 0 ? Math.round((e.revenue / totalRevenue) * 100) : 0}% of
+                                            total
                                         </span>
                                     </div>
                                 );

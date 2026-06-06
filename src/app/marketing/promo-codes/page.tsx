@@ -246,8 +246,21 @@ export default function PromoCodesPage() {
     const { loading, error, refetch } = useApiQuery(() => marketingApi.getPromoCodes() as never, [], {
         fallbackData: fallbackCodes,
     });
-    // Use mock data until backend API is available
-    const codes = fallbackCodes;
+    // Local state seeded from mock until the backend exists — Add/Edit/Delete persist
+    // for the session instead of discarding input behind a fake success toast.
+    const [codes, setCodes] = useState(fallbackCodes);
+    const blankForm = {
+        code: '',
+        type: 'percentage',
+        discount: '',
+        limit: '',
+        minOrder: '',
+        expires: '',
+        description: '',
+        status: 'active',
+    };
+    const [addForm, setAddForm] = useState(blankForm);
+    const [editForm, setEditForm] = useState(blankForm);
     const [search, setSearch] = useState('');
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
@@ -265,8 +278,66 @@ export default function PromoCodesPage() {
     };
     const openEdit = (c: (typeof codes)[0]) => {
         setSelected(c);
+        setEditForm({
+            code: c.code,
+            type: c.type,
+            discount: String(c.discount),
+            limit: String(c.limit),
+            minOrder: String(c.minOrder),
+            expires: c.expires,
+            description: c.description,
+            status: c.status,
+        });
         setIsDetailOpen(false);
         setIsEditOpen(true);
+    };
+
+    const handleAddCode = () => {
+        const nextId = Math.max(0, ...codes.map(c => c.id)) + 1;
+        setCodes(prev => [
+            {
+                id: nextId,
+                code: addForm.code.trim().toUpperCase(),
+                discount: Number(addForm.discount) || 0,
+                type: addForm.type,
+                uses: 0,
+                limit: Number(addForm.limit) || 0,
+                minOrder: Number(addForm.minOrder) || 0,
+                expires: addForm.expires,
+                status: addForm.status,
+                createdAt: '',
+                description: addForm.description,
+            },
+            ...prev,
+        ]);
+        setIsAddOpen(false);
+        setAddForm(blankForm);
+        addToast('success', t('mkt.btnGenerateCode'));
+    };
+
+    const handleUpdateCode = () => {
+        if (selected) {
+            setCodes(prev =>
+                prev.map(c =>
+                    c.id === selected.id
+                        ? {
+                              ...c,
+                              code: editForm.code.trim().toUpperCase(),
+                              type: editForm.type,
+                              discount: Number(editForm.discount) || 0,
+                              limit: Number(editForm.limit) || 0,
+                              minOrder: Number(editForm.minOrder) || 0,
+                              expires: editForm.expires,
+                              description: editForm.description,
+                              status: editForm.status,
+                          }
+                        : c
+                )
+            );
+        }
+        setIsEditOpen(false);
+        setSelected(null);
+        addToast('success', t('mkt.lblEditCode'));
     };
     const openDelete = (c: (typeof codes)[0]) => {
         setSelected(c);
@@ -275,6 +346,7 @@ export default function PromoCodesPage() {
     };
 
     const handleDelete = async () => {
+        const removedId = selected?.id;
         try {
             if (selected?.id && typeof selected.id === 'string') {
                 await marketingApi.deletePromoCode(selected.id);
@@ -283,6 +355,7 @@ export default function PromoCodesPage() {
         } catch {
             /* fallback */
         }
+        if (removedId != null) setCodes(prev => prev.filter(c => c.id !== removedId));
         setIsDeleteOpen(false);
         setSelected(null);
         addToast('success', t('mkt.lblDeletePromoCode'));
@@ -741,25 +814,25 @@ export default function PromoCodesPage() {
                         <Button variant="ghost" onClick={() => setIsAddOpen(false)}>
                             {t('rtn.btnBack')}
                         </Button>
-                        <Button
-                            onClick={() => {
-                                setIsAddOpen(false);
-                                addToast('success', t('mkt.btnGenerateCode'));
-                            }}
-                        >
-                            {t('mkt.btnGenerateCode')}
-                        </Button>
+                        <Button onClick={handleAddCode}>{t('mkt.btnGenerateCode')}</Button>
                     </div>
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                     <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
                         <div style={{ flex: 1 }}>
-                            <Input label={t('mkt.lblCode')} placeholder="e.g. WELCOME10" />
+                            <Input
+                                label={t('mkt.lblCode')}
+                                placeholder="e.g. WELCOME10"
+                                value={addForm.code}
+                                onChange={e => setAddForm(f => ({ ...f, code: e.target.value }))}
+                            />
                         </div>
                         <div style={{ flex: 1 }}>
                             <Select
                                 label={t('mkt.lblDiscountType')}
+                                value={addForm.type}
+                                onChange={e => setAddForm(f => ({ ...f, type: e.target.value }))}
                                 options={[
                                     { label: t('mkt.lblPercentage'), value: 'percentage' },
                                     { label: t('mkt.lblFixedAmount'), value: 'fixed' },
@@ -769,23 +842,53 @@ export default function PromoCodesPage() {
                     </div>
                     <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
                         <div style={{ flex: 1 }}>
-                            <Input label={t('mkt.lblDiscountValue')} type="number" placeholder="0" />
+                            <Input
+                                label={t('mkt.lblDiscountValue')}
+                                type="number"
+                                placeholder="0"
+                                value={addForm.discount}
+                                onChange={e => setAddForm(f => ({ ...f, discount: e.target.value }))}
+                            />
                         </div>
                         <div style={{ flex: 1 }}>
-                            <Input label={t('mkt.lblUsageLimit')} type="number" placeholder={t('mkt.phNoLimit')} />
+                            <Input
+                                label={t('mkt.lblUsageLimit')}
+                                type="number"
+                                placeholder={t('mkt.phNoLimit')}
+                                value={addForm.limit}
+                                onChange={e => setAddForm(f => ({ ...f, limit: e.target.value }))}
+                            />
                         </div>
                     </div>
                     <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
                         <div style={{ flex: 1 }}>
-                            <Input label={t('mkt.lblMinOrderValue')} type="number" placeholder="0" />
+                            <Input
+                                label={t('mkt.lblMinOrderValue')}
+                                type="number"
+                                placeholder="0"
+                                value={addForm.minOrder}
+                                onChange={e => setAddForm(f => ({ ...f, minOrder: e.target.value }))}
+                            />
                         </div>
                         <div style={{ flex: 1 }}>
-                            <Input label={t('mkt.lblExpirationDate')} type="date" />
+                            <Input
+                                label={t('mkt.lblExpirationDate')}
+                                type="date"
+                                value={addForm.expires}
+                                onChange={e => setAddForm(f => ({ ...f, expires: e.target.value }))}
+                            />
                         </div>
                     </div>
-                    <Input label={t('mkt.lblDescription')} placeholder={t('mkt.phPromoDescription')} />
+                    <Input
+                        label={t('mkt.lblDescription')}
+                        placeholder={t('mkt.phPromoDescription')}
+                        value={addForm.description}
+                        onChange={e => setAddForm(f => ({ ...f, description: e.target.value }))}
+                    />
                     <Select
                         label={t('mkt.lblStatus')}
+                        value={addForm.status}
+                        onChange={e => setAddForm(f => ({ ...f, status: e.target.value }))}
                         options={[
                             { label: t('mkt.lblActive'), value: 'active' },
                             { label: t('mkt.lblScheduled'), value: 'scheduled' },
@@ -807,14 +910,7 @@ export default function PromoCodesPage() {
                         <Button variant="ghost" onClick={() => setIsEditOpen(false)}>
                             {t('rtn.btnBack')}
                         </Button>
-                        <Button
-                            onClick={() => {
-                                setIsEditOpen(false);
-                                addToast('success', t('mkt.lblEditCode'));
-                            }}
-                        >
-                            {t('mkt.lblEditCode')}
-                        </Button>
+                        <Button onClick={handleUpdateCode}>{t('mkt.lblEditCode')}</Button>
                     </div>
                 }
             >
@@ -822,12 +918,17 @@ export default function PromoCodesPage() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                         <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
                             <div style={{ flex: 1 }}>
-                                <Input label={t('mkt.lblCode')} defaultValue={selected.code} />
+                                <Input
+                                    label={t('mkt.lblCode')}
+                                    value={editForm.code}
+                                    onChange={e => setEditForm(f => ({ ...f, code: e.target.value }))}
+                                />
                             </div>
                             <div style={{ flex: 1 }}>
                                 <Select
                                     label={t('mkt.lblDiscountType')}
-                                    defaultValue={selected.type}
+                                    value={editForm.type}
+                                    onChange={e => setEditForm(f => ({ ...f, type: e.target.value }))}
                                     options={[
                                         { label: t('mkt.lblPercentage'), value: 'percentage' },
                                         { label: t('mkt.lblFixedAmount'), value: 'fixed' },
@@ -840,11 +941,17 @@ export default function PromoCodesPage() {
                                 <Input
                                     label={t('mkt.lblDiscountValue')}
                                     type="number"
-                                    defaultValue={selected.discount}
+                                    value={editForm.discount}
+                                    onChange={e => setEditForm(f => ({ ...f, discount: e.target.value }))}
                                 />
                             </div>
                             <div style={{ flex: 1 }}>
-                                <Input label={t('mkt.lblUsageLimit')} type="number" defaultValue={selected.limit} />
+                                <Input
+                                    label={t('mkt.lblUsageLimit')}
+                                    type="number"
+                                    value={editForm.limit}
+                                    onChange={e => setEditForm(f => ({ ...f, limit: e.target.value }))}
+                                />
                             </div>
                         </div>
                         <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
@@ -852,17 +959,28 @@ export default function PromoCodesPage() {
                                 <Input
                                     label={t('mkt.lblMinOrderValue')}
                                     type="number"
-                                    defaultValue={selected.minOrder}
+                                    value={editForm.minOrder}
+                                    onChange={e => setEditForm(f => ({ ...f, minOrder: e.target.value }))}
                                 />
                             </div>
                             <div style={{ flex: 1 }}>
-                                <Input label={t('mkt.lblExpirationDate')} type="date" defaultValue={selected.expires} />
+                                <Input
+                                    label={t('mkt.lblExpirationDate')}
+                                    type="date"
+                                    value={editForm.expires}
+                                    onChange={e => setEditForm(f => ({ ...f, expires: e.target.value }))}
+                                />
                             </div>
                         </div>
-                        <Input label={t('mkt.lblDescription')} defaultValue={selected.description} />
+                        <Input
+                            label={t('mkt.lblDescription')}
+                            value={editForm.description}
+                            onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))}
+                        />
                         <Select
                             label={t('mkt.lblStatus')}
-                            defaultValue={selected.status}
+                            value={editForm.status}
+                            onChange={e => setEditForm(f => ({ ...f, status: e.target.value }))}
                             options={[
                                 { label: t('mkt.lblActive'), value: 'active' },
                                 { label: t('mkt.lblScheduled'), value: 'scheduled' },

@@ -31,19 +31,30 @@ export function useApiQuery<T = any>(
     const [error, setError] = useState<string | null>(null);
     const [isFallback, setIsFallback] = useState(false);
     const mountedRef = useRef(true);
+    // Keep the latest fetcher in a ref so the deps-keyed `fetchData` below always
+    // calls the current closure (no stale-fetcher bug) without listing `fetcher`
+    // (a new identity every render) in its dependency array.
+    const fetcherRef = useRef(fetcher);
+    fetcherRef.current = fetcher;
+    // Monotonic request id: when `deps` change a new request starts; only the
+    // newest one is allowed to apply state, so a slower earlier response can't
+    // clobber a newer one (out-of-order setState race).
+    const requestIdRef = useRef(0);
 
     const fetchData = useCallback(async () => {
         if (!enabled) return;
+        const myId = ++requestIdRef.current;
+        const isCurrent = () => mountedRef.current && myId === requestIdRef.current;
         setLoading(true);
         setError(null);
         try {
-            const response = await fetcher();
-            if (mountedRef.current) {
+            const response = await fetcherRef.current();
+            if (isCurrent()) {
                 setData(response.data ?? null);
                 setIsFallback(false);
             }
         } catch (err: unknown) {
-            if (mountedRef.current) {
+            if (isCurrent()) {
                 if (fallbackData !== undefined) {
                     // API unavailable — show fallback data but flag it so the UI can
                     // surface a "sample data" notice instead of masking the outage.
@@ -59,7 +70,7 @@ export function useApiQuery<T = any>(
                 }
             }
         } finally {
-            if (mountedRef.current) {
+            if (isCurrent()) {
                 setLoading(false);
             }
         }

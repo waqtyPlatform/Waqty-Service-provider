@@ -2,6 +2,28 @@
     min-height: 100vh;
 }
 
+/* Keyboard skip-to-content link: off-screen until focused, then pinned top-start. */
+.skipLink {
+    position: fixed;
+    inset-block-start: var(--space-2);
+    inset-inline-start: var(--space-2);
+    z-index: 100;
+    padding: var(--space-2) var(--space-4);
+    background: var(--color-primary-500);
+    color: var(--text-inverse);
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+    text-decoration: none;
+    transform: translateY(-200%);
+    transition: transform var(--transition-fast);
+}
+.skipLink:focus {
+    transform: translateY(0);
+    outline: 2px solid var(--text-inverse);
+    outline-offset: 2px;
+}
+
 .main {
     margin-inline-start: var(--sidebar-width);
     margin-top: var(--topbar-height);

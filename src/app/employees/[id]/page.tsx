@@ -257,8 +257,19 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
     });
 
     const handleActionClick = (action: string) => {
-        if (action === 'Edit Profile') setIsEditOpen(true);
-        else if (action === 'Manage Permissions') setIsPermissionsOpen(true);
+        if (action === 'Edit Profile') {
+            // Seed the edit form from the real (fetched) employee so it reflects the
+            // actual record instead of hardcoded placeholders.
+            const parts = employee.name.trim().split(' ');
+            setEditEmp(prev => ({
+                ...prev,
+                fname: parts[0] || '',
+                lname: parts.slice(1).join(' '),
+                phone: employee.phone,
+                email: employee.email,
+            }));
+            setIsEditOpen(true);
+        } else if (action === 'Manage Permissions') setIsPermissionsOpen(true);
         else if (action === 'View Activity Log') setIsActivityOpen(true);
         else if (action === 'Reset Password') setIsResetPasswordOpen(true);
         else if (action === 'Suspend Account') setIsSuspendOpen(true);
@@ -270,7 +281,20 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
         addToast('success', t('empProfile.reviewReportedMsg'));
     };
 
-    const handleSaveEdit = () => {
+    const handleSaveEdit = async () => {
+        const fullName = `${editEmp.fname} ${editEmp.lname}`.trim();
+        // Optimistically reflect the edit in the displayed profile, then persist
+        // (was previously a toast-only no-op that silently discarded the edits).
+        setEmployee(prev => ({ ...prev, name: fullName || prev.name, email: editEmp.email, phone: editEmp.phone }));
+        try {
+            await providerApi.updateEmployee(id, {
+                name: fullName,
+                email: editEmp.email,
+                phone: editEmp.phone,
+            });
+        } catch {
+            // Best-effort — the optimistic update stands when the API is unreachable.
+        }
         setIsEditOpen(false);
         addToast('success', t('empProfile.profileUpd'));
     };

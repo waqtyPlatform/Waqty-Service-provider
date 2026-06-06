@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import {
     Calendar,
     Clock,
@@ -17,7 +18,11 @@ import { Button, Modal, Input, Select, Badge, useToast } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useApiQuery } from '@/hooks/useApiQuery';
 import SubTabs from '@/components/SubTabs';
-import TimeTrackingPage from '@/app/employees/time-tracking/page';
+// Lazy-load the sibling tab panel — its chunk loads only when that tab is opened.
+const TimeTrackingPage = dynamic(() => import('@/app/employees/time-tracking/page'), {
+    ssr: false,
+    loading: () => <div style={{ minHeight: 320 }} />,
+});
 import {
     SHIFT_TEMPLATES,
     SHIFT_ASSIGNMENTS,
@@ -1652,7 +1657,7 @@ export default function SchedulePage() {
                             </Modal>
                         </>
                     ),
-                    timeTracking: <TimeTrackingPage />,
+                    timeTracking: () => <TimeTrackingPage />,
                 }}
             </SubTabs>
         </div>

@@ -216,18 +216,22 @@ export default function BookingListPage() {
         setCancelTarget(null);
     };
 
-    const queueNumbers = computeQueueNumbers(rows);
+    const queueNumbers = React.useMemo(() => computeQueueNumbers(rows), [rows]);
 
-    const filtered = rows.filter(v => {
-        const services = v.lines.map(l => l.serviceName).join(' ');
-        const matchSearch =
-            v.clientName.toLowerCase().includes(search.toLowerCase()) ||
-            v.visit.uuid.toLowerCase().includes(search.toLowerCase()) ||
-            services.toLowerCase().includes(search.toLowerCase());
-        const matchStatus = statusFilter === 'all' || v.visit.status === statusFilter;
-        const matchPayment = paymentFilter === 'all' || paymentBucket(v.visit.payment.status) === paymentFilter;
-        return matchSearch && matchStatus && matchPayment;
-    });
+    const filtered = React.useMemo(
+        () =>
+            rows.filter(v => {
+                const services = v.lines.map(l => l.serviceName).join(' ');
+                const matchSearch =
+                    v.clientName.toLowerCase().includes(search.toLowerCase()) ||
+                    v.visit.uuid.toLowerCase().includes(search.toLowerCase()) ||
+                    services.toLowerCase().includes(search.toLowerCase());
+                const matchStatus = statusFilter === 'all' || v.visit.status === statusFilter;
+                const matchPayment = paymentFilter === 'all' || paymentBucket(v.visit.payment.status) === paymentFilter;
+                return matchSearch && matchStatus && matchPayment;
+            }),
+        [rows, search, statusFilter, paymentFilter]
+    );
 
     const itemsPerPage = 5;
     const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
@@ -446,7 +450,10 @@ export default function BookingListPage() {
                                             <td onClick={e => e.stopPropagation()}>
                                                 <DropdownMenu
                                                     trigger={
-                                                        <button className={styles.actionBtn}>
+                                                        <button
+                                                            className={styles.actionBtn}
+                                                            aria-label={t('common.moreOptions')}
+                                                        >
                                                             <MoreVertical size={16} />
                                                         </button>
                                                     }
