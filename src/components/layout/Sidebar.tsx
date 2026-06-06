@@ -152,7 +152,7 @@ function SidebarInner() {
                 <div className={styles.header}>
                     {!collapsed ? (
                         <Link href="/" className={styles.logo}>
-                            <Logo height={26} />
+                            <Logo height={26} color="white" />
                         </Link>
                     ) : (
                         <button
