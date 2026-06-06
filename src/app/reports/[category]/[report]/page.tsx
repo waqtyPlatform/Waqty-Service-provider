@@ -8,7 +8,6 @@ import { Calendar, Download, Filter, Search, ArrowRight, ArrowUpDown, ChevronLef
 import { Button, Select, Badge, Skeleton } from '@/components/ui';
 import styles from './page.module.css';
 import { useTranslation } from '@/hooks/useTranslation';
-import translations from '@/i18n/translations';
 import { useApiQuery, useApiMutation } from '@/hooks/useApiQuery';
 import { reportApi, type ReportData as ApiReportData, type ReportFilters } from '@/lib/api';
 
@@ -1435,7 +1434,8 @@ export default function DynamicReportPage({ params }: { params: Promise<{ catego
 
     /* Localized breadcrumb: localized category name › localized (or slug-derived) report title */
     const catKey = `rptDynamic.cat.${category}`;
-    const catLabel = translations[catKey] ? t(catKey) : category.charAt(0).toUpperCase() + category.slice(1);
+    const tCat = t(catKey);
+    const catLabel = tCat !== catKey ? tCat : category.charAt(0).toUpperCase() + category.slice(1);
     const breadcrumb = `${catLabel} › ${titleText}`;
 
     return (

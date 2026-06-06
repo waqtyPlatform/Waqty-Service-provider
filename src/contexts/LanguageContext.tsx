@@ -2,6 +2,8 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { setMoneyLocale } from '@/lib/money';
+import { loadMessages, type Messages } from '@/i18n';
+import { Logo } from '@/components/Logo';
 
 type Language = 'en' | 'ar';
 
@@ -10,6 +12,7 @@ interface LanguageContextType {
     setLanguage: (lang: Language) => void;
     toggleLanguage: () => void;
     isRTL: boolean;
+    messages: Messages;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -32,6 +35,19 @@ function getInitialLanguage(): Language {
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
     const [language, setLanguageState] = useState<Language>(getInitialLanguage);
+    const [messages, setMessages] = useState<Messages | null>(null);
+
+    // Load ONLY the active locale's strings (its own chunk); swap when the language
+    // changes. The previous strings stay until the new ones resolve.
+    useEffect(() => {
+        let cancelled = false;
+        loadMessages(language).then(m => {
+            if (!cancelled) setMessages(m);
+        });
+        return () => {
+            cancelled = true;
+        };
+    }, [language]);
 
     // Keep money formatting (formatMoney) in sync with the UI language — set during
     // render so the first paint of any amount already shows "جنيه" vs "EGP".
@@ -62,9 +78,28 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     const isRTL = language === 'ar';
 
     const value = useMemo(
-        () => ({ language, setLanguage, toggleLanguage, isRTL }),
-        [language, setLanguage, toggleLanguage, isRTL]
+        () => ({ language, setLanguage, toggleLanguage, isRTL, messages: messages ?? {} }),
+        [language, setLanguage, toggleLanguage, isRTL, messages]
     );
+
+    // Gate first paint until the active locale resolves. Server + initial client
+    // both render this splash (messages === null), so there is NO hydration
+    // mismatch; the app reveals once the locale chunk loads on the client.
+    if (!messages) {
+        return (
+            <div
+                style={{
+                    minHeight: '100vh',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'var(--bg-secondary)',
+                }}
+            >
+                <Logo height={36} />
+            </div>
+        );
+    }
 
     return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
 }
