@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useCallback, useEffect, createContext, useContext, ReactNode } from 'react';
+import React, { useState, useCallback, useEffect, useId, createContext, useContext, ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 import {
     X,
     Search,
@@ -169,20 +170,38 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(function Input(
-    { label, hint, error, className, ...props },
+    { label, hint, error, className, id, ...props },
     ref
 ) {
+    const reactId = useId();
+    const inputId = id ?? reactId;
+    const hintId = hint && !error ? `${inputId}-hint` : undefined;
+    const errorId = error ? `${inputId}-error` : undefined;
     return (
         <div className={styles.inputWrapper}>
-            {label && <label className={styles.inputLabel}>{label}</label>}
+            {label && (
+                <label className={styles.inputLabel} htmlFor={inputId}>
+                    {label}
+                </label>
+            )}
             <input
                 ref={ref}
+                id={inputId}
+                aria-describedby={errorId ?? hintId}
                 className={`${styles.input} ${error ? styles.inputHasError : ''} ${className || ''}`}
                 aria-invalid={error ? true : undefined}
                 {...props}
             />
-            {hint && !error && <span className={styles.inputHint}>{hint}</span>}
-            {error && <span className={styles.inputError}>{error}</span>}
+            {hint && !error && (
+                <span id={hintId} className={styles.inputHint}>
+                    {hint}
+                </span>
+            )}
+            {error && (
+                <span id={errorId} className={styles.inputError}>
+                    {error}
+                </span>
+            )}
         </div>
     );
 });
@@ -194,13 +213,19 @@ interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
 }
 
 export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(function Select(
-    { label, options, className, ...props },
+    { label, options, className, id, ...props },
     ref
 ) {
+    const reactId = useId();
+    const selectId = id ?? reactId;
     return (
         <div className={styles.inputWrapper}>
-            {label && <label className={styles.inputLabel}>{label}</label>}
-            <select ref={ref} className={`${styles.selectField} ${className || ''}`} {...props}>
+            {label && (
+                <label className={styles.inputLabel} htmlFor={selectId}>
+                    {label}
+                </label>
+            )}
+            <select ref={ref} id={selectId} className={`${styles.selectField} ${className || ''}`} {...props}>
                 {options.map(o => (
                     <option key={o.value} value={o.value}>
                         {o.label}
@@ -217,13 +242,19 @@ interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement
 }
 
 export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(function Textarea(
-    { label, className, ...props },
+    { label, className, id, ...props },
     ref
 ) {
+    const reactId = useId();
+    const textareaId = id ?? reactId;
     return (
         <div className={styles.inputWrapper}>
-            {label && <label className={styles.inputLabel}>{label}</label>}
-            <textarea ref={ref} className={`${styles.textareaField} ${className || ''}`} {...props} />
+            {label && (
+                <label className={styles.inputLabel} htmlFor={textareaId}>
+                    {label}
+                </label>
+            )}
+            <textarea ref={ref} id={textareaId} className={`${styles.textareaField} ${className || ''}`} {...props} />
         </div>
     );
 });
@@ -263,10 +294,14 @@ interface ModalProps {
 
 export function Modal({ open, onClose, title, children, footer }: ModalProps) {
     useLockBodyAndEscape(open, onClose);
+    // Escape + body-lock are handled above; this adds the actual Tab focus-trap,
+    // autofocus, and focus-restore (the shared hook was previously unused).
+    const trapRef = useFocusTrap({ isActive: open });
     if (!open) return null;
     return (
         <div className={styles.modalOverlay} onClick={onClose}>
             <div
+                ref={trapRef}
                 className={styles.modal}
                 role="dialog"
                 aria-modal="true"
@@ -297,11 +332,12 @@ interface SlideOverProps {
 
 export function SlideOver({ open, onClose, title, children, footer }: SlideOverProps) {
     useLockBodyAndEscape(open, onClose);
+    const trapRef = useFocusTrap({ isActive: open });
     if (!open) return null;
     return (
         <>
             <div className={styles.slideOverOverlay} onClick={onClose} />
-            <div className={styles.slideOver} role="dialog" aria-modal="true" aria-label={title}>
+            <div ref={trapRef} className={styles.slideOver} role="dialog" aria-modal="true" aria-label={title}>
                 <div className={styles.slideOverHeader}>
                     <div className={styles.modalTitle}>{title}</div>
                     <button className={styles.modalClose} onClick={onClose} aria-label="Close">

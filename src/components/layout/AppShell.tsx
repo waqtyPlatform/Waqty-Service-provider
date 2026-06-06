@@ -11,6 +11,7 @@ import MobileBottomNav from './MobileBottomNav';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { RoleGuard } from '@/components/RoleGuard';
 import styles from './AppShell.module.css';
+import { useTranslation } from '@/hooks/useTranslation';
 
 import { usePathname } from 'next/navigation';
 
@@ -20,6 +21,7 @@ const CommandPalette = dynamic(() => import('@/components/CommandPalette'), { ss
 function AppContent({ children }: { children: React.ReactNode }) {
     const { collapsed } = useSidebar();
     const pathname = usePathname();
+    const { t } = useTranslation();
 
     const isPublicRoute =
         pathname === '/login' ||
@@ -33,10 +35,13 @@ function AppContent({ children }: { children: React.ReactNode }) {
 
     return (
         <div className={`${styles.layout} ${collapsed ? styles.sidebarCollapsed : ''}`}>
+            <a href="#main-content" className={styles.skipLink}>
+                {t('common.skipToContent')}
+            </a>
             <Sidebar />
             <TopBar />
             <CommandPalette />
-            <main className={styles.main}>
+            <main id="main-content" className={styles.main}>
                 <div className={styles.content}>
                     <RoleGuard>{children}</RoleGuard>
                 </div>

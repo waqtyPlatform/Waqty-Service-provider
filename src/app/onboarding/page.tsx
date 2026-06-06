@@ -539,7 +539,8 @@ export default function OnboardingPage() {
                                         padding: 'var(--space-1)',
                                     }}
                                     onClick={() => setShowPassword(!showPassword)}
-                                    tabIndex={-1}
+                                    aria-label={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
+                                    aria-pressed={showPassword}
                                 >
                                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </button>
@@ -965,7 +966,10 @@ export default function OnboardingPage() {
                                                 padding: 'var(--space-1)',
                                             }}
                                             onClick={() => setShowBranchPassword(!showBranchPassword)}
-                                            tabIndex={-1}
+                                            aria-label={
+                                                showBranchPassword ? t('auth.hidePassword') : t('auth.showPassword')
+                                            }
+                                            aria-pressed={showBranchPassword}
                                         >
                                             {showBranchPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                         </button>

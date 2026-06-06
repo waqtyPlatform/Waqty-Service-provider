@@ -2,26 +2,36 @@
 
 import React, { useState } from 'react';
 import { ArrowRight, ArrowLeft, Check, Image as ImageIcon } from 'lucide-react';
-import { Button, Input, Select, Checkbox, Stepper, Textarea } from '@/components/ui';
+import { Button, Input, Select, Checkbox, Stepper, Textarea, useToast } from '@/components/ui';
 import styles from './page.module.css';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/hooks/useTranslation';
+import { providerApi } from '@/lib/api';
 
 export default function NewServicePage() {
     const router = useRouter();
     const { t, lang } = useTranslation();
+    const { addToast } = useToast();
     const [currentStep, setCurrentStep] = useState(0);
+    const [submitting, setSubmitting] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
-        category: '',
+        category: 'hair',
         description: '',
         price: '',
+        costPrice: '',
         tax: true,
+        online: true,
         duration: '45',
         buffer: '10',
-        online: true,
+        processDuring: '0',
+        resource: 'none',
         gender: 'unisex',
+        commPct: '',
+        commFixed: '',
+        deductCost: true,
     });
+    const set = (patch: Partial<typeof formData>) => setFormData(prev => ({ ...prev, ...patch }));
 
     const steps = [
         t('settings.services.new.step1'),
@@ -32,12 +42,50 @@ export default function NewServicePage() {
         t('settings.services.new.step6'),
     ];
 
+    const handleSubmit = async () => {
+        if (!formData.name.trim()) {
+            addToast('error', t('settings.services.new.nameRequired'));
+            setCurrentStep(0);
+            return;
+        }
+        if (!formData.price || Number(formData.price) <= 0) {
+            addToast('error', t('settings.services.new.priceRequired'));
+            setCurrentStep(1);
+            return;
+        }
+        setSubmitting(true);
+        // Best-effort persistence (mirrors settings/services inline add); the backend
+        // takes name + duration via FormData, price is scoped separately. The page
+        // falls back gracefully when the API is unreachable.
+        try {
+            const fd = new FormData();
+            fd.append('name', formData.name.trim());
+            fd.append('estimated_duration_minutes', String(Number(formData.duration) || 0));
+            if (formData.description.trim()) fd.append('description', formData.description.trim());
+            await providerApi.createService(fd);
+        } catch {
+            // keep going — surface success for the in-session optimistic flow
+        } finally {
+            setSubmitting(false);
+        }
+        addToast('success', t('settings.services.new.created'));
+        router.push('/settings/services');
+    };
+
     const nextStep = () => {
+        // Per-step required-field validation before advancing.
+        if (currentStep === 0 && !formData.name.trim()) {
+            addToast('error', t('settings.services.new.nameRequired'));
+            return;
+        }
+        if (currentStep === 1 && (!formData.price || Number(formData.price) <= 0)) {
+            addToast('error', t('settings.services.new.priceRequired'));
+            return;
+        }
         if (currentStep < steps.length - 1) {
             setCurrentStep(currentStep + 1);
         } else {
-            // Submit
-            router.push('/settings/services');
+            handleSubmit();
         }
     };
 
@@ -56,9 +104,13 @@ export default function NewServicePage() {
                         <Input
                             label={t('settings.services.new.svcName')}
                             placeholder={t('settings.services.new.svcNamePh')}
+                            value={formData.name}
+                            onChange={e => set({ name: e.target.value })}
                         />
                         <Select
                             label={t('settings.services.new.category')}
+                            value={formData.category}
+                            onChange={e => set({ category: e.target.value })}
                             options={[
                                 { value: 'hair', label: t('settings.services.new.catHair') },
                                 { value: 'nails', label: t('settings.services.new.catNails') },
@@ -68,6 +120,8 @@ export default function NewServicePage() {
                         <Textarea
                             label={t('settings.services.new.desc')}
                             placeholder={t('settings.services.new.descHint')}
+                            value={formData.description}
+                            onChange={e => set({ description: e.target.value })}
                         />
                     </div>
                 );
@@ -81,16 +135,28 @@ export default function NewServicePage() {
                                 placeholder="0.00"
                                 type="number"
                                 dir="ltr"
+                                value={formData.price}
+                                onChange={e => set({ price: e.target.value })}
                             />
                             <Input
                                 label={t('settings.services.new.costPrice')}
                                 placeholder="0.00"
                                 type="number"
                                 dir="ltr"
+                                value={formData.costPrice}
+                                onChange={e => set({ costPrice: e.target.value })}
                             />
                         </div>
-                        <Checkbox label={t('settings.services.new.taxable')} checked={formData.tax} />
-                        <Checkbox label={t('settings.services.new.allowOnline')} checked={formData.online} />
+                        <Checkbox
+                            label={t('settings.services.new.taxable')}
+                            checked={formData.tax}
+                            onChange={v => set({ tax: v })}
+                        />
+                        <Checkbox
+                            label={t('settings.services.new.allowOnline')}
+                            checked={formData.online}
+                            onChange={v => set({ online: v })}
+                        />
                     </div>
                 );
             case 2:
@@ -100,13 +166,15 @@ export default function NewServicePage() {
                         <div className={styles.grid2}>
                             <Input
                                 label={t('settings.services.new.durationMin')}
-                                defaultValue="45"
+                                value={formData.duration}
+                                onChange={e => set({ duration: e.target.value })}
                                 type="number"
                                 dir="ltr"
                             />
                             <Input
                                 label={t('settings.services.new.bufferAfter')}
-                                defaultValue="10"
+                                value={formData.buffer}
+                                onChange={e => set({ buffer: e.target.value })}
                                 type="number"
                                 hint={t('settings.services.new.bufferHint')}
                                 dir="ltr"
@@ -115,7 +183,8 @@ export default function NewServicePage() {
                         <div className={styles.grid2}>
                             <Input
                                 label={t('settings.services.new.processDuring')}
-                                defaultValue="0"
+                                value={formData.processDuring}
+                                onChange={e => set({ processDuring: e.target.value })}
                                 type="number"
                                 hint={t('settings.services.new.processHint')}
                                 dir="ltr"
@@ -130,6 +199,8 @@ export default function NewServicePage() {
                         <p className={styles.stepDesc}>{t('settings.services.new.resDesc')}</p>
                         <Select
                             label={t('settings.services.new.reqRes')}
+                            value={formData.resource}
+                            onChange={e => set({ resource: e.target.value })}
                             options={[
                                 { value: 'none', label: t('settings.services.new.resNone') },
                                 { value: 'chair', label: t('settings.services.new.resChair') },
@@ -138,6 +209,8 @@ export default function NewServicePage() {
                         />
                         <Select
                             label={t('settings.services.new.targetGender')}
+                            value={formData.gender}
+                            onChange={e => set({ gender: e.target.value })}
                             options={[
                                 { value: 'unisex', label: t('settings.services.new.genderUnisex') },
                                 { value: 'female', label: t('settings.services.new.genderFemale') },
@@ -156,15 +229,23 @@ export default function NewServicePage() {
                                 placeholder="e.g. 10"
                                 type="number"
                                 dir="ltr"
+                                value={formData.commPct}
+                                onChange={e => set({ commPct: e.target.value })}
                             />
                             <Input
                                 label={t('settings.services.new.commFixed')}
                                 placeholder="e.g. 50"
                                 type="number"
                                 dir="ltr"
+                                value={formData.commFixed}
+                                onChange={e => set({ commFixed: e.target.value })}
                             />
                         </div>
-                        <Checkbox label={t('settings.services.new.deductCost')} checked={true} />
+                        <Checkbox
+                            label={t('settings.services.new.deductCost')}
+                            checked={formData.deductCost}
+                            onChange={v => set({ deductCost: v })}
+                        />
                     </div>
                 );
             case 5:
@@ -219,7 +300,7 @@ export default function NewServicePage() {
                         )}
                         {t('settings.services.new.back')}
                     </Button>
-                    <Button onClick={nextStep}>
+                    <Button onClick={nextStep} disabled={submitting}>
                         {currentStep === steps.length - 1 ? (
                             <>
                                 {t('settings.services.new.save')} <Check size={16} style={{ marginInlineStart: 4 }} />

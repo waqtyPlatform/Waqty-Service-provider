@@ -284,29 +284,6 @@ export default function DashboardPage() {
         };
     }, []);
 
-    // ── Compute booking status from real data ──
-    const liveBookingStatusData = React.useMemo(() => {
-        if (!apiBookings) return null;
-        const counts: Record<string, number> = {
-            confirmed: 0,
-            completed: 0,
-            pending: 0,
-            cancelled: 0,
-            no_show: 0,
-        };
-        for (const b of apiBookings) {
-            const status = b.status.toLowerCase();
-            if (status in counts) counts[status]++;
-        }
-        return [
-            { name: 'Confirmed', value: counts.confirmed, color: 'var(--status-confirmed)' },
-            { name: 'Completed', value: counts.completed, color: 'var(--status-completed)' },
-            { name: 'Pending', value: counts.pending, color: 'var(--status-unconfirmed)' },
-            { name: 'Cancelled', value: counts.cancelled, color: 'var(--status-cancelled)' },
-            { name: 'No-Show', value: counts.no_show, color: 'var(--status-no-show)' },
-        ].filter(d => d.value > 0);
-    }, [apiBookings]);
-
     // ── Compute employee occupancy from real data ──
     const liveOccupancyData = React.useMemo(() => {
         if (!apiBookings || !apiEmployees) return null;
@@ -446,11 +423,9 @@ export default function DashboardPage() {
     }, [activeDate, liveOccupancyData]);
 
     const currentBookingStatusData = useMemo(() => {
-        // Use real data from bookings API if available
-        if (liveBookingStatusData) {
-            return liveBookingStatusData;
-        }
-        // Use summary distribution if available from dashboard API
+        // Drive the donut from the authoritative aggregate (/provider/dashboard
+        // by_status, which also respects the Today/month toggle) rather than
+        // recomputing it from a capped 100-row bookings sample.
         if (summary.booking_status_distribution.length > 0) {
             const colorMap: Record<string, string> = {
                 Confirmed: 'var(--status-confirmed)',
@@ -467,7 +442,7 @@ export default function DashboardPage() {
             }));
         }
         return bookingStatusData;
-    }, [liveBookingStatusData, summary]);
+    }, [summary]);
 
     const currentTopClients = useMemo(() => {
         if (summary.top_clients.length > 0) {
@@ -620,19 +595,10 @@ export default function DashboardPage() {
                                             </span>
                                         )}
                                     </span>
-                                    <div className={styles.kpiLabel}>
-                                        {kpi.label === 'Bookings'
-                                            ? bookingsTerm
-                                            : kpi.label === 'New Clients'
-                                              ? `+ ${clientsTerm}`
-                                              : t(
-                                                    kpi.label === 'Total Revenue'
-                                                        ? 'dash.kpiRev'
-                                                        : kpi.label === 'Invoices'
-                                                          ? 'dash.kpiInvoices'
-                                                          : 'dash.kpiReturns'
-                                                )}
-                                    </div>
+                                    {/* kpi.label is already localized + business-type aware in
+                                        currentKpiData; the old English-literal ternary never matched
+                                        under Arabic and mislabeled every card as "Returns". */}
+                                    <div className={styles.kpiLabel}>{kpi.label}</div>
                                 </div>
                                 <div className={styles.kpiSparkline}>
                                     <KpiSparkline data={kpi.sparkData} />

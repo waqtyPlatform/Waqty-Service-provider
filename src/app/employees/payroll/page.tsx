@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import {
     Wallet,
     DollarSign,
@@ -32,9 +33,21 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useApiQuery } from '@/hooks/useApiQuery';
 import { payrollApi } from '@/lib/api';
 import SubTabs from '@/components/SubTabs';
-import CommissionsPage from '@/app/employees/commissions/page';
-import CommissionSettingsPage from '@/app/employees/commission-settings/page';
-import DeductionsPage from '@/app/employees/deductions/page';
+// Lazy-load the sibling tab panels so their (large) code only ships when the user
+// opens that tab — SubTabs mounts only the active panel, so the chunk isn't even
+// requested until then. Keeps the /employees/payroll route's initial JS small.
+const CommissionsPage = dynamic(() => import('@/app/employees/commissions/page'), {
+    ssr: false,
+    loading: () => <div style={{ minHeight: 320 }} />,
+});
+const CommissionSettingsPage = dynamic(() => import('@/app/employees/commission-settings/page'), {
+    ssr: false,
+    loading: () => <div style={{ minHeight: 320 }} />,
+});
+const DeductionsPage = dynamic(() => import('@/app/employees/deductions/page'), {
+    ssr: false,
+    loading: () => <div style={{ minHeight: 320 }} />,
+});
 
 /* ─── Mock Data ──────────────────────────────────────────────────── */
 
@@ -3235,9 +3248,9 @@ export default function PayrollPage() {
                                 })()}
                         </>
                     ),
-                    deductions: <DeductionsPage />,
-                    commissions: <CommissionsPage />,
-                    commSettings: <CommissionSettingsPage />,
+                    deductions: () => <DeductionsPage />,
+                    commissions: () => <CommissionsPage />,
+                    commSettings: () => <CommissionSettingsPage />,
                 }}
             </SubTabs>
         </div>

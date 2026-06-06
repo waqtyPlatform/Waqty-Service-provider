@@ -11,7 +11,9 @@ interface SubTab {
 interface SubTabsProps {
     tabs: SubTab[];
     defaultTab?: string;
-    children: Record<string, React.ReactNode>;
+    // A panel may be a ReactNode (eager) or a thunk `() => ReactNode` (lazy) — only the
+    // active tab's thunk is invoked, so non-active panels aren't even constructed.
+    children: Record<string, React.ReactNode | (() => React.ReactNode)>;
 }
 
 const styles: Record<string, React.CSSProperties> = {
@@ -49,6 +51,7 @@ const styles: Record<string, React.CSSProperties> = {
 
 export default function SubTabs({ tabs, defaultTab, children }: SubTabsProps) {
     const [activeTab, setActiveTab] = useState(defaultTab || tabs[0]?.key || '');
+    const activePanel = children[activeTab];
 
     return (
         <>
@@ -67,7 +70,7 @@ export default function SubTabs({ tabs, defaultTab, children }: SubTabsProps) {
                     </button>
                 ))}
             </div>
-            {children[activeTab]}
+            {typeof activePanel === 'function' ? activePanel() : activePanel}
         </>
     );
 }

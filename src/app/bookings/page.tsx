@@ -22,6 +22,16 @@ import {
     STATUS_LABEL_KEY,
 } from './_visits';
 
+// Local-date YYYY-MM-DD. Plain toISOString() converts to UTC and, for UTC+ zones
+// (Egypt is UTC+2/+3), a local-midnight Date lands on the PREVIOUS calendar day —
+// which made the calendar fetch/deep-link the wrong day. The booking date is a
+// local calendar day, so normalize before slicing.
+function toLocalDateStr(d: Date): string {
+    const x = new Date(d);
+    x.setMinutes(x.getMinutes() - x.getTimezoneOffset());
+    return x.toISOString().split('T')[0];
+}
+
 interface CalEmployee {
     name: string;
     initials: string;
@@ -454,7 +464,7 @@ export default function BookingsCalendarPage() {
     // Fetch bookings for the selected date and lift each into a canonical VisitView.
     // GAP: API has no price/payment data on bookings (resolved via ServicePrice — X15).
     useEffect(() => {
-        const dateStr = currentDate.toISOString().split('T')[0];
+        const dateStr = toLocalDateStr(currentDate);
         providerApi
             .getBookings({ booking_date: dateStr, per_page: 100 })
             .then(res => {
@@ -507,7 +517,7 @@ export default function BookingsCalendarPage() {
     const writeUrl = (view: 'day' | 'week' | 'month', date: Date) => {
         const p = new URLSearchParams(window.location.search);
         p.set('view', view);
-        p.set('date', date.toISOString().split('T')[0]);
+        p.set('date', toLocalDateStr(date));
         window.history.replaceState(null, '', `?${p.toString()}`);
     };
     const selectView = (view: 'day' | 'week' | 'month') => {
@@ -535,7 +545,7 @@ export default function BookingsCalendarPage() {
     const handleEmptyCellClick = (empIndex: number, slotIndex: number) => {
         const time = timeSlots[slotIndex];
         const emp = employees[empIndex];
-        const dateStr = currentDate.toISOString().split('T')[0];
+        const dateStr = toLocalDateStr(currentDate);
         router.push(`/bookings/new?emp=${emp.initials}&date=${dateStr}&time=${time}`);
     };
 
@@ -767,7 +777,7 @@ export default function BookingsCalendarPage() {
                                                 marginTop: 2,
                                             }}
                                         >
-                                            <AlertTriangle size={10} /> Off-shift
+                                            <AlertTriangle size={10} /> {t('bookings.offShift')}
                                         </div>
                                     )}
                                 </div>
@@ -790,7 +800,11 @@ export default function BookingsCalendarPage() {
                                                 className={styles.timeCell}
                                                 onClick={() => !block && handleEmptyCellClick(empIndex, slotIndex)}
                                                 style={{ cursor: block ? 'default' : 'pointer' }}
-                                                title={!block ? `Book slot — ${timeSlots[slotIndex]}` : undefined}
+                                                title={
+                                                    !block
+                                                        ? t('bookings.bookSlot').replace('{time}', timeSlots[slotIndex])
+                                                        : undefined
+                                                }
                                             >
                                                 {block && (
                                                     <div
@@ -880,7 +894,7 @@ export default function BookingsCalendarPage() {
                                         {timeSlots[nextBlock.startSlot + nextBlock.span] || '21:00'}
                                     </div>
                                     <div className={styles.expectedTimeRow}>
-                                        <span>Expected start:</span>
+                                        <span>{t('bookings.expectedStart')}</span>
                                         <span className={styles.expectedTimeValue}>{nextExpected.expected}</span>
                                         {nextExpected.delayMins > 0 && (
                                             <span className={styles.delayBadge}>

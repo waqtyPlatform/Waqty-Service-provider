@@ -268,8 +268,12 @@ export default function NotificationsPage() {
     const { loading, error, refetch } = useApiQuery(() => marketingApi.getNotifications() as never, [], {
         fallbackData: fallbackNotifications,
     });
-    // Use mock data until backend API is available
-    const notifications = fallbackNotifications;
+    // Local state seeded from mock until the backend API exists — lets Add/Edit/Delete
+    // actually persist for the session instead of silently discarding input.
+    const [notifications, setNotifications] = useState(fallbackNotifications);
+    const blankForm = { title: '', channel: 'SMS', audience: 'All Clients', date: '', status: 'draft', message: '' };
+    const [addForm, setAddForm] = useState(blankForm);
+    const [editForm, setEditForm] = useState(blankForm);
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -286,8 +290,46 @@ export default function NotificationsPage() {
     };
     const openEdit = (n: (typeof notifications)[0]) => {
         setSelected(n);
+        setEditForm({
+            title: n.title,
+            channel: n.channel,
+            audience: n.audience,
+            date: n.date,
+            status: n.status,
+            message: n.message,
+        });
         setIsDetailOpen(false);
         setIsEditOpen(true);
+    };
+
+    const handleAddNotification = () => {
+        const nextId = Math.max(0, ...notifications.map(n => n.id)) + 1;
+        setNotifications(prev => [
+            {
+                id: nextId,
+                title: addForm.title.trim(),
+                channel: addForm.channel,
+                audience: addForm.audience,
+                sent: 0,
+                opened: 0,
+                date: addForm.date,
+                status: 'draft',
+                message: addForm.message,
+            },
+            ...prev,
+        ]);
+        setIsAddOpen(false);
+        setAddForm(blankForm);
+        addToast('success', t('mkt.msgNotificationScheduled'));
+    };
+
+    const handleUpdateNotification = () => {
+        if (selected) {
+            setNotifications(prev => prev.map(n => (n.id === selected.id ? { ...n, ...editForm } : n)));
+        }
+        setIsEditOpen(false);
+        setSelected(null);
+        addToast('success', t('mkt.msgNotificationUpdated'));
     };
     const openDelete = (n: (typeof notifications)[0]) => {
         setSelected(n);
@@ -296,6 +338,7 @@ export default function NotificationsPage() {
     };
 
     const handleDelete = async () => {
+        const removedId = selected?.id;
         try {
             if (selected?.id && typeof selected.id === 'string') {
                 await marketingApi.deleteMessage(selected.id);
@@ -304,6 +347,8 @@ export default function NotificationsPage() {
         } catch {
             /* fallback */
         }
+        // Optimistically remove from the local list so the delete is reflected.
+        if (removedId != null) setNotifications(prev => prev.filter(n => n.id !== removedId));
         setIsDeleteOpen(false);
         setSelected(null);
         addToast('success', t('mkt.lblDeleteNotification'));
@@ -774,21 +819,21 @@ export default function NotificationsPage() {
                         <Button variant="ghost" onClick={() => setIsAddOpen(false)}>
                             {t('rtn.btnBack')}
                         </Button>
-                        <Button
-                            onClick={() => {
-                                setIsAddOpen(false);
-                                addToast('success', t('mkt.msgNotificationScheduled'));
-                            }}
-                        >
-                            {t('mkt.btnScheduleNotification')}
-                        </Button>
+                        <Button onClick={handleAddNotification}>{t('mkt.btnScheduleNotification')}</Button>
                     </div>
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label={t('mkt.lblCampaignTitle')} placeholder={t('mkt.phCampaignTitle')} />
+                    <Input
+                        label={t('mkt.lblCampaignTitle')}
+                        placeholder={t('mkt.phCampaignTitle')}
+                        value={addForm.title}
+                        onChange={e => setAddForm(f => ({ ...f, title: e.target.value }))}
+                    />
                     <Select
                         label={t('mkt.lblChannel')}
+                        value={addForm.channel}
+                        onChange={e => setAddForm(f => ({ ...f, channel: e.target.value }))}
                         options={[
                             { label: 'SMS', value: 'SMS' },
                             { label: 'Email', value: 'Email' },
@@ -798,13 +843,20 @@ export default function NotificationsPage() {
                     />
                     <Select
                         label={t('mkt.lblAudience')}
+                        value={addForm.audience}
+                        onChange={e => setAddForm(f => ({ ...f, audience: e.target.value }))}
                         options={[
                             { label: t('mkt.lblAllClients'), value: 'All Clients' },
                             { label: t('mkt.lblVipGroup'), value: 'VIP Group' },
                             { label: t('mkt.lblInactive30'), value: 'Inactive > 30 days' },
                         ]}
                     />
-                    <Input label={t('mkt.lblSendDate')} type="date" />
+                    <Input
+                        label={t('mkt.lblSendDate')}
+                        type="date"
+                        value={addForm.date}
+                        onChange={e => setAddForm(f => ({ ...f, date: e.target.value }))}
+                    />
                     <div>
                         <label
                             style={{
@@ -828,6 +880,8 @@ export default function NotificationsPage() {
                                 color: 'var(--text-primary)',
                             }}
                             placeholder={t('mkt.phTypeMessage')}
+                            value={addForm.message}
+                            onChange={e => setAddForm(f => ({ ...f, message: e.target.value }))}
                         />
                     </div>
                 </div>
@@ -846,23 +900,21 @@ export default function NotificationsPage() {
                         <Button variant="ghost" onClick={() => setIsEditOpen(false)}>
                             {t('rtn.btnBack')}
                         </Button>
-                        <Button
-                            onClick={() => {
-                                setIsEditOpen(false);
-                                addToast('success', t('mkt.msgNotificationUpdated'));
-                            }}
-                        >
-                            {t('settings.saveChanges')}
-                        </Button>
+                        <Button onClick={handleUpdateNotification}>{t('settings.saveChanges')}</Button>
                     </div>
                 }
             >
                 {selected && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                        <Input label={t('mkt.lblCampaignTitle')} defaultValue={selected.title} />
+                        <Input
+                            label={t('mkt.lblCampaignTitle')}
+                            value={editForm.title}
+                            onChange={e => setEditForm(f => ({ ...f, title: e.target.value }))}
+                        />
                         <Select
                             label={t('mkt.lblChannel')}
-                            defaultValue={selected.channel}
+                            value={editForm.channel}
+                            onChange={e => setEditForm(f => ({ ...f, channel: e.target.value }))}
                             options={[
                                 { label: 'SMS', value: 'SMS' },
                                 { label: 'Email', value: 'Email' },
@@ -872,7 +924,8 @@ export default function NotificationsPage() {
                         />
                         <Select
                             label={t('mkt.lblAudience')}
-                            defaultValue={selected.audience}
+                            value={editForm.audience}
+                            onChange={e => setEditForm(f => ({ ...f, audience: e.target.value }))}
                             options={[
                                 { label: t('mkt.lblAllClients'), value: 'All Clients' },
                                 { label: t('mkt.lblVipGroup'), value: 'VIP Group' },
@@ -881,10 +934,16 @@ export default function NotificationsPage() {
                                 { label: t('mkt.lblBirthdayToday'), value: 'Birthday Today' },
                             ]}
                         />
-                        <Input label={t('mkt.lblSendDate')} type="date" defaultValue={selected.date} />
+                        <Input
+                            label={t('mkt.lblSendDate')}
+                            type="date"
+                            value={editForm.date}
+                            onChange={e => setEditForm(f => ({ ...f, date: e.target.value }))}
+                        />
                         <Select
                             label={t('mkt.lblStatus')}
-                            defaultValue={selected.status}
+                            value={editForm.status}
+                            onChange={e => setEditForm(f => ({ ...f, status: e.target.value }))}
                             options={[
                                 { label: t('mkt.lblDraft'), value: 'draft' },
                                 { label: t('mkt.lblScheduled'), value: 'scheduled' },
@@ -913,7 +972,8 @@ export default function NotificationsPage() {
                                     background: 'var(--bg-primary)',
                                     color: 'var(--text-primary)',
                                 }}
-                                defaultValue={selected.message}
+                                value={editForm.message}
+                                onChange={e => setEditForm(f => ({ ...f, message: e.target.value }))}
                             />
                         </div>
                     </div>

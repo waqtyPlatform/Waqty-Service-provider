@@ -998,7 +998,10 @@ export default function MarketingPage() {
                                                 <td>
                                                     <DropdownMenu
                                                         trigger={
-                                                            <button className={styles.actionBtn}>
+                                                            <button
+                                                                className={styles.actionBtn}
+                                                                aria-label={t('common.moreOptions')}
+                                                            >
                                                                 <MoreVertical size={16} />
                                                             </button>
                                                         }

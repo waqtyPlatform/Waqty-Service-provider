@@ -149,7 +149,12 @@ function TopBarInner() {
 
             {/* Branch Selector */}
             <div className={styles.branchSelector} ref={branchMenuRef}>
-                <button className={styles.branchBtn} onClick={() => setBranchMenuOpen(!branchMenuOpen)}>
+                <button
+                    className={styles.branchBtn}
+                    aria-haspopup="menu"
+                    aria-expanded={branchMenuOpen}
+                    onClick={() => setBranchMenuOpen(!branchMenuOpen)}
+                >
                     <Building2 size={16} />
                     <span>{branches.find(b => b.key === activeBranch)?.label || t('branch.main')}</span>
                     <ChevronDown size={14} />
@@ -219,6 +224,8 @@ function TopBarInner() {
                     <button
                         className={styles.iconBtn}
                         aria-label={t('nav.notifications')}
+                        aria-haspopup="menu"
+                        aria-expanded={notifOpen}
                         onClick={() => setNotifOpen(!notifOpen)}
                     >
                         <Bell size={20} />
@@ -273,7 +280,12 @@ function TopBarInner() {
 
                 {/* User Menu */}
                 <div className={styles.userMenu} ref={userMenuRef}>
-                    <button className={styles.userBtn} onClick={() => setUserMenuOpen(!userMenuOpen)}>
+                    <button
+                        className={styles.userBtn}
+                        aria-haspopup="menu"
+                        aria-expanded={userMenuOpen}
+                        onClick={() => setUserMenuOpen(!userMenuOpen)}
+                    >
                         <div className={styles.userAvatar}>{user?.name?.charAt(0) || '?'}</div>
                         <div className={styles.userInfo}>
                             <span className={styles.userName}>{user?.name || t('user.loading')}</span>

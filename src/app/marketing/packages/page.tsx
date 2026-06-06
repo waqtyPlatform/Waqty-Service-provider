@@ -160,8 +160,12 @@ export default function MarketingPackagesPage() {
     const { loading, error, refetch } = useApiQuery(() => marketingApi.getPackages() as never, [], {
         fallbackData: fallbackPackages,
     });
-    // Use mock data until backend API is available
-    const packages = fallbackPackages;
+    // Local state seeded from mock until the backend exists — Add/Edit/Delete persist
+    // for the session instead of discarding input behind a fake success toast.
+    const [packages, setPackages] = useState(fallbackPackages);
+    const blankForm = { name: '', description: '', price: '', originalPrice: '', target: '', status: 'active' };
+    const [addForm, setAddForm] = useState(blankForm);
+    const [editForm, setEditForm] = useState(blankForm);
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -174,8 +178,61 @@ export default function MarketingPackagesPage() {
     };
     const openEdit = (pkg: (typeof packages)[0]) => {
         setSelectedPackage(pkg);
+        setEditForm({
+            name: pkg.name,
+            description: pkg.description,
+            price: String(pkg.price),
+            originalPrice: String(pkg.originalPrice),
+            target: pkg.target,
+            status: pkg.active ? 'active' : 'draft',
+        });
         setIsDetailOpen(false);
         setIsEditOpen(true);
+    };
+
+    const handleAddPackage = () => {
+        const nextId = Math.max(0, ...packages.map(p => p.id)) + 1;
+        setPackages(prev => [
+            {
+                id: nextId,
+                name: addForm.name.trim(),
+                price: Number(addForm.price) || 0,
+                originalPrice: Number(addForm.originalPrice) || 0,
+                services: [],
+                target: addForm.target,
+                active: addForm.status === 'active',
+                sold: 0,
+                color: '#6366f1',
+                description: addForm.description,
+            },
+            ...prev,
+        ]);
+        setIsAddOpen(false);
+        setAddForm(blankForm);
+        addToast('success', t('mkt.btnSavePackage'));
+    };
+
+    const handleUpdatePackage = () => {
+        if (selectedPackage) {
+            setPackages(prev =>
+                prev.map(p =>
+                    p.id === selectedPackage.id
+                        ? {
+                              ...p,
+                              name: editForm.name.trim(),
+                              description: editForm.description,
+                              price: Number(editForm.price) || 0,
+                              originalPrice: Number(editForm.originalPrice) || 0,
+                              target: editForm.target,
+                              active: editForm.status === 'active',
+                          }
+                        : p
+                )
+            );
+        }
+        setIsEditOpen(false);
+        setSelectedPackage(null);
+        addToast('success', t('settings.saveChanges'));
     };
     const openDelete = (pkg: (typeof packages)[0]) => {
         setSelectedPackage(pkg);
@@ -184,6 +241,7 @@ export default function MarketingPackagesPage() {
     };
 
     const handleDelete = async () => {
+        const removedId = selectedPackage?.id;
         try {
             if (selectedPackage?.id && typeof selectedPackage.id === 'string') {
                 await marketingApi.deletePackage(selectedPackage.id);
@@ -192,6 +250,7 @@ export default function MarketingPackagesPage() {
         } catch {
             /* fallback */
         }
+        if (removedId != null) setPackages(prev => prev.filter(p => p.id !== removedId));
         setIsDeleteOpen(false);
         setSelectedPackage(null);
         addToast('success', t('mkt.lblDeletePackage'));
@@ -424,27 +483,49 @@ export default function MarketingPackagesPage() {
                         <Button variant="ghost" onClick={() => setIsAddOpen(false)}>
                             {t('rtn.btnBack')}
                         </Button>
-                        <Button
-                            onClick={() => {
-                                setIsAddOpen(false);
-                                addToast('success', t('mkt.btnSavePackage'));
-                            }}
-                        >
-                            {t('mkt.btnSavePackage')}
-                        </Button>
+                        <Button onClick={handleAddPackage}>{t('mkt.btnSavePackage')}</Button>
                     </div>
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label={t('mkt.lblPackageName')} placeholder={t('mkt.phPackageName')} />
-                    <Input label={t('mkt.lblDescription')} placeholder={t('mkt.phBriefDescription')} />
+                    <Input
+                        label={t('mkt.lblPackageName')}
+                        placeholder={t('mkt.phPackageName')}
+                        value={addForm.name}
+                        onChange={e => setAddForm(f => ({ ...f, name: e.target.value }))}
+                    />
+                    <Input
+                        label={t('mkt.lblDescription')}
+                        placeholder={t('mkt.phBriefDescription')}
+                        value={addForm.description}
+                        onChange={e => setAddForm(f => ({ ...f, description: e.target.value }))}
+                    />
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
-                        <Input label={t('mkt.lblPrice')} type="number" placeholder="0.00" />
-                        <Input label={t('mkt.lblOriginalPrice')} type="number" placeholder="0.00" />
+                        <Input
+                            label={t('mkt.lblPrice')}
+                            type="number"
+                            placeholder="0.00"
+                            value={addForm.price}
+                            onChange={e => setAddForm(f => ({ ...f, price: e.target.value }))}
+                        />
+                        <Input
+                            label={t('mkt.lblOriginalPrice')}
+                            type="number"
+                            placeholder="0.00"
+                            value={addForm.originalPrice}
+                            onChange={e => setAddForm(f => ({ ...f, originalPrice: e.target.value }))}
+                        />
                     </div>
-                    <Input label={t('mkt.lblTargetAudience')} placeholder={t('mkt.phTargetAudience')} />
+                    <Input
+                        label={t('mkt.lblTargetAudience')}
+                        placeholder={t('mkt.phTargetAudience')}
+                        value={addForm.target}
+                        onChange={e => setAddForm(f => ({ ...f, target: e.target.value }))}
+                    />
                     <Select
                         label={t('mkt.lblStatus')}
+                        value={addForm.status}
+                        onChange={e => setAddForm(f => ({ ...f, status: e.target.value }))}
                         options={[
                             { label: t('mkt.lblActive'), value: 'active' },
                             { label: t('mkt.lblDraft'), value: 'draft' },
@@ -466,33 +547,45 @@ export default function MarketingPackagesPage() {
                         <Button variant="ghost" onClick={() => setIsEditOpen(false)}>
                             {t('rtn.btnBack')}
                         </Button>
-                        <Button
-                            onClick={() => {
-                                setIsEditOpen(false);
-                                addToast('success', t('settings.saveChanges'));
-                            }}
-                        >
-                            {t('settings.saveChanges')}
-                        </Button>
+                        <Button onClick={handleUpdatePackage}>{t('settings.saveChanges')}</Button>
                     </div>
                 }
             >
                 {selectedPackage && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                        <Input label={t('mkt.lblPackageName')} defaultValue={selectedPackage.name} />
-                        <Input label={t('mkt.lblDescription')} defaultValue={selectedPackage.description} />
+                        <Input
+                            label={t('mkt.lblPackageName')}
+                            value={editForm.name}
+                            onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
+                        />
+                        <Input
+                            label={t('mkt.lblDescription')}
+                            value={editForm.description}
+                            onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))}
+                        />
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
-                            <Input label={t('mkt.lblPrice')} type="number" defaultValue={selectedPackage.price} />
+                            <Input
+                                label={t('mkt.lblPrice')}
+                                type="number"
+                                value={editForm.price}
+                                onChange={e => setEditForm(f => ({ ...f, price: e.target.value }))}
+                            />
                             <Input
                                 label={t('mkt.lblOriginalPrice')}
                                 type="number"
-                                defaultValue={selectedPackage.originalPrice}
+                                value={editForm.originalPrice}
+                                onChange={e => setEditForm(f => ({ ...f, originalPrice: e.target.value }))}
                             />
                         </div>
-                        <Input label={t('mkt.lblTargetAudience')} defaultValue={selectedPackage.target} />
+                        <Input
+                            label={t('mkt.lblTargetAudience')}
+                            value={editForm.target}
+                            onChange={e => setEditForm(f => ({ ...f, target: e.target.value }))}
+                        />
                         <Select
                             label={t('mkt.lblStatus')}
-                            defaultValue={selectedPackage.active ? 'active' : 'draft'}
+                            value={editForm.status}
+                            onChange={e => setEditForm(f => ({ ...f, status: e.target.value }))}
                             options={[
                                 { label: t('mkt.lblActive'), value: 'active' },
                                 { label: t('mkt.lblDraft'), value: 'draft' },

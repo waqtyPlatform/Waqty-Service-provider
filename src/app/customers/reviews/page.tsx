@@ -343,71 +343,107 @@ export default function ReviewModerationPage() {
         <div className={styles.customersPage}>
             <div className={styles.headerContent}>
                 <div>
-                    <h1 style={{ fontSize: '1.5rem', fontWeight: 700 }}>{t('reviews.title')}</h1>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginTop: 'var(--space-1)' }}>
+                    <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 700 }}>{t('reviews.title')}</h1>
+                    <p
+                        style={{
+                            color: 'var(--text-secondary)',
+                            fontSize: 'var(--text-sm)',
+                            marginTop: 'var(--space-1)',
+                        }}
+                    >
                         {t('reviews.subtitle')}
                     </p>
                 </div>
             </div>
 
             {/* KPI Cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
+            <div
+                style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                    gap: 'var(--space-4)',
+                }}
+            >
                 <div
                     style={{
-                        padding: '1rem 1.25rem',
+                        padding: 'var(--space-4) var(--space-5)',
                         background: 'var(--bg-surface)',
-                        borderRadius: '0.75rem',
+                        borderRadius: 'var(--radius-lg)',
                         border: '1px solid var(--border)',
                     }}
                 >
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginBottom: 'var(--space-1)' }}>
+                    <div
+                        style={{
+                            fontSize: 'var(--text-xs)',
+                            color: 'var(--text-tertiary)',
+                            marginBottom: 'var(--space-1)',
+                        }}
+                    >
                         {t('reviews.totalReviews')}
                     </div>
-                    <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{(reviews || []).length}</div>
+                    <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 700 }}>{(reviews || []).length}</div>
                 </div>
                 <div
                     style={{
-                        padding: '1rem 1.25rem',
+                        padding: 'var(--space-4) var(--space-5)',
                         background: 'var(--bg-surface)',
-                        borderRadius: '0.75rem',
+                        borderRadius: 'var(--radius-lg)',
                         border: '1px solid var(--border)',
                     }}
                 >
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginBottom: 'var(--space-1)' }}>
+                    <div
+                        style={{
+                            fontSize: 'var(--text-xs)',
+                            color: 'var(--text-tertiary)',
+                            marginBottom: 'var(--space-1)',
+                        }}
+                    >
                         {t('reviews.avgRating')}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                        <span style={{ fontSize: '1.5rem', fontWeight: 700 }}>{avgRating}</span>
+                        <span style={{ fontSize: 'var(--text-2xl)', fontWeight: 700 }}>{avgRating}</span>
                         <Star size={18} fill="#f59e0b" stroke="#f59e0b" />
                     </div>
                 </div>
                 <div
                     style={{
-                        padding: '1rem 1.25rem',
+                        padding: 'var(--space-4) var(--space-5)',
                         background: 'var(--bg-surface)',
-                        borderRadius: '0.75rem',
+                        borderRadius: 'var(--radius-lg)',
                         border: '1px solid var(--border)',
                     }}
                 >
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginBottom: 'var(--space-1)' }}>
+                    <div
+                        style={{
+                            fontSize: 'var(--text-xs)',
+                            color: 'var(--text-tertiary)',
+                            marginBottom: 'var(--space-1)',
+                        }}
+                    >
                         {t('reviews.pending')}
                     </div>
-                    <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--color-warning-500)' }}>
+                    <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 700, color: 'var(--color-warning-500)' }}>
                         {pendingCount}
                     </div>
                 </div>
                 <div
                     style={{
-                        padding: '1rem 1.25rem',
+                        padding: 'var(--space-4) var(--space-5)',
                         background: 'var(--bg-surface)',
-                        borderRadius: '0.75rem',
+                        borderRadius: 'var(--radius-lg)',
                         border: '1px solid var(--border)',
                     }}
                 >
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginBottom: 'var(--space-1)' }}>
+                    <div
+                        style={{
+                            fontSize: 'var(--text-xs)',
+                            color: 'var(--text-tertiary)',
+                            marginBottom: 'var(--space-1)',
+                        }}
+                    >
                         {t('reviews.reported')}
                     </div>
-                    <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--color-error-500)' }}>
+                    <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 700, color: 'var(--color-error-500)' }}>
                         {reportedCount}
                     </div>
                 </div>

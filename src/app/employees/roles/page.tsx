@@ -1,11 +1,16 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { Shield, Plus, Edit, Trash2, Users, MoreVertical, Lock } from 'lucide-react';
 import { Button, Modal, Input, useToast, DropdownMenu } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
 import SubTabs from '@/components/SubTabs';
-import PermissionsPage from '@/app/employees/permissions/page';
+// Lazy-load the sibling tab panel — its chunk loads only when that tab is opened.
+const PermissionsPage = dynamic(() => import('@/app/employees/permissions/page'), {
+    ssr: false,
+    loading: () => <div style={{ minHeight: 320 }} />,
+});
 import { useApiQuery } from '@/hooks/useApiQuery';
 import { employeeExtApi, type Role as ApiRole } from '@/lib/api';
 
@@ -492,7 +497,7 @@ export default function RolesPage() {
                             </Modal>
                         </>
                     ),
-                    permissions: <PermissionsPage />,
+                    permissions: () => <PermissionsPage />,
                 }}
             </SubTabs>
         </div>

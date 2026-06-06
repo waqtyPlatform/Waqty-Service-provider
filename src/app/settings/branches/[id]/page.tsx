@@ -5,6 +5,7 @@ import { Save, Clock, LayoutGrid, Plus, Trash2, Settings, Building2, MapPin } fr
 import { Tabs, Button, Input, Select, Checkbox, Badge } from '@/components/ui';
 import { useToast } from '@/components/ui';
 import styles from './page.module.css';
+import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useApiQuery } from '@/hooks/useApiQuery';
 import { providerApi } from '@/lib/api';
@@ -38,12 +39,26 @@ const branch = {
 
 export default function BranchSettingsPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = React.use(params);
+    const router = useRouter();
     const [activeTab, setActiveTab] = useState('general');
     const { t, lang } = useTranslation();
     const { addToast } = useToast();
 
     // Fetch branch from API with fallback to mock
     const { data: apiBranch } = useApiQuery(() => providerApi.getBranch(id), [id], { fallbackData: branch as never });
+
+    // Controlled General-tab fields. name/phone persist via updateBranch; the rest
+    // (address/manager/taxId/currency have no backend field) stay in local state so
+    // they're no longer silently discarded in-session.
+    const [genName, setGenName] = useState(branch.name);
+    const [genAddress, setGenAddress] = useState(branch.address);
+    const [genPhone, setGenPhone] = useState(branch.phone);
+    const [genManager, setGenManager] = useState(branch.manager);
+    const [genTaxId, setGenTaxId] = useState(branch.taxId);
+    const [genCurrency, setGenCurrency] = useState(branch.currency);
+
+    // Local rooms list (mock-backed) so Add/Delete actually work.
+    const [rooms, setRooms] = useState(branch.rooms);
 
     // Geofence state - initialized from API data or defaults
     const [geoLat, setGeoLat] = useState('30.0444');
@@ -52,13 +67,45 @@ export default function BranchSettingsPage({ params }: { params: Promise<{ id: s
     const [requireGps, setRequireGps] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
 
-    // Sync geofence state from API branch data
+    // Sync state from API branch data once it resolves
     useEffect(() => {
         if (apiBranch) {
+            if (apiBranch.name) setGenName(apiBranch.name);
+            if (apiBranch.phone) setGenPhone(apiBranch.phone);
             if (apiBranch.latitude) setGeoLat(String(apiBranch.latitude));
             if (apiBranch.longitude) setGeoLng(String(apiBranch.longitude));
         }
     }, [apiBranch]);
+
+    const handleSaveGeneral = async () => {
+        if (!genName.trim()) {
+            addToast('error', t('branchSettings.nameRequired'));
+            return;
+        }
+        setIsSaving(true);
+        try {
+            await providerApi.updateBranch(id, { name: genName.trim(), phone: genPhone });
+            addToast('success', t('branchSettings.saved'));
+        } catch {
+            addToast('error', t('branchSettings.saveFailed'));
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleAddRoom = () => {
+        const nextId = Math.max(0, ...rooms.map(r => r.id)) + 1;
+        setRooms(prev => [
+            ...prev,
+            { id: nextId, name: `${t('branchSettings.roomName')} ${nextId}`, type: 'Room', capacity: 1 },
+        ]);
+        addToast('success', t('branchSettings.roomAdded'));
+    };
+
+    const handleDeleteRoom = (roomId: number) => {
+        setRooms(prev => prev.filter(r => r.id !== roomId));
+        addToast('success', t('branchSettings.roomDeleted'));
+    };
 
     const handleSaveGeofence = async () => {
         setIsSaving(true);
@@ -84,14 +131,30 @@ export default function BranchSettingsPage({ params }: { params: Promise<{ id: s
                     <span className={styles.cardTitle}>{t('branchSettings.tabGeneral')}</span>
                 </div>
                 <div className={styles.cardBody}>
-                    <Input label={t('branchSettings.branchName')} defaultValue={branch.name} />
-                    <Input label={t('branchSettings.address')} defaultValue={branch.address} />
+                    <Input
+                        label={t('branchSettings.branchName')}
+                        value={genName}
+                        onChange={e => setGenName(e.target.value)}
+                    />
+                    <Input
+                        label={t('branchSettings.address')}
+                        value={genAddress}
+                        onChange={e => setGenAddress(e.target.value)}
+                    />
                     <div className={styles.row}>
                         <div className={styles.col}>
-                            <Input label={t('branchSettings.phone')} defaultValue={branch.phone} />
+                            <Input
+                                label={t('branchSettings.phone')}
+                                value={genPhone}
+                                onChange={e => setGenPhone(e.target.value)}
+                            />
                         </div>
                         <div className={styles.col}>
-                            <Input label={t('branchSettings.manager')} defaultValue={branch.manager} />
+                            <Input
+                                label={t('branchSettings.manager')}
+                                value={genManager}
+                                onChange={e => setGenManager(e.target.value)}
+                            />
                         </div>
                     </div>
                 </div>
@@ -104,7 +167,11 @@ export default function BranchSettingsPage({ params }: { params: Promise<{ id: s
                 <div className={styles.cardBody}>
                     <div className={styles.row}>
                         <div className={styles.col}>
-                            <Input label={t('branchSettings.taxId')} defaultValue={branch.taxId} />
+                            <Input
+                                label={t('branchSettings.taxId')}
+                                value={genTaxId}
+                                onChange={e => setGenTaxId(e.target.value)}
+                            />
                         </div>
                         <div className={styles.col}>
                             <Select
@@ -113,7 +180,8 @@ export default function BranchSettingsPage({ params }: { params: Promise<{ id: s
                                     { value: 'EGP', label: t('branchSettings.currencyEgp') },
                                     { value: 'USD', label: t('branchSettings.currencyUsd') },
                                 ]}
-                                defaultValue={branch.currency}
+                                value={genCurrency}
+                                onChange={e => setGenCurrency(e.target.value)}
                             />
                         </div>
                     </div>
@@ -272,7 +340,7 @@ export default function BranchSettingsPage({ params }: { params: Promise<{ id: s
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
                     <span className={styles.cardTitle}>{t('branchSettings.tabRooms')}</span>
-                    <Button size="sm">
+                    <Button size="sm" onClick={handleAddRoom}>
                         <Plus size={16} /> {t('branchSettings.addRoom')}
                     </Button>
                 </div>
@@ -287,7 +355,7 @@ export default function BranchSettingsPage({ params }: { params: Promise<{ id: s
                             </tr>
                         </thead>
                         <tbody>
-                            {branch.rooms.map(room => (
+                            {rooms.map(room => (
                                 <tr key={room.id}>
                                     <td>{room.name}</td>
                                     <td>
@@ -299,18 +367,11 @@ export default function BranchSettingsPage({ params }: { params: Promise<{ id: s
                                     <td>
                                         <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                                             <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                iconOnly
-                                                aria-label={t('branchSettings.configureRoom')}
-                                            >
-                                                <Settings size={14} />
-                                            </Button>
-                                            <Button
                                                 variant="destructive"
                                                 size="sm"
                                                 iconOnly
                                                 aria-label={t('branchSettings.deleteRoom')}
+                                                onClick={() => handleDeleteRoom(room.id)}
                                             >
                                                 <Trash2 size={14} />
                                             </Button>
@@ -333,7 +394,7 @@ export default function BranchSettingsPage({ params }: { params: Promise<{ id: s
                         <Building2 size={14} /> {t('branchSettings.title')}
                     </div>
                     <h1>
-                        {branch.name}
+                        {genName}
                         <Badge color={branch.status === 'active' ? 'success' : 'neutral'}>
                             {branch.status === 'active'
                                 ? t('branchSettings.statusActive')
@@ -342,9 +403,11 @@ export default function BranchSettingsPage({ params }: { params: Promise<{ id: s
                     </h1>
                 </div>
                 <div className={styles.actions}>
-                    <Button variant="outline">{t('branchSettings.backToBranches')}</Button>
-                    <Button>
-                        <Save size={16} /> {t('branchSettings.saveChanges')}
+                    <Button variant="outline" onClick={() => router.push('/settings/branches')}>
+                        {t('branchSettings.backToBranches')}
+                    </Button>
+                    <Button onClick={handleSaveGeneral} disabled={isSaving}>
+                        <Save size={16} /> {isSaving ? t('common.saving') : t('branchSettings.saveChanges')}
                     </Button>
                 </div>
             </div>
