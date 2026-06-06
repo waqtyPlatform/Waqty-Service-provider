@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 
 // Define the shape of our settings
 export interface SettingsState {
@@ -71,7 +71,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     // Language sync is now handled by LanguageContext
 
     // Update settings wrapper
-    const updateSettings = (newSettings: Partial<SettingsState>) => {
+    const updateSettings = useCallback((newSettings: Partial<SettingsState>) => {
         setSettings(prev => {
             const updated = { ...prev, ...newSettings };
             try {
@@ -81,22 +81,23 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             }
             return updated;
         });
-    };
+    }, []);
 
-    const resetSettings = () => {
+    const resetSettings = useCallback(() => {
         setSettings(defaultSettings);
         localStorage.removeItem('waqty_settings');
-    };
+    }, []);
 
     // Prevent hydration mismatch by rendering children only after load (optional,
     // but for settings usually fine to render defaults or loading state)
     // For dashboard, immediate render with defaults is often acceptable to avoid flicker
 
-    return (
-        <SettingsContext.Provider value={{ settings, updateSettings, resetSettings }}>
-            {children}
-        </SettingsContext.Provider>
+    const value = useMemo(
+        () => ({ settings, updateSettings, resetSettings }),
+        [settings, updateSettings, resetSettings]
     );
+
+    return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;
 }
 
 export function useSettings() {

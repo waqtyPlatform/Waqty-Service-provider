@@ -2,6 +2,7 @@
 
 import { egpLabel } from '@/lib/money';
 import React, { useState, useMemo, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { Calendar, Download, Filter, Search, ArrowRight, ArrowUpDown, ChevronLeft, Loader2 } from 'lucide-react';
 import { Button, Select, Badge, Skeleton } from '@/components/ui';
@@ -10,17 +11,12 @@ import { useTranslation } from '@/hooks/useTranslation';
 import translations from '@/i18n/translations';
 import { useApiQuery, useApiMutation } from '@/hooks/useApiQuery';
 import { reportApi, type ReportData as ApiReportData, type ReportFilters } from '@/lib/api';
-import {
-    ResponsiveContainer,
-    BarChart,
-    Bar,
-    LineChart as ReLineChart,
-    Line,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
-} from 'recharts';
+
+/* ── Chart lazy-loaded so Recharts stays off the initial route chunk ── */
+const ReportChart = dynamic(() => import('./_components/ReportChart'), {
+    ssr: false,
+    loading: () => <div style={{ width: '100%', height: '100%' }} />,
+});
 
 // --- Data Types ---
 export interface ReportAction {
@@ -1540,87 +1536,7 @@ export default function DynamicReportPage({ params }: { params: Promise<{ catego
             {/* Chart */}
             {data.chartType !== 'none' && data.chartData && data.chartData.length > 0 && (
                 <div className={styles.chartContainer}>
-                    {loading ? (
-                        <ChartSkeleton />
-                    ) : (
-                        <div style={{ width: '100%', height: '100%' }}>
-                            <ResponsiveContainer width="100%" height="100%">
-                                {data.chartType === 'line' ? (
-                                    <ReLineChart data={chartData}>
-                                        <CartesianGrid
-                                            strokeDasharray="3 3"
-                                            stroke="var(--border-color)"
-                                            vertical={false}
-                                        />
-                                        <XAxis
-                                            dataKey="name"
-                                            stroke="var(--text-tertiary)"
-                                            fontSize={12}
-                                            tickLine={false}
-                                            axisLine={false}
-                                            dy={10}
-                                        />
-                                        <YAxis
-                                            stroke="var(--text-tertiary)"
-                                            fontSize={12}
-                                            tickLine={false}
-                                            axisLine={false}
-                                        />
-                                        <Tooltip
-                                            contentStyle={{
-                                                borderRadius: 'var(--radius-md)',
-                                                border: 'none',
-                                                boxShadow: 'var(--shadow-lg)',
-                                            }}
-                                        />
-                                        <Line
-                                            type="monotone"
-                                            dataKey="value"
-                                            stroke="var(--color-primary-500)"
-                                            strokeWidth={3}
-                                            dot={{ r: 4, fill: 'var(--color-primary-500)' }}
-                                        />
-                                    </ReLineChart>
-                                ) : (
-                                    <BarChart data={chartData}>
-                                        <CartesianGrid
-                                            strokeDasharray="3 3"
-                                            stroke="var(--border-color)"
-                                            vertical={false}
-                                        />
-                                        <XAxis
-                                            dataKey="name"
-                                            stroke="var(--text-tertiary)"
-                                            fontSize={12}
-                                            tickLine={false}
-                                            axisLine={false}
-                                            dy={10}
-                                        />
-                                        <YAxis
-                                            stroke="var(--text-tertiary)"
-                                            fontSize={12}
-                                            tickLine={false}
-                                            axisLine={false}
-                                        />
-                                        <Tooltip
-                                            cursor={{ fill: 'var(--bg-secondary)' }}
-                                            contentStyle={{
-                                                borderRadius: 'var(--radius-md)',
-                                                border: 'none',
-                                                boxShadow: 'var(--shadow-lg)',
-                                            }}
-                                        />
-                                        <Bar
-                                            dataKey="value"
-                                            fill="var(--color-primary-500)"
-                                            radius={[4, 4, 0, 0]}
-                                            barSize={40}
-                                        />
-                                    </BarChart>
-                                )}
-                            </ResponsiveContainer>
-                        </div>
-                    )}
+                    {loading ? <ChartSkeleton /> : <ReportChart chartType={data.chartType} chartData={chartData} />}
                 </div>
             )}
 

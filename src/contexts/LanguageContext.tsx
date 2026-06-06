@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { setMoneyLocale } from '@/lib/money';
 
 type Language = 'en' | 'ar';
@@ -61,11 +61,12 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
     const isRTL = language === 'ar';
 
-    return (
-        <LanguageContext.Provider value={{ language, setLanguage, toggleLanguage, isRTL }}>
-            {children}
-        </LanguageContext.Provider>
+    const value = useMemo(
+        () => ({ language, setLanguage, toggleLanguage, isRTL }),
+        [language, setLanguage, toggleLanguage, isRTL]
     );
+
+    return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
 }
 
 export function useLanguage() {

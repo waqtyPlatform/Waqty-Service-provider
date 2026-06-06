@@ -2,6 +2,7 @@
 
 import { egpLabel } from '@/lib/money';
 import React, { useState, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import {
     TrendingUp,
@@ -20,8 +21,13 @@ import {
     AlertTriangle,
     Layers,
 } from 'lucide-react';
-import { ResponsiveContainer, AreaChart, Area, CartesianGrid, XAxis, YAxis, BarChart, Bar, Tooltip } from 'recharts';
 import { Select, Skeleton } from '@/components/ui';
+
+/* ── Chart lazy-loaded so Recharts stays off the initial route chunk ── */
+const CategoryChart = dynamic(() => import('./_components/CategoryChart'), {
+    ssr: false,
+    loading: () => <div style={{ width: '100%', height: '100%' }} />,
+});
 import { useTranslation } from '@/hooks/useTranslation';
 import { useApiQuery } from '@/hooks/useApiQuery';
 import { reportApi, type ReportData, type ReportFilters } from '@/lib/api';
@@ -563,83 +569,7 @@ export default function ReportCategoryPage({ params }: { params: Promise<{ categ
                     <ChartSkeleton />
                 ) : (
                     <div className={styles.chartContainer}>
-                        <ResponsiveContainer width="100%" height="100%">
-                            {data.chart.type === 'bar' ? (
-                                <BarChart data={chartData}>
-                                    <CartesianGrid
-                                        strokeDasharray="3 3"
-                                        stroke="var(--border-color)"
-                                        vertical={false}
-                                    />
-                                    <XAxis
-                                        dataKey="name"
-                                        stroke="var(--text-tertiary)"
-                                        fontSize={12}
-                                        tickLine={false}
-                                        axisLine={false}
-                                        dy={10}
-                                    />
-                                    <YAxis
-                                        stroke="var(--text-tertiary)"
-                                        fontSize={12}
-                                        tickLine={false}
-                                        axisLine={false}
-                                        orientation={lang === 'ar' ? 'right' : 'left'}
-                                    />
-                                    <Tooltip
-                                        cursor={{ fill: 'var(--bg-secondary)' }}
-                                        contentStyle={{
-                                            borderRadius: 'var(--radius-md)',
-                                            border: 'none',
-                                            boxShadow: 'var(--shadow-lg)',
-                                        }}
-                                    />
-                                    <Bar
-                                        dataKey="value"
-                                        fill="var(--color-primary-500)"
-                                        radius={[4, 4, 0, 0]}
-                                        barSize={40}
-                                    />
-                                </BarChart>
-                            ) : (
-                                <AreaChart data={chartData}>
-                                    <CartesianGrid
-                                        strokeDasharray="3 3"
-                                        stroke="var(--border-color)"
-                                        vertical={false}
-                                    />
-                                    <XAxis
-                                        dataKey="name"
-                                        stroke="var(--text-tertiary)"
-                                        fontSize={12}
-                                        tickLine={false}
-                                        axisLine={false}
-                                        dy={10}
-                                    />
-                                    <YAxis
-                                        stroke="var(--text-tertiary)"
-                                        fontSize={12}
-                                        tickLine={false}
-                                        axisLine={false}
-                                        orientation={lang === 'ar' ? 'right' : 'left'}
-                                    />
-                                    <Tooltip
-                                        contentStyle={{
-                                            borderRadius: 'var(--radius-md)',
-                                            border: 'none',
-                                            boxShadow: 'var(--shadow-lg)',
-                                        }}
-                                    />
-                                    <Area
-                                        type="monotone"
-                                        dataKey="value"
-                                        stroke="var(--color-primary-500)"
-                                        fill="var(--color-primary-100)"
-                                        strokeWidth={3}
-                                    />
-                                </AreaChart>
-                            )}
-                        </ResponsiveContainer>
+                        <CategoryChart chartType={data.chart.type} chartData={chartData} lang={lang} />
                     </div>
                 )}
             </div>

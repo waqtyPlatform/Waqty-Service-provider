@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
     // only the icons / chart pieces / motion APIs it actually uses, instead
     // of the entire package. Big win for first-load JS.
     experimental: {
-        optimizePackageImports: ['lucide-react', 'recharts', 'framer-motion', 'date-fns'],
+        optimizePackageImports: ['lucide-react', 'recharts', 'framer-motion', 'date-fns', 'cmdk'],
     },
 };
 

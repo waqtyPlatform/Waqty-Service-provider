@@ -15,6 +15,7 @@ import {
     Button,
     ConfirmDialog,
     Skeleton,
+    Pagination,
 } from '@/components/ui';
 import { useRouter } from 'next/navigation';
 import styles from './employees.module.css';
@@ -316,6 +317,23 @@ export default function EmployeesPage() {
         e => e.name.toLowerCase().includes(search.toLowerCase()) || e.role.toLowerCase().includes(search.toLowerCase())
     );
 
+    // Window the rendered grid so the DOM is not built for the whole array at once.
+    // Filtering/searching above still runs over the FULL list.
+    const [page, setPage] = useState(1);
+    const pageSize = 12;
+    const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+    const visible = filtered.slice((page - 1) * pageSize, page * pageSize);
+
+    // Reset to the first page whenever the search input changes.
+    useEffect(() => {
+        setPage(1);
+    }, [search]);
+
+    // Keep the current page in range if the list shrinks (filtering, delete, refetch).
+    useEffect(() => {
+        if (page > pageCount) setPage(pageCount);
+    }, [page, pageCount]);
+
     // Derive top metrics from the actual employees list (was hardcoded 0).
     const metrics = {
         total: empList.length,
@@ -560,135 +578,147 @@ export default function EmployeesPage() {
                     ))}
                 </div>
             ) : filtered.length > 0 ? (
-                <div className={styles.grid}>
-                    {filtered.map(emp => {
-                        const st = statusMap[emp.status] ?? statusMap.off;
-                        return (
-                            <div
-                                key={emp.id}
-                                className={styles.card}
-                                onClick={() => router.push(`/employees/${emp.id}`)}
-                                style={{ cursor: 'pointer' }}
-                            >
-                                <div className={styles.cardTop}>
-                                    <div className={styles.userInfo}>
-                                        <div
-                                            className={styles.avatar}
-                                            style={{ background: emp.color, overflow: 'hidden', position: 'relative' }}
-                                        >
-                                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                                            <img
-                                                src={getImageUrl('employees', emp.id)}
-                                                alt={emp.name}
-                                                style={{
-                                                    width: '100%',
-                                                    height: '100%',
-                                                    objectFit: 'cover',
-                                                    position: 'absolute',
-                                                    inset: 0,
-                                                }}
-                                                onError={e => {
-                                                    (e.target as HTMLImageElement).style.display = 'none';
-                                                }}
-                                            />
-                                            <span>{emp.avatar}</span>
-                                        </div>
-                                        <div>
-                                            <div className={styles.name}>{emp.name}</div>
-                                            <div className={styles.role}>{emp.role}</div>
-                                        </div>
-                                    </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                                        <span
-                                            className={styles.statusBadge}
-                                            style={{ background: st.bg, color: st.color }}
-                                        >
-                                            {t(st.labelKey)}
-                                        </span>
-                                        <div onClick={e => e.stopPropagation()}>
-                                            <DropdownMenu
-                                                trigger={
-                                                    <button className={styles.actionBtn}>
-                                                        <MoreVertical size={16} />
-                                                    </button>
-                                                }
-                                                items={[
-                                                    {
-                                                        label: t('employees.viewSchedule'),
-                                                        icon: <Users size={14} />,
-                                                        onClick: () => router.push(`/employees/${emp.id}`),
-                                                    },
-                                                    {
-                                                        label: t('employees.edit'),
-                                                        icon: <Edit size={14} />,
-                                                        onClick: () => openEdit(emp),
-                                                    },
-                                                    {
-                                                        label: t('employees.delete'),
-                                                        destructive: true,
-                                                        icon: <Trash2 size={14} />,
-                                                        onClick: () => {
-                                                            setSelectedEmp(emp);
-                                                            setIsDeleteOpen(true);
-                                                        },
-                                                    },
-                                                ]}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className={styles.contactInfo}>
-                                    {emp.branch} Branch • {emp.phone}
-                                </div>
-                                <div className={styles.statsRow}>
-                                    <div className={styles.statItem}>
-                                        <div className={styles.statVal}>{emp.bookingsToday}</div>
-                                        <div className={styles.statLabel}>{t('employees.today')}</div>
-                                    </div>
-                                    <div className={styles.statItem}>
-                                        <div className={styles.statVal} style={{ color: '#F59E0B' }}>
-                                            ★ {emp.rating}
-                                        </div>
-                                        <div className={styles.statLabel}>{t('employees.rating')}</div>
-                                    </div>
-                                    <div className={styles.statItem}>
-                                        <div className={styles.statVal} style={{ color: 'var(--color-primary-600)' }}>
-                                            {(emp.revenue / 1000).toFixed(1)}K
-                                        </div>
-                                        <div className={styles.statLabel}>{t('employees.revenue')}</div>
-                                    </div>
-                                </div>
+                <>
+                    <div className={styles.grid}>
+                        {visible.map(emp => {
+                            const st = statusMap[emp.status] ?? statusMap.off;
+                            return (
                                 <div
-                                    style={{
-                                        marginTop: 'var(--space-3)',
-                                        paddingTop: 'var(--space-3)',
-                                        borderTop: '1px solid var(--border-color)',
-                                    }}
+                                    key={emp.id}
+                                    className={styles.card}
+                                    onClick={() => router.push(`/employees/${emp.id}`)}
+                                    style={{ cursor: 'pointer' }}
                                 >
-                                    <span
+                                    <div className={styles.cardTop}>
+                                        <div className={styles.userInfo}>
+                                            <div
+                                                className={styles.avatar}
+                                                style={{
+                                                    background: emp.color,
+                                                    overflow: 'hidden',
+                                                    position: 'relative',
+                                                }}
+                                            >
+                                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                <img
+                                                    src={getImageUrl('employees', emp.id)}
+                                                    alt={emp.name}
+                                                    style={{
+                                                        width: '100%',
+                                                        height: '100%',
+                                                        objectFit: 'cover',
+                                                        position: 'absolute',
+                                                        inset: 0,
+                                                    }}
+                                                    onError={e => {
+                                                        (e.target as HTMLImageElement).style.display = 'none';
+                                                    }}
+                                                />
+                                                <span>{emp.avatar}</span>
+                                            </div>
+                                            <div>
+                                                <div className={styles.name}>{emp.name}</div>
+                                                <div className={styles.role}>{emp.role}</div>
+                                            </div>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                            <span
+                                                className={styles.statusBadge}
+                                                style={{ background: st.bg, color: st.color }}
+                                            >
+                                                {t(st.labelKey)}
+                                            </span>
+                                            <div onClick={e => e.stopPropagation()}>
+                                                <DropdownMenu
+                                                    trigger={
+                                                        <button className={styles.actionBtn}>
+                                                            <MoreVertical size={16} />
+                                                        </button>
+                                                    }
+                                                    items={[
+                                                        {
+                                                            label: t('employees.viewSchedule'),
+                                                            icon: <Users size={14} />,
+                                                            onClick: () => router.push(`/employees/${emp.id}`),
+                                                        },
+                                                        {
+                                                            label: t('employees.edit'),
+                                                            icon: <Edit size={14} />,
+                                                            onClick: () => openEdit(emp),
+                                                        },
+                                                        {
+                                                            label: t('employees.delete'),
+                                                            destructive: true,
+                                                            icon: <Trash2 size={14} />,
+                                                            onClick: () => {
+                                                                setSelectedEmp(emp);
+                                                                setIsDeleteOpen(true);
+                                                            },
+                                                        },
+                                                    ]}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className={styles.contactInfo}>
+                                        {emp.branch} Branch • {emp.phone}
+                                    </div>
+                                    <div className={styles.statsRow}>
+                                        <div className={styles.statItem}>
+                                            <div className={styles.statVal}>{emp.bookingsToday}</div>
+                                            <div className={styles.statLabel}>{t('employees.today')}</div>
+                                        </div>
+                                        <div className={styles.statItem}>
+                                            <div className={styles.statVal} style={{ color: '#F59E0B' }}>
+                                                ★ {emp.rating}
+                                            </div>
+                                            <div className={styles.statLabel}>{t('employees.rating')}</div>
+                                        </div>
+                                        <div className={styles.statItem}>
+                                            <div
+                                                className={styles.statVal}
+                                                style={{ color: 'var(--color-primary-600)' }}
+                                            >
+                                                {(emp.revenue / 1000).toFixed(1)}K
+                                            </div>
+                                            <div className={styles.statLabel}>{t('employees.revenue')}</div>
+                                        </div>
+                                    </div>
+                                    <div
                                         style={{
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            gap: 4,
-                                            padding: '2px 8px',
-                                            borderRadius: 'var(--radius-full)',
-                                            fontSize: 11,
-                                            fontWeight: 600,
-                                            background: emp.appAccess
-                                                ? 'var(--color-success-light)'
-                                                : 'var(--color-gray-100)',
-                                            color: emp.appAccess ? 'var(--color-success)' : 'var(--color-gray-500)',
+                                            marginTop: 'var(--space-3)',
+                                            paddingTop: 'var(--space-3)',
+                                            borderTop: '1px solid var(--border-color)',
                                         }}
                                     >
-                                        {emp.appAccess
-                                            ? `● ${t('employees.appAccessActive')}`
-                                            : `○ ${t('employees.appAccessNotConfigured')}`}
-                                    </span>
+                                        <span
+                                            style={{
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: 4,
+                                                padding: '2px 8px',
+                                                borderRadius: 'var(--radius-full)',
+                                                fontSize: 11,
+                                                fontWeight: 600,
+                                                background: emp.appAccess
+                                                    ? 'var(--color-success-light)'
+                                                    : 'var(--color-gray-100)',
+                                                color: emp.appAccess ? 'var(--color-success)' : 'var(--color-gray-500)',
+                                            }}
+                                        >
+                                            {emp.appAccess
+                                                ? `● ${t('employees.appAccessActive')}`
+                                                : `○ ${t('employees.appAccessNotConfigured')}`}
+                                        </span>
+                                    </div>
                                 </div>
-                            </div>
-                        );
-                    })}
-                </div>
+                            );
+                        })}
+                    </div>
+                    {pageCount > 1 && (
+                        <Pagination page={page} pageSize={pageSize} total={filtered.length} onPageChange={setPage} />
+                    )}
+                </>
             ) : (
                 <div style={{ padding: 'var(--space-12) 0' }}>
                     <EmptyState

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { ApiError, authApi } from '@/lib/api';
 import { type BusinessCategory, normalizeBusinessCategory } from '@/lib/contract';
@@ -121,7 +121,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Helper to set/clear the middleware cookie marker.
     // NOTE: role is intentionally NOT stored in a cookie — RoleGuard reads it from
     // AuthContext on the client. A client-set cookie would be forgeable.
-    const setAuthCookie = (loggedIn: boolean) => {
+    const setAuthCookie = useCallback((loggedIn: boolean) => {
         if (loggedIn) {
             document.cookie = `waqty_logged_in=true;path=/;max-age=${60 * 60 * 24 * 30};SameSite=Lax`;
         } else {
@@ -129,7 +129,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // Clear legacy cookie set by previous versions of this app.
             document.cookie = 'waqty_auth=;path=/;max-age=0';
         }
-    };
+    }, []);
 
     useEffect(() => {
         // Hydrate from localStorage — use queueMicrotask to avoid synchronous setState in effect
@@ -166,83 +166,89 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     }, [user, loading, pathname, router]);
 
-    const login = async (identifier: string, password: string) => {
-        try {
-            const res = await authApi.login(identifier, password);
+    const login = useCallback(
+        async (identifier: string, password: string) => {
+            try {
+                const res = await authApi.login(identifier, password);
 
-            if (res.success && res.data) {
-                const { token, provider } = res.data;
-                localStorage.setItem('waqty_provider_token', token);
+                if (res.success && res.data) {
+                    const { token, provider } = res.data;
+                    localStorage.setItem('waqty_provider_token', token);
 
-                const loggedInUser: User = {
-                    id: provider.uuid,
-                    uuid: provider.uuid,
-                    name: provider.name,
-                    email: provider.email,
-                    phone: provider.phone,
-                    role: 'admin',
-                    businessType: 'salon',
-                    active: provider.active,
-                    blocked: provider.blocked,
-                    banned: provider.banned,
-                };
+                    const loggedInUser: User = {
+                        id: provider.uuid,
+                        uuid: provider.uuid,
+                        name: provider.name,
+                        email: provider.email,
+                        phone: provider.phone,
+                        role: 'admin',
+                        businessType: 'salon',
+                        active: provider.active,
+                        blocked: provider.blocked,
+                        banned: provider.banned,
+                    };
 
-                // Enrich with profile data (category, etc.)
-                try {
-                    const profile = await authApi.me();
-                    if (profile.success && profile.data) {
-                        if (profile.data.category?.name) {
-                            // PR-10: derive the canonical category deterministically.
-                            loggedInUser.businessType = normalizeBusinessCategory(profile.data.category.name);
+                    // Enrich with profile data (category, etc.)
+                    try {
+                        const profile = await authApi.me();
+                        if (profile.success && profile.data) {
+                            if (profile.data.category?.name) {
+                                // PR-10: derive the canonical category deterministically.
+                                loggedInUser.businessType = normalizeBusinessCategory(profile.data.category.name);
+                            }
                         }
+                    } catch {
+                        // Profile fetch is optional — proceed with defaults
                     }
-                } catch {
-                    // Profile fetch is optional — proceed with defaults
+
+                    setUser(loggedInUser);
+                    localStorage.setItem('waqty_user', JSON.stringify(loggedInUser));
+                    setAuthCookie(true);
+                    router.push('/');
+                    return { success: true, user: loggedInUser };
                 }
 
-                setUser(loggedInUser);
-                localStorage.setItem('waqty_user', JSON.stringify(loggedInUser));
-                setAuthCookie(true);
-                router.push('/');
-                return { success: true, user: loggedInUser };
+                return { success: false, error: res.message || 'Login failed' };
+            } catch (err: unknown) {
+                const message = err instanceof ApiError ? err.message : 'Invalid email or password';
+                return { success: false, error: message };
             }
-
-            return { success: false, error: res.message || 'Login failed' };
-        } catch (err: unknown) {
-            const message = err instanceof ApiError ? err.message : 'Invalid email or password';
-            return { success: false, error: message };
-        }
-    };
+        },
+        [router, setAuthCookie]
+    );
 
     // MOCK: replace with authApi.sendOtp when backend OTP flow ships.
-    const requestOTP = async (identifier: string) => {
+    const requestOTP = useCallback(async (identifier: string) => {
         await new Promise(resolve => setTimeout(resolve, MOCK_OTP_REQUEST_DELAY_MS));
         const type = identifier.includes('@') ? 'email' : 'phone';
         if (process.env.NODE_ENV === 'development') {
             console.log(`[MOCK] OTP requested for ${type}: ${identifier} — use code ${MOCK_OTP_CODE}`);
         }
         return { success: true, type } as const;
-    };
+    }, []);
 
     // MOCK: replace with authApi.verifyOtp when backend OTP flow ships.
-    const verifyOTP = async (identifier: string, code: string, redirect = true) => {
-        await new Promise(resolve => setTimeout(resolve, MOCK_OTP_VERIFY_DELAY_MS));
+    const verifyOTP = useCallback(
+        async (identifier: string, code: string, redirect = true) => {
+            await new Promise(resolve => setTimeout(resolve, MOCK_OTP_VERIFY_DELAY_MS));
 
-        if (code !== MOCK_OTP_CODE) {
-            return { success: false, error: 'Invalid verification code' };
-        }
+            if (code !== MOCK_OTP_CODE) {
+                return { success: false, error: 'Invalid verification code' };
+            }
 
-        const mockUser = MOCK_USERS[identifier] || MOCK_USERS['clinic@waqty.com'];
-        setUser(mockUser);
-        localStorage.setItem('waqty_user', JSON.stringify(mockUser));
-        setAuthCookie(true);
-        if (redirect) {
-            router.push('/');
-        }
-        return { success: true, user: mockUser };
-    };
+            const mockUser = MOCK_USERS[identifier] || MOCK_USERS['clinic@waqty.com'];
+            setUser(mockUser);
+            localStorage.setItem('waqty_user', JSON.stringify(mockUser));
+            setAuthCookie(true);
+            if (redirect) {
+                router.push('/');
+            }
+            return { success: true, user: mockUser };
+        },
+        [router, setAuthCookie]
+    );
 
-    const forgotPassword = async (identifier: string) => {
+    const forgotPassword = useCallback(async (identifier: string) => {
         try {
             const res = await authApi.sendOtp(identifier);
             if (res.success) {
@@ -261,9 +267,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const message = err instanceof ApiError ? err.message : 'Failed to send reset code';
             return { success: false, type: 'email' as const, error: message };
         }
-    };
+    }, []);
 
-    const verifyOtpCode = async (email: string, otp: string) => {
+    const verifyOtpCode = useCallback(async (email: string, otp: string) => {
         try {
             const res = await authApi.verifyOtp(email, otp);
             if (res.success && res.data) {
@@ -274,9 +280,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const message = err instanceof ApiError ? err.message : 'Invalid or expired code';
             return { success: false, valid: false, error: message };
         }
-    };
+    }, []);
 
-    const resetPassword = async (identifier: string, code: string, newPassword: string) => {
+    const resetPassword = useCallback(async (identifier: string, code: string, newPassword: string) => {
         try {
             const res = await authApi.resetPassword(identifier, code, newPassword);
             if (res.success) return { success: true };
@@ -288,18 +294,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const message = err instanceof ApiError ? err.message : 'Failed to reset password';
             return { success: false, error: message };
         }
-    };
+    }, []);
 
-    const updateUser = (data: Partial<User>) => {
+    const updateUser = useCallback((data: Partial<User>) => {
         setUser(prev => {
             if (!prev) return prev;
             const updated = { ...prev, ...data };
             localStorage.setItem('waqty_user', JSON.stringify(updated));
             return updated;
         });
-    };
+    }, []);
 
-    const logout = async () => {
+    const logout = useCallback(async () => {
         try {
             await authApi.logout();
         } catch {
@@ -310,26 +316,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.removeItem('waqty_user');
         setAuthCookie(false);
         router.push('/login');
-    };
+    }, [router, setAuthCookie]);
 
-    return (
-        <AuthContext.Provider
-            value={{
-                user,
-                login,
-                requestOTP,
-                verifyOTP,
-                forgotPassword,
-                verifyOtpCode,
-                resetPassword,
-                updateUser,
-                logout,
-                loading,
-            }}
-        >
-            {!loading && children}
-        </AuthContext.Provider>
+    const value = useMemo(
+        () => ({
+            user,
+            login,
+            requestOTP,
+            verifyOTP,
+            forgotPassword,
+            verifyOtpCode,
+            resetPassword,
+            updateUser,
+            logout,
+            loading,
+        }),
+        [user, login, requestOTP, verifyOTP, forgotPassword, verifyOtpCode, resetPassword, updateUser, logout, loading]
     );
+
+    return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

@@ -2,27 +2,28 @@
 
 import { egpLabel } from '@/lib/money';
 import React, { useState, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import { TrendingUp, Users, DollarSign, CalendarDays, Filter, Calendar } from 'lucide-react';
-import {
-    ResponsiveContainer,
-    AreaChart,
-    Area,
-    CartesianGrid,
-    XAxis,
-    YAxis,
-    BarChart,
-    Bar,
-    Tooltip,
-    PieChart as RPieChart,
-    Pie,
-    Cell,
-} from 'recharts';
 import { Select, Skeleton } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useApiQuery } from '@/hooks/useApiQuery';
 import { reportApi, type ReportData, type ReportFilters } from '@/lib/api';
 
 import styles from './reports.module.css';
+
+/* ── Charts lazy-loaded so Recharts stays off the initial route chunk ── */
+const RevenueVsExpensesChart = dynamic(() => import('./_components/RevenueVsExpensesChart'), {
+    ssr: false,
+    loading: () => <div style={{ width: '100%', height: '100%' }} />,
+});
+const ServiceBreakdownChart = dynamic(() => import('./_components/ServiceBreakdownChart'), {
+    ssr: false,
+    loading: () => <div style={{ width: '100%', height: '100%' }} />,
+});
+const WeeklyBookingsChart = dynamic(() => import('./_components/WeeklyBookingsChart'), {
+    ssr: false,
+    loading: () => <div style={{ width: '100%', height: '100%' }} />,
+});
 
 /* ── Fallback mock data (used until API responds or on error) ── */
 
@@ -308,60 +309,7 @@ export default function ReportsPage() {
                         <ChartSkeleton />
                     ) : (
                         <div className={styles.chartContainer}>
-                            <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={revenueData}>
-                                    <CartesianGrid
-                                        strokeDasharray="3 3"
-                                        stroke="var(--border-color)"
-                                        vertical={false}
-                                    />
-                                    <XAxis
-                                        dataKey="month"
-                                        stroke="var(--text-tertiary)"
-                                        fontSize={12}
-                                        tickLine={false}
-                                        axisLine={false}
-                                        dy={10}
-                                        tickFormatter={v => t(`reports.${v}`) || v}
-                                    />
-                                    <YAxis
-                                        stroke="var(--text-tertiary)"
-                                        fontSize={12}
-                                        tickFormatter={(v: number) => `${v / 1000}K`}
-                                        tickLine={false}
-                                        axisLine={false}
-                                        orientation={lang === 'ar' ? 'right' : 'left'}
-                                    />
-                                    <Tooltip
-                                        contentStyle={{
-                                            borderRadius: 'var(--radius-md)',
-                                            border: 'none',
-                                            boxShadow: 'var(--shadow-lg)',
-                                        }}
-                                        formatter={(value, name) => [
-                                            value as number,
-                                            t(name === 'Revenue' ? 'reports.revenue' : 'reports.expenses'),
-                                        ]}
-                                        labelFormatter={label => t(`reports.${label}`) || label}
-                                    />
-                                    <Area
-                                        type="monotone"
-                                        dataKey="revenue"
-                                        stroke="var(--color-primary-500)"
-                                        fill="var(--color-primary-100)"
-                                        strokeWidth={3}
-                                        name="Revenue"
-                                    />
-                                    <Area
-                                        type="monotone"
-                                        dataKey="expenses"
-                                        stroke="var(--color-error)"
-                                        fill="var(--color-error-light)"
-                                        strokeWidth={3}
-                                        name="Expenses"
-                                    />
-                                </AreaChart>
-                            </ResponsiveContainer>
+                            <RevenueVsExpensesChart revenueData={revenueData} t={t} lang={lang} />
                         </div>
                     )}
                 </div>
@@ -373,32 +321,7 @@ export default function ReportsPage() {
                     ) : (
                         <>
                             <div style={{ height: 200, position: 'relative' }}>
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <RPieChart>
-                                        <Pie
-                                            data={serviceBreakdown}
-                                            cx="50%"
-                                            cy="50%"
-                                            innerRadius={60}
-                                            outerRadius={85}
-                                            paddingAngle={3}
-                                            dataKey="value"
-                                            stroke="none"
-                                        >
-                                            {serviceBreakdown.map((entry, i) => (
-                                                <Cell key={i} fill={entry.color} />
-                                            ))}
-                                        </Pie>
-                                        <Tooltip
-                                            contentStyle={{
-                                                borderRadius: 'var(--radius-md)',
-                                                border: 'none',
-                                                boxShadow: 'var(--shadow-lg)',
-                                            }}
-                                            formatter={(value, name) => [`${value}%`, t(`reports.srv${name}`) || name]}
-                                        />
-                                    </RPieChart>
-                                </ResponsiveContainer>
+                                <ServiceBreakdownChart serviceBreakdown={serviceBreakdown} t={t} />
                             </div>
                             <div
                                 style={{
@@ -439,44 +362,7 @@ export default function ReportsPage() {
                     <ChartSkeleton />
                 ) : (
                     <div style={{ height: 260 }}>
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={weeklyBookings}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
-                                <XAxis
-                                    dataKey="day"
-                                    stroke="var(--text-tertiary)"
-                                    fontSize={12}
-                                    tickLine={false}
-                                    axisLine={false}
-                                    dy={10}
-                                    tickFormatter={v => t(`reports.day${v}`) || v}
-                                />
-                                <YAxis
-                                    stroke="var(--text-tertiary)"
-                                    fontSize={12}
-                                    tickLine={false}
-                                    axisLine={false}
-                                    orientation={lang === 'ar' ? 'right' : 'left'}
-                                />
-                                <Tooltip
-                                    cursor={{ fill: 'var(--bg-secondary)' }}
-                                    contentStyle={{
-                                        borderRadius: 'var(--radius-md)',
-                                        border: 'none',
-                                        boxShadow: 'var(--shadow-lg)',
-                                    }}
-                                    formatter={value => [value as number, t('reports.kpiBookings')]}
-                                    labelFormatter={label => t(`reports.day${label}`) || label}
-                                />
-                                <Bar
-                                    dataKey="bookings"
-                                    fill="var(--color-primary-500)"
-                                    radius={[4, 4, 0, 0]}
-                                    barSize={40}
-                                    name="Bookings"
-                                />
-                            </BarChart>
-                        </ResponsiveContainer>
+                        <WeeklyBookingsChart weeklyBookings={weeklyBookings} t={t} lang={lang} />
                     </div>
                 )}
             </div>

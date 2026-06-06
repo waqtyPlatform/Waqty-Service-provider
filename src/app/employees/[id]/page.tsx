@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import {
     User,
@@ -42,18 +43,15 @@ import {
     DropdownMenu,
 } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
-import {
-    AreaChart,
-    Area,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip as RechartsTooltip,
-    ResponsiveContainer,
-} from 'recharts';
 import styles from './page.module.css';
 import { egpLabel } from '@/lib/money';
 import { providerApi, getImageUrl } from '@/lib/api';
+
+/* ── Chart lazy-loaded so Recharts stays off the initial route chunk ── */
+const EmployeeRevenueChart = dynamic(() => import('./_components/EmployeeRevenueChart'), {
+    ssr: false,
+    loading: () => <div style={{ width: '100%', height: '100%' }} />,
+});
 
 // Mock Data (fallback)
 const defaultEmployee = {
@@ -426,46 +424,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                         </span>
                     </div>
                     <div className={styles.cardBody} style={{ height: '300px', paddingTop: 'var(--space-4)' }}>
-                        <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={revenueData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                                <defs>
-                                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="var(--color-primary-500)" stopOpacity={0.3} />
-                                        <stop offset="95%" stopColor="var(--color-primary-500)" stopOpacity={0} />
-                                    </linearGradient>
-                                </defs>
-                                <XAxis
-                                    dataKey="month"
-                                    axisLine={false}
-                                    tickLine={false}
-                                    tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }}
-                                />
-                                <YAxis
-                                    orientation={lang === 'ar' ? 'right' : 'left'}
-                                    axisLine={false}
-                                    tickLine={false}
-                                    tick={{ fill: 'var(--text-tertiary)', fontSize: 12 }}
-                                    tickFormatter={val => `${val / 1000}k`}
-                                />
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
-                                <RechartsTooltip
-                                    contentStyle={{
-                                        borderRadius: '8px',
-                                        border: '1px solid var(--border-color)',
-                                        boxShadow: 'var(--shadow-md)',
-                                    }}
-                                    formatter={value => [`${value || 0} ${egpLabel()}`, t('empProfile.revenueTooltip')]}
-                                />
-                                <Area
-                                    type="monotone"
-                                    dataKey="revenue"
-                                    stroke="var(--color-primary-500)"
-                                    strokeWidth={3}
-                                    fillOpacity={1}
-                                    fill="url(#colorRevenue)"
-                                />
-                            </AreaChart>
-                        </ResponsiveContainer>
+                        <EmployeeRevenueChart revenueData={revenueData} t={t} lang={lang} />
                     </div>
                 </div>
 
