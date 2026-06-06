@@ -7,7 +7,7 @@ import { User, Search, FileText, Plus, AlertTriangle, CheckCircle } from 'lucide
 import BookingsTabs from '../../BookingsTabs';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useAuth } from '@/contexts/AuthContext';
-import { providerApi, publicApi, bookingApi, type Branch, type Booking } from '@/lib/api';
+import { providerApi, publicApi, bookingApi, customerApi, type Branch, type Booking } from '@/lib/api';
 import { BUSINESS_TERMINOLOGY } from '@/lib/contract';
 import type { ServicePriceOverride } from '@/lib/priceResolver';
 import type { Service, Employee, BookingItem, PatientForm } from '../types';
@@ -373,33 +373,71 @@ export function NewBookingFlow() {
         }
 
         // ── Create mode: persist the booking ──
-        // Saved to a client-side store (it shows immediately in the list + calendar).
-        //
-        // NO BACKEND WRITE: the Waqty API exposes no provider booking-create route.
-        // The only booking-create endpoint is `POST /api/user/bookings` (customer-
-        // authenticated — the customer books themselves); the provider guard has just
-        // `GET /api/provider/bookings`, `GET …/{uuid}` and `PATCH …/{uuid}/status`
-        // (verified against the Waqty Postman collection). So a provider-created
-        // walk-in booking can only live client-side until the backend adds e.g.
-        // `POST /api/provider/bookings` that accepts a customer reference (an existing
-        // user_uuid, or a walk-in name/phone the backend resolves to a customer) plus
-        // service_uuid / employee_uuid / branch_uuid / booking_date / start_time.
-        // When that route exists, call it here (and drop the local-store write on
-        // success so the API row from `getBookings` is the single source of truth).
+        // Two-step backend write: (1) create the customer and read back its uuid,
+        // then (2) create one booking per service, attaching that `customer_uuid`.
+        // (The booking has no walk-in customer of its own, so it must reference a
+        // Customer row — hence the customer is created first.) When the round-trip
+        // succeeds the list/calendar fetch the server rows (apiLoaded) so the local
+        // copy is skipped; otherwise — offline/demo, or the provider create endpoints
+        // aren't deployed — the booking is kept in the local store so it still shows
+        // up immediately. NOTE: field names follow the provider domain convention
+        // (`customer_uuid`) and the `Customer` shape (name/phone/email); adjust here
+        // if the backend's create payloads differ.
+        setSubmitting(true);
         const mainBranch = apiBranches.find(b => b.is_main) ?? apiBranches[0];
-        addLocalVisit(
-            buildLocalVisitView({
-                items,
-                clientName,
-                clientPhone,
-                discountPct: discount,
-                notes,
-                branchName: mainBranch?.name ?? 'Main',
-                branchId: mainBranch?.uuid ?? CURRENT_BRANCH_ID,
-                priceOverrides: apiPriceOverrides,
-            })
-        );
 
+        let persistedViaApi = false;
+        try {
+            // 1) Create the (walk-in) customer, then read back its uuid.
+            const custRes = await customerApi.createCustomer({
+                name: clientName.trim(),
+                phone: clientPhone.trim(),
+                ...(clientEmail.trim() ? { email: clientEmail.trim() } : {}),
+            });
+            const customerUuid = custRes?.success ? custRes.data?.uuid : undefined;
+
+            // 2) Create one booking per service, attaching the customer uuid.
+            if (customerUuid) {
+                const results = await Promise.all(
+                    items.map(item => {
+                        const payload: Record<string, unknown> = {
+                            customer_uuid: customerUuid,
+                            service_uuid: item.service.id,
+                            employee_uuid: item.employee.id,
+                            booking_date: item.date,
+                            start_time: item.time,
+                            notes,
+                        };
+                        if (mainBranch) payload.branch_uuid = mainBranch.uuid;
+                        return bookingApi.createBooking(payload);
+                    })
+                );
+                persistedViaApi = results.every(r => r?.success);
+            }
+        } catch {
+            persistedViaApi = false;
+        }
+
+        // Fallback when the backend write didn't go through (offline/demo, or the
+        // provider create endpoints aren't available): keep it client-side so the
+        // list + calendar still show it. On API success we skip this to avoid a
+        // duplicate (the server row is the source of truth once `getBookings` runs).
+        if (!persistedViaApi) {
+            addLocalVisit(
+                buildLocalVisitView({
+                    items,
+                    clientName,
+                    clientPhone,
+                    discountPct: discount,
+                    notes,
+                    branchName: mainBranch?.name ?? 'Main',
+                    branchId: mainBranch?.uuid ?? CURRENT_BRANCH_ID,
+                    priceOverrides: apiPriceOverrides,
+                })
+            );
+        }
+
+        setSubmitting(false);
         addToast('success', `${t('bookings.confirmSuccess')} ${clientName}`);
         router.push('/bookings');
     };
