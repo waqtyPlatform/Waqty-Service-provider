@@ -21,6 +21,7 @@ import {
     STATUS_ORDER,
     STATUS_LABEL_KEY,
 } from './_visits';
+import { loadLocalVisits } from './_localBookings';
 
 // Local-date YYYY-MM-DD. Plain toISOString() converts to UTC and, for UTC+ zones
 // (Egypt is UTC+2/+3), a local-midnight Date lands on the PREVIOUS calendar day —
@@ -153,7 +154,15 @@ function visitsToBlocks(visits: VisitView[], employees: CalEmployee[], slots: st
     const blocks: CalBlock[] = [];
     for (const v of visits) {
         for (const l of v.lines) {
-            const empIndex = employees.findIndex(e => e.uuid && e.uuid === l.line.employee_uuid);
+            // Match the line's specialist to a column by uuid; if that misses (a
+            // booking created from the mock catalogue carries different employee
+            // ids than the calendar's fallback columns), fall back to the first-name
+            // token. uuid wins, so live API data is matched exactly as before.
+            let empIndex = employees.findIndex(e => e.uuid && e.uuid === l.line.employee_uuid);
+            if (empIndex === -1 && l.employeeName) {
+                const first = l.employeeName.trim().split(/\s+/)[0].toLowerCase();
+                empIndex = employees.findIndex(e => e.name.trim().split(/\s+/)[0].toLowerCase() === first);
+            }
             if (empIndex === -1) continue; // specialist not in current columns
             const startSlot = slots.indexOf(hhmm(l.line.start_time));
             if (startSlot === -1) continue; // outside displayed range
@@ -441,6 +450,7 @@ export default function BookingsCalendarPage() {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [employees, setEmployees] = useState<CalEmployee[]>(fallbackEmployees);
     const [visits, setVisits] = useState<VisitView[]>(mockCalVisits);
+    const [localVisits, setLocalVisits] = useState<VisitView[]>([]);
     const [apiLoaded, setApiLoaded] = useState(false);
     // Calendar filters: by booking status and/or by employee (empty string = "all").
     const [filterOpen, setFilterOpen] = useState(false);
@@ -461,6 +471,12 @@ export default function BookingsCalendarPage() {
             .catch(() => {});
     }, []);
 
+    // Locally-created bookings (offline/demo) — client-only read after mount.
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage is unavailable during SSR; locally-created bookings are loaded once on the client after mount
+        setLocalVisits(loadLocalVisits());
+    }, []);
+
     // Fetch bookings for the selected date and lift each into a canonical VisitView.
     // GAP: API has no price/payment data on bookings (resolved via ServicePrice — X15).
     useEffect(() => {
@@ -478,16 +494,23 @@ export default function BookingsCalendarPage() {
             });
     }, [currentDate]);
 
+    // Show locally-created bookings on top of the mock day; once the API answers
+    // for the selected date, its rows are authoritative (no duplicates).
+    const allVisits = useMemo(
+        () => (apiLoaded ? visits : [...localVisits, ...visits]),
+        [apiLoaded, localVisits, visits]
+    );
+
     // Apply the active filters (status / employee) to the canonical visits. An
     // employee match keeps a visit when ANY of its line items is that specialist.
     const filteredVisits = useMemo(
         () =>
-            visits.filter(v => {
+            allVisits.filter(v => {
                 if (statusFilter && v.visit.status !== statusFilter) return false;
                 if (employeeFilter && !v.lines.some(l => l.line.employee_uuid === employeeFilter)) return false;
                 return true;
             }),
-        [visits, statusFilter, employeeFilter]
+        [allVisits, statusFilter, employeeFilter]
     );
     const activeFilterCount = (statusFilter ? 1 : 0) + (employeeFilter ? 1 : 0);
 

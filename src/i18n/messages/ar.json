@@ -3544,6 +3544,8 @@
     "bookingDetail.expectedStart": "البدء المتوقع",
     "bookingDetail.scheduled": "المجدول",
     "bookingDetail.delayFromSchedule": "تأخير {n} دقيقة عن الموعد",
+    "bookingDetail.logCreated": "تم إنشاء الحجز",
+    "bookingDetail.logCreatedDetail": "أُنشئ من حجز جديد",
     "newBooking.staffBusyAt": "الموظف مشغول في: {list}",
     "newBooking.staffAvailable": "الموظف متاح",
     "newBooking.roomAutoAssigned": "سيتم تعيين الغرفة تلقائيًا",

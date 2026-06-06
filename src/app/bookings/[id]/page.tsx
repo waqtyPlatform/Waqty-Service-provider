@@ -30,6 +30,8 @@ import type { CanonicalPaymentMethod, PaymentModel } from '@/lib/contract';
 import { egp, fromMinor, toMinor, formatMoney, DEFAULT_CURRENCY } from '@/lib/money';
 import type { PriceSource } from '@/lib/priceResolver';
 import { type DisplayStatus, STEP_INDEX, statusToDisplay } from '@/lib/displayStatus';
+import { type VisitView, hhmm } from '../_visits';
+import { loadLocalVisits } from '../_localBookings';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -445,6 +447,26 @@ function PaymentModal({
     );
 }
 
+// Map a locally-created visit (from the New Booking flow) onto the detail page's
+// line view-model. Prices are already in minor units; there is no separate base
+// price or tier source for a freshly-created line, so `basePrice === price`.
+function localVisitToBookingItems(v: VisitView): BookingItem[] {
+    return v.lines.map((l, i) => ({
+        id: i + 1,
+        serviceId: l.line.service_uuid,
+        name: l.serviceName,
+        employee: l.employeeName === 'Unassigned' ? '' : l.employeeName,
+        employeeId: l.line.employee_uuid ?? '',
+        employeeLevel: l.employeeLevel,
+        basePrice: l.line.price,
+        price: l.line.price,
+        priceSource: 'base' as PriceSource,
+        duration: `${l.line.duration_minutes}m`,
+        time: hhmm(l.line.start_time),
+        itemStatus: (l.line.employee_uuid ? 'confirmed' : 'pending_assignment') as ItemStatus,
+    }));
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function BookingDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -454,6 +476,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
     const router = useRouter();
 
     const [apiBooking, setApiBooking] = useState<Booking | null>(null);
+    const [localVisit, setLocalVisit] = useState<VisitView | null>(null);
     const [status, setStatus] = useState<DisplayStatus>(BOOKING_DATA.initialStatus);
     const [paid, setPaid] = useState(BOOKING_DATA.financials.paid);
     const [log, setLog] = useState(BOOKING_DATA.activityLog);
@@ -485,37 +508,110 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
         };
     }, [id]);
 
+    // Locally-created booking (a BK- id from the New Booking flow) -> hydrate the
+    // page from the local store so it shows the real visit instead of the static
+    // mock. Runs once per id (not on language toggle) so reception actions like
+    // check-in / cancel aren't reset.
+    useEffect(() => {
+        if (!id) return;
+        const found = loadLocalVisits().find(v => v.visit.uuid === id);
+        if (!found) return;
+        setLocalVisit(found);
+        setStatus(statusToDisplay(found.visit.status));
+        setPaid(found.visit.payment.paid_amount);
+        setBookingItems(localVisitToBookingItems(found));
+        setLog([
+            {
+                label: t('bookingDetail.logCreated'),
+                detail: t('bookingDetail.logCreatedDetail'),
+                time: new Date(found.visit.created_at).toLocaleString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                }),
+            },
+        ]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [id]);
+
     // Derive display data from the live API. Services & specialists render from
     // the canonical multi-line `bookingItems` (the Visit line-items), so the old
     // single-service `apiBooking.service`/`.employee` render path is gone (PR′);
     // only the visit-level header (date/time) and client details come from here.
-    const displayData = apiBooking
+    const displayData = localVisit
         ? {
-              id: apiBooking.uuid,
-              date: new Date(apiBooking.booking_date + 'T00:00:00').toLocaleDateString('en-US', {
+              id: localVisit.visit.uuid,
+              date: new Date(localVisit.visit.scheduled_start).toLocaleDateString('en-US', {
                   month: 'short',
                   day: 'numeric',
                   year: 'numeric',
               }),
-              time: apiBooking.start_time?.slice(0, 5) || '—',
+              time: hhmm(localVisit.visit.scheduled_start),
               client: {
-                  name: apiBooking.user?.name || 'Walk-in', // GAP: no client details if user is null
-                  phone: apiBooking.user?.phone || '—',
-                  email: apiBooking.user?.email || '—',
-                  avatar: (apiBooking.user?.name || 'W')
+                  name: localVisit.clientName,
+                  phone: localVisit.clientPhone,
+                  email: '—',
+                  avatar: localVisit.clientName
                       .split(' ')
                       .map(w => w[0])
                       .join('')
                       .slice(0, 2)
                       .toUpperCase(),
-                  vip: false, // GAP: API has no VIP flag
-                  notes: '', // GAP: API has no client notes
-                  id: apiBooking.user?.uuid || '',
+                  vip: false,
+                  notes: localVisit.visit.notes || '',
+                  id: localVisit.visit.customer_uuid,
               },
           }
-        : null;
+        : apiBooking
+          ? {
+                id: apiBooking.uuid,
+                date: new Date(apiBooking.booking_date + 'T00:00:00').toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                }),
+                time: apiBooking.start_time?.slice(0, 5) || '—',
+                client: {
+                    name: apiBooking.user?.name || 'Walk-in', // GAP: no client details if user is null
+                    phone: apiBooking.user?.phone || '—',
+                    email: apiBooking.user?.email || '—',
+                    avatar: (apiBooking.user?.name || 'W')
+                        .split(' ')
+                        .map(w => w[0])
+                        .join('')
+                        .slice(0, 2)
+                        .toUpperCase(),
+                    vip: false, // GAP: API has no VIP flag
+                    notes: '', // GAP: API has no client notes
+                    id: apiBooking.user?.uuid || '',
+                },
+            }
+          : null;
 
-    const due = Math.max(0, BOOKING_DATA.financials.total - paid);
+    // Financials, package and queue: from the local visit when present, else the
+    // static mock. A freshly-created visit has no tax, package or queue position.
+    const fin = localVisit
+        ? {
+              subtotal: localVisit.visit.subtotal,
+              discount: localVisit.visit.discount_total,
+              discountLabel: '',
+              tax: 0,
+              total: localVisit.visit.total,
+          }
+        : BOOKING_DATA.financials;
+    const payModel = localVisit ? localVisit.visit.payment.model : BOOKING_DATA.payment.model;
+    const showPackage = !localVisit && Boolean(BOOKING_DATA.packageId);
+    const queue = localVisit
+        ? {
+              number: 1,
+              totalToday: 1,
+              scheduledStart: hhmm(localVisit.visit.scheduled_start),
+              expectedStart: hhmm(localVisit.visit.scheduled_start),
+              delayMins: 0,
+          }
+        : BOOKING_DATA.queue;
+    const due = Math.max(0, fin.total - paid);
     const currentStep = STEP_INDEX[status] ?? 1;
     const isCancelled = status === 'cancelled';
     const isNoShow = status === 'no_show';
@@ -1020,7 +1116,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                 )}
 
                 {/* Task 08: Package Applied banner */}
-                {BOOKING_DATA.packageId && (
+                {showPackage && (
                     <div
                         style={{
                             padding: 'var(--space-3) var(--space-4)',
@@ -1245,7 +1341,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                             </div>
                             <div className={styles.cardBody}>
                                 {(() => {
-                                    const label = paymentModelLabel(BOOKING_DATA.payment.model, due, t);
+                                    const label = paymentModelLabel(payModel, due, t);
                                     const toneColor =
                                         label.tone === 'success'
                                             ? 'var(--color-success-600)'
@@ -1279,37 +1375,44 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                 })()}
                                 <div className={styles.summaryRow}>
                                     <span>{t('bk.lblSubtotal')}</span>
-                                    <span dir="ltr">{egp(BOOKING_DATA.financials.subtotal)}</span>
+                                    <span dir="ltr">{egp(fin.subtotal)}</span>
                                 </div>
-                                <div className={styles.summaryRow}>
-                                    <span style={{ color: 'var(--color-success-600)' }}>
-                                        {t('bk.lblDiscount')} ({BOOKING_DATA.financials.discountLabel})
-                                    </span>
-                                    <span style={{ color: 'var(--color-success-600)' }} dir="ltr">
-                                        -{egp(BOOKING_DATA.financials.discount)}
-                                    </span>
-                                </div>
-                                <div className={styles.summaryRow}>
-                                    <span>{t('bk.lblTax')} (14%)</span>
-                                    <span dir="ltr">{egp(BOOKING_DATA.financials.tax)}</span>
-                                </div>
+                                {fin.discount > 0 && (
+                                    <div className={styles.summaryRow}>
+                                        <span style={{ color: 'var(--color-success-600)' }}>
+                                            {t('bk.lblDiscount')}
+                                            {fin.discountLabel ? ` (${fin.discountLabel})` : ''}
+                                        </span>
+                                        <span style={{ color: 'var(--color-success-600)' }} dir="ltr">
+                                            -{egp(fin.discount)}
+                                        </span>
+                                    </div>
+                                )}
+                                {fin.tax > 0 && (
+                                    <div className={styles.summaryRow}>
+                                        <span>{t('bk.lblTax')} (14%)</span>
+                                        <span dir="ltr">{egp(fin.tax)}</span>
+                                    </div>
+                                )}
                                 <div className={styles.summaryTotal}>
                                     <span>{t('bk.lblTotal')}</span>
-                                    <span dir="ltr">{egp(BOOKING_DATA.financials.total)}</span>
+                                    <span dir="ltr">{egp(fin.total)}</span>
                                 </div>
-                                {BOOKING_DATA.packageId && (
+                                {showPackage && (
                                     <div
                                         className={styles.summaryRow}
                                         style={{ marginTop: 'var(--space-2)', color: '#1d4ed8' }}
                                     >
                                         <span>Package Credit ({BOOKING_DATA.packageName})</span>
-                                        <span dir="ltr">-{egp(BOOKING_DATA.financials.subtotal)}</span>
+                                        <span dir="ltr">-{egp(fin.subtotal)}</span>
                                     </div>
                                 )}
-                                <div className={styles.summaryRow} style={{ marginTop: 'var(--space-2)' }}>
-                                    <span>{t('bk.lblPaidDeposit')}</span>
-                                    <span dir="ltr">-{egp(paid)}</span>
-                                </div>
+                                {paid > 0 && (
+                                    <div className={styles.summaryRow} style={{ marginTop: 'var(--space-2)' }}>
+                                        <span>{t('bk.lblPaidDeposit')}</span>
+                                        <span dir="ltr">-{egp(paid)}</span>
+                                    </div>
+                                )}
                                 <div
                                     className={styles.summaryTotal}
                                     style={{
@@ -1353,7 +1456,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                     <Timer size={18} /> {t('bookingDetail.expectedServiceTime')}
                                 </span>
                                 <Badge color="neutral" size="sm">
-                                    #{BOOKING_DATA.queue.number} of {BOOKING_DATA.queue.totalToday}
+                                    #{queue.number} of {queue.totalToday}
                                 </Badge>
                             </div>
                             <div className={styles.cardBody}>
@@ -1379,7 +1482,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                             fontWeight: 'var(--font-bold)',
                                         }}
                                     >
-                                        #{BOOKING_DATA.queue.number}
+                                        #{queue.number}
                                     </div>
                                     <div>
                                         <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
@@ -1387,8 +1490,8 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                         </div>
                                         <div style={{ fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-sm)' }}>
                                             {t('bookingDetail.appointmentOfToday')
-                                                .replace('{n}', String(BOOKING_DATA.queue.number))
-                                                .replace('{total}', String(BOOKING_DATA.queue.totalToday))}
+                                                .replace('{n}', String(queue.number))
+                                                .replace('{total}', String(queue.totalToday))}
                                         </div>
                                     </div>
                                 </div>
@@ -1420,7 +1523,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                                 color: 'var(--color-primary-600)',
                                             }}
                                         >
-                                            {BOOKING_DATA.queue.expectedStart}
+                                            {queue.expectedStart}
                                         </span>
                                     </div>
                                     <div
@@ -1434,10 +1537,10 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                             {t('bookingDetail.scheduled')}
                                         </span>
                                         <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
-                                            {BOOKING_DATA.queue.scheduledStart}
+                                            {queue.scheduledStart}
                                         </span>
                                     </div>
-                                    {BOOKING_DATA.queue.delayMins > 0 && (
+                                    {queue.delayMins > 0 && (
                                         <div
                                             style={{
                                                 display: 'flex',
@@ -1455,7 +1558,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                             <AlertTriangle size={12} />
                                             {t('bookingDetail.delayFromSchedule').replace(
                                                 '{n}',
-                                                String(BOOKING_DATA.queue.delayMins)
+                                                String(queue.delayMins)
                                             )}
                                         </div>
                                     )}

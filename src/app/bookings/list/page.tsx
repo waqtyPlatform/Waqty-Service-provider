@@ -31,6 +31,7 @@ import {
     mockVisitViews,
     hhmm,
 } from '../_visits';
+import { loadLocalVisits, updateLocalVisitStatus } from '../_localBookings';
 
 // Canonical 6-state status -> badge CSS (reuses the existing module classes).
 const statusClass: Record<BookingStatus, string> = {
@@ -168,10 +169,19 @@ export default function BookingListPage() {
     const [paymentFilter, setPaymentFilter] = useState<'all' | PaymentBucket>('all');
     const [currentPage, setCurrentPage] = useState(1);
     const [rows, setRows] = useState<VisitView[]>(mockVisitViews);
+    const [apiLoaded, setApiLoaded] = useState(false);
+    const [localVisits, setLocalVisits] = useState<VisitView[]>([]);
     const [cancelTarget, setCancelTarget] = useState<string | null>(null);
     const [refreshKey, setRefreshKey] = useState(0);
     const router = useRouter();
     const { addToast } = useToast();
+
+    // Locally-created bookings (offline/demo). Read on the client after mount so
+    // SSR markup matches; merged into the list only while on mock data (below).
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage is unavailable during SSR; locally-created bookings are loaded once on the client after mount
+        setLocalVisits(loadLocalVisits());
+    }, [refreshKey]);
 
     // Fetch bookings from the API (single-service rows) and lift each into a
     // canonical VisitView; fall back to mock visits on error/empty.
@@ -182,6 +192,7 @@ export default function BookingListPage() {
                 const res = await providerApi.getBookings({ per_page: 100 });
                 if (!cancelled && res.success && res.data && res.data.length > 0) {
                     setRows(res.data.map(visitViewFromBooking));
+                    setApiLoaded(true);
                 }
             } catch {
                 // Keep fallback mock data
@@ -194,6 +205,20 @@ export default function BookingListPage() {
 
     const confirmCancel = async () => {
         if (!cancelTarget) return;
+        // Locally-created booking -> update the local store (and this view).
+        if (localVisits.some(v => v.visit.uuid === cancelTarget)) {
+            updateLocalVisitStatus(cancelTarget, 'cancelled');
+            setLocalVisits(prev =>
+                prev.map(v =>
+                    v.visit.uuid === cancelTarget
+                        ? { ...v, visit: { ...v.visit, status: 'cancelled' as BookingStatus } }
+                        : v
+                )
+            );
+            addToast('error', t('bk.toastBookingNumCancelled').replace('{id}', cancelTarget));
+            setCancelTarget(null);
+            return;
+        }
         // UUID format (API booking) -> persist via API; otherwise mock update.
         if (cancelTarget.includes('-') && cancelTarget.length > 10) {
             try {
@@ -216,11 +241,19 @@ export default function BookingListPage() {
         setCancelTarget(null);
     };
 
-    const queueNumbers = React.useMemo(() => computeQueueNumbers(rows), [rows]);
+    // Locally-created bookings ride on top of the mock rows; once the API takes
+    // over, its rows are authoritative and the local copies are dropped (the
+    // booking is already on the server) — so there are never duplicates.
+    const displayRows = React.useMemo(
+        () => (apiLoaded ? rows : [...localVisits, ...rows]),
+        [apiLoaded, localVisits, rows]
+    );
+
+    const queueNumbers = React.useMemo(() => computeQueueNumbers(displayRows), [displayRows]);
 
     const filtered = React.useMemo(
         () =>
-            rows.filter(v => {
+            displayRows.filter(v => {
                 const services = v.lines.map(l => l.serviceName).join(' ');
                 const matchSearch =
                     v.clientName.toLowerCase().includes(search.toLowerCase()) ||
@@ -230,7 +263,7 @@ export default function BookingListPage() {
                 const matchPayment = paymentFilter === 'all' || paymentBucket(v.visit.payment.status) === paymentFilter;
                 return matchSearch && matchStatus && matchPayment;
             }),
-        [rows, search, statusFilter, paymentFilter]
+        [displayRows, search, statusFilter, paymentFilter]
     );
 
     const itemsPerPage = 5;

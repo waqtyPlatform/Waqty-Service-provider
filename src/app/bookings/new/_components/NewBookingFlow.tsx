@@ -17,6 +17,7 @@ import { s } from '../lib/bookingStyles';
 import { ServiceBookingCard } from './ServiceBookingCard';
 import { PatientIntakeForm } from './PatientIntakeForm';
 import { BookingSummary } from './BookingSummary';
+import { addLocalVisit, buildLocalVisitView } from '../../_localBookings';
 
 export function NewBookingFlow() {
     const router = useRouter();
@@ -370,6 +371,34 @@ export function NewBookingFlow() {
             }
             return;
         }
+
+        // ── Create mode: persist the booking ──
+        // Saved to a client-side store (it shows immediately in the list + calendar).
+        //
+        // NO BACKEND WRITE: the Waqty API exposes no provider booking-create route.
+        // The only booking-create endpoint is `POST /api/user/bookings` (customer-
+        // authenticated — the customer books themselves); the provider guard has just
+        // `GET /api/provider/bookings`, `GET …/{uuid}` and `PATCH …/{uuid}/status`
+        // (verified against the Waqty Postman collection). So a provider-created
+        // walk-in booking can only live client-side until the backend adds e.g.
+        // `POST /api/provider/bookings` that accepts a customer reference (an existing
+        // user_uuid, or a walk-in name/phone the backend resolves to a customer) plus
+        // service_uuid / employee_uuid / branch_uuid / booking_date / start_time.
+        // When that route exists, call it here (and drop the local-store write on
+        // success so the API row from `getBookings` is the single source of truth).
+        const mainBranch = apiBranches.find(b => b.is_main) ?? apiBranches[0];
+        addLocalVisit(
+            buildLocalVisitView({
+                items,
+                clientName,
+                clientPhone,
+                discountPct: discount,
+                notes,
+                branchName: mainBranch?.name ?? 'Main',
+                branchId: mainBranch?.uuid ?? CURRENT_BRANCH_ID,
+                priceOverrides: apiPriceOverrides,
+            })
+        );
 
         addToast('success', `${t('bookings.confirmSuccess')} ${clientName}`);
         router.push('/bookings');
