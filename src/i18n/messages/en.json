@@ -3544,6 +3544,8 @@
     "bookingDetail.expectedStart": "Expected Start",
     "bookingDetail.scheduled": "Scheduled",
     "bookingDetail.delayFromSchedule": "+{n} min delay from schedule",
+    "bookingDetail.logCreated": "Booking created",
+    "bookingDetail.logCreatedDetail": "Created from New Booking",
     "newBooking.staffBusyAt": "Staff busy at: {list}",
     "newBooking.staffAvailable": "Staff available",
     "newBooking.roomAutoAssigned": "Room will be auto-assigned",
