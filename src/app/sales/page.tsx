@@ -23,6 +23,7 @@ import { EmptyState, SlideOver, Select, Button, useToast } from '@/components/ui
 import styles from './sales.module.css';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useApiQuery } from '@/hooks/useApiQuery';
+import { egpLabel, formatMoney } from '@/lib/money';
 import { salesApi, type Sale } from '@/lib/api';
 
 interface Service {
@@ -386,6 +387,14 @@ export default function SalesPage() {
             pkg.services.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
+    // Summary derived from the fetched sales history (canonical Sale.total is in MINOR units).
+    const completedSales = (salesData ?? []).filter(sale => sale.status === 'completed');
+    const salesSummary = {
+        count: completedSales.length,
+        revenueMinor: completedSales.reduce((sum, sale) => sum + (sale.total ?? 0), 0),
+    };
+    const showSalesSummary = !salesLoading && !salesError && salesSummary.count > 0;
+
     return (
         <div className={styles.salesPage}>
             {/* Header */}
@@ -409,6 +418,60 @@ export default function SalesPage() {
                     </Link>
                 </div>
             </div>
+
+            {/* Recorded sales summary — derived from the fetched sales history */}
+            {showSalesSummary && (
+                <div
+                    style={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: 'var(--space-3)',
+                        padding: 'var(--space-4)',
+                        background: 'var(--bg-primary)',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: 'var(--radius-xl)',
+                    }}
+                >
+                    <div
+                        style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flex: 1, minWidth: 180 }}
+                    >
+                        <ShoppingCart size={18} color="var(--color-primary-600)" />
+                        <div>
+                            <div
+                                style={{
+                                    fontSize: 'var(--text-lg)',
+                                    fontWeight: 'var(--font-bold)',
+                                    color: 'var(--text-primary)',
+                                }}
+                            >
+                                {salesSummary.count}
+                            </div>
+                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
+                                {t('sales.recordedSales')}
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flex: 1, minWidth: 180 }}
+                    >
+                        <Star size={18} color="var(--color-success)" />
+                        <div>
+                            <div
+                                style={{
+                                    fontSize: 'var(--text-lg)',
+                                    fontWeight: 'var(--font-bold)',
+                                    color: 'var(--color-success)',
+                                }}
+                            >
+                                {formatMoney(salesSummary.revenueMinor)}
+                            </div>
+                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
+                                {t('sales.totalRevenue')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Tabs */}
             <div className={styles.tabs}>
@@ -442,12 +505,14 @@ export default function SalesPage() {
                         <button
                             className={`${styles.viewBtn} ${viewMode === 'grid' ? styles.viewBtnActive : ''}`}
                             onClick={() => setViewMode('grid')}
+                            aria-pressed={viewMode === 'grid'}
                         >
                             <Grid3X3 size={16} />
                         </button>
                         <button
                             className={`${styles.viewBtn} ${viewMode === 'list' ? styles.viewBtnActive : ''}`}
                             onClick={() => setViewMode('list')}
+                            aria-pressed={viewMode === 'list'}
                         >
                             <List size={16} />
                         </button>
@@ -491,7 +556,7 @@ export default function SalesPage() {
                                             <div className={styles.serviceMeta}>
                                                 <span className={styles.servicePrice}>
                                                     {service.price}
-                                                    <span className={styles.servicePriceCurrency}>EGP</span>
+                                                    <span className={styles.servicePriceCurrency}>{egpLabel()}</span>
                                                 </span>
                                                 <span className={styles.serviceDuration}>
                                                     <Clock size={14} />
@@ -541,8 +606,10 @@ export default function SalesPage() {
                                 <div className={styles.packageHeader}>
                                     <div className={styles.packageName}>{pkg.name}</div>
                                     <div className={styles.packagePrice}>
-                                        {pkg.price} EGP
-                                        <span className={styles.packageOriginal}>{pkg.originalPrice} EGP</span>
+                                        {pkg.price} {egpLabel()}
+                                        <span className={styles.packageOriginal}>
+                                            {pkg.originalPrice} {egpLabel()}
+                                        </span>
                                     </div>
                                 </div>
                                 <div className={styles.packageBody}>
@@ -592,7 +659,9 @@ export default function SalesPage() {
                                 }}
                             >
                                 <span>{t('sales.total')}</span>
-                                <span>{cartItem.price.toLocaleString()} EGP</span>
+                                <span>
+                                    {cartItem.price.toLocaleString()} {egpLabel()}
+                                </span>
                             </div>
                         )}
                         <Button
@@ -654,7 +723,7 @@ export default function SalesPage() {
                                 <div>
                                     <div style={{ fontWeight: 'var(--font-medium)' }}>{cartItem.name}</div>
                                     <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-primary-600)' }}>
-                                        {cartItem.price} EGP
+                                        {cartItem.price} {egpLabel()}
                                     </div>
                                 </div>
                                 <button

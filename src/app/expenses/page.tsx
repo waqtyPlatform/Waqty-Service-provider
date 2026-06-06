@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { DropdownMenu, useToast, EmptyState } from '@/components/ui';
+import { DropdownMenu, useToast, EmptyState, Modal, Input, Select, Button } from '@/components/ui';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { Search, Plus, Download, MoreVertical, Receipt, FileText, Repeat, Wallet, PieChart } from 'lucide-react';
 import styles from './expenses.module.css';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useApiQuery } from '@/hooks/useApiQuery';
+import { egpLabel } from '@/lib/money';
 import { expenseApi, type Expense } from '@/lib/api';
 import { DataGuard } from '@/components/DataGuard';
 
@@ -132,11 +133,60 @@ export default function ExpensesPage() {
         loading: expensesLoading,
         error: expensesError,
         refetch: refetchExpenses,
+        setData: setExpensesData,
     } = useApiQuery<Expense[]>(() => expenseApi.getExpenses(), [], {
         fallbackData: fallbackExpenses as unknown as Expense[],
     });
 
     const expenses = (apiExpenses as unknown as typeof fallbackExpenses) || fallbackExpenses;
+
+    // Add-Expense modal (controlled form + optimistic insert). The page previously
+    // had two "Add Expense" buttons with no handler and no modal at all.
+    type ExpenseRow = (typeof fallbackExpenses)[number];
+    const emptyExpense = {
+        description: '',
+        category: 'Supplies',
+        vendor: '',
+        amount: '',
+        method: 'Cash',
+        status: 'pending',
+    };
+    const [isAddOpen, setIsAddOpen] = useState(false);
+    const [expForm, setExpForm] = useState(emptyExpense);
+    const openAdd = () => {
+        setExpForm(emptyExpense);
+        setIsAddOpen(true);
+    };
+    const saveExpense = async () => {
+        if (!expForm.description.trim()) {
+            addToast('error', t('expenses.descRequired'));
+            return;
+        }
+        const amountNum = Number(expForm.amount);
+        if (!amountNum || amountNum <= 0) {
+            addToast('error', t('expenses.amountRequired'));
+            return;
+        }
+        const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        const newRow: ExpenseRow = {
+            id: `EXP-${Date.now()}`,
+            date: today,
+            category: expForm.category,
+            description: expForm.description.trim(),
+            vendor: expForm.vendor.trim() || '—',
+            amount: amountNum,
+            method: expForm.method,
+            status: expForm.status,
+        };
+        setExpensesData(prev => [newRow as unknown as Expense, ...(prev ?? [])]);
+        setIsAddOpen(false);
+        try {
+            await expenseApi.createExpense({ ...newRow });
+        } catch {
+            // offline/demo: keep the optimistic local row
+        }
+        addToast('success', t('expenses.toastAdded'));
+    };
 
     const filtered = expenses.filter((e: (typeof fallbackExpenses)[number]) => {
         const matchSearch =
@@ -176,7 +226,7 @@ export default function ExpensesPage() {
                     >
                         <Download size={16} /> {t('expenses.export')}
                     </button>
-                    <button className={styles.btnPrimary}>
+                    <button className={styles.btnPrimary} onClick={openAdd}>
                         <Plus size={16} /> {t('expenses.add')}
                     </button>
                 </div>
@@ -198,7 +248,9 @@ export default function ExpensesPage() {
             <div className={styles.summaryGrid}>
                 <div className={styles.summaryCard}>
                     <div className={styles.summaryLabel}>{t('expenses.total')}</div>
-                    <div className={styles.summaryValue}>{totalExpenses.toLocaleString()} EGP</div>
+                    <div className={styles.summaryValue}>
+                        {totalExpenses.toLocaleString()} {egpLabel()}
+                    </div>
                 </div>
                 <div className={styles.summaryCard}>
                     <div className={styles.summaryLabel}>{t('expenses.pending')}</div>
@@ -251,9 +303,10 @@ export default function ExpensesPage() {
                         action={
                             <button
                                 className={styles.btnPrimary}
-                                style={{ margin: '0 auto', display: 'flex', marginTop: '16px' }}
+                                style={{ margin: '0 auto', display: 'flex', marginTop: 'var(--space-4)' }}
+                                onClick={openAdd}
                             >
-                                <Plus size={16} style={{ marginInlineEnd: 4 }} /> {t('expenses.add')}
+                                <Plus size={16} style={{ marginInlineEnd: 'var(--space-1)' }} /> {t('expenses.add')}
                             </button>
                         }
                     />
@@ -313,7 +366,7 @@ export default function ExpensesPage() {
                                                 <td className={`${styles.td} ${styles.vendorCell}`}>{exp.vendor}</td>
                                                 <td className={styles.td}>{exp.method}</td>
                                                 <td className={`${styles.td} ${styles.amountCell}`}>
-                                                    -{exp.amount.toLocaleString()} EGP
+                                                    -{exp.amount.toLocaleString()} {egpLabel()}
                                                 </td>
                                                 <td className={styles.td}>
                                                     <span
@@ -378,6 +431,74 @@ export default function ExpensesPage() {
                     </div>
                 </DataGuard>
             )}
+
+            {/* Add Expense Modal */}
+            <Modal
+                open={isAddOpen}
+                onClose={() => setIsAddOpen(false)}
+                title={t('expenses.addTitle')}
+                footer={
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+                        <Button variant="ghost" onClick={() => setIsAddOpen(false)}>
+                            {t('common.cancel')}
+                        </Button>
+                        <Button onClick={saveExpense}>{t('common.save')}</Button>
+                    </div>
+                }
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    <Input
+                        label={t('exp.thDesc')}
+                        value={expForm.description}
+                        onChange={e => setExpForm(f => ({ ...f, description: e.target.value }))}
+                    />
+                    <Select
+                        label={t('exp.thCategory')}
+                        value={expForm.category}
+                        onChange={e => setExpForm(f => ({ ...f, category: e.target.value }))}
+                        options={[
+                            { label: t('exp.catSupplies'), value: 'Supplies' },
+                            { label: t('exp.catRent'), value: 'Rent' },
+                            { label: t('exp.catUtilities'), value: 'Utilities' },
+                            { label: t('exp.catMarketing'), value: 'Marketing' },
+                            { label: t('exp.catEquipment'), value: 'Equipment' },
+                            { label: t('exp.catSalary'), value: 'Salary' },
+                            { label: t('exp.catMaintenance'), value: 'Maintenance' },
+                        ]}
+                    />
+                    <Input
+                        label={t('exp.thVendor')}
+                        value={expForm.vendor}
+                        onChange={e => setExpForm(f => ({ ...f, vendor: e.target.value }))}
+                    />
+                    <Input
+                        label={t('exp.thAmount')}
+                        type="number"
+                        value={expForm.amount}
+                        onChange={e => setExpForm(f => ({ ...f, amount: e.target.value }))}
+                    />
+                    <Select
+                        label={t('exp.thMethod')}
+                        value={expForm.method}
+                        onChange={e => setExpForm(f => ({ ...f, method: e.target.value }))}
+                        options={[
+                            { label: t('expenses.methodCash'), value: 'Cash' },
+                            { label: t('expenses.methodCard'), value: 'Card' },
+                            { label: t('expenses.methodTransfer'), value: 'Transfer' },
+                        ]}
+                    />
+                    <Select
+                        label={t('exp.thStatus')}
+                        value={expForm.status}
+                        onChange={e => setExpForm(f => ({ ...f, status: e.target.value }))}
+                        options={[
+                            { label: t('exp.stPending'), value: 'pending' },
+                            { label: t('exp.stApproved'), value: 'approved' },
+                            { label: t('exp.stRejected'), value: 'rejected' },
+                        ]}
+                    />
+                </div>
+            </Modal>
         </div>
     );
 }

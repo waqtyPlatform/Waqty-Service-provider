@@ -6,7 +6,7 @@ import { Button, Badge, Input, Select, Modal } from '@/components/ui';
 import styles from '../customers.module.css';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useApiQuery } from '@/hooks/useApiQuery';
-import { customerApi, type CustomerReview } from '@/lib/api';
+import { customerApi, providerApi, type CustomerReview } from '@/lib/api';
 import { DataGuard } from '@/components/DataGuard';
 
 const mockReviews: CustomerReview[] = [
@@ -269,8 +269,30 @@ export default function ReviewModerationPage() {
         error,
         refetch,
         setData: setReviews,
-    } = useApiQuery(
-        () => customerApi.getReviews({ status: filterStatus === 'all' ? undefined : filterStatus }),
+    } = useApiQuery<CustomerReview[]>(
+        // The provider `/reviews` route doesn't exist; `/ratings` is the live source.
+        () =>
+            providerApi.getRatings().then(res => {
+                const mapped = res.data?.map(
+                    (r): CustomerReview => ({
+                        uuid: r.uuid,
+                        customer_uuid: r.user?.uuid ?? '',
+                        customer: r.user ? ({ uuid: r.user.uuid, name: r.user.name } as never) : undefined,
+                        employee_uuid: null,
+                        service_uuid: null,
+                        booking_uuid: null,
+                        rating: r.rating,
+                        comment: r.comment ?? null,
+                        response: null,
+                        status: r.active ? 'published' : 'hidden',
+                        direction: 'by_customer',
+                        created_at: (r as { rated_at?: string }).rated_at ?? r.created_at ?? '',
+                        updated_at: (r as { rated_at?: string }).rated_at ?? r.created_at ?? '',
+                    })
+                );
+                const data = filterStatus === 'all' ? mapped : mapped?.filter(r => r.status === filterStatus);
+                return { ...res, data };
+            }),
         [filterStatus],
         { fallbackData: mockReviews }
     );
@@ -322,7 +344,7 @@ export default function ReviewModerationPage() {
             <div className={styles.headerContent}>
                 <div>
                     <h1 style={{ fontSize: '1.5rem', fontWeight: 700 }}>{t('reviews.title')}</h1>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginTop: 4 }}>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginTop: 'var(--space-1)' }}>
                         {t('reviews.subtitle')}
                     </p>
                 </div>
@@ -338,7 +360,7 @@ export default function ReviewModerationPage() {
                         border: '1px solid var(--border)',
                     }}
                 >
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginBottom: 4 }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginBottom: 'var(--space-1)' }}>
                         {t('reviews.totalReviews')}
                     </div>
                     <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{(reviews || []).length}</div>
@@ -351,10 +373,10 @@ export default function ReviewModerationPage() {
                         border: '1px solid var(--border)',
                     }}
                 >
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginBottom: 4 }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginBottom: 'var(--space-1)' }}>
                         {t('reviews.avgRating')}
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                         <span style={{ fontSize: '1.5rem', fontWeight: 700 }}>{avgRating}</span>
                         <Star size={18} fill="#f59e0b" stroke="#f59e0b" />
                     </div>
@@ -367,7 +389,7 @@ export default function ReviewModerationPage() {
                         border: '1px solid var(--border)',
                     }}
                 >
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginBottom: 4 }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginBottom: 'var(--space-1)' }}>
                         {t('reviews.pending')}
                     </div>
                     <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--color-warning-500)' }}>
@@ -382,7 +404,7 @@ export default function ReviewModerationPage() {
                         border: '1px solid var(--border)',
                     }}
                 >
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginBottom: 4 }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginBottom: 'var(--space-1)' }}>
                         {t('reviews.reported')}
                     </div>
                     <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--color-error-500)' }}>
@@ -483,7 +505,7 @@ export default function ReviewModerationPage() {
                                                     fontSize: '0.75rem',
                                                     color: 'var(--text-tertiary)',
                                                     display: 'flex',
-                                                    gap: 8,
+                                                    gap: 'var(--space-2)',
                                                     alignItems: 'center',
                                                 }}
                                             >
@@ -498,7 +520,7 @@ export default function ReviewModerationPage() {
                                             </div>
                                         </div>
                                     </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                                         <Badge color={statusColors[review.status] || 'neutral'} size="sm">
                                             {t(
                                                 `reviews.status${review.status.charAt(0).toUpperCase() + review.status.slice(1)}`
@@ -535,7 +557,7 @@ export default function ReviewModerationPage() {
                                             marginBottom: '0.75rem',
                                             display: 'flex',
                                             alignItems: 'center',
-                                            gap: 8,
+                                            gap: 'var(--space-2)',
                                         }}
                                     >
                                         <AlertTriangle size={14} />
@@ -544,7 +566,7 @@ export default function ReviewModerationPage() {
                                 )}
 
                                 {/* Actions — Report only */}
-                                <div style={{ display: 'flex', gap: 8 }}>
+                                <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                                     {review.status !== 'reported' && (
                                         <Button
                                             size="sm"

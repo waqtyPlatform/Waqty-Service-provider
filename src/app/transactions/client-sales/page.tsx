@@ -1,5 +1,6 @@
 'use client';
 
+import { egpLabel } from '@/lib/money';
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Search, Download, Users } from 'lucide-react';
@@ -146,7 +147,7 @@ const s: Record<string, React.CSSProperties> = {
     searchBox: { position: 'relative', flex: 1, maxWidth: 320 },
     searchIcon: {
         position: 'absolute',
-        left: 12,
+        insetInlineStart: 12,
         top: '50%',
         transform: 'translateY(-50%)',
         color: 'var(--text-tertiary)',
@@ -154,7 +155,8 @@ const s: Record<string, React.CSSProperties> = {
     searchInput: {
         width: '100%',
         height: 40,
-        paddingLeft: 40,
+        paddingInlineStart: 40,
+        paddingInlineEnd: 'var(--space-3)',
         border: '1px solid var(--border-color)',
         borderRadius: 'var(--radius-lg)',
         background: 'var(--bg-primary)',
@@ -170,7 +172,7 @@ const s: Record<string, React.CSSProperties> = {
     },
     th: {
         padding: 'var(--space-3) var(--space-4)',
-        textAlign: 'left',
+        textAlign: 'start',
         fontSize: 'var(--text-xs)',
         fontWeight: 'var(--font-semibold)',
         color: 'var(--text-tertiary)',
@@ -186,7 +188,7 @@ const s: Record<string, React.CSSProperties> = {
     },
     badge: {
         display: 'inline-flex',
-        padding: '2px 8px',
+        padding: '2px var(--space-2)',
         borderRadius: 'var(--radius-full)',
         fontSize: 11,
         fontWeight: 'var(--font-semibold)',
@@ -245,20 +247,9 @@ export default function ClientSalesPage() {
 
             <div style={s.toolbar}>
                 <div style={s.searchBox as React.CSSProperties}>
-                    <Search
-                        size={16}
-                        style={{
-                            ...(s.searchIcon as React.CSSProperties),
-                            left: lang === 'ar' ? 'auto' : 12,
-                            right: lang === 'ar' ? 12 : 'auto',
-                        }}
-                    />
+                    <Search size={16} style={s.searchIcon as React.CSSProperties} />
                     <input
-                        style={{
-                            ...s.searchInput,
-                            paddingLeft: lang === 'ar' ? 12 : 40,
-                            paddingRight: lang === 'ar' ? 40 : 12,
-                        }}
+                        style={s.searchInput}
                         placeholder={t('txn.client.search')}
                         value={search}
                         onChange={e => setSearch(e.target.value)}
@@ -291,13 +282,7 @@ export default function ClientSalesPage() {
                                 'txn.client.thTopService',
                                 'txn.client.thLastVisit',
                             ].map((h, i) => (
-                                <th
-                                    key={i}
-                                    style={{
-                                        ...(s.th as React.CSSProperties),
-                                        textAlign: lang === 'ar' ? 'right' : 'left',
-                                    }}
-                                >
+                                <th key={i} style={s.th as React.CSSProperties}>
                                     {h ? t(h) : ''}
                                 </th>
                             ))}
@@ -321,7 +306,7 @@ export default function ClientSalesPage() {
                                     }}
                                     dir="ltr"
                                 >
-                                    {row.totalSpend.toLocaleString()} EGP
+                                    {row.totalSpend.toLocaleString()} {egpLabel()}
                                 </td>
                                 <td style={s.td}>
                                     <div style={{ ...s.bar, transform: lang === 'ar' ? 'scaleX(-1)' : 'none' }}>
@@ -329,7 +314,7 @@ export default function ClientSalesPage() {
                                     </div>
                                 </td>
                                 <td style={s.td} dir="ltr">
-                                    {row.avgTicket} EGP
+                                    {row.avgTicket} {egpLabel()}
                                 </td>
                                 <td style={s.td}>{row.topService}</td>
                                 <td style={s.td} dir="ltr">

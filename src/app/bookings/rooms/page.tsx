@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, Filter } from 'lucide-react';
 import styles from '../bookings.module.css';
 import BookingsTabs from '../BookingsTabs';
@@ -60,6 +60,23 @@ const statusColors: Record<DisplayStatus, { bg: string; border: string }> = {
 
 export default function RoomCalendarPage() {
     const { t, lang } = useTranslation();
+    const [currentDate, setCurrentDate] = useState(() => new Date());
+    const [onlyBusy, setOnlyBusy] = useState(false);
+
+    const shiftDay = (delta: number) =>
+        setCurrentDate(d => {
+            const n = new Date(d);
+            n.setDate(n.getDate() + delta);
+            return n;
+        });
+    const dateLabel = currentDate.toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+    });
+    const visibleRooms = onlyBusy ? rooms.filter(r => (roomBookings[r.id]?.length ?? 0) > 0) : rooms;
+    const gridCols = `80px repeat(${visibleRooms.length}, 1fr)`;
 
     return (
         <div className={styles.bookingsPage} style={{ direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
@@ -69,22 +86,38 @@ export default function RoomCalendarPage() {
             {/* Calendar Header */}
             <div className={styles.calendarHeader}>
                 <div className={styles.calendarNav}>
-                    <button className={styles.navBtn}>
+                    <button
+                        className={styles.navBtn}
+                        onClick={() => shiftDay(lang === 'ar' ? 1 : -1)}
+                        aria-label={t('bk.tbPrev')}
+                    >
                         <ChevronLeft size={16} style={{ transform: lang === 'ar' ? 'scaleX(-1)' : 'none' }} />
                     </button>
-                    <h2 className={styles.calendarDate}>Tuesday, February 17, 2026</h2>
-                    <button className={styles.navBtn}>
+                    <h2 className={styles.calendarDate}>{dateLabel}</h2>
+                    <button
+                        className={styles.navBtn}
+                        onClick={() => shiftDay(lang === 'ar' ? -1 : 1)}
+                        aria-label={t('bk.tbNext')}
+                    >
                         <ChevronRight size={16} style={{ transform: lang === 'ar' ? 'scaleX(-1)' : 'none' }} />
                     </button>
-                    <button className={styles.todayBtn}>{t('bk.tbToday')}</button>
+                    <button className={styles.todayBtn} onClick={() => setCurrentDate(new Date())}>
+                        {t('bk.tbToday')}
+                    </button>
                 </div>
                 <div className={styles.calendarActions}>
-                    <div className={styles.viewToggle}>
-                        <button className={`${styles.viewBtn} ${styles.viewBtnActive}`}>{t('bk.tbDay')}</button>
-                        <button className={styles.viewBtn}>{t('bk.tbWeek')}</button>
-                    </div>
-                    <button className={styles.filterBtn}>
+                    <button
+                        className={styles.filterBtn}
+                        onClick={() => setOnlyBusy(v => !v)}
+                        aria-pressed={onlyBusy}
+                        style={
+                            onlyBusy
+                                ? { borderColor: 'var(--color-primary)', color: 'var(--color-primary)' }
+                                : undefined
+                        }
+                    >
                         <Filter size={14} /> {t('bk.tbFilters')}
+                        {onlyBusy ? ' (1)' : ''}
                     </button>
                 </div>
             </div>
@@ -102,7 +135,7 @@ export default function RoomCalendarPage() {
                 <div
                     style={{
                         display: 'grid',
-                        gridTemplateColumns: '80px repeat(4, 1fr)',
+                        gridTemplateColumns: gridCols,
                         borderBottom: '1px solid var(--border-color)',
                         background: 'var(--bg-secondary)',
                     }}
@@ -118,13 +151,12 @@ export default function RoomCalendarPage() {
                     >
                         {t('bk.tbTime')}
                     </div>
-                    {rooms.map(room => (
+                    {visibleRooms.map(room => (
                         <div
                             key={room.id}
                             style={{
                                 padding: 'var(--space-3) var(--space-4)',
-                                borderLeft: lang === 'ar' ? 'none' : '1px solid var(--border-color)',
-                                borderRight: lang === 'ar' ? '1px solid var(--border-color)' : 'none',
+                                borderInlineStart: '1px solid var(--border-color)',
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: 'var(--space-2)',
@@ -159,7 +191,7 @@ export default function RoomCalendarPage() {
                             key={time}
                             style={{
                                 display: 'grid',
-                                gridTemplateColumns: '80px repeat(4, 1fr)',
+                                gridTemplateColumns: gridCols,
                                 minHeight: 48,
                                 borderBottom: i < timeSlots.length - 1 ? '1px solid var(--border-color)' : 'none',
                             }}
@@ -171,8 +203,7 @@ export default function RoomCalendarPage() {
                                     fontSize: 'var(--text-xs)',
                                     color: 'var(--text-tertiary)',
                                     fontWeight: 'var(--font-medium)',
-                                    borderRight: lang === 'ar' ? 'none' : '1px solid var(--border-color)',
-                                    borderLeft: lang === 'ar' ? '1px solid var(--border-color)' : 'none',
+                                    borderInlineEnd: '1px solid var(--border-color)',
                                 }}
                             >
                                 {time}
@@ -185,8 +216,7 @@ export default function RoomCalendarPage() {
                                         key={room.id}
                                         style={{
                                             position: 'relative',
-                                            borderLeft: lang === 'ar' ? 'none' : '1px solid var(--border-color)',
-                                            borderRight: lang === 'ar' ? '1px solid var(--border-color)' : 'none',
+                                            borderInlineStart: '1px solid var(--border-color)',
                                             padding: '2px',
                                         }}
                                     >
@@ -202,10 +232,7 @@ export default function RoomCalendarPage() {
                                                             right: 2,
                                                             height: `calc(${booking.span * 48}px - 4px)`,
                                                             background: sc.bg,
-                                                            borderLeft:
-                                                                lang === 'ar' ? 'none' : `3px solid ${sc.border}`,
-                                                            borderRight:
-                                                                lang === 'ar' ? `3px solid ${sc.border}` : 'none',
+                                                            borderInlineStart: `3px solid ${sc.border}`,
                                                             borderRadius: 'var(--radius-md)',
                                                             padding: 'var(--space-1) var(--space-2)',
                                                             fontSize: 'var(--text-xs)',

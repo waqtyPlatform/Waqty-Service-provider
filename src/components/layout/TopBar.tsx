@@ -38,7 +38,6 @@ function TopBarInner() {
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const [branchMenuOpen, setBranchMenuOpen] = useState(false);
     const [notifOpen, setNotifOpen] = useState(false);
-    const [searchFocused, setSearchFocused] = useState(false);
     const userMenuRef = useRef<HTMLDivElement>(null);
     const branchMenuRef = useRef<HTMLDivElement>(null);
     const notifRef = useRef<HTMLDivElement>(null);
@@ -136,16 +135,9 @@ function TopBarInner() {
         return () => document.removeEventListener('mousedown', handleClick);
     }, []);
 
-    // Ctrl+K keyboard shortcut
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-                e.preventDefault();
-                setSearchFocused(true);
-            }
-        };
-        document.addEventListener('keydown', handleKeyDown);
-        return () => document.removeEventListener('keydown', handleKeyDown);
+    // Open the command palette (Ctrl/Cmd+K is handled globally inside CommandPalette).
+    const openPalette = useCallback(() => {
+        window.dispatchEvent(new CustomEvent('waqty:command-palette'));
     }, []);
 
     return (
@@ -178,14 +170,28 @@ function TopBarInner() {
                 )}
             </div>
 
-            {/* Search */}
-            <div className={`${styles.searchWrapper} ${searchFocused ? styles.searchActive : ''}`}>
+            {/* Search — opens the command palette */}
+            <div
+                className={styles.searchWrapper}
+                role="button"
+                tabIndex={0}
+                onClick={openPalette}
+                onKeyDown={e => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        openPalette();
+                    }
+                }}
+                aria-label={t('search.placeholder')}
+                style={{ cursor: 'pointer' }}
+            >
                 <Search size={16} className={styles.searchIcon} />
                 <input
                     className={styles.searchInput}
                     placeholder={t('search.placeholder')}
-                    onFocus={() => setSearchFocused(true)}
-                    onBlur={() => setSearchFocused(false)}
+                    readOnly
+                    tabIndex={-1}
+                    style={{ pointerEvents: 'none', cursor: 'pointer' }}
                 />
                 <kbd className={styles.searchKbd}>Ctrl+K</kbd>
             </div>

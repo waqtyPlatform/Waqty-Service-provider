@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { DropdownMenu, EmptyState, useToast, SlideOver, Input, Select, Modal, Button } from '@/components/ui';
 import { useRouter } from 'next/navigation';
 import {
@@ -19,7 +19,9 @@ import {
 import styles from './customers.module.css';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useApiQuery } from '@/hooks/useApiQuery';
-import { customerApi, type Customer } from '@/lib/api';
+import { SampleDataBanner } from '@/components/SampleDataBanner';
+import { egpLabel } from '@/lib/money';
+import { customerApi, providerApi, type Customer } from '@/lib/api';
 import { DataGuard } from '@/components/DataGuard';
 
 const fallbackClients: Customer[] = [
@@ -253,6 +255,26 @@ export default function CustomersPage() {
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [selectedClient, setSelectedClient] = useState<Customer | null>(null);
 
+    // Controlled form for the Add/Edit slide-overs. Previously the inputs were unbound
+    // and Save sent an empty payload, so the list never changed — silent data loss.
+    const emptyForm = { name: '', phone: '', email: '', group: 'Regular', notes: '' };
+    const [form, setForm] = useState(emptyForm);
+    const openAdd = () => {
+        setForm(emptyForm);
+        setIsAddOpen(true);
+    };
+    const openEdit = (c: Customer) => {
+        setSelectedClient(c);
+        setForm({
+            name: c.name,
+            phone: c.phone,
+            email: c.email ?? '',
+            group: c.group?.name ?? 'Regular',
+            notes: c.notes ?? '',
+        });
+        setIsEditOpen(true);
+    };
+
     const router = useRouter();
     const { addToast } = useToast();
     const { t } = useTranslation();
@@ -263,9 +285,159 @@ export default function CustomersPage() {
         error,
         refetch,
         setData: setClients,
-    } = useApiQuery<Customer[]>(() => customerApi.getCustomers(), [], { fallbackData: fallbackClients });
+        isFallback,
+    } = useApiQuery<Customer[]>(
+        // The provider `/customers` route doesn't exist; `/clients/statements` is the
+        // live source (per-client visits + spend), mapped to the Customer view-model.
+        () =>
+            providerApi.getClientStatements().then(res => ({
+                ...res,
+                data: res.data?.map(
+                    (s): Customer => ({
+                        uuid: s.uuid,
+                        name: s.name,
+                        email: s.email,
+                        phone: s.phone ?? '',
+                        group_uuid: null,
+                        vip: false,
+                        notes: null,
+                        allergies: null,
+                        medical_conditions: null,
+                        medications: null,
+                        total_visits: s.total_bookings,
+                        total_spent: s.total_paid,
+                        last_visit: s.last_booking_date,
+                        created_at: '',
+                        updated_at: '',
+                    })
+                ),
+            })),
+        [],
+        { fallbackData: fallbackClients }
+    );
 
     const allClients = clients ?? [];
+
+    // Header actions (Add / Export / Import) live in customers/layout.tsx, which only
+    // dispatches window events; the data + add modal live here, so we handle them here.
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const exportClients = () => {
+        const header = 'Name,Phone,Email,Group,VIP,Visits,TotalSpent';
+        const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+        const rows = allClients.map(c =>
+            [c.name, c.phone, c.email ?? '', c.group?.name ?? '', c.vip ? 'Yes' : 'No', c.total_visits, c.total_spent]
+                .map(esc)
+                .join(',')
+        );
+        const csv = [header, ...rows].join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'clients.csv';
+        a.click();
+        URL.revokeObjectURL(a.href);
+    };
+
+    const parseCsvRow = (line: string): string[] => {
+        const out: string[] = [];
+        let cur = '';
+        let q = false;
+        for (let i = 0; i < line.length; i++) {
+            const ch = line[i];
+            if (q) {
+                if (ch === '"' && line[i + 1] === '"') {
+                    cur += '"';
+                    i++;
+                } else if (ch === '"') q = false;
+                else cur += ch;
+            } else if (ch === '"') q = true;
+            else if (ch === ',') {
+                out.push(cur);
+                cur = '';
+            } else cur += ch;
+        }
+        out.push(cur);
+        return out;
+    };
+
+    const importClients = (file: File) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            const text = String(reader.result || '');
+            const lines = text
+                .split(/\r?\n/)
+                .map(l => l.trim())
+                .filter(Boolean);
+            if (lines.length < 2) {
+                addToast('error', t('customers.importEmpty'));
+                return;
+            }
+            const head = parseCsvRow(lines[0]).map(h => h.toLowerCase());
+            const idx = (m: string) => head.findIndex(h => h.includes(m));
+            const nameIdx = idx('name');
+            const phoneIdx = idx('phone');
+            const emailIdx = idx('email');
+            const groupIdx = idx('group');
+            const imported: Customer[] = [];
+            for (let i = 1; i < lines.length; i++) {
+                const cols = parseCsvRow(lines[i]);
+                const name = (nameIdx >= 0 ? cols[nameIdx] : cols[0])?.trim();
+                if (!name) continue;
+                const groupName = (groupIdx >= 0 ? cols[groupIdx]?.trim() : '') || 'Regular';
+                const isVip = groupName.toLowerCase() === 'vip';
+                imported.push({
+                    uuid: `C-imp-${Date.now()}-${i}`,
+                    name,
+                    email: (emailIdx >= 0 ? cols[emailIdx]?.trim() : '') || null,
+                    phone: (phoneIdx >= 0 ? cols[phoneIdx]?.trim() : '') || '',
+                    group_uuid: null,
+                    group: {
+                        uuid: 'g-imp',
+                        name: groupName,
+                        discount_percentage: isVip ? 15 : 0,
+                        color: isVip ? '#F59E0B' : '#9CA3AF',
+                        description: null,
+                        customers_count: 0,
+                        created_at: '',
+                        updated_at: '',
+                    },
+                    vip: isVip,
+                    notes: null,
+                    allergies: null,
+                    medical_conditions: null,
+                    medications: null,
+                    total_visits: 0,
+                    total_spent: 0,
+                    last_visit: null,
+                    created_at: '',
+                    updated_at: '',
+                });
+            }
+            if (!imported.length) {
+                addToast('error', t('customers.importEmpty'));
+                return;
+            }
+            setClients(prev => [...imported, ...(prev ?? [])]);
+            addToast('success', t('customers.importSuccess').replace('{n}', String(imported.length)));
+        };
+        reader.readAsText(file);
+    };
+
+    useEffect(() => {
+        const onAdd = () => openAdd();
+        const onExport = () => exportClients();
+        const onImport = () => fileInputRef.current?.click();
+        window.addEventListener('openAddClient', onAdd);
+        window.addEventListener('exportClients', onExport);
+        window.addEventListener('importClients', onImport);
+        return () => {
+            window.removeEventListener('openAddClient', onAdd);
+            window.removeEventListener('exportClients', onExport);
+            window.removeEventListener('importClients', onImport);
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [allClients]);
 
     const filtered = allClients.filter(c => {
         const matchSearch =
@@ -281,6 +453,19 @@ export default function CustomersPage() {
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+            {isFallback && <SampleDataBanner />}
+            {/* Hidden file input for CSV import (triggered from the header Import button) */}
+            <input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv,text/csv"
+                style={{ display: 'none' }}
+                onChange={e => {
+                    const f = e.target.files?.[0];
+                    if (f) importClients(f);
+                    e.target.value = '';
+                }}
+            />
             {/* KPI Row */}
             <div className={styles.kpiRow}>
                 <div className={styles.kpiCard}>
@@ -353,7 +538,7 @@ export default function CustomersPage() {
                         <option value="regular">{t('customers.regular')}</option>
                         <option value="new">{t('customers.new')}</option>
                     </select>
-                    <button className={styles.btnPrimary} onClick={() => setIsAddOpen(true)}>
+                    <button className={styles.btnPrimary} onClick={openAdd}>
                         <UserPlus size={16} /> {t('customers.addClient')}
                     </button>
                 </div>
@@ -368,7 +553,7 @@ export default function CustomersPage() {
                 emptyTitle={t('customers.noClients')}
                 emptyDescription={t('customers.noClientsDesc')}
                 emptyAction={
-                    <button className={styles.btnPrimary} onClick={() => setIsAddOpen(true)}>
+                    <button className={styles.btnPrimary} onClick={openAdd}>
                         <UserPlus size={16} /> {t('customers.addClient')}
                     </button>
                 }
@@ -495,7 +680,7 @@ export default function CustomersPage() {
                                                             color: 'var(--color-primary-600)',
                                                         }}
                                                     >
-                                                        {c.total_spent.toLocaleString()} EGP
+                                                        {c.total_spent.toLocaleString()} {egpLabel()}
                                                     </td>
                                                     <td>
                                                         <span
@@ -536,10 +721,7 @@ export default function CustomersPage() {
                                                                 {
                                                                     label: t('customers.edit'),
                                                                     icon: <CreditCard size={14} />,
-                                                                    onClick: () => {
-                                                                        setSelectedClient(c);
-                                                                        setIsEditOpen(true);
-                                                                    },
+                                                                    onClick: () => openEdit(c),
                                                                 },
                                                                 {
                                                                     label: t('customers.delete'),
@@ -614,11 +796,49 @@ export default function CustomersPage() {
                         </Button>
                         <Button
                             onClick={async () => {
+                                if (!form.name.trim()) {
+                                    addToast('error', t('customers.toastNameRequired'));
+                                    return;
+                                }
+                                const newClient: Customer = {
+                                    uuid: `C-${Date.now()}`,
+                                    name: form.name.trim(),
+                                    email: form.email.trim() || null,
+                                    phone: form.phone.trim(),
+                                    group_uuid: null,
+                                    group: {
+                                        uuid: 'g-new',
+                                        name: form.group,
+                                        discount_percentage: form.group === 'VIP' ? 15 : 0,
+                                        color: form.group === 'VIP' ? '#F59E0B' : '#9CA3AF',
+                                        description: null,
+                                        customers_count: 0,
+                                        created_at: '',
+                                        updated_at: '',
+                                    },
+                                    vip: form.group === 'VIP',
+                                    notes: form.notes.trim() || null,
+                                    allergies: null,
+                                    medical_conditions: null,
+                                    medications: null,
+                                    total_visits: 0,
+                                    total_spent: 0,
+                                    last_visit: null,
+                                    created_at: '',
+                                    updated_at: '',
+                                };
+                                setClients(prev => [newClient, ...(prev ?? [])]);
                                 try {
-                                    await customerApi.createCustomer({});
+                                    await customerApi.createCustomer({
+                                        name: newClient.name,
+                                        phone: newClient.phone,
+                                        email: newClient.email,
+                                        group: form.group,
+                                        notes: newClient.notes,
+                                    });
                                     await refetch();
                                 } catch {
-                                    // fallback: keep local state
+                                    // offline/demo: keep the optimistic local row
                                 }
                                 setIsAddOpen(false);
                                 addToast('success', t('customers.toastCreated'));
@@ -630,11 +850,28 @@ export default function CustomersPage() {
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label={t('customers.fullName')} placeholder="e.g. Fatima Al-Rashid" />
-                    <Input label={t('customers.phoneOption')} placeholder="+20 1XX XXX XXXX" />
-                    <Input label={t('customers.emailOption')} placeholder="client@example.com" />
+                    <Input
+                        label={t('customers.fullName')}
+                        placeholder="e.g. Fatima Al-Rashid"
+                        value={form.name}
+                        onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                    />
+                    <Input
+                        label={t('customers.phoneOption')}
+                        placeholder="+20 1XX XXX XXXX"
+                        value={form.phone}
+                        onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+                    />
+                    <Input
+                        label={t('customers.emailOption')}
+                        placeholder="client@example.com"
+                        value={form.email}
+                        onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                    />
                     <Select
                         label={t('customers.groupLabel')}
+                        value={form.group}
+                        onChange={e => setForm(f => ({ ...f, group: e.target.value }))}
                         options={[
                             { label: t('customers.regular'), value: 'Regular' },
                             { label: t('customers.vip'), value: 'VIP' },
@@ -656,6 +893,8 @@ export default function CustomersPage() {
                             className={styles.searchInput}
                             style={{ height: '80px', padding: 'var(--space-3)' }}
                             placeholder={t('customers.notesPlaceholder')}
+                            value={form.notes}
+                            onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
                         />
                     </div>
                 </div>
@@ -677,11 +916,35 @@ export default function CustomersPage() {
                         <Button
                             onClick={async () => {
                                 if (selectedClient) {
+                                    if (!form.name.trim()) {
+                                        addToast('error', t('customers.toastNameRequired'));
+                                        return;
+                                    }
+                                    const updated: Customer = {
+                                        ...selectedClient,
+                                        name: form.name.trim(),
+                                        phone: form.phone.trim(),
+                                        email: form.email.trim() || null,
+                                        notes: form.notes.trim() || null,
+                                        vip: form.group === 'VIP',
+                                        group: selectedClient.group
+                                            ? { ...selectedClient.group, name: form.group }
+                                            : undefined,
+                                    };
+                                    setClients(prev =>
+                                        (prev ?? []).map(c => (c.uuid === selectedClient.uuid ? updated : c))
+                                    );
                                     try {
-                                        await customerApi.updateCustomer(selectedClient.uuid, {});
+                                        await customerApi.updateCustomer(selectedClient.uuid, {
+                                            name: updated.name,
+                                            phone: updated.phone,
+                                            email: updated.email,
+                                            group: form.group,
+                                            notes: updated.notes,
+                                        });
                                         await refetch();
                                     } catch {
-                                        // fallback: keep local state
+                                        // offline/demo: keep the optimistic local edit
                                     }
                                 }
                                 setIsEditOpen(false);
@@ -695,12 +958,25 @@ export default function CustomersPage() {
             >
                 {selectedClient && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                        <Input label={t('customers.fullName')} defaultValue={selectedClient.name} />
-                        <Input label={t('customers.phoneOption')} defaultValue={selectedClient.phone} />
-                        <Input label={t('customers.emailOption')} defaultValue={selectedClient.email ?? ''} />
+                        <Input
+                            label={t('customers.fullName')}
+                            value={form.name}
+                            onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                        />
+                        <Input
+                            label={t('customers.phoneOption')}
+                            value={form.phone}
+                            onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+                        />
+                        <Input
+                            label={t('customers.emailOption')}
+                            value={form.email}
+                            onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                        />
                         <Select
                             label={t('customers.groupLabel')}
-                            defaultValue={selectedClient.group?.name ?? 'Regular'}
+                            value={form.group}
+                            onChange={e => setForm(f => ({ ...f, group: e.target.value }))}
                             options={[
                                 { label: t('customers.regular'), value: 'Regular' },
                                 { label: t('customers.vip'), value: 'VIP' },

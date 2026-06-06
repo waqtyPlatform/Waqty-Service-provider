@@ -1,18 +1,49 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, Users, MoreVertical, Edit, Trash2, Mail, Copy } from 'lucide-react';
-import { EmptyState, DropdownMenu, useToast, SlideOver, Modal, Input, Select, Button } from '@/components/ui';
+import { Search, Users, MoreVertical, Edit, Trash2, Mail, Copy, AlertCircle } from 'lucide-react';
+import { z } from 'zod';
+import type { UseFormReturn } from 'react-hook-form';
+import {
+    EmptyState,
+    DropdownMenu,
+    useToast,
+    SlideOver,
+    Modal,
+    Input,
+    Select,
+    Button,
+    ConfirmDialog,
+    Skeleton,
+} from '@/components/ui';
 import { useRouter } from 'next/navigation';
 import styles from './employees.module.css';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useValidatedForm } from '@/hooks/useValidatedForm';
+import { useApiQuery } from '@/hooks/useApiQuery';
 import { providerApi, toInternationalPhone, getImageUrl, type Employee } from '@/lib/api';
 
 const AVATAR_COLORS = ['#8B5CF6', '#EC4899', '#3B82F6', '#10B981', '#F59E0B', '#6366F1', '#EF4444', '#14B8A6'];
 
-function mapApiEmployee(emp: Employee, index: number) {
-    const nameParts = emp.name.split(' ');
-    const avatar = nameParts
+interface EmpRow {
+    id: string;
+    name: string;
+    role: string;
+    phone: string;
+    email: string;
+    branch: string;
+    status: string;
+    bookingsToday: number;
+    rating: number;
+    revenue: number;
+    avatar: string;
+    color: string;
+    appAccess: boolean;
+}
+
+function mapApiEmployee(emp: Employee, index: number): EmpRow {
+    const avatar = emp.name
+        .split(' ')
         .map(p => p.charAt(0))
         .join('')
         .toUpperCase()
@@ -23,18 +54,18 @@ function mapApiEmployee(emp: Employee, index: number) {
         role: 'Staff', // GAP: API has no role/jobTitle field
         phone: emp.phone,
         email: emp.email,
-        branch: emp.branch?.name || 'Unassigned', // GAP: branch name may not be included
+        branch: emp.branch?.name || 'Unassigned',
         status: emp.active ? 'available' : 'off',
         bookingsToday: 0, // GAP: API has no bookings count
         rating: 0, // GAP: API has no rating
         revenue: 0, // GAP: API has no revenue
         avatar,
         color: AVATAR_COLORS[index % AVATAR_COLORS.length],
-        appAccess: !emp.blocked, // GAP: no real app access field, using blocked as proxy
+        appAccess: !emp.blocked,
     };
 }
 
-const fallbackEmployees = [
+const fallbackEmployees: EmpRow[] = [
     {
         id: 'E001',
         name: 'Sara Ahmed',
@@ -134,167 +165,276 @@ const statusMap: Record<string, { labelKey: string; bg: string; color: string }>
     off: { labelKey: 'employees.dayOff', bg: 'var(--color-gray-100)', color: 'var(--color-gray-500)' },
 };
 
+const JOB_TITLES = ['Senior Stylist', 'Junior Stylist', 'Skin Specialist', 'Massage Therapist', 'Nail Technician'];
+
+// ── Validation ──
+const employeeSchema = z.object({
+    name: z.string().trim().min(2, 'Name must be at least 2 characters'),
+    email: z.union([z.string().email('Enter a valid email'), z.literal('')]).optional(),
+    phone: z.string().optional(),
+    jobTitle: z.string().optional(),
+    branch: z.string().optional(),
+    password: z
+        .string()
+        .optional()
+        .refine(v => !v || v.length >= 6, { message: 'At least 6 characters' }),
+});
+type EmployeeFormValues = z.infer<typeof employeeSchema>;
+
+const EMPTY_EMP: EmployeeFormValues = {
+    name: '',
+    email: '',
+    phone: '',
+    jobTitle: 'Junior Stylist',
+    branch: '',
+    password: '',
+};
+
+function EmployeeForm({
+    form,
+    mode,
+    branches,
+}: {
+    form: UseFormReturn<EmployeeFormValues>;
+    mode: 'create' | 'edit';
+    branches: { uuid: string; name: string }[];
+}) {
+    const {
+        register,
+        formState: { errors },
+    } = form;
+    const { t } = useTranslation();
+
+    const branchOptions =
+        branches.length > 0
+            ? [
+                  { label: t('employees.selectBranch'), value: '' },
+                  ...branches.map(b => ({ label: b.name, value: b.uuid })),
+              ]
+            : [
+                  { label: t('employees.selectBranch'), value: '' },
+                  { label: t('employees.downtown'), value: 'Downtown' },
+                  { label: t('employees.mall'), value: 'Mall of Arabia' },
+                  { label: t('employees.newCairo'), value: 'New Cairo' },
+              ];
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+            <Input
+                label={t('employees.fullName')}
+                placeholder="e.g. Sara Ahmed"
+                {...register('name')}
+                error={errors.name?.message}
+            />
+            <Input
+                label={t('employees.emailOption')}
+                type="email"
+                placeholder="employee@hagzy.com"
+                {...register('email')}
+                error={errors.email?.message}
+            />
+            <Input label={t('employees.phoneOption')} placeholder="+20 1XX XXX XXXX" {...register('phone')} />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+                <Select
+                    label={t('employees.jobTitle')}
+                    {...register('jobTitle')}
+                    options={JOB_TITLES.map(j => ({ label: j, value: j }))}
+                />
+                <Select label={t('employees.branch')} {...register('branch')} options={branchOptions} />
+            </div>
+            {mode === 'create' && (
+                <Input
+                    label={t('employees.password')}
+                    type="password"
+                    placeholder={t('employees.passwordPh')}
+                    {...register('password')}
+                    error={errors.password?.message}
+                />
+            )}
+        </div>
+    );
+}
+
 export default function EmployeesPage() {
-    const [empList, setEmpList] = useState(fallbackEmployees);
-    const [search, setSearch] = useState('');
-    const [apiLoaded, setApiLoaded] = useState(false);
-    const [branches, setBranches] = useState<{ uuid: string; name: string }[]>([]);
     const router = useRouter();
     const { addToast } = useToast();
     const { t } = useTranslation();
 
-    // CRUD state
-    const [isAddOpen, setIsAddOpen] = useState(false);
-    const [selectedEmp, setSelectedEmp] = useState<(typeof empList)[0] | null>(null);
-    const [isEditOpen, setIsEditOpen] = useState(false);
-    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-    const [isInviteOpen, setIsInviteOpen] = useState(false);
-    const [inviteData, setInviteData] = useState({ phoneOrEmail: '', role: 'staff' });
-    const [magicLink, setMagicLink] = useState('');
-
-    // Form state for add
-    const [newEmp, setNewEmp] = useState({
-        fname: '',
-        lname: '',
-        phone: '',
-        email: '',
-        role: 'employee',
-        jobTitle: 'Junior Stylist',
-        branch: '',
-    });
-
-    const [refreshKey, setRefreshKey] = useState(0);
-
+    const {
+        data: apiEmployees,
+        loading,
+        error,
+        refetch,
+    } = useApiQuery<Employee[]>(() => providerApi.getEmployees(), []);
+    const [empList, setEmpList] = useState<EmpRow[]>(fallbackEmployees);
     useEffect(() => {
-        let cancelled = false;
-        (async () => {
-            try {
-                const res = await providerApi.getEmployees();
-                if (!cancelled && res.success && res.data) {
-                    setEmpList(res.data.map((e, i) => mapApiEmployee(e, i)));
-                    setApiLoaded(true);
-                }
-            } catch {
-                // Keep fallback data on error
-            }
-        })();
-        // Also fetch branches for the form dropdowns
+        if (apiEmployees) setEmpList(apiEmployees.map(mapApiEmployee));
+    }, [apiEmployees]);
+    const apiAvailable = !!apiEmployees && !error;
+    const usingSample = !loading && !apiAvailable;
+
+    const [branches, setBranches] = useState<{ uuid: string; name: string }[]>([]);
+    useEffect(() => {
         providerApi
             .getBranches()
             .then(res => {
-                if (!cancelled && res.success && res.data) {
-                    setBranches(res.data.map(b => ({ uuid: b.uuid, name: b.name })));
-                }
+                if (res.success && res.data) setBranches(res.data.map(b => ({ uuid: b.uuid, name: b.name })));
             })
             .catch(() => {});
-        return () => {
-            cancelled = true;
-        };
-    }, [refreshKey]);
+    }, []);
+
+    const [search, setSearch] = useState('');
+    const [isAddOpen, setIsAddOpen] = useState(false);
+    const [isEditOpen, setIsEditOpen] = useState(false);
+    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+    const [isInviteOpen, setIsInviteOpen] = useState(false);
+    const [selectedEmp, setSelectedEmp] = useState<EmpRow | null>(null);
+    const [deleting, setDeleting] = useState(false);
+    const [inviteData, setInviteData] = useState({ phoneOrEmail: '', role: 'staff' });
+    const [magicLink, setMagicLink] = useState('');
+
+    const form = useValidatedForm<EmployeeFormValues>({ schema: employeeSchema, defaultValues: EMPTY_EMP });
+
+    const openAdd = () => {
+        form.reset(EMPTY_EMP);
+        setIsAddOpen(true);
+    };
+    const openEdit = (e: EmpRow) => {
+        setSelectedEmp(e);
+        form.reset({ name: e.name, email: e.email, phone: e.phone, jobTitle: e.role, branch: e.branch, password: '' });
+        setIsEditOpen(true);
+    };
+
+    useEffect(() => {
+        const handleOpenAdd = () => openAdd();
+        window.addEventListener('openAddEmployee', handleOpenAdd);
+        return () => window.removeEventListener('openAddEmployee', handleOpenAdd);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const filtered = empList.filter(
         e => e.name.toLowerCase().includes(search.toLowerCase()) || e.role.toLowerCase().includes(search.toLowerCase())
     );
 
-    React.useEffect(() => {
-        const handleOpenAdd = () => setIsAddOpen(true);
-        window.addEventListener('openAddEmployee', handleOpenAdd);
-        return () => window.removeEventListener('openAddEmployee', handleOpenAdd);
-    }, []);
+    // Derive top metrics from the actual employees list (was hardcoded 0).
+    const metrics = {
+        total: empList.length,
+        available: empList.filter(e => e.status === 'available').length,
+        onShift: empList.filter(e => e.status !== 'off').length,
+    };
 
-    const handleSaveAdd = async () => {
-        if (!newEmp.fname || !newEmp.lname) return addToast('error', t('employees.toastFirstLastReq'));
-
-        if (apiLoaded) {
+    const onCreate = form.handleSubmit(async v => {
+        if (!v.password) {
+            form.setError('password', { message: t('employees.passwordRequired') });
+            return;
+        }
+        if (apiAvailable) {
             try {
                 const payload: Record<string, unknown> = {
-                    name: `${newEmp.fname} ${newEmp.lname}`,
-                    email: newEmp.email,
-                    phone: toInternationalPhone(newEmp.phone),
-                    password: 'Temp1234', // GAP: API requires password, dashboard has no password field for employees
-                    password_confirmation: 'Temp1234',
+                    name: v.name,
+                    email: v.email || undefined,
+                    phone: v.phone ? toInternationalPhone(v.phone) : undefined,
+                    password: v.password,
+                    password_confirmation: v.password,
                 };
-                if (newEmp.branch) payload.branch_uuid = newEmp.branch;
+                if (v.branch) payload.branch_uuid = v.branch;
                 await providerApi.createEmployee(payload);
                 addToast('success', t('employees.toastAddSuccess'));
                 setIsAddOpen(false);
-                setNewEmp({
-                    fname: '',
-                    lname: '',
-                    phone: '',
-                    email: '',
-                    role: 'employee',
-                    jobTitle: 'Junior Stylist',
-                    branch: '',
-                });
-                setRefreshKey(k => k + 1);
-                return;
+                refetch();
             } catch (err: unknown) {
-                const error = err as { message?: string };
-                addToast('error', error.message || t('employees.toastAddFail'));
-                return;
+                addToast('error', (err as { message?: string })?.message || t('employees.toastAddFail'));
             }
+        } else {
+            const avatar = v.name
+                .split(' ')
+                .map(p => p.charAt(0))
+                .join('')
+                .toUpperCase()
+                .slice(0, 2);
+            setEmpList(prev => [
+                ...prev,
+                {
+                    id: `E${Date.now()}`,
+                    name: v.name,
+                    role: v.jobTitle || 'Staff',
+                    phone: v.phone || '',
+                    email: v.email || '',
+                    branch: v.branch || '',
+                    status: 'off',
+                    bookingsToday: 0,
+                    rating: 0,
+                    revenue: 0,
+                    avatar,
+                    color: AVATAR_COLORS[prev.length % AVATAR_COLORS.length],
+                    appAccess: false,
+                },
+            ]);
+            addToast('success', t('employees.toastAddSuccess'));
+            setIsAddOpen(false);
         }
+    });
 
-        const generatedAvatar = `${newEmp.fname.charAt(0)}${newEmp.lname.charAt(0)}`.toUpperCase();
-        const colors = ['#8B5CF6', '#EC4899', '#3B82F6', '#10B981', '#F59E0B'];
-        const randomColor = colors[Math.floor(Math.random() * colors.length)];
+    const onUpdate = form.handleSubmit(async v => {
+        if (apiAvailable && selectedEmp) {
+            try {
+                const payload: Record<string, unknown> = {
+                    name: v.name,
+                    email: v.email || undefined,
+                    phone: v.phone ? toInternationalPhone(v.phone) : undefined,
+                };
+                if (v.branch) payload.branch_uuid = v.branch;
+                await providerApi.updateEmployee(selectedEmp.id, payload);
+                addToast('success', t('employees.toastUpdated'));
+                setIsEditOpen(false);
+                refetch();
+            } catch (err: unknown) {
+                addToast('error', (err as { message?: string })?.message || t('employees.toastUpdateFail'));
+            }
+        } else {
+            setEmpList(prev =>
+                prev.map(e =>
+                    e.id === selectedEmp?.id
+                        ? {
+                              ...e,
+                              name: v.name,
+                              email: v.email || '',
+                              phone: v.phone || '',
+                              role: v.jobTitle || e.role,
+                              branch: v.branch || e.branch,
+                          }
+                        : e
+                )
+            );
+            addToast('success', t('employees.toastUpdated'));
+            setIsEditOpen(false);
+        }
+    });
 
-        const added = {
-            id: `E00${empList.length + 1}`,
-            name: `${newEmp.fname} ${newEmp.lname}`,
-            role: newEmp.jobTitle,
-            phone: newEmp.phone,
-            email: newEmp.email,
-            branch: newEmp.branch,
-            status: 'off',
-            bookingsToday: 0,
-            rating: 5.0,
-            revenue: 0,
-            avatar: generatedAvatar,
-            color: randomColor,
-            appAccess: false,
-        };
-
-        setEmpList([...empList, added]);
-        setIsAddOpen(false);
-        setNewEmp({
-            fname: '',
-            lname: '',
-            phone: '',
-            email: '',
-            role: 'employee',
-            jobTitle: 'Junior Stylist',
-            branch: '',
-        });
-        addToast('success', t('employees.toastCredsAdded'));
-    };
-
-    const handleDelete = async () => {
-        if (apiLoaded && selectedEmp) {
+    const onDelete = async () => {
+        if (!selectedEmp) return;
+        setDeleting(true);
+        if (apiAvailable) {
             try {
                 await providerApi.deleteEmployee(selectedEmp.id);
                 addToast('success', t('employees.toastRemoveSuccess'));
-                setIsDeleteOpen(false);
-                setRefreshKey(k => k + 1);
-                return;
+                refetch();
             } catch (err: unknown) {
-                const error = err as { message?: string };
-                addToast('error', error.message || t('employees.toastRemoveFail'));
-                setIsDeleteOpen(false);
-                return;
+                addToast('error', (err as { message?: string })?.message || t('employees.toastRemoveFail'));
             }
+        } else {
+            setEmpList(prev => prev.filter(e => e.id !== selectedEmp.id));
+            addToast('success', t('employees.toastRemoveSecure'));
         }
-        setEmpList(empList.filter(e => e.id !== selectedEmp?.id));
+        setDeleting(false);
         setIsDeleteOpen(false);
-        addToast('success', t('employees.toastRemoveSecure'));
+        setSelectedEmp(null);
     };
 
     const handleInvite = () => {
         if (!inviteData.phoneOrEmail) return addToast('error', t('employees.toastContactReq'));
         const token = Math.random().toString(36).substring(7);
-        const link = `${window.location.origin}/invite/${token}`;
-        setMagicLink(link);
+        setMagicLink(`${window.location.origin}/invite/${token}`);
         addToast('success', t('employees.toastInviteGenerated'));
     };
 
@@ -305,7 +445,89 @@ export default function EmployeesPage() {
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            {usingSample && (
+                <div
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 'var(--space-2)',
+                        padding: 'var(--space-3) var(--space-4)',
+                        borderRadius: 'var(--radius-lg)',
+                        background: 'var(--color-warning-light)',
+                        color: 'var(--color-warning)',
+                        fontSize: 'var(--text-sm)',
+                        fontWeight: 500,
+                    }}
+                >
+                    <AlertCircle size={16} /> {t('common.sampleData')}
+                </div>
+            )}
+
+            {/* Top metric cards — derived from the actual employees list */}
+            <div
+                style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                    gap: 'var(--space-4)',
+                }}
+            >
+                {[
+                    { label: t('employees.totalTeam'), value: metrics.total, color: 'var(--color-primary-600)' },
+                    { label: t('employees.available'), value: metrics.available, color: 'var(--color-success)' },
+                    { label: t('employees.onShift'), value: metrics.onShift, color: 'var(--color-info)' },
+                ].map(card => (
+                    <div
+                        key={card.label}
+                        style={{
+                            background: 'var(--bg-primary)',
+                            border: '1px solid var(--border-color)',
+                            borderRadius: 'var(--radius-xl)',
+                            padding: 'var(--space-5)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 'var(--space-4)',
+                        }}
+                    >
+                        <div
+                            style={{
+                                width: 44,
+                                height: 44,
+                                borderRadius: 'var(--radius-lg)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                background: 'var(--bg-secondary)',
+                                color: card.color,
+                            }}
+                        >
+                            <Users size={22} />
+                        </div>
+                        <div>
+                            <div
+                                style={{
+                                    fontSize: 'var(--text-xl)',
+                                    fontWeight: 'var(--font-bold)',
+                                    color: card.color,
+                                }}
+                            >
+                                {card.value}
+                            </div>
+                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: 2 }}>
+                                {card.label}
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            <div
+                style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    gap: 'var(--space-3)',
+                }}
+            >
                 <div style={{ position: 'relative', maxWidth: '320px', width: '100%' }}>
                     <Search size={16} className={styles.searchIcon} />
                     <input
@@ -315,22 +537,32 @@ export default function EmployeesPage() {
                         onChange={e => setSearch(e.target.value)}
                     />
                 </div>
-                <Button
-                    onClick={() => {
-                        setIsInviteOpen(true);
-                        setMagicLink('');
-                        setInviteData({ phoneOrEmail: '', role: 'staff' });
-                    }}
-                >
-                    <Mail size={16} style={{ marginRight: '8px' }} />
-                    {t('employees.inviteStaff')}
-                </Button>
+                <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+                    <Button
+                        variant="secondary"
+                        onClick={() => {
+                            setIsInviteOpen(true);
+                            setMagicLink('');
+                            setInviteData({ phoneOrEmail: '', role: 'staff' });
+                        }}
+                    >
+                        <Mail size={16} style={{ marginInlineEnd: 'var(--space-2)' }} />
+                        {t('employees.inviteStaff')}
+                    </Button>
+                    <Button onClick={openAdd}>{t('employees.addEmployeeTitle')}</Button>
+                </div>
             </div>
 
-            {filtered.length > 0 ? (
+            {loading ? (
+                <div className={styles.grid}>
+                    {Array.from({ length: 6 }).map((_, i) => (
+                        <Skeleton key={i} variant="card" height={220} />
+                    ))}
+                </div>
+            ) : filtered.length > 0 ? (
                 <div className={styles.grid}>
                     {filtered.map(emp => {
-                        const st = statusMap[emp.status];
+                        const st = statusMap[emp.status] ?? statusMap.off;
                         return (
                             <div
                                 key={emp.id}
@@ -373,37 +605,36 @@ export default function EmployeesPage() {
                                         >
                                             {t(st.labelKey)}
                                         </span>
-                                        <DropdownMenu
-                                            trigger={
-                                                <button className={styles.actionBtn}>
-                                                    <MoreVertical size={16} />
-                                                </button>
-                                            }
-                                            items={[
-                                                {
-                                                    label: t('employees.viewSchedule'),
-                                                    icon: <Users size={14} />,
-                                                    onClick: () => router.push(`/employees/${emp.id}`),
-                                                },
-                                                {
-                                                    label: t('employees.edit'),
-                                                    icon: <Edit size={14} />,
-                                                    onClick: () => {
-                                                        setSelectedEmp(emp);
-                                                        setIsEditOpen(true);
+                                        <div onClick={e => e.stopPropagation()}>
+                                            <DropdownMenu
+                                                trigger={
+                                                    <button className={styles.actionBtn}>
+                                                        <MoreVertical size={16} />
+                                                    </button>
+                                                }
+                                                items={[
+                                                    {
+                                                        label: t('employees.viewSchedule'),
+                                                        icon: <Users size={14} />,
+                                                        onClick: () => router.push(`/employees/${emp.id}`),
                                                     },
-                                                },
-                                                {
-                                                    label: t('employees.delete'),
-                                                    destructive: true,
-                                                    icon: <Trash2 size={14} />,
-                                                    onClick: () => {
-                                                        setSelectedEmp(emp);
-                                                        setIsDeleteOpen(true);
+                                                    {
+                                                        label: t('employees.edit'),
+                                                        icon: <Edit size={14} />,
+                                                        onClick: () => openEdit(emp),
                                                     },
-                                                },
-                                            ]}
-                                        />
+                                                    {
+                                                        label: t('employees.delete'),
+                                                        destructive: true,
+                                                        icon: <Trash2 size={14} />,
+                                                        onClick: () => {
+                                                            setSelectedEmp(emp);
+                                                            setIsDeleteOpen(true);
+                                                        },
+                                                    },
+                                                ]}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                                 <div className={styles.contactInfo}>
@@ -464,11 +695,12 @@ export default function EmployeesPage() {
                         icon={<Users size={32} color="var(--text-tertiary)" />}
                         title={t('employees.noEmployeesFound')}
                         description={t('employees.noEmployeesDesc')}
+                        action={<Button onClick={openAdd}>{t('employees.addEmployeeTitle')}</Button>}
                     />
                 </div>
             )}
 
-            {/* Add Employee SlideOver */}
+            {/* Add Employee */}
             <SlideOver
                 open={isAddOpen}
                 onClose={() => setIsAddOpen(false)}
@@ -478,83 +710,16 @@ export default function EmployeesPage() {
                         <Button variant="ghost" onClick={() => setIsAddOpen(false)}>
                             {t('employees.cancel')}
                         </Button>
-                        <Button onClick={handleSaveAdd}>{t('employees.saveEmployee')}</Button>
+                        <Button onClick={onCreate} loading={form.formState.isSubmitting}>
+                            {t('employees.saveEmployee')}
+                        </Button>
                     </div>
                 }
             >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
-                        <Input
-                            label={t('employees.firstName')}
-                            placeholder="e.g. Sara"
-                            value={newEmp.fname}
-                            onChange={e => setNewEmp({ ...newEmp, fname: e.target.value })}
-                        />
-                        <Input
-                            label={t('employees.lastName')}
-                            placeholder="e.g. Ahmed"
-                            value={newEmp.lname}
-                            onChange={e => setNewEmp({ ...newEmp, lname: e.target.value })}
-                        />
-                    </div>
-                    <Input
-                        label={t('employees.phoneOption')}
-                        placeholder="+20 1XX XXX XXXX"
-                        value={newEmp.phone}
-                        onChange={e => setNewEmp({ ...newEmp, phone: e.target.value })}
-                    />
-                    <Input
-                        label={t('employees.emailOption')}
-                        type="email"
-                        placeholder="employee@hagzy.com"
-                        value={newEmp.email}
-                        onChange={e => setNewEmp({ ...newEmp, email: e.target.value })}
-                    />
-                    <div style={{ borderTop: '1px solid var(--border-color)', margin: 'var(--space-2) 0' }} />
-                    <h3
-                        style={{
-                            fontSize: 'var(--text-sm)',
-                            fontWeight: 'var(--font-semibold)',
-                            color: 'var(--text-primary)',
-                            marginBottom: '-4px',
-                        }}
-                    >
-                        {t('employees.jobDetailsTitle')}
-                    </h3>
-                    <Select
-                        label={t('employees.jobTitle')}
-                        value={newEmp.jobTitle}
-                        onChange={e => setNewEmp({ ...newEmp, jobTitle: e.target.value })}
-                        options={[
-                            { label: 'Senior Stylist', value: 'Senior Stylist' },
-                            { label: 'Junior Stylist', value: 'Junior Stylist' },
-                            { label: 'Skin Specialist', value: 'Skin Specialist' },
-                            { label: 'Massage Therapist', value: 'Massage Therapist' },
-                            { label: 'Nail Technician', value: 'Nail Technician' },
-                        ]}
-                    />
-                    <Select
-                        label={t('employees.branch')}
-                        value={newEmp.branch}
-                        onChange={e => setNewEmp({ ...newEmp, branch: e.target.value })}
-                        options={
-                            branches.length > 0
-                                ? [
-                                      { label: t('employees.selectBranch'), value: '' },
-                                      ...branches.map(b => ({ label: b.name, value: b.uuid })),
-                                  ]
-                                : [
-                                      { label: t('employees.downtown'), value: 'Downtown' },
-                                      { label: t('employees.mall'), value: 'Mall of Arabia' },
-                                      { label: t('employees.newCairo'), value: 'New Cairo' },
-                                  ]
-                        }
-                    />
-                    <Input label={t('employees.baseSalary')} type="number" placeholder="0" />{' '}
-                    {/* GAP: no salary field in API */}
-                </div>
+                <EmployeeForm form={form} mode="create" branches={branches} />
             </SlideOver>
-            {/* Edit Employee SlideOver */}
+
+            {/* Edit Employee */}
             <SlideOver
                 open={isEditOpen}
                 onClose={() => {
@@ -567,103 +732,33 @@ export default function EmployeesPage() {
                         <Button variant="ghost" onClick={() => setIsEditOpen(false)}>
                             {t('employees.cancel')}
                         </Button>
-                        <Button
-                            onClick={async () => {
-                                if (apiLoaded && selectedEmp) {
-                                    try {
-                                        // Note: Using defaultValue inputs means we can't easily read form values
-                                        // A proper integration would use controlled inputs — keeping mock save for now
-                                        // GAP: edit form uses uncontrolled inputs (defaultValue), can't extract values easily
-                                        addToast('success', t('employees.toastUpdated'));
-                                    } catch (err: unknown) {
-                                        const error = err as { message?: string };
-                                        addToast('error', error.message || t('employees.toastUpdateFail'));
-                                    }
-                                } else {
-                                    addToast('success', t('employees.toastUpdated'));
-                                }
-                                setIsEditOpen(false);
-                            }}
-                        >
+                        <Button onClick={onUpdate} loading={form.formState.isSubmitting}>
                             {t('employees.saveChanges')}
                         </Button>
                     </div>
                 }
             >
-                {selectedEmp && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                        <Input label={t('employees.fullName')} defaultValue={selectedEmp.name} />
-                        <Input
-                            label={t('employees.emailOption')}
-                            type="email"
-                            defaultValue={`${selectedEmp.name.split(' ')[0].toLowerCase()}@example.com`}
-                        />
-                        <Input label={t('employees.phoneOption')} defaultValue={selectedEmp.phone} />
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
-                            <Select
-                                label={t('employees.systemRole')}
-                                defaultValue="employee"
-                                options={[
-                                    { label: t('employees.admin'), value: 'admin' },
-                                    { label: t('employees.manager'), value: 'manager' },
-                                    { label: t('employees.cashier'), value: 'cashier' },
-                                    { label: t('employees.baseEmployee'), value: 'employee' },
-                                ]}
-                            />
-                            <Select
-                                label={t('employees.jobTitle')}
-                                defaultValue={selectedEmp.role}
-                                options={[
-                                    { label: 'Senior Stylist', value: 'Senior Stylist' },
-                                    { label: 'Junior Stylist', value: 'Junior Stylist' },
-                                    { label: 'Skin Specialist', value: 'Skin Specialist' },
-                                    { label: 'Massage Therapist', value: 'Massage Therapist' },
-                                    { label: 'Nail Technician', value: 'Nail Technician' },
-                                ]}
-                            />
-                        </div>
-                        <Select
-                            label={t('employees.branch')}
-                            defaultValue={selectedEmp.branch}
-                            options={
-                                branches.length > 0
-                                    ? branches.map(b => ({ label: b.name, value: b.uuid }))
-                                    : [
-                                          { label: t('employees.downtown'), value: 'Downtown' },
-                                          { label: t('employees.mall'), value: 'Mall of Arabia' },
-                                          { label: t('employees.newCairo'), value: 'New Cairo' },
-                                      ]
-                            }
-                        />
-                    </div>
-                )}
+                <EmployeeForm form={form} mode="edit" branches={branches} />
             </SlideOver>
 
-            {/* Delete Confirmation Modal */}
-            <Modal
+            {/* Delete confirmation */}
+            <ConfirmDialog
                 open={isDeleteOpen}
                 onClose={() => {
                     setIsDeleteOpen(false);
                     setSelectedEmp(null);
                 }}
+                onConfirm={onDelete}
                 title={t('employees.deleteEmployeeTitle')}
-                footer={
-                    <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
-                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>
-                            {t('employees.cancel')}
-                        </Button>
-                        <Button variant="destructive" onClick={handleDelete}>
-                            {t('employees.confirmRemoval')}
-                        </Button>
-                    </div>
+                message={
+                    <>
+                        <strong>{selectedEmp?.name}</strong> — {t('employees.deleteWarning')}
+                    </>
                 }
-            >
-                <div>
-                    <p style={{ color: 'var(--text-secondary)' }}>
-                        <strong>{selectedEmp?.name}</strong> - {t('employees.deleteWarning')}
-                    </p>
-                </div>
-            </Modal>
+                confirmLabel={t('employees.confirmRemoval')}
+                variant="danger"
+                loading={deleting}
+            />
 
             {/* Invite Staff Modal */}
             <Modal
@@ -723,8 +818,8 @@ export default function EmployeesPage() {
                                 width: 48,
                                 height: 48,
                                 borderRadius: '50%',
-                                background: 'var(--color-success-100)',
-                                color: 'var(--color-success-600)',
+                                background: 'var(--color-success-light)',
+                                color: 'var(--color-success)',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',

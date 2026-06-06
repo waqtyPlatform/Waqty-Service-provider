@@ -1,5 +1,6 @@
 'use client';
 
+import { egpLabel } from '@/lib/money';
 import React from 'react';
 import Link from 'next/link';
 import { ArrowRightLeft, Send } from 'lucide-react';
@@ -123,7 +124,7 @@ const s: Record<string, React.CSSProperties> = {
     },
     th: {
         padding: 'var(--space-3) var(--space-4)',
-        textAlign: 'left',
+        textAlign: 'start',
         fontSize: 'var(--text-xs)',
         fontWeight: 'var(--font-semibold)',
         color: 'var(--text-tertiary)',
@@ -139,12 +140,12 @@ const s: Record<string, React.CSSProperties> = {
     },
     badge: {
         display: 'inline-flex',
-        padding: '2px 8px',
+        padding: '2px var(--space-2)',
         borderRadius: 'var(--radius-full)',
         fontSize: 11,
         fontWeight: 'var(--font-semibold)',
     },
-    arrow: { color: 'var(--text-tertiary)', margin: '0 6px' },
+    arrow: { color: 'var(--text-tertiary)', margin: '0 var(--space-2)' },
 };
 
 export default function TransfersPage() {
@@ -178,7 +179,7 @@ export default function TransfersPage() {
             <div style={s.kpis}>
                 <div style={s.kpi}>
                     <div style={s.kpiVal} dir="ltr">
-                        {total.toLocaleString()} EGP
+                        {total.toLocaleString()} {egpLabel()}
                     </div>
                     <div style={s.kpiLbl}>{t('txn.transfers.total')}</div>
                 </div>
@@ -217,13 +218,7 @@ export default function TransfersPage() {
                                 'txn.shifts.thCashier',
                                 'txn.thStatus',
                             ].map(h => (
-                                <th
-                                    key={h}
-                                    style={{
-                                        ...(s.th as React.CSSProperties),
-                                        textAlign: lang === 'ar' ? 'right' : 'left',
-                                    }}
-                                >
+                                <th key={h} style={s.th as React.CSSProperties}>
                                     {t(h)}
                                 </th>
                             ))}
@@ -248,7 +243,7 @@ export default function TransfersPage() {
                                     <span style={{ fontWeight: 'var(--font-medium)' }}>{row.toSafe}</span>
                                 </td>
                                 <td style={{ ...s.td, fontWeight: 'var(--font-semibold)' }} dir="ltr">
-                                    {row.amount.toLocaleString()} EGP
+                                    {row.amount.toLocaleString()} {egpLabel()}
                                 </td>
                                 <td style={s.td}>{row.cashier}</td>
                                 <td style={s.td}>

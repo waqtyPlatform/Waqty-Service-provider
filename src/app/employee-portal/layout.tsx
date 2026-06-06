@@ -148,7 +148,7 @@ export default function EmployeePortalLayout({ children }: { children: React.Rea
                             cursor: 'pointer',
                             color: 'var(--text-primary)',
                             display: 'flex',
-                            padding: 4,
+                            padding: 'var(--space-1)',
                         }}
                         className="md-hide-menu"
                     >

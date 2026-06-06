@@ -7,12 +7,13 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import {
     providerApi,
-    dashboardApi,
     type Booking,
     type Employee as ApiEmployee,
     type DashboardSummary,
+    type ProviderDashboard,
 } from '@/lib/api';
 import { useApiQuery } from '@/hooks/useApiQuery';
+import { egpLabel } from '@/lib/money';
 import { KPICardSkeleton } from '@/components/ui/Skeleton';
 import {
     DollarSign,
@@ -164,40 +165,6 @@ function pseudoRandom(seed: string) {
     return (Math.abs(h) % 100) / 100;
 }
 
-/** Compute from_date / to_date for the selected date range tab */
-function getDateRangeFilters(range: string): { from_date: string; to_date: string } {
-    const now = new Date();
-    const toDate = now.toISOString().split('T')[0];
-    let fromDate = toDate;
-
-    switch (range) {
-        case 'Today':
-            fromDate = toDate;
-            break;
-        case 'This Week': {
-            const day = now.getDay();
-            const diff = day === 0 ? 6 : day - 1; // Monday-based week
-            const weekStart = new Date(now);
-            weekStart.setDate(now.getDate() - diff);
-            fromDate = weekStart.toISOString().split('T')[0];
-            break;
-        }
-        case 'This Month':
-            fromDate = toDate.slice(0, 8) + '01';
-            break;
-        case 'This Quarter': {
-            const quarter = Math.floor(now.getMonth() / 3);
-            const quarterStart = new Date(now.getFullYear(), quarter * 3, 1);
-            fromDate = quarterStart.toISOString().split('T')[0];
-            break;
-        }
-        default:
-            fromDate = toDate.slice(0, 8) + '01'; // fallback to month
-            break;
-    }
-    return { from_date: fromDate, to_date: toDate };
-}
-
 /** Fallback KPI mock data shaped like a DashboardSummary */
 const FALLBACK_SUMMARY: DashboardSummary = {
     total_revenue: 12450,
@@ -248,15 +215,14 @@ export default function DashboardPage() {
     const { user } = useAuth();
     const { t, lang } = useTranslation();
 
-    // ── Dashboard Summary API ──
-    const dateFilters = useMemo(() => getDateRangeFilters(activeDate), [activeDate]);
-    const {
-        data: summaryData,
-        loading: summaryLoading,
-        refetch: _refetchSummary,
-    } = useApiQuery<DashboardSummary>(() => dashboardApi.getSummary(dateFilters), [dateFilters], {
-        fallbackData: FALLBACK_SUMMARY,
-    });
+    // ── Dashboard aggregates (live `GET /provider/dashboard`) ──
+    const { data: dashData, loading: summaryLoading } = useApiQuery<ProviderDashboard>(
+        () => providerApi.getDashboard(),
+        [],
+        {
+            fallbackData: null,
+        }
+    );
 
     // Check if banner was previously dismissed
     useEffect(() => {
@@ -370,8 +336,29 @@ export default function DashboardPage() {
 
     const formatNum = (num: number) => num.toLocaleString('en-US');
 
-    // ── Use API summary data (with fallback) for all KPI / top sections ──
-    const summary = summaryData ?? FALLBACK_SUMMARY;
+    // ── Merge live dashboard aggregates into a DashboardSummary ──
+    // `/provider/dashboard` provides real revenue + bookings + status counts; the fields it
+    // does not expose (new clients, invoices, returns, trends, top lists) keep fallback values.
+    const summary: DashboardSummary = useMemo(() => {
+        if (!dashData) return FALLBACK_SUMMARY;
+        const scoped = activeDate === 'Today' ? dashData.bookings.today : dashData.bookings;
+        const revenue = activeDate === 'Today' ? dashData.revenue.today : dashData.revenue.total;
+        const bs = scoped.by_status;
+        const dist = [
+            { status: 'Confirmed', count: bs.confirmed },
+            { status: 'Completed', count: bs.completed },
+            { status: 'Arrived', count: bs.arrived },
+            { status: 'Unconfirmed', count: bs.pending },
+            { status: 'Cancelled', count: bs.cancelled },
+            { status: 'No-Show', count: bs.no_show },
+        ].filter(d => d.count > 0);
+        return {
+            ...FALLBACK_SUMMARY,
+            total_revenue: revenue,
+            total_bookings: scoped.total,
+            booking_status_distribution: dist.length ? dist : FALLBACK_SUMMARY.booking_status_distribution,
+        };
+    }, [dashData, activeDate]);
 
     const currentKpiData = useMemo(() => {
         return [
@@ -629,7 +616,7 @@ export default function DashboardPage() {
                                                     color: 'var(--text-tertiary)',
                                                 }}
                                             >
-                                                {kpi.unit}
+                                                {kpi.unit === 'EGP' ? egpLabel() : kpi.unit}
                                             </span>
                                         )}
                                     </span>
@@ -671,16 +658,10 @@ export default function DashboardPage() {
                             <table className={styles.dataTable}>
                                 <thead>
                                     <tr>
-                                        <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{employeeTerm}</th>
-                                        <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                            {t('dash.colBooked')}
-                                        </th>
-                                        <th style={{ width: '40%', textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                            {t('dash.occupancy')}
-                                        </th>
-                                        <th style={{ textAlign: lang === 'ar' ? 'left' : 'right' }}>
-                                            {t('dash.colRate')}
-                                        </th>
+                                        <th style={{ textAlign: 'start' }}>{employeeTerm}</th>
+                                        <th style={{ textAlign: 'start' }}>{t('dash.colBooked')}</th>
+                                        <th style={{ width: '40%', textAlign: 'start' }}>{t('dash.occupancy')}</th>
+                                        <th style={{ textAlign: 'end' }}>{t('dash.colRate')}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -708,7 +689,7 @@ export default function DashboardPage() {
                                                     className={styles.occupancyValue}
                                                     style={{
                                                         color: getProgressColor(row.pct),
-                                                        textAlign: lang === 'ar' ? 'left' : 'right',
+                                                        textAlign: 'end',
                                                         display: 'block',
                                                     }}
                                                 >

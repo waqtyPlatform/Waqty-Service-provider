@@ -52,6 +52,7 @@ import {
     ResponsiveContainer,
 } from 'recharts';
 import styles from './page.module.css';
+import { egpLabel } from '@/lib/money';
 import { providerApi, getImageUrl } from '@/lib/api';
 
 // Mock Data (fallback)
@@ -336,7 +337,8 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                         <div className={styles.card} style={{ marginTop: 'var(--space-4)' }}>
                             <div className={styles.cardHeader}>
                                 <span className={styles.cardTitle}>
-                                    <Target size={18} style={{ marginRight: 6 }} /> {t('empProfile.targetProgress')}
+                                    <Target size={18} style={{ marginInlineEnd: 'var(--space-2)' }} />{' '}
+                                    {t('empProfile.targetProgress')}
                                 </span>
                             </div>
                             <div
@@ -346,8 +348,8 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                                 {[
                                     {
                                         label: t('empProfile.revenueTarget'),
-                                        achieved: revAchieved.toLocaleString() + ' EGP',
-                                        target: revTarget.toLocaleString() + ' EGP',
+                                        achieved: revAchieved.toLocaleString() + ' ' + egpLabel(),
+                                        target: revTarget.toLocaleString() + ' ' + egpLabel(),
                                         pct: revPct,
                                     },
                                     {
@@ -452,7 +454,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                                         border: '1px solid var(--border-color)',
                                         boxShadow: 'var(--shadow-md)',
                                     }}
-                                    formatter={value => [`${value || 0} EGP`, t('empProfile.revenueTooltip')]}
+                                    formatter={value => [`${value || 0} ${egpLabel()}`, t('empProfile.revenueTooltip')]}
                                 />
                                 <Area
                                     type="monotone"
@@ -504,7 +506,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                 <div className={styles.card}>
                     <div className={styles.cardHeader}>
                         <span className={styles.cardTitle}>
-                            <Smartphone size={16} style={{ marginRight: 6 }} />
+                            <Smartphone size={16} style={{ marginInlineEnd: 'var(--space-2)' }} />
                             {t('empProfile.mobileAppAccess')}
                         </span>
                     </div>
@@ -543,7 +545,8 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                                     setIsPinModalOpen(true);
                                 }}
                             >
-                                <Lock size={14} style={{ marginRight: 6 }} /> {t('empProfile.setPin')}
+                                <Lock size={14} style={{ marginInlineEnd: 'var(--space-2)' }} />{' '}
+                                {t('empProfile.setPin')}
                             </Button>
                             <Button
                                 size="sm"
@@ -556,7 +559,8 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                                     addToast('success', t('empProfile.toastAppInviteCopied'));
                                 }}
                             >
-                                <Copy size={14} style={{ marginRight: 6 }} /> {t('empProfile.sendAppInvite')}
+                                <Copy size={14} style={{ marginInlineEnd: 'var(--space-2)' }} />{' '}
+                                {t('empProfile.sendAppInvite')}
                             </Button>
                         </div>
                     </div>
@@ -583,8 +587,8 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                 </div>
                 <div className={styles.cardBody}>
                     <div className={styles.scheduleGrid}>
-                        {schedule.map((day, i) => (
-                            <div key={i} className={styles.scheduleDay}>
+                        {schedule.map(day => (
+                            <div key={day.dayKey} className={styles.scheduleDay}>
                                 <div className={styles.dayName}>{t(`settings.hours.${day.dayKey}`)}</div>
                                 {day.off ? (
                                     <div className={styles.dayOff}>{t('empProfile.dayOff')}</div>
@@ -714,7 +718,8 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                 <div className={styles.card}>
                     <div className={styles.cardHeader}>
                         <span className={styles.cardTitle}>
-                            <Bell size={18} style={{ marginRight: 6 }} /> {t('empProfile.notifPrefsTitle')}
+                            <Bell size={18} style={{ marginInlineEnd: 'var(--space-2)' }} />{' '}
+                            {t('empProfile.notifPrefsTitle')}
                         </span>
                         <Badge color="neutral">
                             {t('empProfile.notifEnabled')
@@ -1030,7 +1035,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                                     <th
                                         style={{
                                             padding: 'var(--space-2) var(--space-3)',
-                                            textAlign: lang === 'ar' ? 'right' : 'left',
+                                            textAlign: 'start',
                                             fontSize: 12,
                                             fontWeight: 'var(--font-semibold)',
                                             color: 'var(--text-tertiary)',
@@ -1339,9 +1344,8 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                             gap: 'var(--space-3)',
                             maxHeight: '50vh',
                             overflowY: 'auto',
-                            ...(lang === 'ar'
-                                ? { paddingLeft: 'var(--space-1)', marginLeft: '-var(--space-1)' }
-                                : { paddingRight: 'var(--space-1)', marginRight: '-var(--space-1)' }),
+                            paddingInlineEnd: 'var(--space-1)',
+                            marginInlineEnd: '-var(--space-1)',
                         }}
                     >
                         {empServices.map((s, idx) => (
@@ -1362,16 +1366,12 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                                 <div style={{ position: 'relative', width: '80px' }}>
                                     <Input
                                         defaultValue={s.commission.replace('%', '')}
-                                        style={
-                                            lang === 'ar'
-                                                ? { textAlign: 'left', paddingLeft: '22px' }
-                                                : { textAlign: 'right', paddingRight: '22px' }
-                                        }
+                                        style={{ textAlign: 'end', paddingInlineEnd: '22px' }}
                                     />
                                     <span
                                         style={{
                                             position: 'absolute',
-                                            ...(lang === 'ar' ? { left: '10px' } : { right: '10px' }),
+                                            insetInlineEnd: '10px',
                                             top: '50%',
                                             transform: 'translateY(-50%)',
                                             color: 'var(--text-tertiary)',

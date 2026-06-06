@@ -1,11 +1,12 @@
 'use client';
 
+import { egpLabel } from '@/lib/money';
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Search, Download, FileText } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useApiQuery } from '@/hooks/useApiQuery';
-import { customerApi, type Customer } from '@/lib/api';
+import { providerApi, type Customer } from '@/lib/api';
 import { DataGuard } from '@/components/DataGuard';
 
 const fallbackData = [
@@ -124,7 +125,7 @@ const s: Record<string, React.CSSProperties> = {
     searchBox: { position: 'relative', flex: 1, maxWidth: 320 },
     searchIcon: {
         position: 'absolute',
-        left: 12,
+        insetInlineStart: 12,
         top: '50%',
         transform: 'translateY(-50%)',
         color: 'var(--text-tertiary)',
@@ -132,7 +133,8 @@ const s: Record<string, React.CSSProperties> = {
     searchInput: {
         width: '100%',
         height: 40,
-        paddingLeft: 40,
+        paddingInlineStart: 40,
+        paddingInlineEnd: 'var(--space-3)',
         border: '1px solid var(--border-color)',
         borderRadius: 'var(--radius-lg)',
         background: 'var(--bg-primary)',
@@ -148,7 +150,7 @@ const s: Record<string, React.CSSProperties> = {
     },
     th: {
         padding: 'var(--space-3) var(--space-4)',
-        textAlign: 'left',
+        textAlign: 'start',
         fontSize: 'var(--text-xs)',
         fontWeight: 'var(--font-semibold)',
         color: 'var(--text-tertiary)',
@@ -184,7 +186,34 @@ export default function StatementsPage() {
         loading,
         error,
         refetch,
-    } = useApiQuery<Customer[]>(() => customerApi.getCustomers() as never, [], { fallbackData: fallbackData as never });
+    } = useApiQuery<Customer[]>(
+        // Live source: `/clients/statements` (per-client visits + charged/paid).
+        () =>
+            providerApi.getClientStatements().then(res => ({
+                ...res,
+                data: res.data?.map(
+                    (srow): Customer => ({
+                        uuid: srow.uuid,
+                        name: srow.name,
+                        email: srow.email,
+                        phone: srow.phone ?? '',
+                        group_uuid: null,
+                        vip: false,
+                        notes: null,
+                        allergies: null,
+                        medical_conditions: null,
+                        medications: null,
+                        total_visits: srow.total_bookings,
+                        total_spent: srow.total_paid,
+                        last_visit: srow.last_booking_date,
+                        created_at: '',
+                        updated_at: '',
+                    })
+                ),
+            })),
+        [],
+        { fallbackData: fallbackData as never }
+    );
 
     // Map API customers to statement shape, or use fallback
     const data =
@@ -223,7 +252,9 @@ export default function StatementsPage() {
 
             <div style={s.kpis as React.CSSProperties}>
                 <div style={s.kpi as React.CSSProperties}>
-                    <div style={s.kpiVal as React.CSSProperties}>{totalClosing.toLocaleString()} EGP</div>
+                    <div style={s.kpiVal as React.CSSProperties}>
+                        {totalClosing.toLocaleString()} {egpLabel()}
+                    </div>
                     <div style={s.kpiLbl as React.CSSProperties}>{t('custStmts.totalOut')}</div>
                 </div>
                 <div style={s.kpi as React.CSSProperties}>
@@ -232,7 +263,7 @@ export default function StatementsPage() {
                 </div>
                 <div style={s.kpi as React.CSSProperties}>
                     <div style={s.kpiVal as React.CSSProperties}>
-                        {data.reduce((a, d) => a + d.credits, 0).toLocaleString()} EGP
+                        {data.reduce((a, d) => a + d.credits, 0).toLocaleString()} {egpLabel()}
                     </div>
                     <div style={s.kpiLbl as React.CSSProperties}>{t('custStmts.totalCredits')}</div>
                 </div>
@@ -240,24 +271,9 @@ export default function StatementsPage() {
 
             <div style={s.toolbar as React.CSSProperties}>
                 <div style={s.searchBox as React.CSSProperties}>
-                    <Search
-                        size={16}
-                        style={
-                            {
-                                ...s.searchIcon,
-                                ...(lang === 'ar' ? { right: 12, left: 'auto' } : { left: 12, right: 'auto' }),
-                            } as React.CSSProperties
-                        }
-                    />
+                    <Search size={16} style={s.searchIcon as React.CSSProperties} />
                     <input
-                        style={
-                            {
-                                ...s.searchInput,
-                                ...(lang === 'ar'
-                                    ? { paddingRight: 40, paddingLeft: 12 }
-                                    : { paddingLeft: 40, paddingRight: 12 }),
-                            } as React.CSSProperties
-                        }
+                        style={s.searchInput as React.CSSProperties}
                         placeholder={t('custStmts.searchPlaceholder')}
                         value={search}
                         onChange={e => setSearch(e.target.value)}
@@ -293,12 +309,7 @@ export default function StatementsPage() {
                                 t('custStmts.colClosing'),
                                 t('custStmts.colLastTxn'),
                             ].map(h => (
-                                <th
-                                    key={h}
-                                    style={
-                                        { ...s.th, textAlign: lang === 'ar' ? 'right' : 'left' } as React.CSSProperties
-                                    }
-                                >
+                                <th key={h} style={s.th as React.CSSProperties}>
                                     {h}
                                 </th>
                             ))}
@@ -311,12 +322,14 @@ export default function StatementsPage() {
                                     {row.client}
                                 </td>
                                 <td style={s.td as React.CSSProperties}>{row.group}</td>
-                                <td style={s.td as React.CSSProperties}>{row.opening} EGP</td>
+                                <td style={s.td as React.CSSProperties}>
+                                    {row.opening} {egpLabel()}
+                                </td>
                                 <td style={{ ...s.td, color: 'var(--color-success)' } as React.CSSProperties} dir="ltr">
-                                    +{row.credits} EGP
+                                    +{row.credits} {egpLabel()}
                                 </td>
                                 <td style={{ ...s.td, color: 'var(--color-error)' } as React.CSSProperties} dir="ltr">
-                                    -{row.debits} EGP
+                                    -{row.debits} {egpLabel()}
                                 </td>
                                 <td
                                     style={
@@ -328,7 +341,7 @@ export default function StatementsPage() {
                                     }
                                     dir="ltr"
                                 >
-                                    {row.closing} EGP
+                                    {row.closing} {egpLabel()}
                                 </td>
                                 <td style={s.td as React.CSSProperties}>{row.lastTxn}</td>
                             </tr>

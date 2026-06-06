@@ -85,7 +85,7 @@ const s: Record<string, React.CSSProperties> = {
     searchBox: { position: 'relative', width: '100%', maxWidth: 320 },
     searchIcon: {
         position: 'absolute',
-        left: 12,
+        insetInlineStart: 12,
         top: '50%',
         transform: 'translateY(-50%)',
         color: 'var(--text-tertiary)',
@@ -93,7 +93,7 @@ const s: Record<string, React.CSSProperties> = {
     searchInput: {
         width: '100%',
         height: 40,
-        paddingLeft: 40,
+        paddingInlineStart: 40,
         border: '1px solid var(--border-color)',
         borderRadius: 'var(--radius-lg)',
         background: 'var(--bg-primary)',
@@ -109,7 +109,7 @@ const s: Record<string, React.CSSProperties> = {
     },
     th: {
         padding: 'var(--space-3) var(--space-4)',
-        textAlign: 'left',
+        textAlign: 'start',
         fontSize: 'var(--text-xs)',
         fontWeight: 'var(--font-semibold)',
         color: 'var(--text-tertiary)',
@@ -302,21 +302,11 @@ export default function TransfersPage() {
             <div style={s.toolbar}>
                 <div style={s.filterGroup as React.CSSProperties}>
                     <div style={s.searchBox as React.CSSProperties}>
-                        <Search
-                            size={16}
-                            style={
-                                {
-                                    ...s.searchIcon,
-                                    ...(lang === 'ar' ? { right: 12, left: 'auto' } : {}),
-                                } as React.CSSProperties
-                            }
-                        />
+                        <Search size={16} style={s.searchIcon as React.CSSProperties} />
                         <input
                             style={{
                                 ...s.searchInput,
-                                ...(lang === 'ar'
-                                    ? { paddingRight: 40, paddingLeft: 12 }
-                                    : { paddingLeft: 40, paddingRight: 12 }),
+                                paddingInlineEnd: 12,
                             }}
                             placeholder={t('transfers.search')}
                             value={search}
@@ -359,7 +349,7 @@ export default function TransfersPage() {
                                     key={i}
                                     style={{
                                         ...(s.th as React.CSSProperties),
-                                        textAlign: lang === 'ar' ? 'right' : 'left',
+                                        textAlign: 'start',
                                     }}
                                 >
                                     {h.label}

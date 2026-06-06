@@ -529,14 +529,14 @@ export default function OnboardingPage() {
                                     type="button"
                                     style={{
                                         position: 'absolute',
-                                        right: 12,
+                                        insetInlineEnd: 12,
                                         top: '50%',
                                         transform: 'translateY(-50%)',
                                         background: 'none',
                                         border: 'none',
                                         color: 'var(--text-tertiary)',
                                         cursor: 'pointer',
-                                        padding: 4,
+                                        padding: 'var(--space-1)',
                                     }}
                                     onClick={() => setShowPassword(!showPassword)}
                                     tabIndex={-1}
@@ -868,9 +868,9 @@ export default function OnboardingPage() {
                                 style={{
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: 10,
+                                    gap: 'var(--space-3)',
                                     width: '100%',
-                                    padding: '12px 16px',
+                                    padding: 'var(--space-3) var(--space-4)',
                                     background: 'var(--color-primary-50, #f0f5ff)',
                                     border: '1px solid var(--color-primary-200, #c7d7fe)',
                                     borderRadius: 'var(--radius-lg, 12px)',
@@ -955,14 +955,14 @@ export default function OnboardingPage() {
                                             type="button"
                                             style={{
                                                 position: 'absolute',
-                                                right: 12,
+                                                insetInlineEnd: 12,
                                                 top: '50%',
                                                 transform: 'translateY(-50%)',
                                                 background: 'none',
                                                 border: 'none',
                                                 color: 'var(--text-tertiary)',
                                                 cursor: 'pointer',
-                                                padding: 4,
+                                                padding: 'var(--space-1)',
                                             }}
                                             onClick={() => setShowBranchPassword(!showBranchPassword)}
                                             tabIndex={-1}
@@ -1051,7 +1051,7 @@ export default function OnboardingPage() {
                                             >
                                                 <Check size={14} />
                                                 {service}
-                                                <span style={{ marginInlineStart: 4 }}>&times;</span>
+                                                <span style={{ marginInlineStart: 'var(--space-1)' }}>&times;</span>
                                             </button>
                                         ))}
                                 </div>

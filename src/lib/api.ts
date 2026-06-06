@@ -235,6 +235,11 @@ export interface ProviderProfile {
     city?: { uuid: string; name: string }; // live API field (ported real-API page, X-merge)
     category?: { uuid: string; name: string };
     branches?: Array<{ uuid: string; name: string; phone: string }>;
+    // Platform billing fields managed by Super Admin (additive, optional — cross-dashboard consistency)
+    commission_rate?: number;
+    subscription_status?: string;
+    subscription_plan_uuid?: string | null;
+    billing_type?: 'subscription' | 'commission';
     created_at: string;
     updated_at: string;
 }

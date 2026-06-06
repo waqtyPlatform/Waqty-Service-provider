@@ -182,8 +182,8 @@
 
 .uploadRemove {
     position: absolute;
-    top: 6px;
-    right: 6px;
+    top: var(--space-2);
+    inset-inline-end: var(--space-2);
     width: 24px;
     height: 24px;
     border-radius: 50%;

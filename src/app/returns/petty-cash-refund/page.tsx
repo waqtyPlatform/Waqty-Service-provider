@@ -1,5 +1,6 @@
 'use client';
 
+import { egpLabel } from '@/lib/money';
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Search, ChevronRight } from 'lucide-react';
@@ -63,11 +64,11 @@ const s: Record<string, React.CSSProperties> = {
     },
     tabActive: { color: 'var(--color-primary-500)', borderBottomColor: 'var(--color-primary-500)' },
     title: { fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' },
-    desc: { fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginTop: 4 },
+    desc: { fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginTop: 'var(--space-1)' },
     searchBox: { position: 'relative', maxWidth: 400 },
     searchIcon: {
         position: 'absolute',
-        left: 12,
+        insetInlineStart: 12,
         top: '50%',
         transform: 'translateY(-50%)',
         color: 'var(--text-tertiary)',
@@ -75,7 +76,8 @@ const s: Record<string, React.CSSProperties> = {
     searchInput: {
         width: '100%',
         height: 42,
-        paddingLeft: 40,
+        paddingInlineStart: 40,
+        paddingInlineEnd: 'var(--space-3)',
         border: '1px solid var(--border-color)',
         borderRadius: 'var(--radius-lg)',
         background: 'var(--bg-primary)',
@@ -99,7 +101,12 @@ const s: Record<string, React.CSSProperties> = {
         padding: 'var(--space-6)',
         maxWidth: 500,
     },
-    label: { fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', marginBottom: 6, display: 'block' },
+    label: {
+        fontSize: 'var(--text-sm)',
+        fontWeight: 'var(--font-medium)',
+        marginBottom: 'var(--space-2)',
+        display: 'block',
+    },
     select: {
         width: '100%',
         height: 42,
@@ -201,20 +208,9 @@ export default function PettyCashRefundPage() {
             {selected === null ? (
                 <>
                     <div style={s.searchBox as React.CSSProperties}>
-                        <Search
-                            size={16}
-                            style={{
-                                ...(s.searchIcon as React.CSSProperties),
-                                left: lang === 'ar' ? 'auto' : 12,
-                                right: lang === 'ar' ? 12 : 'auto',
-                            }}
-                        />
+                        <Search size={16} style={s.searchIcon as React.CSSProperties} />
                         <input
-                            style={{
-                                ...s.searchInput,
-                                paddingLeft: lang === 'ar' ? 12 : 40,
-                                paddingRight: lang === 'ar' ? 40 : 12,
-                            }}
+                            style={s.searchInput}
                             placeholder={t('rtn.searchIdDesc')}
                             value={search}
                             onChange={e => setSearch(e.target.value)}
@@ -226,7 +222,7 @@ export default function PettyCashRefundPage() {
                         data={filtered}
                         emptyIcon={<Search size={48} />}
                         emptyTitle={t('rtn.pettyTitle')}
-                        emptyDescription="No petty cash entries found"
+                        emptyDescription={t('rtn.noPettyEntriesFound')}
                         onRetry={refetchReturns}
                     >
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
@@ -252,7 +248,7 @@ export default function PettyCashRefundPage() {
                                             style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-bold)' }}
                                             dir="ltr"
                                         >
-                                            {entry.amount} EGP
+                                            {entry.amount} {egpLabel()}
                                         </div>
                                         <ChevronRight
                                             size={18}
@@ -296,8 +292,11 @@ export default function PettyCashRefundPage() {
                         <div>
                             <strong>{t('rtn.lblVendor')}:</strong> {entries[selected].vendor}
                         </div>
-                        <div style={{ display: 'flex', gap: '4px' }}>
-                            <strong>{t('rtn.thAmount')}:</strong> <span dir="ltr">{entries[selected].amount} EGP</span>
+                        <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
+                            <strong>{t('rtn.thAmount')}:</strong>{' '}
+                            <span dir="ltr">
+                                {entries[selected].amount} {egpLabel()}
+                            </span>
                         </div>
                     </div>
                     <div style={{ marginBottom: 'var(--space-4)' }}>

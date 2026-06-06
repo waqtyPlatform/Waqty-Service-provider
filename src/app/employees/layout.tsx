@@ -28,6 +28,8 @@ export default function EmployeesLayout({ children }: { children: React.ReactNod
         { label: t('empLayout.tabAttendance'), href: '/employees/attendance', icon: <ClipboardCheck size={16} /> },
         { label: t('empLayout.tabPerformance'), href: '/employees/performance', icon: <BarChart3 size={16} /> },
         { label: t('empLayout.tabPayroll'), href: '/employees/payroll', icon: <Wallet size={16} /> },
+        { label: t('sidebar.positions'), href: '/employees/positions', icon: <Briefcase size={16} /> },
+        { label: t('sidebar.branchMgmt'), href: '/employees/branch-management', icon: <Building2 size={16} /> },
         { label: t('empLayout.tabRoles'), href: '/employees/roles', icon: <Briefcase size={16} /> },
         { label: t('empLayout.tabTransfers'), href: '/employees/transfers', icon: <ArrowLeftRight size={16} /> },
     ];

@@ -108,10 +108,7 @@ export default function BranchManagementPage() {
                             <div>
                                 <div style={s.branchName}>{branch.name}</div>
                                 <div style={s.meta}>
-                                    <Users
-                                        size={12}
-                                        style={{ ...(lang === 'ar' ? { marginLeft: 4 } : { marginRight: 4 }) }}
-                                    />
+                                    <Users size={12} style={{ marginInlineEnd: 'var(--space-1)' }} />
                                     {branch.employees.length} {t('branchMgt.employees')}
                                 </div>
                             </div>

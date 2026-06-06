@@ -13,6 +13,7 @@ export default function CustomersLayout({ children }: { children: React.ReactNod
 
     const tabItems = [
         { label: t('customers.tabClients'), href: '/customers', icon: <Users size={16} /> },
+        { label: t('sidebar.clientAccounts'), href: '/customers/clients', icon: <CreditCard size={16} /> },
         { label: t('customers.tabGroups'), href: '/customers/groups', icon: <Star size={16} /> },
         { label: t('customers.tabStatements'), href: '/customers/statements', icon: <CreditCard size={16} /> },
         { label: t('customers.tabVisits'), href: '/customers/last-visits', icon: <Clock size={16} /> },
@@ -28,18 +29,33 @@ export default function CustomersLayout({ children }: { children: React.ReactNod
                         <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' }}>
                             {t('sidebar.customers')}
                         </h1>
-                        <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginTop: 4 }}>
+                        <div
+                            style={{
+                                fontSize: 'var(--text-sm)',
+                                color: 'var(--text-tertiary)',
+                                marginTop: 'var(--space-1)',
+                            }}
+                        >
                             {t('customers.desc')}
                         </div>
                     </div>
                     <div className={styles.headerActions}>
-                        <button className={styles.btnOutline}>
+                        <button
+                            className={styles.btnOutline}
+                            onClick={() => window.dispatchEvent(new Event('importClients'))}
+                        >
                             <Upload size={16} /> {t('customers.import')}
                         </button>
-                        <button className={styles.btnOutline}>
+                        <button
+                            className={styles.btnOutline}
+                            onClick={() => window.dispatchEvent(new Event('exportClients'))}
+                        >
                             <Download size={16} /> {t('customers.export')}
                         </button>
-                        <button className={styles.btnPrimary}>
+                        <button
+                            className={styles.btnPrimary}
+                            onClick={() => window.dispatchEvent(new Event('openAddClient'))}
+                        >
                             <Plus size={16} /> {t('customers.addClient')}
                         </button>
                     </div>

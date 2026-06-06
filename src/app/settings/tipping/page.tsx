@@ -118,7 +118,7 @@ export default function TippingSettingsPage() {
                         }}
                     >
                         <div style={{ fontWeight: 600, fontSize: '0.9375rem', marginBottom: '1rem' }}>
-                            <Percent size={16} style={{ display: 'inline', marginRight: 8 }} />
+                            <Percent size={16} style={{ display: 'inline', marginInlineEnd: 8 }} />
                             {t('tipping.percentages')}
                         </div>
                         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: '1rem' }}>
@@ -128,7 +128,7 @@ export default function TippingSettingsPage() {
                                     <button
                                         onClick={() => removePercentage(p)}
                                         style={{
-                                            marginLeft: 6,
+                                            marginInlineStart: 6,
                                             background: 'none',
                                             border: 'none',
                                             cursor: 'pointer',
@@ -196,7 +196,7 @@ export default function TippingSettingsPage() {
                         }}
                     >
                         <div style={{ fontWeight: 600, fontSize: '0.9375rem', marginBottom: '1rem' }}>
-                            <Users size={16} style={{ display: 'inline', marginRight: 8 }} />
+                            <Users size={16} style={{ display: 'inline', marginInlineEnd: 8 }} />
                             {t('tipping.distribution')}
                         </div>
                         <Select

@@ -337,7 +337,7 @@
     gap: var(--space-1);
     font-size: var(--text-xs);
     font-weight: var(--font-semibold);
-    padding: 2px 8px;
+    padding: 2px var(--space-2);
     border-radius: var(--radius-full);
 }
 
@@ -426,7 +426,7 @@
 }
 
 .dataTable th {
-    text-align: left;
+    text-align: start;
     padding: var(--space-3) var(--space-4);
     font-size: var(--text-xs);
     font-weight: var(--font-semibold);
@@ -476,7 +476,7 @@
     font-weight: var(--font-semibold);
     font-size: var(--text-sm);
     min-width: 40px;
-    text-align: right;
+    text-align: end;
 }
 
 /* ── Donut Chart ── */
@@ -563,7 +563,7 @@
 }
 
 .rankValue {
-    text-align: right;
+    text-align: end;
     font-weight: var(--font-semibold);
     color: var(--color-primary-600);
 }

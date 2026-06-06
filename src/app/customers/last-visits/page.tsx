@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Search, AlertCircle, Phone, Clock } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useApiQuery } from '@/hooks/useApiQuery';
-import { customerApi, type Customer } from '@/lib/api';
+import { providerApi, type Customer } from '@/lib/api';
 import { DataGuard } from '@/components/DataGuard';
 
 const fallbackData = [
@@ -115,7 +115,7 @@ const s: Record<string, React.CSSProperties> = {
     searchBox: { position: 'relative', flex: 1, maxWidth: 320 },
     searchIcon: {
         position: 'absolute',
-        left: 12,
+        insetInlineStart: 12,
         top: '50%',
         transform: 'translateY(-50%)',
         color: 'var(--text-tertiary)',
@@ -123,7 +123,8 @@ const s: Record<string, React.CSSProperties> = {
     searchInput: {
         width: '100%',
         height: 40,
-        paddingLeft: 40,
+        paddingInlineStart: 40,
+        paddingInlineEnd: 'var(--space-3)',
         border: '1px solid var(--border-color)',
         borderRadius: 'var(--radius-lg)',
         background: 'var(--bg-primary)',
@@ -139,7 +140,7 @@ const s: Record<string, React.CSSProperties> = {
     },
     th: {
         padding: 'var(--space-3) var(--space-4)',
-        textAlign: 'left',
+        textAlign: 'start',
         fontSize: 'var(--text-xs)',
         fontWeight: 'var(--font-semibold)',
         color: 'var(--text-tertiary)',
@@ -156,8 +157,8 @@ const s: Record<string, React.CSSProperties> = {
     badge: {
         display: 'inline-flex',
         alignItems: 'center',
-        gap: 4,
-        padding: '2px 8px',
+        gap: 'var(--space-1)',
+        padding: '2px var(--space-2)',
         borderRadius: 'var(--radius-full)',
         fontSize: 11,
         fontWeight: 'var(--font-semibold)',
@@ -165,8 +166,8 @@ const s: Record<string, React.CSSProperties> = {
     callBtn: {
         display: 'inline-flex',
         alignItems: 'center',
-        gap: 4,
-        padding: '4px 10px',
+        gap: 'var(--space-1)',
+        padding: 'var(--space-1) var(--space-3)',
         borderRadius: 'var(--radius-md)',
         border: '1px solid var(--border-color)',
         background: 'var(--bg-primary)',
@@ -200,17 +201,52 @@ export default function LastVisitsPage() {
         data: apiVisits,
         loading,
         error,
+        isFallback,
         refetch,
-    } = useApiQuery<Customer[]>(() => customerApi.getLastVisits() as never, [], {
-        fallbackData: fallbackData as never,
-    });
+    } = useApiQuery<Customer[]>(
+        // Live source: `/clients` (each carries name/phone/last_booking_date).
+        () =>
+            providerApi.getClients().then(res => ({
+                ...res,
+                data: res.data?.map(
+                    (cl): Customer => ({
+                        uuid: cl.uuid,
+                        name: cl.name,
+                        email: cl.email,
+                        phone: cl.phone,
+                        group_uuid: null,
+                        vip: false,
+                        notes: null,
+                        allergies: null,
+                        medical_conditions: null,
+                        medications: null,
+                        total_visits: cl.total_bookings,
+                        total_spent: 0,
+                        last_visit: cl.last_booking_date,
+                        created_at: '',
+                        updated_at: '',
+                    })
+                ),
+            })),
+        [],
+        {
+            fallbackData: fallbackData as never,
+        }
+    );
 
     // Use useState lazy initializer to capture timestamp once (avoids impure call during render)
     const [now] = useState(() => Date.now());
 
-    // Map API response to local shape, or use fallback
+    // Map API response to local shape, or use fallback.
+    // useApiQuery seeds `data` with the local-shaped `fallbackData` (field `client`,
+    // not the API's `name`) and keeps isFallback=false until the request resolves, so
+    // detect the API shape by its own field (`name`) rather than relying on isFallback
+    // — otherwise the API-shape map runs on local rows on first render and every
+    // `client` becomes undefined.
     const data = useMemo(() => {
-        if (apiVisits && apiVisits.length > 0) {
+        const firstVisit = apiVisits?.[0] as { name?: unknown } | undefined;
+        const isApiShaped = typeof firstVisit?.name === 'string';
+        if (isApiShaped && !isFallback && apiVisits && apiVisits.length > 0) {
             return apiVisits.map((c, i) => {
                 const daysSince = c.last_visit
                     ? Math.floor((now - new Date(c.last_visit).getTime()) / (1000 * 60 * 60 * 24))
@@ -228,9 +264,9 @@ export default function LastVisitsPage() {
             });
         }
         return fallbackData;
-    }, [apiVisits, now]);
+    }, [apiVisits, now, isFallback]);
 
-    const filtered = data.filter(d => d.client.toLowerCase().includes(search.toLowerCase()));
+    const filtered = data.filter(d => (d.client ?? '').toLowerCase().includes(search.toLowerCase()));
 
     return (
         <div style={{ ...s.page, direction: lang === 'ar' ? 'rtl' : 'ltr' } as React.CSSProperties}>
@@ -251,24 +287,9 @@ export default function LastVisitsPage() {
 
             <div style={s.toolbar as React.CSSProperties}>
                 <div style={s.searchBox as React.CSSProperties}>
-                    <Search
-                        size={16}
-                        style={
-                            {
-                                ...s.searchIcon,
-                                ...(lang === 'ar' ? { right: 12, left: 'auto' } : { left: 12, right: 'auto' }),
-                            } as React.CSSProperties
-                        }
-                    />
+                    <Search size={16} style={s.searchIcon as React.CSSProperties} />
                     <input
-                        style={
-                            {
-                                ...s.searchInput,
-                                ...(lang === 'ar'
-                                    ? { paddingRight: 40, paddingLeft: 12 }
-                                    : { paddingLeft: 40, paddingRight: 12 }),
-                            } as React.CSSProperties
-                        }
+                        style={s.searchInput as React.CSSProperties}
                         placeholder={t('custStmts.searchPlaceholder')}
                         value={search}
                         onChange={e => setSearch(e.target.value)}
@@ -302,12 +323,7 @@ export default function LastVisitsPage() {
                                 t('custVisits.colFollowUp'),
                                 '',
                             ].map((h, i) => (
-                                <th
-                                    key={i}
-                                    style={
-                                        { ...s.th, textAlign: lang === 'ar' ? 'right' : 'left' } as React.CSSProperties
-                                    }
-                                >
+                                <th key={i} style={s.th as React.CSSProperties}>
                                     {h}
                                 </th>
                             ))}

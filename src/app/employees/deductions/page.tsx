@@ -276,7 +276,7 @@ const st: Record<string, React.CSSProperties> = {
     table: { width: '100%', minWidth: 900, borderCollapse: 'collapse' },
     th: {
         padding: 'var(--space-3) var(--space-4)',
-        textAlign: 'left',
+        textAlign: 'start',
         fontSize: 'var(--text-xs)',
         fontWeight: 'var(--font-semibold)',
         color: 'var(--text-tertiary)',
@@ -291,10 +291,15 @@ const st: Record<string, React.CSSProperties> = {
         color: 'var(--text-primary)',
         borderBottom: '1px solid var(--border-color)',
     },
-    formLabel: { fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', display: 'block', marginBottom: 4 },
+    formLabel: {
+        fontSize: 'var(--text-xs)',
+        color: 'var(--text-tertiary)',
+        display: 'block',
+        marginBottom: 'var(--space-1)',
+    },
     formInput: {
         width: '100%',
-        padding: '8px 12px',
+        padding: 'var(--space-2) var(--space-3)',
         border: '1px solid var(--border-color)',
         borderRadius: 'var(--radius-md)',
         background: 'var(--bg-primary)',
@@ -496,7 +501,7 @@ export default function DeductionsPage() {
         <div style={st.page}>
             {/* Header */}
             <div style={{ ...st.header, flexDirection: lang === 'ar' ? 'row-reverse' : 'row' }}>
-                <div style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                <div style={{ textAlign: 'start' }}>
                     <div style={st.title}>{t('payroll.allDeductions')}</div>
                     <div style={st.subtitle}>{t('payroll.deductionsSubtitle')}</div>
                 </div>
@@ -607,15 +612,14 @@ export default function DeductionsPage() {
                 <div
                     style={{
                         position: 'relative',
-                        marginLeft: lang === 'ar' ? 0 : 'auto',
-                        marginRight: lang === 'ar' ? 'auto' : 0,
+                        marginInlineStart: 'auto',
                     }}
                 >
                     <Search
                         size={14}
                         style={{
                             position: 'absolute',
-                            ...(lang === 'ar' ? { right: 10 } : { left: 10 }),
+                            insetInlineStart: 10,
                             top: '50%',
                             transform: 'translateY(-50%)',
                             color: 'var(--text-tertiary)',
@@ -626,7 +630,7 @@ export default function DeductionsPage() {
                         value={searchQuery}
                         onChange={e => setSearchQuery(e.target.value)}
                         style={{
-                            ...(lang === 'ar' ? { paddingRight: 32 } : { paddingLeft: 32 }),
+                            paddingInlineStart: 32,
                             height: 38,
                             width: 220,
                             border: '1px solid var(--border-color)',
@@ -634,7 +638,7 @@ export default function DeductionsPage() {
                             background: 'var(--bg-primary)',
                             fontSize: 'var(--text-sm)',
                             color: 'var(--text-primary)',
-                            textAlign: lang === 'ar' ? 'right' : 'left',
+                            textAlign: 'start',
                         }}
                     />
                 </div>
@@ -645,7 +649,7 @@ export default function DeductionsPage() {
                 <div style={{ overflowX: 'auto' }}>
                     <table style={st.table}>
                         <thead>
-                            <tr style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                            <tr style={{ textAlign: 'start' }}>
                                 <th style={st.th as React.CSSProperties}>{t('payroll.colEmployee')}</th>
                                 <th style={st.th as React.CSSProperties}>{t('payroll.colType')}</th>
                                 <th style={st.th as React.CSSProperties}>{t('payroll.colDescription')}</th>
@@ -676,8 +680,8 @@ export default function DeductionsPage() {
                                                 style={{
                                                     display: 'inline-flex',
                                                     alignItems: 'center',
-                                                    gap: 6,
-                                                    padding: '3px 10px',
+                                                    gap: 'var(--space-2)',
+                                                    padding: '3px var(--space-3)',
                                                     borderRadius: 'var(--radius-full)',
                                                     background: colors.bg,
                                                     color: colors.color,
@@ -726,7 +730,7 @@ export default function DeductionsPage() {
                                                     style={{
                                                         display: 'inline-flex',
                                                         alignItems: 'center',
-                                                        gap: 4,
+                                                        gap: 'var(--space-1)',
                                                         color: 'var(--color-primary-600)',
                                                         fontSize: 'var(--text-xs)',
                                                         textDecoration: 'none',
@@ -755,7 +759,7 @@ export default function DeductionsPage() {
                                                         background: 'none',
                                                         border: 'none',
                                                         cursor: 'pointer',
-                                                        padding: 6,
+                                                        padding: 'var(--space-2)',
                                                         color: 'var(--text-tertiary)',
                                                         borderRadius: 'var(--radius-sm)',
                                                     }}
@@ -769,7 +773,7 @@ export default function DeductionsPage() {
                                                         background: 'none',
                                                         border: 'none',
                                                         cursor: 'pointer',
-                                                        padding: 6,
+                                                        padding: 'var(--space-2)',
                                                         color: 'var(--color-error)',
                                                         borderRadius: 'var(--radius-sm)',
                                                     }}
@@ -950,7 +954,7 @@ export default function DeductionsPage() {
                                             display: 'flex',
                                             flexDirection: 'column',
                                             alignItems: 'center',
-                                            gap: 4,
+                                            gap: 'var(--space-1)',
                                         }}
                                     >
                                         <Paperclip size={20} color="var(--text-tertiary)" />

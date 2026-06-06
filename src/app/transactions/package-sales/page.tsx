@@ -1,5 +1,6 @@
 'use client';
 
+import { egpLabel } from '@/lib/money';
 import React from 'react';
 import Link from 'next/link';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -138,7 +139,7 @@ const s: Record<string, React.CSSProperties> = {
     },
     th: {
         padding: 'var(--space-3) var(--space-4)',
-        textAlign: 'left',
+        textAlign: 'start',
         fontSize: 'var(--text-xs)',
         fontWeight: 'var(--font-semibold)',
         color: 'var(--text-tertiary)',
@@ -154,7 +155,7 @@ const s: Record<string, React.CSSProperties> = {
     },
     badge: {
         display: 'inline-flex',
-        padding: '2px 8px',
+        padding: '2px var(--space-2)',
         borderRadius: 'var(--radius-full)',
         fontSize: 11,
         fontWeight: 'var(--font-semibold)',
@@ -200,7 +201,7 @@ export default function PackageSalesPage() {
             <div style={s.kpis}>
                 <div style={s.kpi}>
                     <div style={s.kpiVal} dir="ltr">
-                        {totalRev.toLocaleString()} EGP
+                        {totalRev.toLocaleString()} {egpLabel()}
                     </div>
                     <div style={s.kpiLbl}>{t('txn.packages.revenue')}</div>
                 </div>
@@ -232,13 +233,7 @@ export default function PackageSalesPage() {
                             'txn.packages.thExpires',
                             'txn.thStatus',
                         ].map(h => (
-                            <th
-                                key={h}
-                                style={{
-                                    ...(s.th as React.CSSProperties),
-                                    textAlign: lang === 'ar' ? 'right' : 'left',
-                                }}
-                            >
+                            <th key={h} style={s.th as React.CSSProperties}>
                                 {t(h)}
                             </th>
                         ))}
@@ -254,7 +249,7 @@ export default function PackageSalesPage() {
                             <td style={s.td}>{row.client}</td>
                             <td style={{ ...s.td, fontWeight: 'var(--font-medium)' }}>{row.package}</td>
                             <td style={{ ...s.td, fontWeight: 'var(--font-semibold)' }} dir="ltr">
-                                {row.price.toLocaleString()} EGP
+                                {row.price.toLocaleString()} {egpLabel()}
                             </td>
                             <td style={s.td} dir="ltr">
                                 {row.sessionsUsed}/{row.sessionsTotal}

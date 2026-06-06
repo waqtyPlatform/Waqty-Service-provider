@@ -52,7 +52,7 @@ const s: Record<string, React.CSSProperties> = {
     table: { width: '100%', borderCollapse: 'collapse' },
     th: {
         padding: 'var(--space-3) var(--space-5)',
-        textAlign: 'left',
+        textAlign: 'start',
         fontSize: 'var(--text-xs)',
         fontWeight: 'var(--font-semibold)',
         color: 'var(--text-tertiary)',
@@ -311,7 +311,7 @@ export default function ShiftTemplatesPage() {
                                 <th style={s.th}>{t('shifts.colName')}</th>
                                 <th style={s.th}>{t('shifts.colHours')}</th>
                                 <th style={s.th}>{t('shifts.colBreak')}</th>
-                                <th style={{ ...s.th, textAlign: 'right' } as React.CSSProperties}>
+                                <th style={{ ...s.th, textAlign: 'end' } as React.CSSProperties}>
                                     {t('shifts.colActions')}
                                 </th>
                             </tr>
@@ -345,7 +345,7 @@ export default function ShiftTemplatesPage() {
                                             <Coffee size={12} /> {tpl.breakStart}–{tpl.breakEnd}
                                         </span>
                                     </td>
-                                    <td style={{ ...s.td, textAlign: 'right' }}>
+                                    <td style={{ ...s.td, textAlign: 'end' }}>
                                         <div style={{ ...s.actions, justifyContent: 'flex-end' }}>
                                             <Button variant="ghost" size="sm" onClick={() => openEdit(tpl)}>
                                                 <Edit size={14} />

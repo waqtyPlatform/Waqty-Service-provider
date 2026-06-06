@@ -5,6 +5,7 @@ import { Plus, Search, Edit, Trash2 } from 'lucide-react';
 import { SlideOver, Modal, Input, Select, Button, useToast, EmptyState } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useApiQuery } from '@/hooks/useApiQuery';
+import { egpLabel } from '@/lib/money';
 import { employeeExtApi, type Position } from '@/lib/api';
 
 const fallbackPositions = [
@@ -111,7 +112,7 @@ const s: Record<string, React.CSSProperties> = {
     searchBox: { position: 'relative', flex: 1, maxWidth: 320 },
     searchIcon: {
         position: 'absolute',
-        left: 12,
+        insetInlineStart: 12,
         top: '50%',
         transform: 'translateY(-50%)',
         color: 'var(--text-tertiary)',
@@ -119,7 +120,7 @@ const s: Record<string, React.CSSProperties> = {
     searchInput: {
         width: '100%',
         height: 40,
-        paddingLeft: 40,
+        paddingInlineStart: 40,
         border: '1px solid var(--border-color)',
         borderRadius: 'var(--radius-lg)',
         background: 'var(--bg-primary)',
@@ -135,7 +136,7 @@ const s: Record<string, React.CSSProperties> = {
     },
     th: {
         padding: 'var(--space-3) var(--space-4)',
-        textAlign: 'left',
+        textAlign: 'start',
         fontSize: 'var(--text-xs)',
         fontWeight: 'var(--font-semibold)',
         color: 'var(--text-tertiary)',
@@ -184,7 +185,15 @@ export default function PositionsPage() {
     } = useApiQuery<Position[]>(() => employeeExtApi.getPositions() as never, [], { fallbackData: fallbackPositions });
 
     const mappedPositions = useMemo(() => {
-        if (apiPositions && apiPositions.length > 0) {
+        // Re-shape ONLY when the rows genuinely came from the API. useApiQuery seeds
+        // `data` with the local-shaped `fallbackPositions` ({title,minSalary,...}) and
+        // keeps isFallback=false until the request resolves, so an isFallback check is
+        // not enough on the first render — detect the API shape by its own fields
+        // (`name`) instead. Otherwise we'd map local rows as API rows, making every
+        // title/minSalary undefined and crashing the filter + salary cells.
+        const first = apiPositions?.[0] as { name?: unknown } | undefined;
+        const isApiShaped = typeof first?.name === 'string';
+        if (apiPositions && apiPositions.length > 0 && isApiShaped) {
             return apiPositions.map((p, i) => ({
                 id: i + 1,
                 uuid: p.uuid,
@@ -220,7 +229,7 @@ export default function PositionsPage() {
         maxSalary: '',
     });
 
-    const filtered = positions.filter(p => p.title.toLowerCase().includes(search.toLowerCase()));
+    const filtered = positions.filter(p => (p.title ?? '').toLowerCase().includes(search.toLowerCase()));
 
     const handleSaveAdd = async () => {
         if (!formData.title) return addToast('error', t('positions.toastReqTitle'));
@@ -307,21 +316,11 @@ export default function PositionsPage() {
 
             <div style={s.toolbar}>
                 <div style={s.searchBox as React.CSSProperties}>
-                    <Search
-                        size={16}
-                        style={
-                            {
-                                ...s.searchIcon,
-                                ...(lang === 'ar' ? { right: 12, left: 'auto' } : {}),
-                            } as React.CSSProperties
-                        }
-                    />
+                    <Search size={16} style={s.searchIcon as React.CSSProperties} />
                     <input
                         style={{
                             ...s.searchInput,
-                            ...(lang === 'ar'
-                                ? { paddingRight: 40, paddingLeft: 12 }
-                                : { paddingLeft: 40, paddingRight: 12 }),
+                            paddingInlineEnd: 12,
                         }}
                         placeholder={t('positions.search')}
                         value={search}
@@ -349,7 +348,7 @@ export default function PositionsPage() {
                                     key={h.key}
                                     style={{
                                         ...(s.th as React.CSSProperties),
-                                        textAlign: lang === 'ar' ? 'right' : 'left',
+                                        textAlign: 'start',
                                     }}
                                 >
                                     {h.label}
@@ -375,7 +374,8 @@ export default function PositionsPage() {
                                 </td>
                                 <td style={s.td}>{p.employees}</td>
                                 <td style={s.td} dir="ltr">
-                                    {p.minSalary.toLocaleString()} - {p.maxSalary.toLocaleString()} EGP
+                                    {(p.minSalary ?? 0).toLocaleString()} - {(p.maxSalary ?? 0).toLocaleString()}{' '}
+                                    {egpLabel()}
                                 </td>
                                 <td style={s.td}>
                                     <div style={s.actions}>

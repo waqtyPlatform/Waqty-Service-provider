@@ -1,5 +1,6 @@
 'use client';
 
+import { egpLabel } from '@/lib/money';
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Search, ChevronRight } from 'lucide-react';
@@ -70,7 +71,7 @@ const s: Record<string, React.CSSProperties> = {
     },
     tabActive: { color: 'var(--color-primary-500)', borderBottomColor: 'var(--color-primary-500)' },
     title: { fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)', color: 'var(--text-primary)' },
-    desc: { fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginTop: 4 },
+    desc: { fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginTop: 'var(--space-1)' },
     steps: { display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-3)' },
     step: { display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: 'var(--text-sm)' },
     stepNum: {
@@ -90,7 +91,7 @@ const s: Record<string, React.CSSProperties> = {
     searchBox: { position: 'relative', maxWidth: 400 },
     searchIcon: {
         position: 'absolute',
-        left: 12,
+        insetInlineStart: 12,
         top: '50%',
         transform: 'translateY(-50%)',
         color: 'var(--text-tertiary)',
@@ -98,7 +99,8 @@ const s: Record<string, React.CSSProperties> = {
     searchInput: {
         width: '100%',
         height: 42,
-        paddingLeft: 40,
+        paddingInlineStart: 40,
+        paddingInlineEnd: 'var(--space-3)',
         border: '1px solid var(--border-color)',
         borderRadius: 'var(--radius-lg)',
         background: 'var(--bg-primary)',
@@ -116,7 +118,7 @@ const s: Record<string, React.CSSProperties> = {
         cursor: 'pointer',
         transition: 'all var(--transition-fast)',
     },
-    cardLeft: { display: 'flex', flexDirection: 'column', gap: 4 },
+    cardLeft: { display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' },
     cardId: { fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)', color: 'var(--color-primary-600)' },
     cardClient: { fontSize: 'var(--text-base)', fontWeight: 'var(--font-medium)' },
     cardMeta: { fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' },
@@ -131,7 +133,7 @@ const s: Record<string, React.CSSProperties> = {
         fontSize: 'var(--text-sm)',
         fontWeight: 'var(--font-medium)',
         color: 'var(--text-primary)',
-        marginBottom: 6,
+        marginBottom: 'var(--space-2)',
         display: 'block',
     },
     select: {
@@ -271,20 +273,9 @@ export default function CashRefundPage() {
             {step === 0 && (
                 <>
                     <div style={s.searchBox as React.CSSProperties}>
-                        <Search
-                            size={16}
-                            style={{
-                                ...(s.searchIcon as React.CSSProperties),
-                                left: lang === 'ar' ? 'auto' : 12,
-                                right: lang === 'ar' ? 12 : 'auto',
-                            }}
-                        />
+                        <Search size={16} style={s.searchIcon as React.CSSProperties} />
                         <input
-                            style={{
-                                ...s.searchInput,
-                                paddingLeft: lang === 'ar' ? 12 : 40,
-                                paddingRight: lang === 'ar' ? 40 : 12,
-                            }}
+                            style={s.searchInput}
                             placeholder={t('rtn.searchTxnClient')}
                             value={search}
                             onChange={e => setSearch(e.target.value)}
@@ -296,7 +287,7 @@ export default function CashRefundPage() {
                         data={filtered}
                         emptyIcon={<Search size={48} />}
                         emptyTitle={t('rtn.cashTitle')}
-                        emptyDescription="No cash transactions found"
+                        emptyDescription={t('rtn.noCashTxnFound')}
                         onRetry={refetchReturns}
                     >
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
@@ -319,7 +310,7 @@ export default function CashRefundPage() {
                                     </div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
                                         <div style={s.cardAmount} dir="ltr">
-                                            {txn.total} EGP
+                                            {txn.total} {egpLabel()}
                                         </div>
                                         <ChevronRight
                                             size={18}
@@ -430,7 +421,7 @@ export default function CashRefundPage() {
                             }}
                             dir="ltr"
                         >
-                            -{transactions[selected].total} EGP
+                            -{transactions[selected].total} {egpLabel()}
                         </div>
                     </div>
                     <div style={{ display: 'flex', gap: 'var(--space-3)' }}>

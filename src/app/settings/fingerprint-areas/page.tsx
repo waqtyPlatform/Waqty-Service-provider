@@ -121,14 +121,20 @@ export default function FingerprintAreasPage() {
                                             </Badge>
                                         </td>
                                         <td>
-                                            <div style={{ display: 'flex', gap: 8 }}>
-                                                <Button variant="ghost" size="sm" iconOnly>
+                                            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    iconOnly
+                                                    aria-label={t('common.edit')}
+                                                >
                                                     <Edit size={14} />
                                                 </Button>
                                                 <Button
                                                     variant="destructive"
                                                     size="sm"
                                                     iconOnly
+                                                    aria-label={t('common.delete')}
                                                     onClick={() => handleDelete(area.id)}
                                                 >
                                                     <Trash2 size={14} />

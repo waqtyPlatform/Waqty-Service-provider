@@ -1,5 +1,6 @@
 'use client';
 
+import { egpLabel } from '@/lib/money';
 import React, { useState } from 'react';
 import { DropdownMenu, useToast } from '@/components/ui';
 import {
@@ -208,7 +209,7 @@ export default function ReturnsPage() {
                         dir="ltr"
                         style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}
                     >
-                        {totalRefunded.toLocaleString()} EGP
+                        {totalRefunded.toLocaleString()} {egpLabel()}
                     </div>
                 </div>
                 <div className={styles.kpi}>
@@ -225,14 +226,9 @@ export default function ReturnsPage() {
 
             <div className={styles.ctrl}>
                 <div className={styles.sw}>
-                    <Search
-                        size={16}
-                        className={styles.si}
-                        style={lang === 'ar' ? { right: 12, left: 'auto' } : undefined}
-                    />
+                    <Search size={16} className={styles.si} />
                     <input
                         className={styles.inp}
-                        style={lang === 'ar' ? { paddingRight: 40, paddingLeft: 12 } : undefined}
                         placeholder={t('rtn.searchRtn')}
                         value={search}
                         onChange={e => setSearch(e.target.value)}
@@ -246,7 +242,7 @@ export default function ReturnsPage() {
                 data={filteredReturns}
                 emptyIcon={<RotateCcw size={48} />}
                 emptyTitle={t('rtn.title')}
-                emptyDescription="No returns found"
+                emptyDescription={t('rtn.noReturnsFound')}
                 onRetry={refetchReturns}
             >
                 <div className={styles.card}>
@@ -254,28 +250,14 @@ export default function ReturnsPage() {
                         <table className={styles.dataTable}>
                             <thead>
                                 <tr>
-                                    <th className={styles.th} style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                        {t('rtn.thRtnNum')}
-                                    </th>
-                                    <th className={styles.th} style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                        {t('rtn.thDate')}
-                                    </th>
-                                    <th className={styles.th} style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                        {t('rtn.thType')}
-                                    </th>
-                                    <th className={styles.th} style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                        {t('rtn.thClient')}
-                                    </th>
-                                    <th className={styles.th} style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                        {t('rtn.thItem')}
-                                    </th>
-                                    <th className={styles.th} style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                        {t('rtn.thReason')}
-                                    </th>
+                                    <th className={styles.th}>{t('rtn.thRtnNum')}</th>
+                                    <th className={styles.th}>{t('rtn.thDate')}</th>
+                                    <th className={styles.th}>{t('rtn.thType')}</th>
+                                    <th className={styles.th}>{t('rtn.thClient')}</th>
+                                    <th className={styles.th}>{t('rtn.thItem')}</th>
+                                    <th className={styles.th}>{t('rtn.thReason')}</th>
                                     <th className={`${styles.th} ${styles.thRight}`}>{t('rtn.thAmount')}</th>
-                                    <th className={styles.th} style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                        {t('rtn.thStatus')}
-                                    </th>
+                                    <th className={styles.th}>{t('rtn.thStatus')}</th>
                                     <th className={styles.th}></th>
                                 </tr>
                             </thead>
@@ -287,7 +269,9 @@ export default function ReturnsPage() {
                                         <tr
                                             key={r.id}
                                             className={`${styles.tr} ${styles.trInteractive}`}
-                                            onClick={() => addToast('info', `Viewing return ${r.id} details`)}
+                                            onClick={() =>
+                                                addToast('info', t('rtn.toastViewing').replace('{id}', r.id))
+                                            }
                                         >
                                             <td className={`${styles.td} ${styles.idCell}`}>{r.id}</td>
                                             <td className={styles.td}>
@@ -312,12 +296,12 @@ export default function ReturnsPage() {
                                                 dir="ltr"
                                                 style={{ textAlign: lang === 'ar' ? 'left' : 'right' }}
                                             >
-                                                -{r.amount.toLocaleString()} EGP
+                                                -{r.amount.toLocaleString()} {egpLabel()}
                                                 {r.priceSource !== 'base' && (
                                                     <span
                                                         style={{
-                                                            marginLeft: 4,
-                                                            padding: '1px 5px',
+                                                            marginInlineStart: 'var(--space-1)',
+                                                            padding: '1px var(--space-1)',
                                                             borderRadius: 'var(--radius-full)',
                                                             fontSize: 10,
                                                             fontWeight: 600,
@@ -340,7 +324,10 @@ export default function ReturnsPage() {
                                             <td className={styles.td}>
                                                 <DropdownMenu
                                                     trigger={
-                                                        <button className={styles.actionBtn}>
+                                                        <button
+                                                            className={styles.actionBtn}
+                                                            aria-label={t('common.actions')}
+                                                        >
                                                             <MoreVertical size={16} />
                                                         </button>
                                                     }
@@ -348,7 +335,8 @@ export default function ReturnsPage() {
                                                         {
                                                             label: t('rtn.actionView'),
                                                             icon: <Search size={14} />,
-                                                            onClick: () => addToast('info', 'Viewing return details'),
+                                                            onClick: () =>
+                                                                addToast('info', t('rtn.toastViewingDetails')),
                                                         },
                                                         {
                                                             label: t('rtn.actionApprove'),
@@ -360,7 +348,7 @@ export default function ReturnsPage() {
                                                                 } catch {
                                                                     /* fallback */
                                                                 }
-                                                                addToast('success', 'Return approved');
+                                                                addToast('success', t('rtn.toastApproved'));
                                                             },
                                                         },
                                                         {
@@ -376,7 +364,7 @@ export default function ReturnsPage() {
                                                                 } catch {
                                                                     /* fallback */
                                                                 }
-                                                                addToast('error', 'Return rejected');
+                                                                addToast('error', t('rtn.toastRejected'));
                                                             },
                                                             destructive: true,
                                                         },

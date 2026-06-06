@@ -191,7 +191,7 @@ const s: Record<string, React.CSSProperties> = {
     searchBox: { position: 'relative' as const, flex: '1', maxWidth: 320 },
     searchIcon: {
         position: 'absolute' as const,
-        left: 12,
+        insetInlineStart: 12,
         top: '50%',
         transform: 'translateY(-50%)',
         color: 'var(--text-tertiary)',
@@ -199,8 +199,8 @@ const s: Record<string, React.CSSProperties> = {
     searchInput: {
         width: '100%',
         height: 40,
-        paddingLeft: 40,
-        paddingRight: 16,
+        paddingInlineStart: 40,
+        paddingInlineEnd: 'var(--space-4)',
         border: '1px solid var(--border-color)',
         borderRadius: 'var(--radius-lg)',
         background: 'var(--bg-primary)',
@@ -227,17 +227,22 @@ const s: Record<string, React.CSSProperties> = {
         flexShrink: 0,
     },
     name: { fontSize: 'var(--text-lg)', fontWeight: 'var(--font-semibold)', color: 'var(--text-primary)' },
-    prices: { display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginTop: 4 },
+    prices: { display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginTop: 'var(--space-1)' },
     price: { fontSize: 'var(--text-xl)', fontWeight: 'var(--font-bold)', color: 'var(--color-primary-600)' },
     oldPrice: { fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', textDecoration: 'line-through' },
     badge: {
         display: 'inline-flex',
-        padding: '2px 8px',
+        padding: '2px var(--space-2)',
         borderRadius: 'var(--radius-full)',
         fontSize: 10,
         fontWeight: 'var(--font-semibold)',
     },
-    services: { padding: '0 var(--space-5) var(--space-4)', display: 'flex', flexDirection: 'column', gap: 6 },
+    services: {
+        padding: '0 var(--space-5) var(--space-4)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 'var(--space-2)',
+    },
     svcItem: {
         display: 'flex',
         alignItems: 'center',
@@ -253,7 +258,13 @@ const s: Record<string, React.CSSProperties> = {
         borderTop: '1px solid var(--border-color)',
         background: 'var(--bg-secondary)',
     },
-    stat: { display: 'flex', alignItems: 'center', gap: 4, fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' },
+    stat: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 'var(--space-1)',
+        fontSize: 'var(--text-xs)',
+        color: 'var(--text-tertiary)',
+    },
     cardActions: { display: 'flex', gap: 'var(--space-2)', padding: '0 var(--space-5) var(--space-4)' },
     svcSection: {
         border: '1px solid var(--border-color)',
@@ -266,7 +277,7 @@ const s: Record<string, React.CSSProperties> = {
         display: 'flex',
         alignItems: 'center',
         gap: 'var(--space-2)',
-        padding: '6px 8px',
+        padding: 'var(--space-2) var(--space-2)',
         borderRadius: 'var(--radius-md)',
         cursor: 'pointer',
         fontSize: 'var(--text-sm)',
@@ -275,8 +286,8 @@ const s: Record<string, React.CSSProperties> = {
     svcTag: {
         display: 'inline-flex',
         alignItems: 'center',
-        gap: 4,
-        padding: '3px 8px',
+        gap: 'var(--space-1)',
+        padding: '3px var(--space-2)',
         borderRadius: 'var(--radius-full)',
         fontSize: 11,
         fontWeight: 'var(--font-medium)',
@@ -337,7 +348,7 @@ function ServicesPicker({ selected, onChange }: { selected: string[]; onChange: 
             </label>
             {/* Selected tags */}
             {selected.length > 0 && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
                     {selected.map(svc => (
                         <span key={svc} style={s.svcTag}>
                             {svc}
@@ -366,7 +377,7 @@ function ServicesPicker({ selected, onChange }: { selected: string[]; onChange: 
                 style={{
                     width: '100%',
                     height: 36,
-                    padding: '0 12px',
+                    padding: '0 var(--space-3)',
                     border: '1px solid var(--border-color)',
                     borderRadius: 'var(--radius-md)',
                     fontSize: 'var(--text-sm)',
@@ -391,7 +402,7 @@ function ServicesPicker({ selected, onChange }: { selected: string[]; onChange: 
                                 style={{
                                     width: 18,
                                     height: 18,
-                                    borderRadius: 4,
+                                    borderRadius: 'var(--radius-sm)',
                                     border: isChecked ? 'none' : '2px solid var(--border-color)',
                                     background: isChecked ? 'var(--color-primary-500)' : 'transparent',
                                     display: 'flex',
@@ -659,12 +670,12 @@ export default function PackagesPage() {
                         fontWeight: 'var(--font-medium)',
                         color: 'var(--text-primary)',
                         display: 'block',
-                        marginBottom: 8,
+                        marginBottom: 'var(--space-2)',
                     }}
                 >
                     {t('sales.lblColor')}
                 </label>
-                <div style={{ display: 'flex', gap: 8 }}>
+                <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                     {colors.map(c => (
                         <button
                             key={c}
@@ -850,11 +861,7 @@ export default function PackagesPage() {
                 <div style={s.searchBox}>
                     <Search size={16} style={s.searchIcon as React.CSSProperties} />
                     <input
-                        style={{
-                            ...s.searchInput,
-                            paddingLeft: lang === 'ar' ? 16 : 40,
-                            paddingRight: lang === 'ar' ? 40 : 16,
-                        }}
+                        style={s.searchInput}
                         placeholder={t('sales.phSearchPackages')}
                         value={search}
                         onChange={e => setSearch(e.target.value)}
@@ -923,12 +930,7 @@ export default function PackagesPage() {
                                         </span>
                                     </div>
                                 </div>
-                                <div
-                                    style={{
-                                        marginLeft: lang === 'ar' ? undefined : 'auto',
-                                        marginRight: lang === 'ar' ? 'auto' : undefined,
-                                    }}
-                                >
+                                <div style={{ marginInlineStart: 'auto' }}>
                                     <DropdownMenu
                                         trigger={
                                             <button

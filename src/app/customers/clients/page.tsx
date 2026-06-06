@@ -1,5 +1,6 @@
 'use client';
 
+import { egpLabel } from '@/lib/money';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
@@ -185,10 +186,10 @@ export default function ClientsPage() {
                         <table className={styles.dataTable}>
                             <thead>
                                 <tr>
-                                    <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>Client</th>
-                                    <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>Contact</th>
-                                    <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>Bookings</th>
-                                    <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>Last Booking</th>
+                                    <th style={{ textAlign: 'start' }}>Client</th>
+                                    <th style={{ textAlign: 'start' }}>Contact</th>
+                                    <th style={{ textAlign: 'start' }}>Bookings</th>
+                                    <th style={{ textAlign: 'start' }}>Last Booking</th>
                                     <th></th>
                                 </tr>
                             </thead>
@@ -239,7 +240,7 @@ export default function ClientsPage() {
                                                         style={{
                                                             display: 'flex',
                                                             alignItems: 'center',
-                                                            gap: 4,
+                                                            gap: 'var(--space-1)',
                                                             fontSize: 'var(--text-sm)',
                                                         }}
                                                     >
@@ -250,7 +251,7 @@ export default function ClientsPage() {
                                                         style={{
                                                             display: 'flex',
                                                             alignItems: 'center',
-                                                            gap: 4,
+                                                            gap: 'var(--space-1)',
                                                             fontSize: 'var(--text-xs)',
                                                             color: 'var(--text-tertiary)',
                                                         }}
@@ -395,7 +396,7 @@ export default function ClientsPage() {
                                     border: 'none',
                                     cursor: 'pointer',
                                     color: 'var(--text-tertiary)',
-                                    padding: 4,
+                                    padding: 'var(--space-1)',
                                 }}
                             >
                                 <X size={20} />
@@ -415,7 +416,7 @@ export default function ClientsPage() {
                                 style={{
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: 6,
+                                    gap: 'var(--space-2)',
                                     fontSize: 'var(--text-sm)',
                                     color: 'var(--text-secondary)',
                                 }}
@@ -426,7 +427,7 @@ export default function ClientsPage() {
                                 style={{
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: 6,
+                                    gap: 'var(--space-2)',
                                     fontSize: 'var(--text-sm)',
                                     color: 'var(--text-secondary)',
                                 }}
@@ -498,8 +499,8 @@ export default function ClientsPage() {
                                                     <span
                                                         style={{
                                                             fontSize: 'var(--text-xs)',
-                                                            padding: '2px 8px',
-                                                            borderRadius: 999,
+                                                            padding: '2px var(--space-2)',
+                                                            borderRadius: 'var(--radius-full)',
                                                             background: statusColor + '20',
                                                             color: statusColor,
                                                             fontWeight: 'var(--font-semibold)',
@@ -516,7 +517,7 @@ export default function ClientsPage() {
                                                         style={{
                                                             display: 'flex',
                                                             alignItems: 'center',
-                                                            gap: 4,
+                                                            gap: 'var(--space-1)',
                                                             fontSize: 'var(--text-xs)',
                                                             color: 'var(--text-tertiary)',
                                                         }}
@@ -530,7 +531,7 @@ export default function ClientsPage() {
                                                             style={{
                                                                 display: 'flex',
                                                                 alignItems: 'center',
-                                                                gap: 4,
+                                                                gap: 'var(--space-1)',
                                                                 fontSize: 'var(--text-xs)',
                                                                 color: 'var(--text-tertiary)',
                                                             }}
@@ -543,7 +544,7 @@ export default function ClientsPage() {
                                                             style={{
                                                                 display: 'flex',
                                                                 alignItems: 'center',
-                                                                gap: 4,
+                                                                gap: 'var(--space-1)',
                                                                 fontSize: 'var(--text-xs)',
                                                                 color: 'var(--text-tertiary)',
                                                             }}
@@ -560,11 +561,11 @@ export default function ClientsPage() {
                                                             color: 'var(--color-success)',
                                                         }}
                                                     >
-                                                        {Number(b.price).toLocaleString('en-US')} EGP
+                                                        {Number(b.price).toLocaleString('en-US')} {egpLabel()}
                                                         {b.payment_status && (
                                                             <span
                                                                 style={{
-                                                                    marginInlineStart: 8,
+                                                                    marginInlineStart: 'var(--space-2)',
                                                                     fontSize: 'var(--text-xs)',
                                                                     color:
                                                                         b.payment_status === 'paid'
@@ -591,7 +592,7 @@ export default function ClientsPage() {
                                         justifyContent: 'center',
                                         padding: 'var(--space-8)',
                                         color: 'var(--text-tertiary)',
-                                        gap: 8,
+                                        gap: 'var(--space-2)',
                                         textAlign: 'center',
                                     }}
                                 >

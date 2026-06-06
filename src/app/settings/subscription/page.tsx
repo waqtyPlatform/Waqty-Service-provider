@@ -7,7 +7,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useApiQuery } from '@/hooks/useApiQuery';
 import { settingsApi, type SubscriptionPlan } from '@/lib/api';
 import type { PlanFeature, PlanTier } from '@/lib/contract';
-import { formatMoney, toMinor } from '@/lib/money';
+import { formatMoney, toMinor, egpLabel } from '@/lib/money';
 
 // Removed hardcoded plans/stats from here as they need translation and have been moved into the component
 
@@ -99,7 +99,7 @@ const s: Record<string, React.CSSProperties> = {
     currentBadge: {
         position: 'absolute' as const,
         top: -12,
-        right: 16,
+        insetInlineEnd: 16,
         display: 'inline-flex',
         alignItems: 'center',
         gap: 4,
@@ -301,7 +301,7 @@ export default function SubscriptionPage() {
                             <Calendar size={14} /> {t('settings.subscription.renewsOn')}
                         </div>
                     </div>
-                    <div style={{ textAlign: lang === 'ar' ? 'left' : 'right' }}>
+                    <div style={{ textAlign: 'end' }}>
                         <div
                             style={{
                                 fontSize: 'var(--text-2xl)',
@@ -310,7 +310,7 @@ export default function SubscriptionPage() {
                             }}
                         >
                             {currentPlan ? formatMoney(currentPlan.price_monthly, { withCurrency: false }) : '—'}{' '}
-                            <span style={{ fontSize: 'var(--text-sm)' }}>EGP</span>
+                            <span style={{ fontSize: 'var(--text-sm)' }}>{egpLabel()}</span>
                             <span
                                 style={{
                                     fontSize: 'var(--text-sm)',
@@ -433,7 +433,10 @@ export default function SubscriptionPage() {
 
                             <div style={s.priceRow}>
                                 <span style={s.price}>{formatMoney(displayPrice, { withCurrency: false })}</span>
-                                <span style={s.period}>EGP{t('settings.subscription.mo')}</span>
+                                <span style={s.period}>
+                                    {egpLabel()}
+                                    {t('settings.subscription.mo')}
+                                </span>
                             </div>
 
                             <div style={s.divider} />

@@ -135,7 +135,7 @@ export default function InviteClaimPage() {
                                     <div
                                         style={{
                                             position: 'absolute',
-                                            left: 16,
+                                            insetInlineStart: 16,
                                             top: '50%',
                                             transform: 'translateY(-50%)',
                                             color: 'var(--text-tertiary)',
@@ -146,7 +146,7 @@ export default function InviteClaimPage() {
                                     <input
                                         type="text"
                                         className={styles.loginInput}
-                                        style={{ paddingLeft: 44 }}
+                                        style={{ paddingInlineStart: 44 }}
                                         placeholder="+20 100 123 4567"
                                         value={phone}
                                         onChange={e => setPhone(e.target.value)}
@@ -221,7 +221,7 @@ export default function InviteClaimPage() {
                                 <div
                                     style={{
                                         position: 'absolute',
-                                        left: 16,
+                                        insetInlineStart: 16,
                                         top: '50%',
                                         transform: 'translateY(-50%)',
                                         color: 'var(--text-tertiary)',
@@ -232,7 +232,7 @@ export default function InviteClaimPage() {
                                 <input
                                     type="text"
                                     className={styles.loginInput}
-                                    style={{ paddingLeft: 44 }}
+                                    style={{ paddingInlineStart: 44 }}
                                     placeholder="e.g., Layla Hassan"
                                     value={fullName}
                                     onChange={e => setFullName(e.target.value)}

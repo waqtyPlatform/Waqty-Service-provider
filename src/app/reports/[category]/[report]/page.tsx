@@ -1,5 +1,6 @@
 'use client';
 
+import { egpLabel } from '@/lib/money';
 import React, { useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { Calendar, Download, Filter, Search, ArrowRight, ArrowUpDown, ChevronLeft, Loader2 } from 'lucide-react';
@@ -117,8 +118,8 @@ const getSalesData = (report: string) => {
                 ...r,
                 col1: r.date,
                 col2: String(r.count),
-                col3: `${r.amount} EGP`,
-                col4: `${Math.round(r.amount / r.count)} EGP`,
+                col3: `${r.amount} ${egpLabel()}`,
+                col4: `${Math.round(r.amount / r.count)} ${egpLabel()}`,
                 col5: r.status,
                 action: { label: 'rptDynamic.act.viewDay', href: r.link },
             })),
@@ -136,10 +137,10 @@ const getSalesData = (report: string) => {
                 'rptDynamic.col.pctOfTotal',
             ],
             rows: [
-                { id: 1, col1: 'Cash', col2: '145', col3: '45,200 EGP', col4: '45%' },
-                { id: 2, col1: 'Credit Card', col2: '110', col3: '38,500 EGP', col4: '38%' },
-                { id: 3, col1: 'Bank Transfer', col2: '25', col3: '12,000 EGP', col4: '12%' },
-                { id: 4, col1: 'Gift Card', col2: '15', col3: '5,300 EGP', col4: '5%' },
+                { id: 1, col1: 'Cash', col2: '145', col3: `45,200 ${egpLabel()}`, col4: '45%' },
+                { id: 2, col1: 'Credit Card', col2: '110', col3: `38,500 ${egpLabel()}`, col4: '38%' },
+                { id: 3, col1: 'Bank Transfer', col2: '25', col3: `12,000 ${egpLabel()}`, col4: '12%' },
+                { id: 4, col1: 'Gift Card', col2: '15', col3: `5,300 ${egpLabel()}`, col4: '5%' },
             ],
             chartData: [
                 { name: 'Cash', value: 45200 },
@@ -160,11 +161,11 @@ const getSalesData = (report: string) => {
                 'rptDynamic.col.revenue',
             ],
             rows: [
-                { id: 1, col1: 'Hair Cut & Style', col2: 'Hair', col3: '85', col4: '12,750 EGP' },
-                { id: 2, col1: 'Gel Manicure', col2: 'Nails', col3: '65', col4: '9,750 EGP' },
-                { id: 3, col1: 'Classic Facial', col2: 'Skin', col3: '40', col4: '14,000 EGP' },
-                { id: 4, col1: 'Full Body Massage', col2: 'Body', col3: '30', col4: '15,000 EGP' },
-                { id: 5, col1: 'Laser Hair Removal', col2: 'Laser', col3: '25', col4: '18,750 EGP' },
+                { id: 1, col1: 'Hair Cut & Style', col2: 'Hair', col3: '85', col4: `12,750 ${egpLabel()}` },
+                { id: 2, col1: 'Gel Manicure', col2: 'Nails', col3: '65', col4: `9,750 ${egpLabel()}` },
+                { id: 3, col1: 'Classic Facial', col2: 'Skin', col3: '40', col4: `14,000 ${egpLabel()}` },
+                { id: 4, col1: 'Full Body Massage', col2: 'Body', col3: '30', col4: `15,000 ${egpLabel()}` },
+                { id: 5, col1: 'Laser Hair Removal', col2: 'Laser', col3: '25', col4: `18,750 ${egpLabel()}` },
             ],
             chartData: [
                 { name: 'Hair Cut', value: 12750 },
@@ -186,9 +187,27 @@ const getSalesData = (report: string) => {
                 'rptDynamic.col.netRevenue',
             ],
             rows: [
-                { id: 1, col1: 'February 2026', col2: '58,000 EGP', col3: '8,120 EGP', col4: '49,880 EGP' },
-                { id: 2, col1: 'January 2026', col2: '55,000 EGP', col3: '7,700 EGP', col4: '47,300 EGP' },
-                { id: 3, col1: 'December 2025', col2: '61,000 EGP', col3: '8,540 EGP', col4: '52,460 EGP' },
+                {
+                    id: 1,
+                    col1: 'February 2026',
+                    col2: `58,000 ${egpLabel()}`,
+                    col3: `8,120 ${egpLabel()}`,
+                    col4: `49,880 ${egpLabel()}`,
+                },
+                {
+                    id: 2,
+                    col1: 'January 2026',
+                    col2: `55,000 ${egpLabel()}`,
+                    col3: `7,700 ${egpLabel()}`,
+                    col4: `47,300 ${egpLabel()}`,
+                },
+                {
+                    id: 3,
+                    col1: 'December 2025',
+                    col2: `61,000 ${egpLabel()}`,
+                    col3: `8,540 ${egpLabel()}`,
+                    col4: `52,460 ${egpLabel()}`,
+                },
             ],
             chartData: [
                 { name: 'Dec', value: 8540 },
@@ -236,7 +255,7 @@ const getBookingsData = (report: string) => {
                     col1: '2026-03-21',
                     col2: 'Client',
                     col3: 'Sick',
-                    col4: '450 EGP',
+                    col4: `450 ${egpLabel()}`,
                     action: { label: 'rptDynamic.act.viewBooking', href: '/bookings/BK-28492' },
                 },
                 {
@@ -244,7 +263,7 @@ const getBookingsData = (report: string) => {
                     col1: '2026-03-13',
                     col2: 'Client',
                     col3: 'Schedule Conflict',
-                    col4: '300 EGP',
+                    col4: `300 ${egpLabel()}`,
                     action: { label: 'rptDynamic.act.viewBooking', href: '/bookings/BK-28491' },
                 },
                 {
@@ -252,7 +271,7 @@ const getBookingsData = (report: string) => {
                     col1: '2026-03-16',
                     col2: 'System',
                     col3: 'No Show',
-                    col4: '600 EGP',
+                    col4: `600 ${egpLabel()}`,
                     action: { label: 'rptDynamic.act.viewBooking', href: '/bookings/BK-28490' },
                 },
                 {
@@ -260,7 +279,7 @@ const getBookingsData = (report: string) => {
                     col1: '2026-03-18',
                     col2: 'Client',
                     col3: 'Changed Mind',
-                    col4: '250 EGP',
+                    col4: `250 ${egpLabel()}`,
                     action: { label: 'rptDynamic.act.viewBooking', href: '/bookings/BK-28489' },
                 },
                 {
@@ -268,7 +287,7 @@ const getBookingsData = (report: string) => {
                     col1: '2026-03-20',
                     col2: 'Staff',
                     col3: 'Employee Absent',
-                    col4: '500 EGP',
+                    col4: `500 ${egpLabel()}`,
                     action: { label: 'rptDynamic.act.viewBooking', href: '/bookings/BK-28488' },
                 },
             ],
@@ -402,11 +421,46 @@ const getBookingsData = (report: string) => {
                 'rptDynamic.col.avgTicket',
             ],
             rows: [
-                { id: 1, col1: 'Online — Website', col2: '320', col3: '68,000 EGP', col4: '38%', col5: '213 EGP' },
-                { id: 2, col1: 'Online — App', col2: '185', col3: '42,500 EGP', col4: '22%', col5: '230 EGP' },
-                { id: 3, col1: 'Phone Call', col2: '145', col3: '32,000 EGP', col4: '17%', col5: '221 EGP' },
-                { id: 4, col1: 'Walk-in', col2: '120', col3: '22,800 EGP', col4: '14%', col5: '190 EGP' },
-                { id: 5, col1: 'Social Media', col2: '72', col3: '15,200 EGP', col4: '9%', col5: '211 EGP' },
+                {
+                    id: 1,
+                    col1: 'Online — Website',
+                    col2: '320',
+                    col3: `68,000 ${egpLabel()}`,
+                    col4: '38%',
+                    col5: `213 ${egpLabel()}`,
+                },
+                {
+                    id: 2,
+                    col1: 'Online — App',
+                    col2: '185',
+                    col3: `42,500 ${egpLabel()}`,
+                    col4: '22%',
+                    col5: `230 ${egpLabel()}`,
+                },
+                {
+                    id: 3,
+                    col1: 'Phone Call',
+                    col2: '145',
+                    col3: `32,000 ${egpLabel()}`,
+                    col4: '17%',
+                    col5: `221 ${egpLabel()}`,
+                },
+                {
+                    id: 4,
+                    col1: 'Walk-in',
+                    col2: '120',
+                    col3: `22,800 ${egpLabel()}`,
+                    col4: '14%',
+                    col5: `190 ${egpLabel()}`,
+                },
+                {
+                    id: 5,
+                    col1: 'Social Media',
+                    col2: '72',
+                    col3: `15,200 ${egpLabel()}`,
+                    col4: '9%',
+                    col5: `211 ${egpLabel()}`,
+                },
             ],
             chartData: [
                 { name: 'Website', value: 320 },
@@ -457,24 +511,24 @@ const getEmployeesData = (report: string) => {
                 {
                     id: 1,
                     col1: 'Sara Ahmed',
-                    col2: '24,000 EGP',
-                    col3: '2,600 EGP',
+                    col2: `24,000 ${egpLabel()}`,
+                    col3: `2,600 ${egpLabel()}`,
                     col4: 'Pending',
                     action: { label: 'rptDynamic.act.viewProfile', href: '/employees/EMP-001' },
                 },
                 {
                     id: 2,
                     col1: 'Nora Ali',
-                    col2: '18,000 EGP',
-                    col3: '1,880 EGP',
+                    col2: `18,000 ${egpLabel()}`,
+                    col3: `1,880 ${egpLabel()}`,
                     col4: 'Paid',
                     action: { label: 'rptDynamic.act.viewProfile', href: '/employees/EMP-002' },
                 },
                 {
                     id: 3,
                     col1: 'Mona Zein',
-                    col2: '15,000 EGP',
-                    col3: '1,650 EGP',
+                    col2: `15,000 ${egpLabel()}`,
+                    col3: `1,650 ${egpLabel()}`,
                     col4: 'Pending',
                     action: { label: 'rptDynamic.act.viewProfile', href: '/employees/EMP-003' },
                 },
@@ -497,10 +551,10 @@ const getEmployeesData = (report: string) => {
                 'rptDynamic.col.avgPerBooking',
             ],
             rows: [
-                { id: 1, col1: 'Sara Ahmed', col2: '58', col3: '24,000 EGP', col4: '414 EGP' },
-                { id: 2, col1: 'Nora Ali', col2: '44', col3: '18,000 EGP', col4: '409 EGP' },
-                { id: 3, col1: 'Mona Zein', col2: '38', col3: '15,000 EGP', col4: '395 EGP' },
-                { id: 4, col1: 'Layla Hassan', col2: '30', col3: '12,000 EGP', col4: '400 EGP' },
+                { id: 1, col1: 'Sara Ahmed', col2: '58', col3: `24,000 ${egpLabel()}`, col4: `414 ${egpLabel()}` },
+                { id: 2, col1: 'Nora Ali', col2: '44', col3: `18,000 ${egpLabel()}`, col4: `409 ${egpLabel()}` },
+                { id: 3, col1: 'Mona Zein', col2: '38', col3: `15,000 ${egpLabel()}`, col4: `395 ${egpLabel()}` },
+                { id: 4, col1: 'Layla Hassan', col2: '30', col3: `12,000 ${egpLabel()}`, col4: `400 ${egpLabel()}` },
             ],
             chartData: [
                 { name: 'Sara', value: 24000 },
@@ -564,12 +618,54 @@ const getClientsData = (report: string) => {
                 'rptDynamic.col.lastVisit',
             ],
             rows: [
-                { id: 1, col1: 'Fatima Al-Rashid', col2: '12,500 EGP', col3: '28', col4: '446 EGP', col5: 'Feb 18' },
-                { id: 2, col1: 'Maha Mahmoud', col2: '9,800 EGP', col3: '22', col4: '445 EGP', col5: 'Feb 16' },
-                { id: 3, col1: 'Layla Ahmed', col2: '8,200 EGP', col3: '18', col4: '456 EGP', col5: 'Feb 17' },
-                { id: 4, col1: 'Nora Salem', col2: '7,500 EGP', col3: '15', col4: '500 EGP', col5: 'Feb 14' },
-                { id: 5, col1: 'Sara Khalil', col2: '6,800 EGP', col3: '20', col4: '340 EGP', col5: 'Feb 18' },
-                { id: 6, col1: 'Reem Adel', col2: '5,900 EGP', col3: '14', col4: '421 EGP', col5: 'Feb 15' },
+                {
+                    id: 1,
+                    col1: 'Fatima Al-Rashid',
+                    col2: `12,500 ${egpLabel()}`,
+                    col3: '28',
+                    col4: `446 ${egpLabel()}`,
+                    col5: 'Feb 18',
+                },
+                {
+                    id: 2,
+                    col1: 'Maha Mahmoud',
+                    col2: `9,800 ${egpLabel()}`,
+                    col3: '22',
+                    col4: `445 ${egpLabel()}`,
+                    col5: 'Feb 16',
+                },
+                {
+                    id: 3,
+                    col1: 'Layla Ahmed',
+                    col2: `8,200 ${egpLabel()}`,
+                    col3: '18',
+                    col4: `456 ${egpLabel()}`,
+                    col5: 'Feb 17',
+                },
+                {
+                    id: 4,
+                    col1: 'Nora Salem',
+                    col2: `7,500 ${egpLabel()}`,
+                    col3: '15',
+                    col4: `500 ${egpLabel()}`,
+                    col5: 'Feb 14',
+                },
+                {
+                    id: 5,
+                    col1: 'Sara Khalil',
+                    col2: `6,800 ${egpLabel()}`,
+                    col3: '20',
+                    col4: `340 ${egpLabel()}`,
+                    col5: 'Feb 18',
+                },
+                {
+                    id: 6,
+                    col1: 'Reem Adel',
+                    col2: `5,900 ${egpLabel()}`,
+                    col3: '14',
+                    col4: `421 ${egpLabel()}`,
+                    col5: 'Feb 15',
+                },
             ],
             chartData: [
                 { name: 'Fatima', value: 12500 },
@@ -654,11 +750,25 @@ const getClientsData = (report: string) => {
                 'rptDynamic.col.topService',
             ],
             rows: [
-                { id: 1, col1: 'Age 18-25', col2: '185', col3: '15%', col4: '280 EGP', col5: 'Gel Manicure' },
-                { id: 2, col1: 'Age 26-35', col2: '420', col3: '34%', col4: '450 EGP', col5: 'HydraFacial' },
-                { id: 3, col1: 'Age 36-45', col2: '350', col3: '28%', col4: '520 EGP', col5: 'Hair Cut & Style' },
-                { id: 4, col1: 'Age 46-55', col2: '180', col3: '15%', col4: '480 EGP', col5: 'Full Body Massage' },
-                { id: 5, col1: 'Age 55+', col2: '105', col3: '8%', col4: '350 EGP', col5: 'Classic Facial' },
+                { id: 1, col1: 'Age 18-25', col2: '185', col3: '15%', col4: `280 ${egpLabel()}`, col5: 'Gel Manicure' },
+                { id: 2, col1: 'Age 26-35', col2: '420', col3: '34%', col4: `450 ${egpLabel()}`, col5: 'HydraFacial' },
+                {
+                    id: 3,
+                    col1: 'Age 36-45',
+                    col2: '350',
+                    col3: '28%',
+                    col4: `520 ${egpLabel()}`,
+                    col5: 'Hair Cut & Style',
+                },
+                {
+                    id: 4,
+                    col1: 'Age 46-55',
+                    col2: '180',
+                    col3: '15%',
+                    col4: `480 ${egpLabel()}`,
+                    col5: 'Full Body Massage',
+                },
+                { id: 5, col1: 'Age 55+', col2: '105', col3: '8%', col4: `350 ${egpLabel()}`, col5: 'Classic Facial' },
             ],
             chartData: [
                 { name: '18-25', value: 185 },
@@ -695,12 +805,40 @@ const getServicesData = (report: string) => {
                 'rptDynamic.col.rating',
             ],
             rows: [
-                { id: 1, col1: 'HydraFacial', col2: 'Skin', col3: '85', col4: '14,000 EGP', col5: '4.9' },
-                { id: 2, col1: 'Hair Cut & Style', col2: 'Hair', col3: '78', col4: '12,750 EGP', col5: '4.8' },
-                { id: 3, col1: 'Gel Manicure', col2: 'Nails', col3: '65', col4: '9,750 EGP', col5: '4.7' },
-                { id: 4, col1: 'Full Body Massage', col2: 'Body', col3: '52', col4: '15,000 EGP', col5: '4.9' },
-                { id: 5, col1: 'Laser Hair Removal', col2: 'Laser', col3: '25', col4: '18,750 EGP', col5: '4.6' },
-                { id: 6, col1: 'Classic Pedicure', col2: 'Nails', col3: '48', col4: '4,800 EGP', col5: '4.5' },
+                { id: 1, col1: 'HydraFacial', col2: 'Skin', col3: '85', col4: `14,000 ${egpLabel()}`, col5: '4.9' },
+                {
+                    id: 2,
+                    col1: 'Hair Cut & Style',
+                    col2: 'Hair',
+                    col3: '78',
+                    col4: `12,750 ${egpLabel()}`,
+                    col5: '4.8',
+                },
+                { id: 3, col1: 'Gel Manicure', col2: 'Nails', col3: '65', col4: `9,750 ${egpLabel()}`, col5: '4.7' },
+                {
+                    id: 4,
+                    col1: 'Full Body Massage',
+                    col2: 'Body',
+                    col3: '52',
+                    col4: `15,000 ${egpLabel()}`,
+                    col5: '4.9',
+                },
+                {
+                    id: 5,
+                    col1: 'Laser Hair Removal',
+                    col2: 'Laser',
+                    col3: '25',
+                    col4: `18,750 ${egpLabel()}`,
+                    col5: '4.6',
+                },
+                {
+                    id: 6,
+                    col1: 'Classic Pedicure',
+                    col2: 'Nails',
+                    col3: '48',
+                    col4: `4,800 ${egpLabel()}`,
+                    col5: '4.5',
+                },
             ],
             chartData: [
                 { name: 'HydraFacial', value: 85 },
@@ -724,13 +862,34 @@ const getServicesData = (report: string) => {
                 'rptDynamic.col.pctOfTotal',
             ],
             rows: [
-                { id: 1, col1: 'Laser Hair Removal', col2: 'Laser', col3: '25', col4: '18,750 EGP', col5: '24%' },
-                { id: 2, col1: 'Full Body Massage', col2: 'Body', col3: '52', col4: '15,000 EGP', col5: '19%' },
-                { id: 3, col1: 'HydraFacial', col2: 'Skin', col3: '85', col4: '14,000 EGP', col5: '18%' },
-                { id: 4, col1: 'Hair Cut & Style', col2: 'Hair', col3: '78', col4: '12,750 EGP', col5: '16%' },
-                { id: 5, col1: 'Gel Manicure', col2: 'Nails', col3: '65', col4: '9,750 EGP', col5: '13%' },
-                { id: 6, col1: 'Classic Pedicure', col2: 'Nails', col3: '48', col4: '4,800 EGP', col5: '6%' },
-                { id: 7, col1: 'Hair Color', col2: 'Hair', col3: '22', col4: '3,300 EGP', col5: '4%' },
+                {
+                    id: 1,
+                    col1: 'Laser Hair Removal',
+                    col2: 'Laser',
+                    col3: '25',
+                    col4: `18,750 ${egpLabel()}`,
+                    col5: '24%',
+                },
+                {
+                    id: 2,
+                    col1: 'Full Body Massage',
+                    col2: 'Body',
+                    col3: '52',
+                    col4: `15,000 ${egpLabel()}`,
+                    col5: '19%',
+                },
+                { id: 3, col1: 'HydraFacial', col2: 'Skin', col3: '85', col4: `14,000 ${egpLabel()}`, col5: '18%' },
+                {
+                    id: 4,
+                    col1: 'Hair Cut & Style',
+                    col2: 'Hair',
+                    col3: '78',
+                    col4: `12,750 ${egpLabel()}`,
+                    col5: '16%',
+                },
+                { id: 5, col1: 'Gel Manicure', col2: 'Nails', col3: '65', col4: `9,750 ${egpLabel()}`, col5: '13%' },
+                { id: 6, col1: 'Classic Pedicure', col2: 'Nails', col3: '48', col4: `4,800 ${egpLabel()}`, col5: '6%' },
+                { id: 7, col1: 'Hair Color', col2: 'Hair', col3: '22', col4: `3,300 ${egpLabel()}`, col5: '4%' },
             ],
             chartData: [
                 { name: 'Laser', value: 18750 },
@@ -783,11 +942,11 @@ const getServicesData = (report: string) => {
                 'rptDynamic.col.avgRating',
             ],
             rows: [
-                { id: 1, col1: 'Hair', col2: '8', col3: '142', col4: '28,500 EGP', col5: '4.8' },
-                { id: 2, col1: 'Skin', col2: '6', col3: '125', col4: '22,000 EGP', col5: '4.8' },
-                { id: 3, col1: 'Nails', col2: '5', col3: '113', col4: '14,550 EGP', col5: '4.6' },
-                { id: 4, col1: 'Body', col2: '4', col3: '82', col4: '18,000 EGP', col5: '4.9' },
-                { id: 5, col1: 'Laser', col2: '3', col3: '25', col4: '18,750 EGP', col5: '4.5' },
+                { id: 1, col1: 'Hair', col2: '8', col3: '142', col4: `28,500 ${egpLabel()}`, col5: '4.8' },
+                { id: 2, col1: 'Skin', col2: '6', col3: '125', col4: `22,000 ${egpLabel()}`, col5: '4.8' },
+                { id: 3, col1: 'Nails', col2: '5', col3: '113', col4: `14,550 ${egpLabel()}`, col5: '4.6' },
+                { id: 4, col1: 'Body', col2: '4', col3: '82', col4: `18,000 ${egpLabel()}`, col5: '4.9' },
+                { id: 5, col1: 'Laser', col2: '3', col3: '25', col4: `18,750 ${egpLabel()}`, col5: '4.5' },
             ],
             chartData: [
                 { name: 'Hair', value: 28500 },
@@ -803,9 +962,9 @@ const getServicesData = (report: string) => {
         chartType: 'bar' as const,
         columns: ['rptDynamic.col.service', 'rptDynamic.col.value', 'rptDynamic.col.change'],
         rows: [
-            { id: 1, col1: 'HydraFacial', col2: '14,000 EGP', col3: '+8%' },
-            { id: 2, col1: 'Hair Cut & Style', col2: '12,750 EGP', col3: '+5%' },
-            { id: 3, col1: 'Full Body Massage', col2: '15,000 EGP', col3: '+12%' },
+            { id: 1, col1: 'HydraFacial', col2: `14,000 ${egpLabel()}`, col3: '+8%' },
+            { id: 2, col1: 'Hair Cut & Style', col2: `12,750 ${egpLabel()}`, col3: '+5%' },
+            { id: 3, col1: 'Full Body Massage', col2: `15,000 ${egpLabel()}`, col3: '+12%' },
         ],
         chartData: [
             { name: 'HydraFacial', value: 14000 },
@@ -828,11 +987,46 @@ const getCustomData = (report: string) => {
                 'rptDynamic.col.change',
             ],
             rows: [
-                { id: 1, col1: 'February 2026', col2: '270', col3: '58,000 EGP', col4: '215 EGP', col5: '+12%' },
-                { id: 2, col1: 'January 2026', col2: '235', col3: '55,000 EGP', col4: '234 EGP', col5: '+8%' },
-                { id: 3, col1: 'December 2025', col2: '310', col3: '61,000 EGP', col4: '197 EGP', col5: '+15%' },
-                { id: 4, col1: 'November 2025', col2: '220', col3: '52,000 EGP', col4: '236 EGP', col5: '+5%' },
-                { id: 5, col1: 'October 2025', col2: '198', col3: '48,000 EGP', col4: '242 EGP', col5: '+3%' },
+                {
+                    id: 1,
+                    col1: 'February 2026',
+                    col2: '270',
+                    col3: `58,000 ${egpLabel()}`,
+                    col4: `215 ${egpLabel()}`,
+                    col5: '+12%',
+                },
+                {
+                    id: 2,
+                    col1: 'January 2026',
+                    col2: '235',
+                    col3: `55,000 ${egpLabel()}`,
+                    col4: `234 ${egpLabel()}`,
+                    col5: '+8%',
+                },
+                {
+                    id: 3,
+                    col1: 'December 2025',
+                    col2: '310',
+                    col3: `61,000 ${egpLabel()}`,
+                    col4: `197 ${egpLabel()}`,
+                    col5: '+15%',
+                },
+                {
+                    id: 4,
+                    col1: 'November 2025',
+                    col2: '220',
+                    col3: `52,000 ${egpLabel()}`,
+                    col4: `236 ${egpLabel()}`,
+                    col5: '+5%',
+                },
+                {
+                    id: 5,
+                    col1: 'October 2025',
+                    col2: '198',
+                    col3: `48,000 ${egpLabel()}`,
+                    col4: `242 ${egpLabel()}`,
+                    col5: '+3%',
+                },
             ],
             chartData: [
                 { name: 'Oct', value: 48000 },
@@ -855,11 +1049,46 @@ const getCustomData = (report: string) => {
                 'rptDynamic.col.clientsServed',
             ],
             rows: [
-                { id: 1, col1: 'Sara Ahmed', col2: '168', col3: '24,000 EGP', col4: '143 EGP', col5: '58' },
-                { id: 2, col1: 'Nora Ali', col2: '160', col3: '18,000 EGP', col4: '113 EGP', col5: '44' },
-                { id: 3, col1: 'Mona Zein', col2: '172', col3: '15,000 EGP', col4: '87 EGP', col5: '38' },
-                { id: 4, col1: 'Layla Hassan', col2: '152', col3: '12,000 EGP', col4: '79 EGP', col5: '30' },
-                { id: 5, col1: 'Reem Adel', col2: '164', col3: '9,000 EGP', col4: '55 EGP', col5: '25' },
+                {
+                    id: 1,
+                    col1: 'Sara Ahmed',
+                    col2: '168',
+                    col3: `24,000 ${egpLabel()}`,
+                    col4: `143 ${egpLabel()}`,
+                    col5: '58',
+                },
+                {
+                    id: 2,
+                    col1: 'Nora Ali',
+                    col2: '160',
+                    col3: `18,000 ${egpLabel()}`,
+                    col4: `113 ${egpLabel()}`,
+                    col5: '44',
+                },
+                {
+                    id: 3,
+                    col1: 'Mona Zein',
+                    col2: '172',
+                    col3: `15,000 ${egpLabel()}`,
+                    col4: `87 ${egpLabel()}`,
+                    col5: '38',
+                },
+                {
+                    id: 4,
+                    col1: 'Layla Hassan',
+                    col2: '152',
+                    col3: `12,000 ${egpLabel()}`,
+                    col4: `79 ${egpLabel()}`,
+                    col5: '30',
+                },
+                {
+                    id: 5,
+                    col1: 'Reem Adel',
+                    col2: '164',
+                    col3: `9,000 ${egpLabel()}`,
+                    col4: `55 ${egpLabel()}`,
+                    col5: '25',
+                },
             ],
             chartData: [
                 { name: 'Sara', value: 143 },
@@ -882,11 +1111,46 @@ const getCustomData = (report: string) => {
                 'rptDynamic.col.avgVisits',
             ],
             rows: [
-                { id: 1, col1: 'Platinum (>10K)', col2: '25', col3: '14,200 EGP', col4: '355,000 EGP', col5: '32' },
-                { id: 2, col1: 'Gold (5K-10K)', col2: '68', col3: '7,500 EGP', col4: '510,000 EGP', col5: '18' },
-                { id: 3, col1: 'Silver (2K-5K)', col2: '185', col3: '3,200 EGP', col4: '592,000 EGP', col5: '8' },
-                { id: 4, col1: 'Bronze (500-2K)', col2: '420', col3: '1,100 EGP', col4: '462,000 EGP', col5: '3' },
-                { id: 5, col1: 'New (<500)', col2: '542', col3: '280 EGP', col4: '151,760 EGP', col5: '1' },
+                {
+                    id: 1,
+                    col1: 'Platinum (>10K)',
+                    col2: '25',
+                    col3: `14,200 ${egpLabel()}`,
+                    col4: `355,000 ${egpLabel()}`,
+                    col5: '32',
+                },
+                {
+                    id: 2,
+                    col1: 'Gold (5K-10K)',
+                    col2: '68',
+                    col3: `7,500 ${egpLabel()}`,
+                    col4: `510,000 ${egpLabel()}`,
+                    col5: '18',
+                },
+                {
+                    id: 3,
+                    col1: 'Silver (2K-5K)',
+                    col2: '185',
+                    col3: `3,200 ${egpLabel()}`,
+                    col4: `592,000 ${egpLabel()}`,
+                    col5: '8',
+                },
+                {
+                    id: 4,
+                    col1: 'Bronze (500-2K)',
+                    col2: '420',
+                    col3: `1,100 ${egpLabel()}`,
+                    col4: `462,000 ${egpLabel()}`,
+                    col5: '3',
+                },
+                {
+                    id: 5,
+                    col1: 'New (<500)',
+                    col2: '542',
+                    col3: `280 ${egpLabel()}`,
+                    col4: `151,760 ${egpLabel()}`,
+                    col5: '1',
+                },
             ],
             chartData: [
                 { name: 'Platinum', value: 14200 },
@@ -912,18 +1176,18 @@ const getCustomData = (report: string) => {
                 {
                     id: 1,
                     col1: 'Total Revenue',
-                    col2: '58,000 EGP',
-                    col3: '55,000 EGP',
+                    col2: `58,000 ${egpLabel()}`,
+                    col3: `55,000 ${egpLabel()}`,
                     col4: '+5.5%',
-                    col5: '60,000 EGP',
+                    col5: `60,000 ${egpLabel()}`,
                 },
                 {
                     id: 2,
                     col1: 'Net Profit',
-                    col2: '27,000 EGP',
-                    col3: '22,000 EGP',
+                    col2: `27,000 ${egpLabel()}`,
+                    col3: `22,000 ${egpLabel()}`,
                     col4: '+22.7%',
-                    col5: '25,000 EGP',
+                    col5: `25,000 ${egpLabel()}`,
                 },
                 { id: 3, col1: 'Total Bookings', col2: '270', col3: '235', col4: '+14.9%', col5: '280' },
                 { id: 4, col1: 'New Clients', col2: '85', col3: '72', col4: '+18.1%', col5: '80' },
@@ -949,9 +1213,9 @@ const getCustomData = (report: string) => {
             'rptDynamic.col.change',
         ],
         rows: [
-            { id: 1, col1: 'Revenue', col2: '58,000 EGP', col3: '51,500 EGP', col4: '+12.6%' },
+            { id: 1, col1: 'Revenue', col2: `58,000 ${egpLabel()}`, col3: `51,500 ${egpLabel()}`, col4: '+12.6%' },
             { id: 2, col1: 'Bookings', col2: '270', col3: '235', col4: '+14.9%' },
-            { id: 3, col1: 'Avg Ticket', col2: '420 EGP', col3: '395 EGP', col4: '+6.3%' },
+            { id: 3, col1: 'Avg Ticket', col2: `420 ${egpLabel()}`, col3: `395 ${egpLabel()}`, col4: '+6.3%' },
         ],
         chartData: [
             { name: 'Revenue', value: 58000 },
@@ -980,7 +1244,7 @@ const generateData = (category: string, report: string): ReportData => {
             'rptDynamic.col.change',
         ],
         rows: [
-            { id: 1, col1: 'Revenue', col2: '58,000 EGP', col3: '51,500 EGP', col4: '+12.6%' },
+            { id: 1, col1: 'Revenue', col2: `58,000 ${egpLabel()}`, col3: `51,500 ${egpLabel()}`, col4: '+12.6%' },
             { id: 2, col1: 'Bookings', col2: '270', col3: '235', col4: '+14.9%' },
         ],
         chartData: [
@@ -1006,7 +1270,7 @@ const tableStyles: Record<string, React.CSSProperties> = {
     table: { width: '100%', borderCollapse: 'collapse' },
     th: {
         padding: 'var(--space-3) var(--space-4)',
-        textAlign: 'left',
+        textAlign: 'start',
         fontSize: 'var(--text-xs)',
         fontWeight: 'var(--font-semibold)',
         color: 'var(--text-tertiary)',
@@ -1135,21 +1399,27 @@ export default function DynamicReportPage({ params }: { params: Promise<{ catego
         // Sort
         if (sortCol !== null) {
             const key = `col${sortCol + 1}` as keyof ReportRow;
-            rows = [...rows].sort((a: ReportRow, b: ReportRow) => {
-                const aVal = String(a[key] || '');
-                const bVal = String(b[key] || '');
-                // Try numeric sort
-                const aNum = parseFloat(aVal.replace(/[^0-9.-]/g, ''));
-                const bNum = parseFloat(bVal.replace(/[^0-9.-]/g, ''));
-                if (!isNaN(aNum) && !isNaN(bNum)) {
-                    return sortDir === 'asc' ? aNum - bNum : bNum - aNum;
-                }
-                return sortDir === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+            // Pre-compute each row's string + numeric sort value once, so the
+            // per-comparison regex doesn't run O(n log n) times during the sort.
+            const decorated = rows.map(row => {
+                const str = String(row[key] || '');
+                return { row, str, numeric: parseFloat(str.replace(/[^0-9.-]/g, '')) };
             });
+            decorated.sort((a, b) => {
+                // Try numeric sort
+                if (!isNaN(a.numeric) && !isNaN(b.numeric)) {
+                    return sortDir === 'asc' ? a.numeric - b.numeric : b.numeric - a.numeric;
+                }
+                return sortDir === 'asc' ? a.str.localeCompare(b.str) : b.str.localeCompare(a.str);
+            });
+            rows = decorated.map(d => d.row);
         }
 
         return rows;
     }, [data.rows, search, sortCol, sortDir]);
+
+    // Hoisted once so it isn't re-evaluated inside the per-row render loop.
+    const hasActionRows = useMemo(() => data.rows.some(r => r.action), [data.rows]);
 
     /* Translate a title that may be an i18n key (rptDynamic.t.*) or a slug-derived
        fallback string; pass-through when it is not a known key. */
@@ -1236,13 +1506,13 @@ export default function DynamicReportPage({ params }: { params: Promise<{ catego
                         style={{ width: 150 }}
                     />
                 </div>
-                <div className={styles.filterItem} style={{ marginLeft: 'auto' }}>
+                <div className={styles.filterItem} style={{ marginInlineStart: 'auto' }}>
                     <div style={{ position: 'relative' }}>
                         <Search
                             size={14}
                             style={{
                                 position: 'absolute',
-                                left: 10,
+                                insetInlineStart: 10,
                                 top: '50%',
                                 transform: 'translateY(-50%)',
                                 color: 'var(--text-tertiary)',
@@ -1253,7 +1523,7 @@ export default function DynamicReportPage({ params }: { params: Promise<{ catego
                             value={search}
                             onChange={e => setSearch(e.target.value)}
                             style={{
-                                paddingLeft: 32,
+                                paddingInlineStart: 'var(--space-8)',
                                 height: 38,
                                 width: 200,
                                 border: '1px solid var(--border-color)',
@@ -1298,7 +1568,7 @@ export default function DynamicReportPage({ params }: { params: Promise<{ catego
                                         />
                                         <Tooltip
                                             contentStyle={{
-                                                borderRadius: 8,
+                                                borderRadius: 'var(--radius-md)',
                                                 border: 'none',
                                                 boxShadow: 'var(--shadow-lg)',
                                             }}
@@ -1335,7 +1605,7 @@ export default function DynamicReportPage({ params }: { params: Promise<{ catego
                                         <Tooltip
                                             cursor={{ fill: 'var(--bg-secondary)' }}
                                             contentStyle={{
-                                                borderRadius: 8,
+                                                borderRadius: 'var(--radius-md)',
                                                 border: 'none',
                                                 boxShadow: 'var(--shadow-lg)',
                                             }}
@@ -1375,13 +1645,19 @@ export default function DynamicReportPage({ params }: { params: Promise<{ catego
                                             style={tableStyles.th as React.CSSProperties}
                                             onClick={() => handleSort(i)}
                                         >
-                                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                            <span
+                                                style={{
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    gap: 'var(--space-1)',
+                                                }}
+                                            >
                                                 {col.startsWith('rptDynamic.col.') ? t(col) : col}
                                                 <ArrowUpDown size={12} style={{ opacity: sortCol === i ? 1 : 0.3 }} />
                                             </span>
                                         </th>
                                     ))}
-                                    {data.rows.some((r: ReportRow) => r.action) && (
+                                    {hasActionRows && (
                                         <th style={tableStyles.th as React.CSSProperties}>
                                             {t('rptDynamic.colAction')}
                                         </th>
@@ -1404,9 +1680,9 @@ export default function DynamicReportPage({ params }: { params: Promise<{ catego
                                         </td>
                                     </tr>
                                 ) : (
-                                    filteredRows.map((row: ReportRow, i: number) => (
+                                    filteredRows.map((row: ReportRow) => (
                                         <tr
-                                            key={i}
+                                            key={row.id}
                                             style={{ cursor: row.action ? 'pointer' : 'default' }}
                                             onMouseEnter={e =>
                                                 (e.currentTarget.style.background = 'var(--bg-secondary)')
@@ -1456,7 +1732,7 @@ export default function DynamicReportPage({ params }: { params: Promise<{ catego
                                                     </td>
                                                 );
                                             })}
-                                            {data.rows.some((r: ReportRow) => r.action) && (
+                                            {hasActionRows && (
                                                 <td style={tableStyles.td}>
                                                     {row.action && (
                                                         <Link
@@ -1464,7 +1740,7 @@ export default function DynamicReportPage({ params }: { params: Promise<{ catego
                                                             style={{
                                                                 display: 'inline-flex',
                                                                 alignItems: 'center',
-                                                                gap: 4,
+                                                                gap: 'var(--space-1)',
                                                                 fontSize: 'var(--text-sm)',
                                                                 color: 'var(--color-primary-600)',
                                                                 fontWeight: 'var(--font-medium)',

@@ -234,7 +234,7 @@ function CancelModal({ onConfirm, onClose }: { onConfirm: (reason: string) => vo
                         marginBottom: 'var(--space-4)',
                     }}
                 >
-                    <AlertTriangle size={20} color="#ef4444" />
+                    <AlertTriangle size={20} color="var(--color-error)" />
                     <h3 style={{ fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-lg)' }}>
                         {t('bk.actionCancel')}
                     </h3>
@@ -334,7 +334,7 @@ function PaymentModal({
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: 4,
+        gap: 'var(--space-1)',
         fontSize: 'var(--text-xs)',
         fontWeight: 'var(--font-medium)',
         color: method === val ? 'var(--color-primary-600)' : 'var(--text-secondary)',
@@ -370,7 +370,7 @@ function PaymentModal({
                             display: 'flex',
                             justifyContent: 'space-between',
                             fontSize: 'var(--text-sm)',
-                            marginBottom: 4,
+                            marginBottom: 'var(--space-1)',
                         }}
                     >
                         <span style={{ color: 'var(--text-tertiary)' }}>{t('bk.lblBalanceDue2')}</span>
@@ -849,7 +849,10 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                         </div>
                         <h1>
                             {t('bk.lblBooking')} {id.startsWith('#') ? id : `#${id}`}
-                            <Badge color={BADGE_COLOR[status] ?? 'neutral'} style={{ marginLeft: 8 }}>
+                            <Badge
+                                color={BADGE_COLOR[status] ?? 'neutral'}
+                                style={{ marginInlineStart: 'var(--space-2)' }}
+                            >
                                 {status === 'inService' ? t('bk.stepInService') : status}
                             </Badge>
                         </h1>
@@ -873,7 +876,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                             <Button
                                 variant="outline"
                                 onClick={handleNoShow}
-                                style={{ borderColor: '#ef4444', color: '#ef4444' }}
+                                style={{ borderColor: 'var(--color-error)', color: 'var(--color-error)' }}
                             >
                                 <AlertTriangle size={16} /> {t('bk.btnNoShow')}
                             </Button>
@@ -1083,9 +1086,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                         <tr>
                                             <th>{t('bk.thItem2')}</th>
                                             <th>{t('bk.thStaffInfo')}</th>
-                                            <th style={{ textAlign: lang === 'ar' ? 'left' : 'right' }}>
-                                                {t('bk.thPrice2')}
-                                            </th>
+                                            <th style={{ textAlign: 'end' }}>{t('bk.thPrice2')}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -1105,7 +1106,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                                         {item.itemStatus === 'pending_assignment' && (
                                                             <span
                                                                 style={{
-                                                                    padding: '1px 7px',
+                                                                    padding: '1px var(--space-2)',
                                                                     borderRadius: 'var(--radius-full)',
                                                                     fontSize: 11,
                                                                     fontWeight: 600,
@@ -1124,7 +1125,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                                                 color: 'var(--text-tertiary)',
                                                                 display: 'flex',
                                                                 alignItems: 'center',
-                                                                gap: 4,
+                                                                gap: 'var(--space-1)',
                                                             }}
                                                         >
                                                             {item.time && (
@@ -1172,7 +1173,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                                                         textDecoration: 'line-through',
                                                                         color: 'var(--text-tertiary)',
                                                                         fontSize: 'var(--text-xs)',
-                                                                        marginRight: 4,
+                                                                        marginInlineEnd: 'var(--space-1)',
                                                                     }}
                                                                 >
                                                                     {formatMoney(item.basePrice, {
@@ -1184,8 +1185,8 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                                             {item.priceSource !== 'base' && (
                                                                 <span
                                                                     style={{
-                                                                        marginLeft: 4,
-                                                                        padding: '1px 6px',
+                                                                        marginInlineStart: 'var(--space-1)',
+                                                                        padding: '1px var(--space-2)',
                                                                         borderRadius: 'var(--radius-full)',
                                                                         fontSize: 10,
                                                                         fontWeight: 600,
@@ -1203,7 +1204,10 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                                                     size="sm"
                                                                     variant="outline"
                                                                     onClick={() => openAssign(item)}
-                                                                    style={{ fontSize: 11, padding: '2px 8px' }}
+                                                                    style={{
+                                                                        fontSize: 11,
+                                                                        padding: '2px var(--space-2)',
+                                                                    }}
                                                                 >
                                                                     Assign
                                                                 </Button>
@@ -1212,7 +1216,10 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                                                     size="sm"
                                                                     variant="ghost"
                                                                     onClick={() => openAssign(item)}
-                                                                    style={{ fontSize: 11, padding: '2px 8px' }}
+                                                                    style={{
+                                                                        fontSize: 11,
+                                                                        padding: '2px var(--space-2)',
+                                                                    }}
                                                                 >
                                                                     Reassign
                                                                 </Button>
@@ -1572,7 +1579,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                                                     height: 8,
                                                     borderRadius: '50%',
                                                     background: 'var(--color-primary-400)',
-                                                    marginTop: 4,
+                                                    marginTop: 'var(--space-1)',
                                                     flexShrink: 0,
                                                 }}
                                             />

@@ -1,5 +1,6 @@
 'use client';
 
+import { egpLabel } from '@/lib/money';
 import React from 'react';
 import Link from 'next/link';
 import { Trophy, TrendingUp, Award } from 'lucide-react';
@@ -197,7 +198,7 @@ export default function BestSalesPage() {
                                     }}
                                     dir="ltr"
                                 >
-                                    {svc.revenue.toLocaleString()} EGP
+                                    {svc.revenue.toLocaleString()} {egpLabel()}
                                 </div>
                             </div>
                         ))}
@@ -237,7 +238,7 @@ export default function BestSalesPage() {
                                     }}
                                     dir="ltr"
                                 >
-                                    {emp.revenue.toLocaleString()} EGP
+                                    {emp.revenue.toLocaleString()} {egpLabel()}
                                 </div>
                             </div>
                         ))}

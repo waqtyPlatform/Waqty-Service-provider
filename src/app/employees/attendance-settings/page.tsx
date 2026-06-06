@@ -28,7 +28,7 @@ const s: Record<string, React.CSSProperties> = {
         gap: 'var(--space-3)',
     },
     title: { fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)', color: 'var(--text-primary)' },
-    subtitle: { fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginTop: 4 },
+    subtitle: { fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginTop: 'var(--space-1)' },
     card: {
         background: 'var(--bg-primary)',
         border: '1px solid var(--border-color)',
@@ -85,9 +85,9 @@ const s: Record<string, React.CSSProperties> = {
     tplPill: {
         display: 'inline-flex',
         alignItems: 'center',
-        gap: 4,
+        gap: 'var(--space-1)',
         fontSize: 'var(--text-xs)',
-        padding: '2px 8px',
+        padding: '2px var(--space-2)',
         borderRadius: 'var(--radius-full)',
         background: 'var(--bg-primary)',
         border: '1px solid var(--border-color)',

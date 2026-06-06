@@ -82,7 +82,7 @@ export default function LoyaltySettingsPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: 720 }}>
             <div>
                 <h1 style={{ fontSize: '1.5rem', fontWeight: 700 }}>{t('loyalty.title')}</h1>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginTop: 4 }}>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginTop: 'var(--space-1)' }}>
                     {t('loyalty.subtitleFull')}
                 </p>
             </div>
@@ -130,7 +130,7 @@ export default function LoyaltySettingsPage() {
                         }}
                     >
                         <div style={{ fontWeight: 600, marginBottom: '1rem' }}>
-                            <Coins size={16} style={{ display: 'inline', marginRight: 8 }} />
+                            <Coins size={16} style={{ display: 'inline', marginInlineEnd: 'var(--space-2)' }} />
                             {t('loyalty.earningRules')}
                         </div>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
@@ -187,7 +187,7 @@ export default function LoyaltySettingsPage() {
                             }}
                         >
                             <div style={{ fontWeight: 600 }}>
-                                <Award size={16} style={{ display: 'inline', marginRight: 8 }} />
+                                <Award size={16} style={{ display: 'inline', marginInlineEnd: 'var(--space-2)' }} />
                                 {t('loyalty.tiers')}
                             </div>
                             <Button size="sm" variant="outline" onClick={addTier}>
@@ -218,7 +218,7 @@ export default function LoyaltySettingsPage() {
                                             border: 'none',
                                             padding: 0,
                                             cursor: 'pointer',
-                                            borderRadius: 4,
+                                            borderRadius: 'var(--radius-sm)',
                                         }}
                                     />
                                     <Input

@@ -1,5 +1,6 @@
 'use client';
 
+import { egpLabel } from '@/lib/money';
 import React, { useState } from 'react';
 import { Save } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -168,7 +169,7 @@ export default function InvoiceSettingsPage() {
                     <div style={s.row}>
                         <div style={s.label}>{t('settings.invoice.currency')}</div>
                         <select style={s.select}>
-                            <option>EGP</option>
+                            <option>{egpLabel()}</option>
                             <option>USD</option>
                             <option>EUR</option>
                             <option>SAR</option>

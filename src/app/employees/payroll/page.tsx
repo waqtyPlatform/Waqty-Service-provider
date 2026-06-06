@@ -316,7 +316,7 @@ const s: Record<string, React.CSSProperties> = {
     table: { width: '100%', minWidth: 800, borderCollapse: 'collapse' },
     th: {
         padding: 'var(--space-3) var(--space-4)',
-        textAlign: 'left',
+        textAlign: 'start',
         fontSize: 'var(--text-xs)',
         fontWeight: 'var(--font-semibold)',
         color: 'var(--text-tertiary)',
@@ -653,7 +653,10 @@ export default function PayrollPage() {
         });
 
     const handleAddDeduction = () => {
-        if (!deductionForm.empId || !deductionForm.label || !deductionForm.amount || !deductionForm.date) return;
+        if (!deductionForm.empId || !deductionForm.label || !deductionForm.amount || !deductionForm.date) {
+            addToast('error', t('payroll.toastDeductionFields'));
+            return;
+        }
         const detail: DeductionDetail = {
             label: deductionForm.label,
             amount: Number(deductionForm.amount),
@@ -672,7 +675,10 @@ export default function PayrollPage() {
     };
 
     const handleEditDeduction = () => {
-        if (!editingDeduction || !deductionForm.label || !deductionForm.amount || !deductionForm.date) return;
+        if (!editingDeduction || !deductionForm.label || !deductionForm.amount || !deductionForm.date) {
+            addToast('error', t('payroll.toastDeductionFields'));
+            return;
+        }
         const { empId, index } = editingDeduction;
         setAllDeductions(prev => {
             const updated = [...(prev[empId] || [])];
@@ -823,7 +829,7 @@ export default function PayrollPage() {
                                             >
                                                 <DollarSign size={22} />
                                             </div>
-                                            <div style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                            <div style={{ textAlign: 'start' }}>
                                                 <div style={s.kpiVal}>
                                                     {totals.payroll.toLocaleString()} {t('payroll.egp')}
                                                 </div>
@@ -839,7 +845,7 @@ export default function PayrollPage() {
                                             <div style={{ ...s.kpiIcon, background: '#DBEAFE', color: '#2563EB' }}>
                                                 <Award size={22} />
                                             </div>
-                                            <div style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                            <div style={{ textAlign: 'start' }}>
                                                 <div style={s.kpiVal}>
                                                     {totals.commissions.toLocaleString()} {t('payroll.egp')}
                                                 </div>
@@ -855,7 +861,7 @@ export default function PayrollPage() {
                                             <div style={{ ...s.kpiIcon, background: '#DCFCE7', color: '#15803D' }}>
                                                 <Banknote size={22} />
                                             </div>
-                                            <div style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                            <div style={{ textAlign: 'start' }}>
                                                 <div style={s.kpiVal}>
                                                     {totals.tips.toLocaleString()} {t('payroll.egp')}
                                                 </div>
@@ -871,7 +877,7 @@ export default function PayrollPage() {
                                             <div style={{ ...s.kpiIcon, background: '#FEF3C7', color: '#B45309' }}>
                                                 <Gift size={22} />
                                             </div>
-                                            <div style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                            <div style={{ textAlign: 'start' }}>
                                                 <div style={s.kpiVal}>
                                                     {totals.bonuses.toLocaleString()} {t('payroll.egp')}
                                                 </div>
@@ -887,7 +893,7 @@ export default function PayrollPage() {
                                             <div style={{ ...s.kpiIcon, background: '#FEE2E2', color: '#DC2626' }}>
                                                 <MinusCircle size={22} />
                                             </div>
-                                            <div style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                            <div style={{ textAlign: 'start' }}>
                                                 <div style={s.kpiVal}>
                                                     {totals.deductions.toLocaleString()} {t('payroll.egp')}
                                                 </div>
@@ -936,15 +942,14 @@ export default function PayrollPage() {
                                         <div
                                             style={{
                                                 position: 'relative',
-                                                marginLeft: lang === 'ar' ? 0 : 'auto',
-                                                marginRight: lang === 'ar' ? 'auto' : 0,
+                                                marginInlineStart: 'auto',
                                             }}
                                         >
                                             <Search
                                                 size={14}
                                                 style={{
                                                     position: 'absolute',
-                                                    ...(lang === 'ar' ? { right: 10 } : { left: 10 }),
+                                                    insetInlineStart: 10,
                                                     top: '50%',
                                                     transform: 'translateY(-50%)',
                                                     color: 'var(--text-tertiary)',
@@ -955,7 +960,7 @@ export default function PayrollPage() {
                                                 value={searchSummary}
                                                 onChange={e => setSearchSummary(e.target.value)}
                                                 style={{
-                                                    ...(lang === 'ar' ? { paddingRight: 32 } : { paddingLeft: 32 }),
+                                                    paddingInlineStart: 32,
                                                     height: 38,
                                                     width: 200,
                                                     border: '1px solid var(--border-color)',
@@ -963,7 +968,7 @@ export default function PayrollPage() {
                                                     background: 'var(--bg-primary)',
                                                     fontSize: 'var(--text-sm)',
                                                     color: 'var(--text-primary)',
-                                                    textAlign: lang === 'ar' ? 'right' : 'left',
+                                                    textAlign: 'start',
                                                 }}
                                             />
                                         </div>
@@ -986,11 +991,11 @@ export default function PayrollPage() {
                                         <div style={{ overflowX: 'auto' }}>
                                             <table style={s.table}>
                                                 <thead>
-                                                    <tr style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                                    <tr style={{ textAlign: 'start' }}>
                                                         <th
                                                             style={{
                                                                 ...(s.th as React.CSSProperties),
-                                                                textAlign: lang === 'ar' ? 'right' : 'left',
+                                                                textAlign: 'start',
                                                             }}
                                                         >
                                                             {t('payroll.colEmp')}
@@ -998,7 +1003,7 @@ export default function PayrollPage() {
                                                         <th
                                                             style={{
                                                                 ...(s.th as React.CSSProperties),
-                                                                textAlign: lang === 'ar' ? 'right' : 'left',
+                                                                textAlign: 'start',
                                                             }}
                                                         >
                                                             {t('payroll.colBase')}
@@ -1006,7 +1011,7 @@ export default function PayrollPage() {
                                                         <th
                                                             style={{
                                                                 ...(s.th as React.CSSProperties),
-                                                                textAlign: lang === 'ar' ? 'right' : 'left',
+                                                                textAlign: 'start',
                                                             }}
                                                         >
                                                             {t('payroll.colCommission')}
@@ -1014,7 +1019,7 @@ export default function PayrollPage() {
                                                         <th
                                                             style={{
                                                                 ...(s.th as React.CSSProperties),
-                                                                textAlign: lang === 'ar' ? 'right' : 'left',
+                                                                textAlign: 'start',
                                                             }}
                                                         >
                                                             {t('payroll.colBonus')}
@@ -1022,7 +1027,7 @@ export default function PayrollPage() {
                                                         <th
                                                             style={{
                                                                 ...(s.th as React.CSSProperties),
-                                                                textAlign: lang === 'ar' ? 'right' : 'left',
+                                                                textAlign: 'start',
                                                             }}
                                                         >
                                                             {t('payroll.colDeductions')}
@@ -1030,7 +1035,7 @@ export default function PayrollPage() {
                                                         <th
                                                             style={{
                                                                 ...(s.th as React.CSSProperties),
-                                                                textAlign: lang === 'ar' ? 'right' : 'left',
+                                                                textAlign: 'start',
                                                             }}
                                                         >
                                                             {t('payroll.colNetPay')}
@@ -1038,7 +1043,7 @@ export default function PayrollPage() {
                                                         <th
                                                             style={{
                                                                 ...(s.th as React.CSSProperties),
-                                                                textAlign: lang === 'ar' ? 'right' : 'left',
+                                                                textAlign: 'start',
                                                             }}
                                                         >
                                                             {t('payroll.colMethod')}
@@ -1046,7 +1051,7 @@ export default function PayrollPage() {
                                                         <th
                                                             style={{
                                                                 ...(s.th as React.CSSProperties),
-                                                                textAlign: lang === 'ar' ? 'right' : 'left',
+                                                                textAlign: 'start',
                                                             }}
                                                         >
                                                             {t('payroll.colStatus')}
@@ -1054,7 +1059,7 @@ export default function PayrollPage() {
                                                         <th
                                                             style={{
                                                                 ...(s.th as React.CSSProperties),
-                                                                textAlign: lang === 'ar' ? 'right' : 'left',
+                                                                textAlign: 'start',
                                                             }}
                                                         >
                                                             {t('payroll.colAction')}
@@ -1067,7 +1072,7 @@ export default function PayrollPage() {
                                                             <tr
                                                                 style={{
                                                                     cursor: 'pointer',
-                                                                    textAlign: lang === 'ar' ? 'right' : 'left',
+                                                                    textAlign: 'start',
                                                                 }}
                                                                 onMouseEnter={e =>
                                                                     (e.currentTarget.style.background =
@@ -1292,10 +1297,7 @@ export default function PayrollPage() {
                                                                                     textTransform: 'uppercase',
                                                                                     letterSpacing: '0.05em',
                                                                                     marginBottom: 'var(--space-3)',
-                                                                                    textAlign:
-                                                                                        lang === 'ar'
-                                                                                            ? 'right'
-                                                                                            : 'left',
+                                                                                    textAlign: 'start',
                                                                                 }}
                                                                             >
                                                                                 {t('payroll.deductionBreakdown')} —{' '}
@@ -1371,10 +1373,7 @@ export default function PayrollPage() {
                                                                                                 <div
                                                                                                     style={{
                                                                                                         textAlign:
-                                                                                                            lang ===
-                                                                                                            'ar'
-                                                                                                                ? 'right'
-                                                                                                                : 'left',
+                                                                                                            'start',
                                                                                                     }}
                                                                                                 >
                                                                                                     <div
@@ -1608,15 +1607,14 @@ export default function PayrollPage() {
                                         <div
                                             style={{
                                                 position: 'relative',
-                                                marginLeft: lang === 'ar' ? 0 : 'auto',
-                                                marginRight: lang === 'ar' ? 'auto' : 0,
+                                                marginInlineStart: 'auto',
                                             }}
                                         >
                                             <Search
                                                 size={14}
                                                 style={{
                                                     position: 'absolute',
-                                                    ...(lang === 'ar' ? { right: 10 } : { left: 10 }),
+                                                    insetInlineStart: 10,
                                                     top: '50%',
                                                     transform: 'translateY(-50%)',
                                                     color: 'var(--text-tertiary)',
@@ -1627,7 +1625,7 @@ export default function PayrollPage() {
                                                 value={historySearch}
                                                 onChange={e => setHistorySearch(e.target.value)}
                                                 style={{
-                                                    ...(lang === 'ar' ? { paddingRight: 32 } : { paddingLeft: 32 }),
+                                                    paddingInlineStart: 32,
                                                     height: 38,
                                                     width: 220,
                                                     border: '1px solid var(--border-color)',
@@ -1635,7 +1633,7 @@ export default function PayrollPage() {
                                                     background: 'var(--bg-primary)',
                                                     fontSize: 'var(--text-sm)',
                                                     color: 'var(--text-primary)',
-                                                    textAlign: lang === 'ar' ? 'right' : 'left',
+                                                    textAlign: 'start',
                                                 }}
                                             />
                                         </div>
@@ -1645,11 +1643,11 @@ export default function PayrollPage() {
                                         <div style={{ overflowX: 'auto' }}>
                                             <table style={s.table}>
                                                 <thead>
-                                                    <tr style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                                    <tr style={{ textAlign: 'start' }}>
                                                         <th
                                                             style={{
                                                                 ...(s.th as React.CSSProperties),
-                                                                textAlign: lang === 'ar' ? 'right' : 'left',
+                                                                textAlign: 'start',
                                                             }}
                                                         >
                                                             {t('payroll.colDate')}
@@ -1657,7 +1655,7 @@ export default function PayrollPage() {
                                                         <th
                                                             style={{
                                                                 ...(s.th as React.CSSProperties),
-                                                                textAlign: lang === 'ar' ? 'right' : 'left',
+                                                                textAlign: 'start',
                                                             }}
                                                         >
                                                             {t('payroll.colEmp')}
@@ -1665,7 +1663,7 @@ export default function PayrollPage() {
                                                         <th
                                                             style={{
                                                                 ...(s.th as React.CSSProperties),
-                                                                textAlign: lang === 'ar' ? 'right' : 'left',
+                                                                textAlign: 'start',
                                                             }}
                                                         >
                                                             {t('payroll.colType')}
@@ -1673,7 +1671,7 @@ export default function PayrollPage() {
                                                         <th
                                                             style={{
                                                                 ...(s.th as React.CSSProperties),
-                                                                textAlign: lang === 'ar' ? 'right' : 'left',
+                                                                textAlign: 'start',
                                                             }}
                                                         >
                                                             {t('payroll.colAmount')}
@@ -1681,7 +1679,7 @@ export default function PayrollPage() {
                                                         <th
                                                             style={{
                                                                 ...(s.th as React.CSSProperties),
-                                                                textAlign: lang === 'ar' ? 'right' : 'left',
+                                                                textAlign: 'start',
                                                             }}
                                                         >
                                                             {t('payroll.colMethod')}
@@ -1689,7 +1687,7 @@ export default function PayrollPage() {
                                                         <th
                                                             style={{
                                                                 ...(s.th as React.CSSProperties),
-                                                                textAlign: lang === 'ar' ? 'right' : 'left',
+                                                                textAlign: 'start',
                                                             }}
                                                         >
                                                             {t('payroll.colRef')}
@@ -1697,7 +1695,7 @@ export default function PayrollPage() {
                                                         <th
                                                             style={{
                                                                 ...(s.th as React.CSSProperties),
-                                                                textAlign: lang === 'ar' ? 'right' : 'left',
+                                                                textAlign: 'start',
                                                             }}
                                                         >
                                                             {t('payroll.colStatus')}
@@ -1713,7 +1711,7 @@ export default function PayrollPage() {
                                                                     'var(--bg-secondary)')
                                                             }
                                                             onMouseLeave={e => (e.currentTarget.style.background = '')}
-                                                            style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}
+                                                            style={{ textAlign: 'start' }}
                                                         >
                                                             <td style={s.td}>{row.date}</td>
                                                             <td style={{ ...s.td, fontWeight: 'var(--font-medium)' }}>
@@ -1835,11 +1833,11 @@ export default function PayrollPage() {
                                         <div style={{ overflowX: 'auto' }}>
                                             <table style={s.table}>
                                                 <thead>
-                                                    <tr style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                                    <tr style={{ textAlign: 'start' }}>
                                                         <th
                                                             style={{
                                                                 ...(s.th as React.CSSProperties),
-                                                                textAlign: lang === 'ar' ? 'right' : 'left',
+                                                                textAlign: 'start',
                                                             }}
                                                         >
                                                             {t('payroll.colEmp')}
@@ -1847,7 +1845,7 @@ export default function PayrollPage() {
                                                         <th
                                                             style={{
                                                                 ...(s.th as React.CSSProperties),
-                                                                textAlign: lang === 'ar' ? 'right' : 'left',
+                                                                textAlign: 'start',
                                                             }}
                                                         >
                                                             {t('payroll.colMonth')}
@@ -1855,7 +1853,7 @@ export default function PayrollPage() {
                                                         <th
                                                             style={{
                                                                 ...(s.th as React.CSSProperties),
-                                                                textAlign: lang === 'ar' ? 'right' : 'left',
+                                                                textAlign: 'start',
                                                             }}
                                                         >
                                                             {t('payroll.colBase')}
@@ -1863,7 +1861,7 @@ export default function PayrollPage() {
                                                         <th
                                                             style={{
                                                                 ...(s.th as React.CSSProperties),
-                                                                textAlign: lang === 'ar' ? 'right' : 'left',
+                                                                textAlign: 'start',
                                                             }}
                                                         >
                                                             {t('payroll.colCommission')}
@@ -1871,7 +1869,7 @@ export default function PayrollPage() {
                                                         <th
                                                             style={{
                                                                 ...(s.th as React.CSSProperties),
-                                                                textAlign: lang === 'ar' ? 'right' : 'left',
+                                                                textAlign: 'start',
                                                             }}
                                                         >
                                                             {t('payroll.colBonus')}
@@ -1879,7 +1877,7 @@ export default function PayrollPage() {
                                                         <th
                                                             style={{
                                                                 ...(s.th as React.CSSProperties),
-                                                                textAlign: lang === 'ar' ? 'right' : 'left',
+                                                                textAlign: 'start',
                                                             }}
                                                         >
                                                             {t('payroll.colDeductions')}
@@ -1887,7 +1885,7 @@ export default function PayrollPage() {
                                                         <th
                                                             style={{
                                                                 ...(s.th as React.CSSProperties),
-                                                                textAlign: lang === 'ar' ? 'right' : 'left',
+                                                                textAlign: 'start',
                                                             }}
                                                         >
                                                             {t('payroll.colNetPay')}
@@ -1895,7 +1893,7 @@ export default function PayrollPage() {
                                                         <th
                                                             style={{
                                                                 ...(s.th as React.CSSProperties),
-                                                                textAlign: lang === 'ar' ? 'right' : 'left',
+                                                                textAlign: 'start',
                                                             }}
                                                         >
                                                             {t('payroll.colAction')}
@@ -1916,7 +1914,7 @@ export default function PayrollPage() {
                                                                 onMouseLeave={e =>
                                                                     (e.currentTarget.style.background = '')
                                                                 }
-                                                                style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}
+                                                                style={{ textAlign: 'start' }}
                                                             >
                                                                 <td
                                                                     style={{
@@ -2017,7 +2015,7 @@ export default function PayrollPage() {
                                                         background: 'var(--bg-secondary)',
                                                         borderRadius: 'var(--radius-lg)',
                                                         padding: 'var(--space-4)',
-                                                        textAlign: lang === 'ar' ? 'right' : 'left',
+                                                        textAlign: 'start',
                                                     }}
                                                 >
                                                     <div
@@ -2103,10 +2101,7 @@ export default function PayrollPage() {
                                                                         justifyContent: 'space-between',
                                                                         alignItems: 'center',
                                                                         padding: 'var(--space-1) 0',
-                                                                        paddingLeft:
-                                                                            lang === 'ar' ? 0 : 'var(--space-3)',
-                                                                        paddingRight:
-                                                                            lang === 'ar' ? 'var(--space-3)' : 0,
+                                                                        paddingInlineStart: 'var(--space-3)',
                                                                     }}
                                                                 >
                                                                     <span
@@ -2181,7 +2176,7 @@ export default function PayrollPage() {
                                                     style={{
                                                         fontSize: 'var(--text-xs)',
                                                         color: 'var(--text-tertiary)',
-                                                        textAlign: lang === 'ar' ? 'right' : 'left',
+                                                        textAlign: 'start',
                                                     }}
                                                 >
                                                     {t('payroll.paymentTo')}{' '}
@@ -2556,12 +2551,6 @@ export default function PayrollPage() {
                                             <Button
                                                 variant="primary"
                                                 onClick={editingDeduction ? handleEditDeduction : handleAddDeduction}
-                                                disabled={
-                                                    !deductionForm.empId ||
-                                                    !deductionForm.label ||
-                                                    !deductionForm.amount ||
-                                                    !deductionForm.date
-                                                }
                                             >
                                                 <MinusCircle size={16} className={lang === 'ar' ? 'ml-1' : 'mr-1'} />{' '}
                                                 {editingDeduction
@@ -2628,7 +2617,7 @@ export default function PayrollPage() {
                                                     <div
                                                         style={{
                                                             ...(s.slipLabel as React.CSSProperties),
-                                                            textAlign: lang === 'ar' ? 'right' : 'left',
+                                                            textAlign: 'start',
                                                         }}
                                                     >
                                                         {t('payroll.slipEmpDetails')}
@@ -2639,7 +2628,7 @@ export default function PayrollPage() {
                                                             gridTemplateColumns: '1fr 1fr',
                                                             gap: 'var(--space-3)',
                                                             fontSize: 'var(--text-sm)',
-                                                            textAlign: lang === 'ar' ? 'right' : 'left',
+                                                            textAlign: 'start',
                                                         }}
                                                     >
                                                         <div>
@@ -2674,7 +2663,7 @@ export default function PayrollPage() {
                                                     <div
                                                         style={{
                                                             ...(s.slipLabel as React.CSSProperties),
-                                                            textAlign: lang === 'ar' ? 'right' : 'left',
+                                                            textAlign: 'start',
                                                         }}
                                                     >
                                                         {t('payroll.slipEarnings')}
@@ -2755,7 +2744,7 @@ export default function PayrollPage() {
                                                     <div
                                                         style={{
                                                             ...(s.slipLabel as React.CSSProperties),
-                                                            textAlign: lang === 'ar' ? 'right' : 'left',
+                                                            textAlign: 'start',
                                                         }}
                                                     >
                                                         {t('payroll.slipDeductions')}
@@ -2864,7 +2853,7 @@ export default function PayrollPage() {
                                                         borderRadius: 'var(--radius-lg)',
                                                         padding: 'var(--space-4)',
                                                         fontSize: 'var(--text-sm)',
-                                                        textAlign: lang === 'ar' ? 'right' : 'left',
+                                                        textAlign: 'start',
                                                     }}
                                                 >
                                                     <div
@@ -2961,7 +2950,7 @@ export default function PayrollPage() {
                                                                 : 'var(--bg-secondary)',
                                                             border: `1px solid ${m.isDefault ? 'var(--color-primary-200)' : 'var(--border-color)'}`,
                                                             borderRadius: 'var(--radius-lg)',
-                                                            textAlign: lang === 'ar' ? 'right' : 'left',
+                                                            textAlign: 'start',
                                                         }}
                                                     >
                                                         <div
@@ -3076,7 +3065,7 @@ export default function PayrollPage() {
                                                             display: 'flex',
                                                             flexDirection: 'column',
                                                             gap: 'var(--space-3)',
-                                                            textAlign: lang === 'ar' ? 'right' : 'left',
+                                                            textAlign: 'start',
                                                         }}
                                                     >
                                                         <div

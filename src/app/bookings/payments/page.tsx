@@ -16,6 +16,7 @@ import {
 import { SlideOver, Modal, Input, Select, Button, useToast } from '@/components/ui';
 import { DataGuard } from '@/components/DataGuard';
 import { useTranslation } from '@/hooks/useTranslation';
+import { egpLabel } from '@/lib/money';
 import { providerApi, type BookingPayment as Payment, type CreatePaymentData, ApiError } from '@/lib/api';
 
 // ── Fallback mock data ──────────────────────────────────
@@ -60,25 +61,25 @@ const mockPayments: Payment[] = [
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
     pending: {
-        label: 'Pending',
+        label: 'payments.statusPending',
         color: 'var(--color-warning)',
         bg: 'var(--color-warning-light)',
         icon: <Clock size={12} />,
     },
     completed: {
-        label: 'Completed',
+        label: 'payments.statusCompleted',
         color: 'var(--color-success)',
         bg: 'var(--color-success-light)',
         icon: <CheckCircle size={12} />,
     },
     failed: {
-        label: 'Failed',
+        label: 'payments.statusFailed',
         color: 'var(--color-error)',
         bg: 'var(--color-error-light)',
         icon: <XCircle size={12} />,
     },
     refunded: {
-        label: 'Refunded',
+        label: 'payments.statusRefunded',
         color: 'var(--color-info)',
         bg: 'var(--color-info-light)',
         icon: <RefreshCw size={12} />,
@@ -104,7 +105,7 @@ const s: Record<string, React.CSSProperties> = {
         padding: 'var(--space-4)',
         display: 'flex',
         flexDirection: 'column',
-        gap: 4,
+        gap: 'var(--space-1)',
     },
     kpiVal: { fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)', color: 'var(--text-primary)' },
     kpiLbl: { fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)' },
@@ -127,7 +128,7 @@ const s: Record<string, React.CSSProperties> = {
     table: { width: '100%', borderCollapse: 'collapse' as const },
     th: {
         padding: 'var(--space-3) var(--space-4)',
-        textAlign: 'left' as const,
+        textAlign: 'start' as const,
         fontSize: 'var(--text-xs)',
         fontWeight: 'var(--font-semibold)',
         color: 'var(--text-tertiary)',
@@ -147,9 +148,9 @@ const s: Record<string, React.CSSProperties> = {
     badge: {
         display: 'inline-flex',
         alignItems: 'center',
-        gap: 4,
-        padding: '2px 10px',
-        borderRadius: 999,
+        gap: 'var(--space-1)',
+        padding: '2px var(--space-3)',
+        borderRadius: 'var(--radius-full)',
         fontSize: 'var(--text-xs)',
         fontWeight: 'var(--font-semibold)',
     },
@@ -189,7 +190,7 @@ const s: Record<string, React.CSSProperties> = {
 const PER_PAGE = 15;
 
 export default function PaymentsPage() {
-    const { lang } = useTranslation();
+    const { t, lang } = useTranslation();
     const { addToast } = useToast();
     const dir = lang === 'ar' ? 'rtl' : 'ltr';
 
@@ -290,15 +291,15 @@ export default function PaymentsPage() {
     };
 
     const handleSave = async () => {
-        if (!formData.booking_uuid.trim()) return addToast('error', 'Booking UUID is required');
-        if (formData.amount < 0) return addToast('error', 'Amount must be ≥ 0');
+        if (!formData.booking_uuid.trim()) return addToast('error', t('payments.errBookingRequired'));
+        if (formData.amount < 0) return addToast('error', t('payments.errAmountInvalid'));
         try {
             if (editTarget) {
                 await providerApi.updatePayment(editTarget.uuid, formData);
-                addToast('success', 'Payment updated');
+                addToast('success', t('payments.toastUpdated'));
             } else {
                 await providerApi.createPayment(formData);
-                addToast('success', 'Payment recorded');
+                addToast('success', t('payments.toastRecorded'));
             }
             setIsFormOpen(false);
             setRefreshKey(k => k + 1);
@@ -325,11 +326,11 @@ export default function PaymentsPage() {
             {/* Header */}
             <div style={s.header}>
                 <div>
-                    <h1 style={s.title}>Payments</h1>
-                    <p style={s.subtitle}>Track and manage booking payments</p>
+                    <h1 style={s.title}>{t('payments.title')}</h1>
+                    <p style={s.subtitle}>{t('payments.subtitle')}</p>
                 </div>
                 <Button variant="primary" onClick={openAdd}>
-                    <Plus size={16} style={{ marginInlineEnd: 6 }} /> Record Payment
+                    <Plus size={16} style={{ marginInlineEnd: 'var(--space-2)' }} /> {t('payments.recordPayment')}
                 </Button>
             </div>
 
@@ -337,25 +338,25 @@ export default function PaymentsPage() {
             <div style={s.kpis}>
                 {[
                     {
-                        label: 'Collected',
-                        value: `${totalRevenue.toLocaleString()} EGP`,
+                        label: t('payments.kpiCollected'),
+                        value: `${totalRevenue.toLocaleString()} ${egpLabel()}`,
                         icon: <DollarSign size={20} />,
                         color: 'var(--color-success)',
                     },
                     {
-                        label: 'Pending',
+                        label: t('payments.kpiPending'),
                         value: String(pendingCount),
                         icon: <Clock size={20} />,
                         color: 'var(--color-warning)',
                     },
                     {
-                        label: 'Refunded',
-                        value: `${refundedTotal.toLocaleString()} EGP`,
+                        label: t('payments.kpiRefunded'),
+                        value: `${refundedTotal.toLocaleString()} ${egpLabel()}`,
                         icon: <RefreshCw size={20} />,
                         color: 'var(--color-info)',
                     },
                     {
-                        label: 'Total Records',
+                        label: t('payments.kpiTotalRecords'),
                         value: String(payments.length),
                         icon: <CreditCard size={20} />,
                         color: 'var(--color-primary)',
@@ -388,11 +389,11 @@ export default function PaymentsPage() {
                             setSearch(e.target.value);
                             setPage(1);
                         }}
-                        placeholder="Search payments..."
+                        placeholder={t('payments.searchPlaceholder')}
                         style={{
                             width: '100%',
-                            paddingInlineStart: 32,
-                            paddingInlineEnd: 12,
+                            paddingInlineStart: 'var(--space-8)',
+                            paddingInlineEnd: 'var(--space-3)',
                             height: 36,
                             border: '1px solid var(--border-color)',
                             borderRadius: 'var(--radius-md)',
@@ -410,9 +411,9 @@ export default function PaymentsPage() {
                         setPage(1);
                     }}
                     options={[
-                        { value: 'all', label: 'All Methods' },
-                        { value: 'cash', label: 'Cash' },
-                        { value: 'paymob', label: 'Paymob' },
+                        { value: 'all', label: t('payments.allMethods') },
+                        { value: 'cash', label: t('payments.methodCash') },
+                        { value: 'paymob', label: t('payments.methodPaymob') },
                     ]}
                 />
                 <Select
@@ -422,25 +423,25 @@ export default function PaymentsPage() {
                         setPage(1);
                     }}
                     options={[
-                        { value: 'all', label: 'All Statuses' },
-                        { value: 'pending', label: 'Pending' },
-                        { value: 'completed', label: 'Completed' },
-                        { value: 'failed', label: 'Failed' },
-                        { value: 'refunded', label: 'Refunded' },
+                        { value: 'all', label: t('payments.allStatuses') },
+                        { value: 'pending', label: t('payments.statusPending') },
+                        { value: 'completed', label: t('payments.statusCompleted') },
+                        { value: 'failed', label: t('payments.statusFailed') },
+                        { value: 'refunded', label: t('payments.statusRefunded') },
                     ]}
                 />
                 <Input
                     type="date"
                     value={fromDate}
                     onChange={e => setFromDate(e.target.value)}
-                    placeholder="From"
+                    placeholder={t('payments.dateFrom')}
                     style={{ width: 140 }}
                 />
                 <Input
                     type="date"
                     value={toDate}
                     onChange={e => setToDate(e.target.value)}
-                    placeholder="To"
+                    placeholder={t('payments.dateTo')}
                     style={{ width: 140 }}
                 />
             </div>
@@ -451,25 +452,25 @@ export default function PaymentsPage() {
                 error={error}
                 data={paginated.length > 0 ? paginated : null}
                 emptyIcon={<CreditCard size={40} />}
-                emptyTitle="No payments found"
-                emptyDescription="Record a payment for a booking to get started."
+                emptyTitle={t('payments.emptyTitle')}
+                emptyDescription={t('payments.emptyDesc')}
             >
                 <div style={s.tableWrap}>
                     <table style={s.table}>
                         <thead>
                             <tr>
                                 {[
-                                    'Booking',
-                                    'Service',
-                                    'Method',
-                                    'Amount',
-                                    'Status',
-                                    'Transaction ID',
-                                    'Date',
-                                    'Actions',
+                                    'payments.colBooking',
+                                    'payments.colService',
+                                    'payments.colMethod',
+                                    'payments.colAmount',
+                                    'common.status',
+                                    'payments.colTransactionId',
+                                    'payments.colDate',
+                                    'common.actions',
                                 ].map(h => (
                                     <th key={h} style={s.th}>
-                                        {h}
+                                        {t(h)}
                                     </th>
                                 ))}
                             </tr>
@@ -500,11 +501,11 @@ export default function PaymentsPage() {
                                             <span style={{ textTransform: 'capitalize' }}>{p.payment_method}</span>
                                         </td>
                                         <td style={{ ...s.td, fontWeight: 'var(--font-semibold)' }}>
-                                            {p.amount.toLocaleString()} EGP
+                                            {p.amount.toLocaleString()} {egpLabel()}
                                         </td>
                                         <td style={s.td}>
                                             <span style={{ ...s.badge, background: cfg.bg, color: cfg.color }}>
-                                                {cfg.icon} {cfg.label}
+                                                {cfg.icon} {t(cfg.label)}
                                             </span>
                                         </td>
                                         <td style={s.td}>
@@ -521,14 +522,14 @@ export default function PaymentsPage() {
                                                     onClick={() => openEdit(p)}
                                                     style={{
                                                         fontSize: 'var(--text-xs)',
-                                                        color: 'var(--color-primary)',
+                                                        color: 'var(--color-primary-700)',
                                                         background: 'none',
                                                         border: 'none',
                                                         cursor: 'pointer',
-                                                        padding: '2px 6px',
+                                                        padding: '2px var(--space-2)',
                                                     }}
                                                 >
-                                                    Edit
+                                                    {t('common.edit')}
                                                 </button>
                                                 {p.status === 'pending' && (
                                                     <button
@@ -539,10 +540,10 @@ export default function PaymentsPage() {
                                                             background: 'none',
                                                             border: 'none',
                                                             cursor: 'pointer',
-                                                            padding: '2px 6px',
+                                                            padding: '2px var(--space-2)',
                                                         }}
                                                     >
-                                                        Complete
+                                                        {t('payments.actionComplete')}
                                                     </button>
                                                 )}
                                                 {p.status === 'completed' && (
@@ -554,10 +555,10 @@ export default function PaymentsPage() {
                                                             background: 'none',
                                                             border: 'none',
                                                             cursor: 'pointer',
-                                                            padding: '2px 6px',
+                                                            padding: '2px var(--space-2)',
                                                         }}
                                                     >
-                                                        Refund
+                                                        {t('payments.actionRefund')}
                                                     </button>
                                                 )}
                                             </div>
@@ -570,8 +571,10 @@ export default function PaymentsPage() {
                     {/* Pagination */}
                     <div style={s.paginationRow}>
                         <span style={s.pageInfo}>
-                            Showing {Math.min((page - 1) * PER_PAGE + 1, filtered.length)}–
-                            {Math.min(page * PER_PAGE, filtered.length)} of {filtered.length}
+                            {t('payments.showing')
+                                .replace('{a}', String(Math.min((page - 1) * PER_PAGE + 1, filtered.length)))
+                                .replace('{b}', String(Math.min(page * PER_PAGE, filtered.length)))
+                                .replace('{c}', String(filtered.length))}
                         </span>
                         <div style={s.pageBtns}>
                             <button
@@ -579,7 +582,7 @@ export default function PaymentsPage() {
                                 disabled={page === 1}
                                 onClick={() => setPage(p => Math.max(1, p - 1))}
                             >
-                                <ChevronLeft size={14} />
+                                <ChevronLeft size={14} style={{ transform: lang === 'ar' ? 'scaleX(-1)' : 'none' }} />
                             </button>
                             {Array.from({ length: totalPages }).map((_, i) => (
                                 <button
@@ -595,7 +598,7 @@ export default function PaymentsPage() {
                                 disabled={page === totalPages}
                                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                             >
-                                <ChevronRight size={14} />
+                                <ChevronRight size={14} style={{ transform: lang === 'ar' ? 'scaleX(-1)' : 'none' }} />
                             </button>
                         </div>
                     </div>
@@ -606,43 +609,43 @@ export default function PaymentsPage() {
             <SlideOver
                 open={isFormOpen}
                 onClose={() => setIsFormOpen(false)}
-                title={editTarget ? 'Edit Payment' : 'Record Payment'}
+                title={editTarget ? t('payments.editTitle') : t('payments.recordPayment')}
                 footer={
                     <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
                         <Button variant="outline" onClick={() => setIsFormOpen(false)}>
-                            Cancel
+                            {t('common.cancel')}
                         </Button>
                         <Button variant="primary" onClick={handleSave}>
-                            {editTarget ? 'Save Changes' : 'Record'}
+                            {editTarget ? t('payments.saveChanges') : t('payments.record')}
                         </Button>
                     </div>
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                     <div style={s.formGroup}>
-                        <label style={s.label}>Booking UUID *</label>
+                        <label style={s.label}>{t('payments.lblBookingUuid')}</label>
                         <Input
                             value={formData.booking_uuid}
                             onChange={e => setFormData(d => ({ ...d, booking_uuid: e.target.value }))}
-                            placeholder="Enter booking UUID"
+                            placeholder={t('payments.phBookingUuid')}
                             disabled={!!editTarget}
                         />
                     </div>
                     <div style={s.formGroup}>
-                        <label style={s.label}>Payment Method *</label>
+                        <label style={s.label}>{t('payments.lblPaymentMethod')}</label>
                         <Select
                             value={formData.payment_method}
                             onChange={e =>
                                 setFormData(d => ({ ...d, payment_method: e.target.value as 'cash' | 'paymob' }))
                             }
                             options={[
-                                { value: 'cash', label: 'Cash' },
-                                { value: 'paymob', label: 'Paymob' },
+                                { value: 'cash', label: t('payments.methodCash') },
+                                { value: 'paymob', label: t('payments.methodPaymob') },
                             ]}
                         />
                     </div>
                     <div style={s.formGroup}>
-                        <label style={s.label}>Amount (EGP) *</label>
+                        <label style={s.label}>{t('payments.lblAmount')}</label>
                         <Input
                             type="number"
                             value={String(formData.amount)}
@@ -651,32 +654,32 @@ export default function PaymentsPage() {
                         />
                     </div>
                     <div style={s.formGroup}>
-                        <label style={s.label}>Status</label>
+                        <label style={s.label}>{t('common.status')}</label>
                         <Select
                             value={formData.status ?? 'pending'}
                             onChange={e => setFormData(d => ({ ...d, status: e.target.value as Payment['status'] }))}
                             options={[
-                                { value: 'pending', label: 'Pending' },
-                                { value: 'completed', label: 'Completed' },
-                                { value: 'failed', label: 'Failed' },
-                                { value: 'refunded', label: 'Refunded' },
+                                { value: 'pending', label: t('payments.statusPending') },
+                                { value: 'completed', label: t('payments.statusCompleted') },
+                                { value: 'failed', label: t('payments.statusFailed') },
+                                { value: 'refunded', label: t('payments.statusRefunded') },
                             ]}
                         />
                     </div>
                     <div style={s.formGroup}>
-                        <label style={s.label}>Transaction ID</label>
+                        <label style={s.label}>{t('payments.colTransactionId')}</label>
                         <Input
                             value={formData.transaction_id ?? ''}
                             onChange={e => setFormData(d => ({ ...d, transaction_id: e.target.value }))}
-                            placeholder="External reference (optional)"
+                            placeholder={t('payments.phTransactionId')}
                         />
                     </div>
                     <div style={s.formGroup}>
-                        <label style={s.label}>Notes</label>
+                        <label style={s.label}>{t('common.notes')}</label>
                         <Input
                             value={formData.notes ?? ''}
                             onChange={e => setFormData(d => ({ ...d, notes: e.target.value }))}
-                            placeholder="Optional notes"
+                            placeholder={t('payments.phNotes')}
                         />
                     </div>
                 </div>
@@ -686,11 +689,11 @@ export default function PaymentsPage() {
             <Modal
                 open={!!deleteTarget}
                 onClose={() => setDeleteTarget(null)}
-                title="Refund Payment"
+                title={t('payments.refundTitle')}
                 footer={
                     <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
                         <Button variant="outline" onClick={() => setDeleteTarget(null)}>
-                            Cancel
+                            {t('common.cancel')}
                         </Button>
                         <Button
                             variant="destructive"
@@ -700,14 +703,17 @@ export default function PaymentsPage() {
                                 setDeleteTarget(null);
                             }}
                         >
-                            Confirm Refund
+                            {t('payments.confirmRefund')}
                         </Button>
                     </div>
                 }
             >
                 <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)' }}>
-                    Are you sure you want to mark this payment of{' '}
-                    <strong>{deleteTarget?.amount.toLocaleString()} EGP</strong> as refunded?
+                    {t('payments.refundConfirmPrefix')}{' '}
+                    <strong>
+                        {deleteTarget?.amount.toLocaleString()} {egpLabel()}
+                    </strong>
+                    {t('payments.refundConfirmSuffix')}
                 </p>
             </Modal>
         </div>

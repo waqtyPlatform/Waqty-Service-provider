@@ -108,7 +108,7 @@ const s: Record<string, React.CSSProperties> = {
     },
     empName: { fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)', color: 'var(--text-primary)' },
     empRole: { fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' },
-    count: { marginLeft: 'auto', fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' },
+    count: { marginInlineStart: 'auto', fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' },
     row: {
         display: 'flex',
         padding: 'var(--space-3) var(--space-5)',
@@ -124,7 +124,7 @@ const s: Record<string, React.CSSProperties> = {
     dur: { fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', whiteSpace: 'nowrap' as const },
     pending: {
         display: 'inline-flex',
-        padding: '2px 8px',
+        padding: '2px var(--space-2)',
         borderRadius: 'var(--radius-full)',
         fontSize: 10,
         fontWeight: 'var(--font-semibold)',
@@ -135,13 +135,21 @@ const s: Record<string, React.CSSProperties> = {
 
 export default function EmployeePrintPage() {
     const { t, lang } = useTranslation();
+    // Real current date, RTL-aware (ar-EG vs en-US) — was a frozen hardcoded string.
+    const todayLabel = new Date().toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+    });
     return (
         <div style={{ ...s.page, direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
             <BookingsTabs />
 
             <div style={s.header}>
                 <div>
-                    <h1 style={s.h1}>{t('bk.printTitle')} — Mar 16, 2026</h1>
+                    <h1 style={s.h1}>
+                        {t('bk.printTitle')} — {todayLabel}
+                    </h1>
                     <p
                         style={{
                             fontSize: 'var(--text-sm)',
@@ -178,7 +186,7 @@ export default function EmployeePrintPage() {
                                     style={{ ...s.row, ...(i === bookings.length - 1 ? { borderBottom: 'none' } : {}) }}
                                 >
                                     <span style={s.time}>{b.time}</span>
-                                    <div style={{ ...s.details, textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                    <div style={{ ...s.details, textAlign: 'start' }}>
                                         <div style={s.svc}>{b.service}</div>
                                         <div style={s.client}>{b.client}</div>
                                     </div>

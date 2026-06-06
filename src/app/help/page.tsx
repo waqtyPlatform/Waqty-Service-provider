@@ -299,7 +299,7 @@ export default function HelpPage() {
                                                     borderTop: itemIndex > 0 ? '1px solid var(--border)' : 'none',
                                                     cursor: 'pointer',
                                                     color: 'var(--text-primary)',
-                                                    textAlign: 'left',
+                                                    textAlign: 'start',
                                                 }}
                                             >
                                                 <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>

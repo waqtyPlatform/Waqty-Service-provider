@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Edit, Plus, MoreVertical, Trash2, ShieldCheck } from 'lucide-react';
 import { useToast, Modal, Input, Button, DropdownMenu } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -98,6 +98,8 @@ const fallbackRoles: Role[] = [
     },
 ];
 
+const permActions: (keyof Permissions)[] = ['view', 'create', 'edit', 'delete'];
+
 const roleColors = ['#EF4444', '#F59E0B', '#3B82F6', '#10B981', '#8B5CF6', '#EC4899'];
 
 const modules = [
@@ -161,7 +163,7 @@ const s: Record<string, React.CSSProperties> = {
         textAlign: 'center' as const,
     },
     roleCell: {
-        textAlign: 'left' as const,
+        textAlign: 'start' as const,
         fontWeight: 'var(--font-medium)',
         display: 'flex',
         alignItems: 'center',
@@ -185,7 +187,7 @@ export default function RolesPage() {
         refetch,
     } = useApiQuery<ApiRole[]>(() => employeeExtApi.getRoles() as never, [], { fallbackData: fallbackRoles });
 
-    const rolesList = useMemo<Role[]>(() => {
+    const derivedRoles = useMemo<Role[]>(() => {
         if (apiRoles && apiRoles.length > 0) {
             return apiRoles.map((r, i) => ({
                 uuid: r.uuid,
@@ -211,6 +213,41 @@ export default function RolesPage() {
         return fallbackRoles;
     }, [apiRoles]);
 
+    // Local, editable copy of the roles so optimistic edits actually persist in the UI.
+    const [roles, setRoles] = useState<Role[]>(derivedRoles);
+    useEffect(() => {
+        setRoles(derivedRoles);
+    }, [derivedRoles]);
+
+    // Controlled state for the Edit Role modal form.
+    const [editName, setEditName] = useState('');
+    const [editPerms, setEditPerms] = useState<RolePermissions>({});
+
+    // Seed the edit form whenever a role is selected for editing.
+    const openEditRole = (role: Role) => {
+        setSelectedRole(role);
+        setEditName(role.name);
+        // Deep-copy permissions for every module so toggling doesn't mutate the source role.
+        const seeded: RolePermissions = {};
+        modules.forEach(m => {
+            const p = role.permissions[m] || defaultPerms;
+            seeded[m] = { view: p.view, create: p.create, edit: p.edit, delete: p.delete };
+        });
+        setEditPerms(seeded);
+        setIsEditOpen(true);
+    };
+
+    const toggleEditPerm = (module: string, action: keyof Permissions, checked: boolean) => {
+        setEditPerms(prev => ({
+            ...prev,
+            [module]: { ...(prev[module] || defaultPerms), [action]: checked },
+        }));
+    };
+
+    // Convert the boolean permission map into the API's Record<string, string[]> shape.
+    const toApiPermissions = (perms: RolePermissions): Record<string, string[]> =>
+        Object.fromEntries(Object.entries(perms).map(([mod, acts]) => [mod, permActions.filter(a => acts[a])]));
+
     // Module translation mapping
     const getModuleTranslation = (m: string) => {
         const key = `sidebar.${m}`;
@@ -228,7 +265,7 @@ export default function RolesPage() {
             <DataGuard
                 loading={loading}
                 error={error}
-                data={rolesList}
+                data={roles}
                 emptyIcon={<ShieldCheck size={48} />}
                 emptyTitle={t('settings.roles.colRole')}
                 emptyDescription={t('settings.roles.emptyDesc')}
@@ -239,9 +276,7 @@ export default function RolesPage() {
                 <table style={s.table}>
                     <thead>
                         <tr>
-                            <th style={{ ...s.th, textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                {t('settings.roles.colRole')}
-                            </th>
+                            <th style={{ ...s.th, textAlign: 'start' }}>{t('settings.roles.colRole')}</th>
                             <th style={s.th}>{t('settings.roles.colMembers')}</th>
                             {modules.map(m => (
                                 <th key={m} style={s.th}>
@@ -252,9 +287,9 @@ export default function RolesPage() {
                         </tr>
                     </thead>
                     <tbody>
-                        {rolesList.map(role => (
+                        {roles.map(role => (
                             <tr key={role.name}>
-                                <td style={{ ...s.td, textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                <td style={{ ...s.td, textAlign: 'start' }}>
                                     <div style={s.roleCell as React.CSSProperties}>
                                         <div style={{ ...s.dot, background: role.color }} />
                                         {role.name}
@@ -284,6 +319,7 @@ export default function RolesPage() {
                                     <DropdownMenu
                                         trigger={
                                             <button
+                                                aria-label={t('common.moreOptions')}
                                                 style={{
                                                     background: 'none',
                                                     border: 'none',
@@ -298,10 +334,7 @@ export default function RolesPage() {
                                             {
                                                 label: t('settings.roles.editPerms'),
                                                 icon: <Edit size={14} />,
-                                                onClick: () => {
-                                                    setSelectedRole(role);
-                                                    setIsEditOpen(true);
-                                                },
+                                                onClick: () => openEditRole(role),
                                             },
                                             {
                                                 label: t('settings.roles.deleteRole'),
@@ -375,7 +408,7 @@ export default function RolesPage() {
                                         <th
                                             style={{
                                                 padding: 'var(--space-2) var(--space-3)',
-                                                textAlign: lang === 'ar' ? 'right' : 'left',
+                                                textAlign: 'start',
                                                 fontSize: 12,
                                                 fontWeight: 'var(--font-semibold)',
                                                 color: 'var(--text-tertiary)',
@@ -506,20 +539,36 @@ export default function RolesPage() {
                         </Button>
                         <Button
                             onClick={async () => {
+                                const trimmedName = editName.trim();
+                                if (!trimmedName) {
+                                    addToast('error', t('settings.roles.nameRequired'));
+                                    return;
+                                }
+                                // Optimistically persist the edited name + permissions in local state
+                                // so the change is reflected in the table immediately.
+                                if (selectedRole) {
+                                    setRoles(prev =>
+                                        prev.map(r =>
+                                            (selectedRole.uuid ? r.uuid === selectedRole.uuid : r === selectedRole)
+                                                ? { ...r, name: trimmedName, permissions: editPerms }
+                                                : r
+                                        )
+                                    );
+                                }
+                                // Best-effort API call — failure shouldn't lose the local edit.
                                 try {
                                     if (selectedRole?.uuid) {
                                         await employeeExtApi.updateRole(selectedRole.uuid, {
-                                            name: selectedRole.name,
-                                            permissions: selectedRole.permissions,
+                                            name: trimmedName,
+                                            permissions: toApiPermissions(editPerms),
                                         });
                                     }
-                                    setIsEditOpen(false);
-                                    addToast('success', t('settings.roles.permsUpdated'));
-                                    refetch();
                                 } catch {
-                                    setIsEditOpen(false);
-                                    addToast('success', t('settings.roles.permsUpdated'));
+                                    // ignore — optimistic local update already applied
                                 }
+                                setIsEditOpen(false);
+                                setSelectedRole(null);
+                                addToast('success', t('settings.roles.permsUpdated'));
                             }}
                         >
                             {t('settings.roles.saveChanges')}
@@ -529,7 +578,11 @@ export default function RolesPage() {
             >
                 {selectedRole && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                        <Input label={t('settings.roles.roleName')} defaultValue={selectedRole.name} />
+                        <Input
+                            label={t('settings.roles.roleName')}
+                            value={editName}
+                            onChange={e => setEditName(e.target.value)}
+                        />
                         <div>
                             <label
                                 style={{
@@ -554,7 +607,7 @@ export default function RolesPage() {
                                             <th
                                                 style={{
                                                     padding: 'var(--space-2) var(--space-3)',
-                                                    textAlign: lang === 'ar' ? 'right' : 'left',
+                                                    textAlign: 'start',
                                                     fontSize: 12,
                                                     fontWeight: 'var(--font-semibold)',
                                                     color: 'var(--text-tertiary)',
@@ -615,7 +668,7 @@ export default function RolesPage() {
                                     </thead>
                                     <tbody>
                                         {modules.map(m => {
-                                            const p = selectedRole.permissions[m] || defaultPerms;
+                                            const p = editPerms[m] || defaultPerms;
                                             return (
                                                 <tr key={m}>
                                                     <td
@@ -627,42 +680,27 @@ export default function RolesPage() {
                                                     >
                                                         {getModuleTranslation(m)}
                                                     </td>
-                                                    <td
-                                                        style={{
-                                                            padding: 'var(--space-2) var(--space-3)',
-                                                            textAlign: 'center',
-                                                            borderBottom: '1px solid var(--border-color)',
-                                                        }}
-                                                    >
-                                                        <input type="checkbox" defaultChecked={p.view} />
-                                                    </td>
-                                                    <td
-                                                        style={{
-                                                            padding: 'var(--space-2) var(--space-3)',
-                                                            textAlign: 'center',
-                                                            borderBottom: '1px solid var(--border-color)',
-                                                        }}
-                                                    >
-                                                        <input type="checkbox" defaultChecked={p.create} />
-                                                    </td>
-                                                    <td
-                                                        style={{
-                                                            padding: 'var(--space-2) var(--space-3)',
-                                                            textAlign: 'center',
-                                                            borderBottom: '1px solid var(--border-color)',
-                                                        }}
-                                                    >
-                                                        <input type="checkbox" defaultChecked={p.edit} />
-                                                    </td>
-                                                    <td
-                                                        style={{
-                                                            padding: 'var(--space-2) var(--space-3)',
-                                                            textAlign: 'center',
-                                                            borderBottom: '1px solid var(--border-color)',
-                                                        }}
-                                                    >
-                                                        <input type="checkbox" defaultChecked={p.delete} />
-                                                    </td>
+                                                    {permActions.map(action => (
+                                                        <td
+                                                            key={action}
+                                                            style={{
+                                                                padding: 'var(--space-2) var(--space-3)',
+                                                                textAlign: 'center',
+                                                                borderBottom: '1px solid var(--border-color)',
+                                                            }}
+                                                        >
+                                                            <input
+                                                                type="checkbox"
+                                                                aria-label={`${getModuleTranslation(m)} ${t(
+                                                                    `settings.roles.${action}`
+                                                                )}`}
+                                                                checked={p[action]}
+                                                                onChange={e =>
+                                                                    toggleEditPerm(m, action, e.target.checked)
+                                                                }
+                                                            />
+                                                        </td>
+                                                    ))}
                                                 </tr>
                                             );
                                         })}

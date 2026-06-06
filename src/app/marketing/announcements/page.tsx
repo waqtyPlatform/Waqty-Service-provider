@@ -314,7 +314,7 @@ export default function AnnouncementsPage() {
                                     {priorityLabel(a.priority)}
                                 </Badge>
                                 <Badge color="neutral" size="sm">
-                                    <Users size={10} style={{ marginRight: 4 }} />
+                                    <Users size={10} style={{ marginInlineEnd: 'var(--space-1)' }} />
                                     {targetLabel(a.target)}
                                 </Badge>
                             </div>
@@ -408,7 +408,7 @@ export default function AnnouncementsPage() {
                                     {priorityLabel(selected.priority)} {t('mkt.lblPriority') || 'Priority'}
                                 </Badge>
                                 <Badge color="neutral" size="sm">
-                                    <Users size={10} style={{ marginRight: 4 }} />
+                                    <Users size={10} style={{ marginInlineEnd: 'var(--space-1)' }} />
                                     {targetLabel(selected.target)}
                                 </Badge>
                             </div>

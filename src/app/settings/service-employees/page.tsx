@@ -79,11 +79,16 @@ export default function ServiceEmployeesPage() {
                     <div style={{ position: 'relative' }}>
                         <Search
                             size={16}
-                            style={{ position: 'absolute', left: 10, top: 10, color: 'var(--text-tertiary)' }}
+                            style={{
+                                position: 'absolute',
+                                insetInlineStart: 10,
+                                top: 10,
+                                color: 'var(--text-tertiary)',
+                            }}
                         />
                         <Input
                             placeholder={t('settings.serviceEmployees.search')}
-                            style={{ paddingLeft: 32, width: 200 }}
+                            style={{ paddingInlineStart: 32, width: 200 }}
                         />
                     </div>
                     <Button

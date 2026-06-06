@@ -1,7 +1,8 @@
 'use client';
 
+import { egpLabel } from '@/lib/money';
 import React, { useState } from 'react';
-import { Save, Plus, Edit, Trash2, Check, X, Settings2, Target, PieChart, FlaskConical } from 'lucide-react';
+import { Save, Plus, Edit, Trash2, Check, X, Settings2, Target, PieChart, FlaskConical, Info } from 'lucide-react';
 import { Button, Input, Select, Modal, useToast, Badge } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useApiQuery } from '@/hooks/useApiQuery';
@@ -442,7 +443,7 @@ export default function CommissionSettingsPage() {
                     ].map(h => (
                         <th
                             key={h}
-                            style={{ ...s.th, textAlign: isRtl ? 'right' : 'left' } as React.CSSProperties}
+                            style={{ ...s.th, textAlign: 'start' } as React.CSSProperties}
                             title={
                                 h === 'Net Rev Rate %'
                                     ? 'Rate applied to net revenue after extraction costs are deducted'
@@ -517,7 +518,7 @@ export default function CommissionSettingsPage() {
                         t('commSettings.fldMult150'),
                         t('commSettings.colActions'),
                     ].map(h => (
-                        <th key={h} style={{ ...s.th, textAlign: isRtl ? 'right' : 'left' } as React.CSSProperties}>
+                        <th key={h} style={{ ...s.th, textAlign: 'start' } as React.CSSProperties}>
                             {h}
                         </th>
                     ))}
@@ -588,7 +589,7 @@ export default function CommissionSettingsPage() {
                         t('commSettings.fldDesc'),
                         t('commSettings.colActions'),
                     ].map(h => (
-                        <th key={h} style={{ ...s.th, textAlign: isRtl ? 'right' : 'left' } as React.CSSProperties}>
+                        <th key={h} style={{ ...s.th, textAlign: 'start' } as React.CSSProperties}>
                             {h}
                         </th>
                     ))}
@@ -645,7 +646,7 @@ export default function CommissionSettingsPage() {
                         t('commSettings.fldApplyTo'),
                         t('commSettings.colActions'),
                     ].map(h => (
-                        <th key={h} style={{ ...s.th, textAlign: isRtl ? 'right' : 'left' } as React.CSSProperties}>
+                        <th key={h} style={{ ...s.th, textAlign: 'start' } as React.CSSProperties}>
                             {h}
                         </th>
                     ))}
@@ -738,6 +739,24 @@ export default function CommissionSettingsPage() {
                 </Button>
             </div>
 
+            {/* Clarify: STAFF commission here is separate from the PLATFORM commission the marketplace deducts */}
+            <div
+                style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: 'var(--space-3)',
+                    padding: 'var(--space-3) var(--space-4)',
+                    background: 'var(--color-info-light)',
+                    border: '1px solid var(--color-info)',
+                    borderRadius: 'var(--radius-lg)',
+                    fontSize: 'var(--text-sm)',
+                    color: 'var(--text-secondary)',
+                }}
+            >
+                <Info size={16} style={{ color: 'var(--color-info)', flexShrink: 0, marginTop: 2 }} />
+                <span>{t('commSettings.platformVsStaffNote')}</span>
+            </div>
+
             {/* Task 03: KPI card for total extraction costs + Summary Preview */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-5)' }}>
                 <div style={{ ...s.card, padding: 'var(--space-5)' }}>
@@ -754,7 +773,7 @@ export default function CommissionSettingsPage() {
                         Total Extraction Costs This Month
                     </div>
                     <div style={{ fontSize: 'var(--text-3xl)', fontWeight: 'var(--font-bold)', color: '#ef4444' }}>
-                        {(totalExtractionCost * 320).toLocaleString()} EGP
+                        {(totalExtractionCost * 320).toLocaleString()} {egpLabel()}
                     </div>
                     <div
                         style={{

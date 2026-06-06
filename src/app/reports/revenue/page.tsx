@@ -1,5 +1,6 @@
 'use client';
 
+import { egpLabel } from '@/lib/money';
 import React, { useState, useEffect } from 'react';
 import { DollarSign, Building2, Users, TrendingUp, Calendar, RefreshCw } from 'lucide-react';
 import { Select, Button } from '@/components/ui';
@@ -215,7 +216,9 @@ export default function RevenuePage() {
                             />
                             Total Revenue
                         </span>
-                        <span style={s.totalValue}>{data.total_revenue.toLocaleString()} EGP</span>
+                        <span style={s.totalValue}>
+                            {data.total_revenue.toLocaleString()} {egpLabel()}
+                        </span>
                     </div>
 
                     {/* By Branch */}
@@ -238,7 +241,9 @@ export default function RevenuePage() {
                                         </div>
                                         <span style={s.cardName}>{b.branch_name}</span>
                                     </div>
-                                    <span style={s.cardAmount}>{b.revenue.toLocaleString()} EGP</span>
+                                    <span style={s.cardAmount}>
+                                        {b.revenue.toLocaleString()} {egpLabel()}
+                                    </span>
                                     <div style={s.bar}>
                                         <div
                                             style={{
@@ -283,7 +288,9 @@ export default function RevenuePage() {
                                             </div>
                                             <span style={s.cardName}>{e.employee_name}</span>
                                         </div>
-                                        <span style={s.cardAmount}>{e.revenue.toLocaleString()} EGP</span>
+                                        <span style={s.cardAmount}>
+                                            {e.revenue.toLocaleString()} {egpLabel()}
+                                        </span>
                                         <div style={s.bar}>
                                             <div
                                                 style={{

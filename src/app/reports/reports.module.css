@@ -39,7 +39,7 @@
 .subtitle {
     font-size: var(--text-sm);
     color: var(--text-tertiary);
-    margin-top: 4px;
+    margin-top: var(--space-1);
 }
 
 .actions {
@@ -148,8 +148,8 @@
     font-size: var(--text-xs);
     display: flex;
     align-items: center;
-    gap: 4px;
-    margin-top: 4px;
+    gap: var(--space-1);
+    margin-top: var(--space-1);
 }
 
 .kpiTrendUp {

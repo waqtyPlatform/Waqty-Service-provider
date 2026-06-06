@@ -80,7 +80,8 @@
     flex: 1;
     max-width: 400px;
     height: 42px;
-    padding: 0 var(--space-4) 0 var(--space-10);
+    padding-block: 0;
+    padding-inline: var(--space-10) var(--space-4);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
     background: var(--bg-primary);
@@ -166,7 +167,7 @@
     font-weight: var(--font-medium);
     color: var(--text-tertiary);
     background: var(--bg-tertiary);
-    padding: 2px 8px;
+    padding: 2px var(--space-2);
     border-radius: var(--radius-full);
 }
 
@@ -239,7 +240,7 @@
 }
 
 .serviceBadge {
-    padding: 2px 10px;
+    padding: 2px var(--space-3);
     border-radius: var(--radius-full);
     font-size: var(--text-xs);
     font-weight: var(--font-semibold);

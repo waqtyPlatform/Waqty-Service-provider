@@ -1,5 +1,6 @@
 'use client';
 
+import { egpLabel } from '@/lib/money';
 import React, { useState, useCallback } from 'react';
 import Link from 'next/link';
 import {
@@ -32,7 +33,7 @@ const getRevenueData = () => ({
     kpis: [
         {
             label: 'reports.kpi.totalRevenue',
-            value: '158,000 EGP',
+            value: `158,000 ${egpLabel()}`,
             change: '+12%',
             trend: 'up',
             icon: DollarSign,
@@ -40,7 +41,7 @@ const getRevenueData = () => ({
         },
         {
             label: 'reports.kpi.avgTransaction',
-            value: '420 EGP',
+            value: `420 ${egpLabel()}`,
             change: '+5%',
             trend: 'up',
             icon: Activity,
@@ -48,7 +49,7 @@ const getRevenueData = () => ({
         },
         {
             label: 'reports.kpi.refunds',
-            value: '2,400 EGP',
+            value: `2,400 ${egpLabel()}`,
             change: '-2%',
             trend: 'down',
             icon: TrendingUp,
@@ -56,7 +57,7 @@ const getRevenueData = () => ({
         },
         {
             label: 'reports.kpi.netProfit',
-            value: '45,000 EGP',
+            value: `45,000 ${egpLabel()}`,
             change: '+8%',
             trend: 'up',
             icon: DollarSign,
@@ -275,7 +276,7 @@ const getServicesData = () => ({
         },
         {
             label: 'reports.kpi.avgRevenuePerService',
-            value: '3,760 EGP',
+            value: `3,760 ${egpLabel()}`,
             change: '+6%',
             trend: 'up',
             icon: DollarSign,
@@ -588,7 +589,7 @@ export default function ReportCategoryPage({ params }: { params: Promise<{ categ
                                     <Tooltip
                                         cursor={{ fill: 'var(--bg-secondary)' }}
                                         contentStyle={{
-                                            borderRadius: 8,
+                                            borderRadius: 'var(--radius-md)',
                                             border: 'none',
                                             boxShadow: 'var(--shadow-lg)',
                                         }}
@@ -624,7 +625,7 @@ export default function ReportCategoryPage({ params }: { params: Promise<{ categ
                                     />
                                     <Tooltip
                                         contentStyle={{
-                                            borderRadius: 8,
+                                            borderRadius: 'var(--radius-md)',
                                             border: 'none',
                                             boxShadow: 'var(--shadow-lg)',
                                         }}

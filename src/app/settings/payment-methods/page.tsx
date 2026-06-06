@@ -48,12 +48,93 @@ export default function PaymentMethodsPage() {
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
 
+    // Controlled form for the Add/Edit modals. Previously the inputs were unbound
+    // (defaultValue only) and Save sent hardcoded values, so user input was lost.
+    type MethodForm = { name: string; type: PaymentMethod['type']; fee_percentage: number; active: boolean };
+    const emptyForm: MethodForm = { name: '', type: 'cash', fee_percentage: 0, active: true };
+    const [form, setForm] = useState<MethodForm>(emptyForm);
+
     const {
         data: methods,
         loading,
         error,
         refetch,
+        setData: setMethods,
     } = useApiQuery<PaymentMethod[]>(() => settingsApi.getPaymentMethods(), [], { fallbackData: fallbackMethods });
+
+    const openAdd = () => {
+        setForm(emptyForm);
+        setIsAddOpen(true);
+    };
+    const openEdit = (m: PaymentMethod) => {
+        setSelectedMethod(m);
+        setForm({ name: m.name, type: m.type, fee_percentage: m.fee_percentage, active: m.active });
+        setIsEditOpen(true);
+    };
+
+    const saveAdd = async () => {
+        if (!form.name.trim()) {
+            addToast('error', t('settings.paymentMethods.nameRequired'));
+            return;
+        }
+        const newMethod: PaymentMethod = {
+            uuid: `pm-${Date.now()}`,
+            name: form.name.trim(),
+            type: form.type,
+            fee_percentage: Number(form.fee_percentage) || 0,
+            fee_fixed: 0,
+            active: form.active,
+            created_at: new Date().toISOString(),
+        };
+        setMethods(prev => [...(prev || []), newMethod]);
+        setIsAddOpen(false);
+        try {
+            await settingsApi.createPaymentMethod({
+                name: newMethod.name,
+                type: newMethod.type,
+                fee_percentage: newMethod.fee_percentage,
+                fee_fixed: 0,
+                active: newMethod.active,
+            });
+            addToast('success', t('settings.paymentMethods.added'));
+        } catch {
+            addToast('error', t('settings.paymentMethods.addFailed'));
+        }
+    };
+
+    const saveEdit = async () => {
+        if (!selectedMethod) return;
+        if (!form.name.trim()) {
+            addToast('error', t('settings.paymentMethods.nameRequired'));
+            return;
+        }
+        const uuid = selectedMethod.uuid;
+        setMethods(prev =>
+            (prev || []).map(m =>
+                m.uuid === uuid
+                    ? {
+                          ...m,
+                          name: form.name.trim(),
+                          type: form.type,
+                          fee_percentage: Number(form.fee_percentage) || 0,
+                          active: form.active,
+                      }
+                    : m
+            )
+        );
+        setIsEditOpen(false);
+        try {
+            await settingsApi.updatePaymentMethod(uuid, {
+                name: form.name.trim(),
+                type: form.type,
+                fee_percentage: Number(form.fee_percentage) || 0,
+                active: form.active,
+            });
+            addToast('success', t('settings.paymentMethods.updated'));
+        } catch {
+            addToast('error', t('settings.paymentMethods.updateFailed'));
+        }
+    };
 
     const methodsList = (methods || []).map(m => ({
         id: m.uuid,
@@ -79,7 +160,7 @@ export default function PaymentMethodsPage() {
                     <div className={styles.subtitle}>{t('settings.paymentMethods.desc')}</div>
                 </div>
                 <div className={styles.actions}>
-                    <Button onClick={() => setIsAddOpen(true)}>
+                    <Button onClick={openAdd}>
                         <Plus size={16} /> {t('settings.paymentMethods.addMethod')}
                     </Button>
                 </div>
@@ -128,15 +209,13 @@ export default function PaymentMethodsPage() {
                                             </Badge>
                                         </td>
                                         <td>
-                                            <div style={{ display: 'flex', gap: 8 }}>
+                                            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
                                                     iconOnly
-                                                    onClick={() => {
-                                                        setSelectedMethod(method._raw);
-                                                        setIsEditOpen(true);
-                                                    }}
+                                                    aria-label={t('common.edit')}
+                                                    onClick={() => openEdit(method._raw)}
                                                 >
                                                     <Edit size={14} />
                                                 </Button>
@@ -144,6 +223,7 @@ export default function PaymentMethodsPage() {
                                                     variant="destructive"
                                                     size="sm"
                                                     iconOnly
+                                                    aria-label={t('common.delete')}
                                                     onClick={() => {
                                                         setSelectedMethod(method._raw);
                                                         setIsDeleteOpen(true);
@@ -171,26 +251,7 @@ export default function PaymentMethodsPage() {
                         <Button variant="ghost" onClick={() => setIsAddOpen(false)}>
                             {t('settings.paymentMethods.cancel')}
                         </Button>
-                        <Button
-                            onClick={async () => {
-                                try {
-                                    await settingsApi.createPaymentMethod({
-                                        name: 'New Method',
-                                        type: 'cash',
-                                        fee_percentage: 0,
-                                        fee_fixed: 0,
-                                        active: true,
-                                    });
-                                    setIsAddOpen(false);
-                                    addToast('success', t('settings.paymentMethods.added'));
-                                    refetch();
-                                } catch {
-                                    addToast('error', t('settings.paymentMethods.addFailed'));
-                                }
-                            }}
-                        >
-                            {t('settings.paymentMethods.saveMethod')}
-                        </Button>
+                        <Button onClick={saveAdd}>{t('settings.paymentMethods.saveMethod')}</Button>
                     </div>
                 }
             >
@@ -198,22 +259,33 @@ export default function PaymentMethodsPage() {
                     <Input
                         label={t('settings.paymentMethods.methodName')}
                         placeholder={t('settings.paymentMethods.namePh')}
+                        value={form.name}
+                        onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                     />
                     <Select
                         label={t('settings.paymentMethods.methodType')}
+                        value={form.type}
+                        onChange={e => setForm(f => ({ ...f, type: e.target.value as PaymentMethod['type'] }))}
                         options={[
-                            { label: t('settings.paymentMethods.types.cash'), value: 'Cash' },
-                            { label: t('settings.paymentMethods.types.card'), value: 'Card' },
-                            { label: t('settings.paymentMethods.types.bank'), value: 'Bank Transfer' },
-                            { label: t('settings.paymentMethods.types.wallet'), value: 'Mobile Wallet' },
+                            { label: t('settings.paymentMethods.types.cash'), value: 'cash' },
+                            { label: t('settings.paymentMethods.types.card'), value: 'card' },
+                            { label: t('settings.paymentMethods.types.bank'), value: 'bank_transfer' },
+                            { label: t('settings.paymentMethods.types.wallet'), value: 'wallet' },
                         ]}
                     />
-                    <Input label={t('settings.paymentMethods.transactionFee')} type="number" defaultValue={0} />
+                    <Input
+                        label={t('settings.paymentMethods.transactionFee')}
+                        type="number"
+                        value={form.fee_percentage}
+                        onChange={e => setForm(f => ({ ...f, fee_percentage: Number(e.target.value) }))}
+                    />
                     <Select
                         label={t('settings.paymentMethods.colStatus')}
+                        value={form.active ? 'active' : 'inactive'}
+                        onChange={e => setForm(f => ({ ...f, active: e.target.value === 'active' }))}
                         options={[
-                            { label: t('settings.safes.active'), value: 'Active' },
-                            { label: t('settings.safes.inactive'), value: 'Inactive' },
+                            { label: t('settings.safes.active'), value: 'active' },
+                            { label: t('settings.safes.inactive'), value: 'inactive' },
                         ]}
                     />
                 </div>
@@ -232,35 +304,21 @@ export default function PaymentMethodsPage() {
                         <Button variant="ghost" onClick={() => setIsEditOpen(false)}>
                             {t('settings.paymentMethods.cancel')}
                         </Button>
-                        <Button
-                            onClick={async () => {
-                                try {
-                                    if (selectedMethod)
-                                        await settingsApi.updatePaymentMethod(selectedMethod.uuid, {
-                                            name: selectedMethod.name,
-                                            type: selectedMethod.type,
-                                            fee_percentage: selectedMethod.fee_percentage,
-                                            active: selectedMethod.active,
-                                        });
-                                    setIsEditOpen(false);
-                                    addToast('success', t('settings.paymentMethods.updated'));
-                                    refetch();
-                                } catch {
-                                    addToast('error', t('settings.paymentMethods.updateFailed'));
-                                }
-                            }}
-                        >
-                            {t('settings.paymentMethods.saveChanges')}
-                        </Button>
+                        <Button onClick={saveEdit}>{t('settings.paymentMethods.saveChanges')}</Button>
                     </div>
                 }
             >
                 {selectedMethod && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                        <Input label={t('settings.paymentMethods.methodName')} defaultValue={selectedMethod.name} />
+                        <Input
+                            label={t('settings.paymentMethods.methodName')}
+                            value={form.name}
+                            onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                        />
                         <Select
                             label={t('settings.paymentMethods.methodType')}
-                            defaultValue={selectedMethod.type}
+                            value={form.type}
+                            onChange={e => setForm(f => ({ ...f, type: e.target.value as PaymentMethod['type'] }))}
                             options={[
                                 { label: t('settings.paymentMethods.types.cash'), value: 'cash' },
                                 { label: t('settings.paymentMethods.types.card'), value: 'card' },
@@ -271,11 +329,13 @@ export default function PaymentMethodsPage() {
                         <Input
                             label={t('settings.paymentMethods.transactionFee')}
                             type="number"
-                            defaultValue={selectedMethod.fee_percentage}
+                            value={form.fee_percentage}
+                            onChange={e => setForm(f => ({ ...f, fee_percentage: Number(e.target.value) }))}
                         />
                         <Select
                             label={t('settings.paymentMethods.colStatus')}
-                            defaultValue={selectedMethod.active ? 'active' : 'inactive'}
+                            value={form.active ? 'active' : 'inactive'}
+                            onChange={e => setForm(f => ({ ...f, active: e.target.value === 'active' }))}
                             options={[
                                 { label: t('settings.safes.active'), value: 'active' },
                                 { label: t('settings.safes.inactive'), value: 'inactive' },

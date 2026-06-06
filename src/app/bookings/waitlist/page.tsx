@@ -199,7 +199,7 @@ export default function WaitlistPage() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
                     <h1 style={{ fontSize: '1.5rem', fontWeight: 700 }}>{t('waitlist.title')}</h1>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginTop: 4 }}>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginTop: 'var(--space-1)' }}>
                         {t('waitlist.subtitle')}
                     </p>
                 </div>
@@ -275,7 +275,7 @@ export default function WaitlistPage() {
                                         #{entry.position}
                                     </div>
                                     <div style={{ flex: 1 }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                                             <span style={{ fontWeight: 600, fontSize: '0.9375rem' }}>
                                                 {customer?.name || t('waitlist.unknown')}
                                             </span>
@@ -309,7 +309,7 @@ export default function WaitlistPage() {
                                         </div>
                                     </div>
                                 </div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                                     <Badge color={statusColors[entry.status] || 'neutral'} size="sm">
                                         {t(`waitlist.${entry.status}`)}
                                     </Badge>

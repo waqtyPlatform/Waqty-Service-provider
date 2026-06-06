@@ -20,11 +20,11 @@ export default function KpiSparkline({ data }: { data: { v: number }[] }) {
                 />
                 <RechartsTooltip
                     contentStyle={{
-                        borderRadius: '8px',
+                        borderRadius: 'var(--radius-md)',
                         border: 'none',
                         boxShadow: 'var(--shadow-sm)',
                         fontSize: '12px',
-                        padding: '4px 8px',
+                        padding: 'var(--space-1) var(--space-2)',
                     }}
                     formatter={val => [`${val ?? ''}`, 'Value']}
                     labelFormatter={() => ''}

@@ -163,11 +163,19 @@ export default function RolesPage() {
         data: apiRoles,
         loading,
         error,
+        isFallback,
         refetch,
     } = useApiQuery<ApiRole[]>(() => employeeExtApi.getRoles() as never, [], { fallbackData: fallbackRoles });
 
     const mappedRoles: Role[] = useMemo(() => {
-        if (apiRoles && apiRoles.length > 0) {
+        // useApiQuery seeds `data` with the local-shaped `fallbackRoles` and keeps
+        // isFallback=false until the request resolves, so detect the API shape by its
+        // own field (`employees_count`) rather than relying on isFallback — otherwise
+        // the API-shape map runs on local rows on first render (blank members / all
+        // permissions false).
+        const firstRole = apiRoles?.[0] as { employees_count?: unknown } | undefined;
+        const isApiShaped = typeof firstRole?.employees_count === 'number';
+        if (apiRoles && apiRoles.length > 0 && isApiShaped && !isFallback) {
             const colors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#6366f1'];
             return apiRoles.map((r, i) => ({
                 id: r.uuid,
@@ -177,21 +185,26 @@ export default function RolesPage() {
                 color: colors[i % colors.length],
                 permissions: r.permissions
                     ? Object.fromEntries(
-                          Object.entries(r.permissions).map(([mod, perms]) => [
-                              mod,
-                              {
-                                  view: (perms as string[]).includes('view'),
-                                  create: (perms as string[]).includes('create'),
-                                  edit: (perms as string[]).includes('edit'),
-                                  delete: (perms as string[]).includes('delete'),
-                              },
-                          ])
+                          Object.entries(r.permissions).map(([mod, perms]) => {
+                              // API perms are string[]; guard against local-shaped
+                              // boolean objects so `.includes` never throws.
+                              const list = Array.isArray(perms) ? (perms as string[]) : [];
+                              return [
+                                  mod,
+                                  {
+                                      view: list.includes('view'),
+                                      create: list.includes('create'),
+                                      edit: list.includes('edit'),
+                                      delete: list.includes('delete'),
+                                  },
+                              ];
+                          })
                       )
                     : Object.fromEntries(modules.map(m => [m, defaultPerms])),
             }));
         }
         return fallbackRoles;
-    }, [apiRoles]);
+    }, [apiRoles, isFallback]);
 
     const [localRoles, setLocalRoles] = useState<Role[] | null>(null);
     const roles = localRoles ?? mappedRoles;
@@ -432,7 +445,7 @@ export default function RolesPage() {
                                                         style={
                                                             {
                                                                 ...s.th,
-                                                                textAlign: lang === 'ar' ? 'right' : 'left',
+                                                                textAlign: 'start',
                                                             } as React.CSSProperties
                                                         }
                                                     >
@@ -450,7 +463,7 @@ export default function RolesPage() {
                                                         <td
                                                             style={{
                                                                 ...s.td,
-                                                                textAlign: lang === 'ar' ? 'right' : 'left',
+                                                                textAlign: 'start',
                                                                 fontWeight: 'var(--font-medium)',
                                                             }}
                                                         >

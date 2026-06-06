@@ -126,7 +126,8 @@ export default function BranchSettingsPage({ params }: { params: Promise<{ id: s
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
                     <span className={styles.cardTitle}>
-                        <MapPin size={16} style={{ marginRight: 6 }} /> {t('branchSettings.locationGeofencing')}
+                        <MapPin size={16} style={{ marginInlineEnd: 'var(--space-2)' }} />{' '}
+                        {t('branchSettings.locationGeofencing')}
                     </span>
                 </div>
                 <div className={styles.cardBody}>
@@ -296,11 +297,21 @@ export default function BranchSettingsPage({ params }: { params: Promise<{ id: s
                                         {room.capacity} {t('branchSettings.persons')}
                                     </td>
                                     <td>
-                                        <div style={{ display: 'flex', gap: 8 }}>
-                                            <Button variant="ghost" size="sm" iconOnly>
+                                        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                iconOnly
+                                                aria-label={t('branchSettings.configureRoom')}
+                                            >
                                                 <Settings size={14} />
                                             </Button>
-                                            <Button variant="destructive" size="sm" iconOnly>
+                                            <Button
+                                                variant="destructive"
+                                                size="sm"
+                                                iconOnly
+                                                aria-label={t('branchSettings.deleteRoom')}
+                                            >
                                                 <Trash2 size={14} />
                                             </Button>
                                         </div>
@@ -360,13 +371,13 @@ export default function BranchSettingsPage({ params }: { params: Promise<{ id: s
                             <span className={styles.cardTitle}>{t('branchSettings.branchStats')}</span>
                         </div>
                         <div className={styles.cardBody}>
-                            <div style={{ marginBottom: 12 }}>
+                            <div style={{ marginBottom: 'var(--space-3)' }}>
                                 <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
                                     {t('branchSettings.totalEmployees')}
                                 </div>
                                 <div style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--font-bold)' }}>12</div>
                             </div>
-                            <div style={{ marginBottom: 12 }}>
+                            <div style={{ marginBottom: 'var(--space-3)' }}>
                                 <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
                                     {t('branchSettings.activeBookings')}
                                 </div>

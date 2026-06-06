@@ -30,6 +30,14 @@ function findRestrictedMatch(pathname: string): UserRole[] | null {
     return null;
 }
 
+// Exported so navigation (sidebar + command palette) can hide links the guard
+// would bounce — keeping nav visibility and route protection in sync from one
+// source of truth instead of re-encoding role rules in the sidebar.
+export function isRouteAllowedForRole(route: string, role: UserRole): boolean {
+    const required = findRestrictedMatch(route);
+    return !required || required.includes(role);
+}
+
 export function RoleGuard({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuth();
     const pathname = usePathname();

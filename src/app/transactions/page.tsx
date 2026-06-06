@@ -5,6 +5,8 @@ import { Search, Download, ChevronLeft, ChevronRight, Receipt } from 'lucide-rea
 import styles from './transactions.module.css';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useApiQuery } from '@/hooks/useApiQuery';
+import { SampleDataBanner } from '@/components/SampleDataBanner';
+import { egpLabel } from '@/lib/money';
 import { transactionApi } from '@/lib/api';
 import { DataGuard } from '@/components/DataGuard';
 
@@ -139,6 +141,7 @@ export default function TransactionsPage() {
         loading,
         error,
         refetch,
+        isFallback,
     } = useApiQuery<typeof fallbackTransactions>(() => transactionApi.getTransactions() as never, [], {
         fallbackData: fallbackTransactions,
     });
@@ -184,6 +187,7 @@ export default function TransactionsPage() {
 
     return (
         <div className={styles.transactionsPage} style={{ direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
+            {isFallback && <SampleDataBanner />}
             <div className={styles.header}>
                 <div>
                     <h1>{t('txn.title')}</h1>
@@ -215,19 +219,19 @@ export default function TransactionsPage() {
                 <div className={styles.kpiCard}>
                     <div className={styles.kpiLabel}>{t('txn.totalSales')}</div>
                     <div className={styles.kpiValue} style={{ color: 'var(--color-success)' }} dir="ltr">
-                        {totalSales.toLocaleString()} EGP
+                        {totalSales.toLocaleString()} {egpLabel()}
                     </div>
                 </div>
                 <div className={styles.kpiCard}>
                     <div className={styles.kpiLabel}>{t('txn.totalRefunds')}</div>
                     <div className={styles.kpiValue} style={{ color: 'var(--color-error)' }} dir="ltr">
-                        {totalRefunds.toLocaleString()} EGP
+                        {totalRefunds.toLocaleString()} {egpLabel()}
                     </div>
                 </div>
                 <div className={styles.kpiCard}>
                     <div className={styles.kpiLabel}>{t('txn.netRevenue')}</div>
                     <div className={styles.kpiValue} style={{ color: 'var(--color-primary-600)' }} dir="ltr">
-                        {netRevenue.toLocaleString()} EGP
+                        {netRevenue.toLocaleString()} {egpLabel()}
                     </div>
                 </div>
                 <div className={styles.kpiCard}>
@@ -239,14 +243,9 @@ export default function TransactionsPage() {
             {/* Controls */}
             <div className={styles.controls}>
                 <div className={styles.searchWrapper}>
-                    <Search
-                        size={16}
-                        className={styles.searchIcon}
-                        style={lang === 'ar' ? { left: 'auto', right: 12 } : {}}
-                    />
+                    <Search size={16} className={styles.searchIcon} />
                     <input
                         className={styles.searchInput}
-                        style={lang === 'ar' ? { paddingLeft: 12, paddingRight: 40 } : {}}
                         placeholder={t('txn.searchPlaceholder')}
                         value={search}
                         onChange={e => setSearch(e.target.value)}
@@ -283,30 +282,14 @@ export default function TransactionsPage() {
                                 <table className={styles.dataTable}>
                                     <thead>
                                         <tr>
-                                            <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                                {t('txn.thTxnNum')}
-                                            </th>
-                                            <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                                {t('txn.thDateTime')}
-                                            </th>
-                                            <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                                {t('txn.thType')}
-                                            </th>
-                                            <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                                {t('txn.thClient')}
-                                            </th>
-                                            <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                                {t('txn.thDescription')}
-                                            </th>
-                                            <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                                {t('txn.thEmployee')}
-                                            </th>
-                                            <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                                {t('txn.thMethod')}
-                                            </th>
-                                            <th style={{ textAlign: lang === 'ar' ? 'left' : 'right' }}>
-                                                {t('txn.thAmount')}
-                                            </th>
+                                            <th>{t('txn.thTxnNum')}</th>
+                                            <th>{t('txn.thDateTime')}</th>
+                                            <th>{t('txn.thType')}</th>
+                                            <th>{t('txn.thClient')}</th>
+                                            <th>{t('txn.thDescription')}</th>
+                                            <th>{t('txn.thEmployee')}</th>
+                                            <th>{t('txn.thMethod')}</th>
+                                            <th style={{ textAlign: 'end' }}>{t('txn.thAmount')}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -342,7 +325,7 @@ export default function TransactionsPage() {
                                                 <td>{t.service}</td>
                                                 <td>{t.employee}</td>
                                                 <td>{t.method}</td>
-                                                <td style={{ textAlign: lang === 'ar' ? 'left' : 'right' }} dir="ltr">
+                                                <td style={{ textAlign: 'end' }} dir="ltr">
                                                     <span
                                                         className={
                                                             t.amount >= 0
@@ -351,7 +334,7 @@ export default function TransactionsPage() {
                                                         }
                                                     >
                                                         {t.amount >= 0 ? '+' : ''}
-                                                        {t.amount.toLocaleString()} EGP
+                                                        {t.amount.toLocaleString()} {egpLabel()}
                                                     </span>
                                                 </td>
                                             </tr>

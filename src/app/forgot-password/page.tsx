@@ -173,7 +173,7 @@ export default function ForgotPasswordPage() {
                                 <div
                                     style={{
                                         position: 'absolute',
-                                        left: 16,
+                                        insetInlineStart: 16,
                                         top: '50%',
                                         transform: 'translateY(-50%)',
                                         color: 'var(--text-tertiary)',
@@ -187,8 +187,8 @@ export default function ForgotPasswordPage() {
                                     style={{
                                         width: '100%',
                                         height: 48,
-                                        paddingLeft: 44,
-                                        paddingRight: 16,
+                                        paddingInlineStart: 44,
+                                        paddingInlineEnd: 'var(--space-4)',
                                         borderRadius: 'var(--radius-lg)',
                                         border: '1px solid var(--border-color)',
                                         fontSize: 'var(--text-base)',
@@ -291,7 +291,7 @@ export default function ForgotPasswordPage() {
                                 <div
                                     style={{
                                         position: 'absolute',
-                                        left: 16,
+                                        insetInlineStart: 16,
                                         top: '50%',
                                         transform: 'translateY(-50%)',
                                         color: 'var(--text-tertiary)',
@@ -305,8 +305,8 @@ export default function ForgotPasswordPage() {
                                     style={{
                                         width: '100%',
                                         height: 48,
-                                        paddingLeft: 44,
-                                        paddingRight: 48,
+                                        paddingInlineStart: 44,
+                                        paddingInlineEnd: 48,
                                         borderRadius: 'var(--radius-lg)',
                                         border: '1px solid var(--border-color)',
                                         fontSize: 'var(--text-base)',
@@ -321,14 +321,14 @@ export default function ForgotPasswordPage() {
                                     onClick={() => setShowNewPassword(!showNewPassword)}
                                     style={{
                                         position: 'absolute',
-                                        right: 12,
+                                        insetInlineEnd: 12,
                                         top: '50%',
                                         transform: 'translateY(-50%)',
                                         background: 'none',
                                         border: 'none',
                                         color: 'var(--text-tertiary)',
                                         cursor: 'pointer',
-                                        padding: 4,
+                                        padding: 'var(--space-1)',
                                     }}
                                 >
                                     {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -342,7 +342,7 @@ export default function ForgotPasswordPage() {
                                 <div
                                     style={{
                                         position: 'absolute',
-                                        left: 16,
+                                        insetInlineStart: 16,
                                         top: '50%',
                                         transform: 'translateY(-50%)',
                                         color: 'var(--text-tertiary)',
@@ -356,8 +356,8 @@ export default function ForgotPasswordPage() {
                                     style={{
                                         width: '100%',
                                         height: 48,
-                                        paddingLeft: 44,
-                                        paddingRight: 48,
+                                        paddingInlineStart: 44,
+                                        paddingInlineEnd: 48,
                                         borderRadius: 'var(--radius-lg)',
                                         border: '1px solid var(--border-color)',
                                         fontSize: 'var(--text-base)',
@@ -371,14 +371,14 @@ export default function ForgotPasswordPage() {
                                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                                     style={{
                                         position: 'absolute',
-                                        right: 12,
+                                        insetInlineEnd: 12,
                                         top: '50%',
                                         transform: 'translateY(-50%)',
                                         background: 'none',
                                         border: 'none',
                                         color: 'var(--text-tertiary)',
                                         cursor: 'pointer',
-                                        padding: 4,
+                                        padding: 'var(--space-1)',
                                     }}
                                 >
                                     {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}

@@ -390,7 +390,7 @@ export default function EmployeeDashboardPage() {
                                             style={{
                                                 fontSize: 'var(--text-xs)',
                                                 fontWeight: 'var(--font-semibold)',
-                                                padding: '2px 8px',
+                                                padding: '2px var(--space-2)',
                                                 borderRadius: 'var(--radius-full)',
                                                 color: statusColors[booking.status] || 'var(--text-tertiary)',
                                                 background: 'var(--bg-secondary)',

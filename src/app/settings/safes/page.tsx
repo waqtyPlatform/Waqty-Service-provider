@@ -1,5 +1,6 @@
 'use client';
 
+import { egpLabel } from '@/lib/money';
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Lock, DollarSign, Vault, MapPin } from 'lucide-react';
 import { Button, Badge, useToast, Modal, Input, Select, SlideOver } from '@/components/ui';
@@ -103,6 +104,72 @@ export default function SafesPage() {
     } | null>(null);
     const [newSafe, setNewSafe] = useState({ name: '', branch: 'downtown', balance: '', status: 'active' });
 
+    // Controlled form for the Edit slide-over. Previously the inputs were unbound
+    // (defaultValue only) and Save re-sent the unchanged selectedSafe.*, so user
+    // edits were silently lost.
+    type EditForm = { name: string; branch: string; balance: string; status: string };
+    const [editForm, setEditForm] = useState<EditForm>({
+        name: '',
+        branch: 'downtown',
+        balance: '',
+        status: 'active',
+    });
+
+    // Branch slug <-> display label (mirrors the branch <Select> options below).
+    const branchLabels: Record<string, string> = {
+        downtown: t('settings.safes.branchDowntown'),
+        mall: t('settings.safes.branchMall'),
+        newcairo: t('settings.safes.branchNewCairo'),
+    };
+    const branchSlugFromLabel = (label: string) =>
+        (Object.keys(branchLabels) as string[]).find(slug => branchLabels[slug] === label) || 'downtown';
+
+    const openEdit = (safe: NonNullable<typeof selectedSafe>) => {
+        setSelectedSafe(safe);
+        setEditForm({
+            name: safe.name,
+            branch: branchSlugFromLabel(safe.branch),
+            balance: String(safe.balance),
+            status: safe.status.toLowerCase(),
+        });
+        setIsEditOpen(true);
+    };
+
+    const handleEditSafe = async () => {
+        if (!selectedSafe) return;
+        if (!editForm.name.trim()) {
+            addToast('error', t('settings.safes.nameRequired'));
+            return;
+        }
+        const id = selectedSafe.id;
+        const nextName = editForm.name.trim();
+        const nextBranchLabel = branchLabels[editForm.branch] || selectedSafe.branch;
+        const nextBalance = parseFloat(editForm.balance) || 0;
+        const nextStatus = editForm.status === 'active' ? 'Active' : 'Inactive';
+
+        // Optimistically update the local list.
+        setSafesList(prev =>
+            prev.map(s =>
+                String(s.id) === String(id)
+                    ? { ...s, name: nextName, branch: nextBranchLabel, balance: nextBalance, status: nextStatus }
+                    : s
+            )
+        );
+        setIsEditOpen(false);
+        setSelectedSafe(null);
+        try {
+            await settingsApi.updateSafe(String(id), {
+                name: nextName,
+                branch_uuid: editForm.branch,
+                balance: nextBalance,
+                active: nextStatus === 'Active',
+            });
+            addToast('success', t('settings.safes.updated'));
+        } catch {
+            addToast('error', t('settings.safes.updateFailed'));
+        }
+    };
+
     const totalBalance = safesList.reduce((s, safe) => s + safe.balance, 0);
     const activeSafes = safesList.filter(s => s.status === 'Active').length;
 
@@ -165,7 +232,9 @@ export default function SafesPage() {
                         <DollarSign size={22} />
                     </div>
                     <div className={styles.kpiContent}>
-                        <span className={styles.kpiValue}>{fmt(totalBalance)} EGP</span>
+                        <span className={styles.kpiValue}>
+                            {fmt(totalBalance)} {egpLabel()}
+                        </span>
                         <span className={styles.kpiLabel}>{t('settings.safes.totalBalance')}</span>
                     </div>
                 </div>
@@ -215,7 +284,7 @@ export default function SafesPage() {
                                 <th>{t('settings.safes.colBalance')}</th>
                                 <th>{t('settings.safes.colLastActivity')}</th>
                                 <th>{t('settings.safes.colStatus')}</th>
-                                <th style={{ textAlign: 'right' }}>{t('settings.safes.colActions')}</th>
+                                <th style={{ textAlign: 'end' }}>{t('settings.safes.colActions')}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -238,7 +307,9 @@ export default function SafesPage() {
                                         </div>
                                     </td>
                                     <td>
-                                        <span className={styles.balance}>{fmt(safe.balance)} EGP</span>
+                                        <span className={styles.balance}>
+                                            {fmt(safe.balance)} {egpLabel()}
+                                        </span>
                                     </td>
                                     <td style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
                                         {safe.lastActivity}
@@ -256,10 +327,8 @@ export default function SafesPage() {
                                                 variant="ghost"
                                                 size="sm"
                                                 iconOnly
-                                                onClick={() => {
-                                                    setSelectedSafe(safe);
-                                                    setIsEditOpen(true);
-                                                }}
+                                                aria-label={t('common.edit')}
+                                                onClick={() => openEdit(safe)}
                                             >
                                                 <Edit size={14} />
                                             </Button>
@@ -267,6 +336,7 @@ export default function SafesPage() {
                                                 variant="ghost"
                                                 size="sm"
                                                 iconOnly
+                                                aria-label={t('common.delete')}
                                                 style={{ color: 'var(--color-error)' }}
                                                 onClick={() => {
                                                     setSelectedSafe(safe);
@@ -347,47 +417,37 @@ export default function SafesPage() {
                         <Button variant="ghost" onClick={() => setIsEditOpen(false)}>
                             {t('settings.safes.cancel')}
                         </Button>
-                        <Button
-                            onClick={async () => {
-                                try {
-                                    if (selectedSafe)
-                                        await settingsApi.updateSafe(String(selectedSafe.id), {
-                                            name: selectedSafe.name,
-                                            active: selectedSafe.status === 'Active',
-                                        });
-                                    setIsEditOpen(false);
-                                    addToast('success', t('settings.safes.updated'));
-                                    refetch();
-                                } catch {
-                                    addToast('error', t('settings.safes.updateFailed'));
-                                }
-                            }}
-                        >
-                            {t('settings.safes.saveChanges')}
-                        </Button>
+                        <Button onClick={handleEditSafe}>{t('settings.safes.saveChanges')}</Button>
                     </div>
                 }
             >
                 {selectedSafe && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                        <Input label={t('settings.safes.safeName')} defaultValue={selectedSafe.name} />
+                        <Input
+                            label={t('settings.safes.safeName')}
+                            value={editForm.name}
+                            onChange={e => setEditForm(prev => ({ ...prev, name: e.target.value }))}
+                        />
                         <Select
                             label={t('settings.safes.branch')}
-                            defaultValue="downtown"
+                            value={editForm.branch}
+                            onChange={e => setEditForm(prev => ({ ...prev, branch: e.target.value }))}
                             options={[
-                                { label: 'Downtown', value: 'downtown' },
-                                { label: 'Mall of Arabia', value: 'mall' },
-                                { label: 'New Cairo', value: 'newcairo' },
+                                { label: t('settings.safes.branchDowntown'), value: 'downtown' },
+                                { label: t('settings.safes.branchMall'), value: 'mall' },
+                                { label: t('settings.safes.branchNewCairo'), value: 'newcairo' },
                             ]}
                         />
                         <Input
                             label={t('settings.safes.currentBalance')}
                             type="number"
-                            defaultValue={selectedSafe.balance}
+                            value={editForm.balance}
+                            onChange={e => setEditForm(prev => ({ ...prev, balance: e.target.value }))}
                         />
                         <Select
                             label={t('settings.safes.status')}
-                            defaultValue={selectedSafe.status.toLowerCase()}
+                            value={editForm.status}
+                            onChange={e => setEditForm(prev => ({ ...prev, status: e.target.value }))}
                             options={[
                                 { label: t('settings.safes.active'), value: 'active' },
                                 { label: t('settings.safes.inactive'), value: 'inactive' },

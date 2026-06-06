@@ -1,5 +1,6 @@
 'use client';
 
+import { egpLabel } from '@/lib/money';
 import React, { useState, useEffect } from 'react';
 import { Coins, Save, Plus, Trash2, Edit, MapPin, Users, UserCog, Building2, Search } from 'lucide-react';
 import { Button, Input, Select, Modal, Badge, useToast } from '@/components/ui';
@@ -76,6 +77,9 @@ export default function ServicePricingPage() {
     const [activeTab, setActiveTab] = useState<'branch' | 'tier' | 'employee'>('branch');
     const [overrides, setOverrides] = useState<ServicePriceOverride[]>(fallbackOverrides);
     const [search, setSearch] = useState('');
+    // True once the live API has supplied real data — gates write-back so we never
+    // POST against fallback (mock) uuids.
+    const [apiAvailable, setApiAvailable] = useState(false);
 
     // ── Branch Tab State ──
     const [selectedBranchId, setSelectedBranchId] = useState('');
@@ -131,6 +135,10 @@ export default function ServicePricingPage() {
                         }))
                     );
                 }
+                // Any successful fetch means we're online with real data — enable write-back.
+                if ([svcRes, brRes, empRes, spRes].some(r => r.status === 'fulfilled' && r.value.success)) {
+                    setApiAvailable(true);
+                }
             } catch {
                 /* keep fallback */
             }
@@ -160,6 +168,39 @@ export default function ServicePricingPage() {
             s.category.toLowerCase().includes(search.toLowerCase())
     );
 
+    // ── Write-back (best-effort; optimistic local state is always applied first) ──
+    // Server records carry ULID uuids (26 chars, no hyphen); local-only rows use ids
+    // like `ovr-…`/`eo-…`, so this tells a persisted override from an unsaved one.
+    const isApiId = (id: string) => /^[0-9A-Za-z]{20,}$/.test(id);
+
+    const persistCreate = async (tempId: string, payload: Record<string, unknown>) => {
+        if (!apiAvailable) return;
+        try {
+            const res = await providerApi.createServicePrice(payload);
+            const uuid = res.data?.uuid;
+            // Swap the temp id for the server uuid so later edits/deletes target the record.
+            if (uuid) setOverrides(prev => prev.map(o => (o.id === tempId ? { ...o, id: uuid } : o)));
+        } catch {
+            /* API unreachable / rejected — optimistic local override stands */
+        }
+    };
+    const persistUpdate = async (id: string, price: number) => {
+        if (!apiAvailable || !isApiId(id)) return;
+        try {
+            await providerApi.updateServicePrice(id, { price });
+        } catch {
+            /* keep optimistic local */
+        }
+    };
+    const persistDelete = async (id: string) => {
+        if (!apiAvailable || !isApiId(id)) return;
+        try {
+            await providerApi.deleteServicePrice(id);
+        } catch {
+            /* keep optimistic local */
+        }
+    };
+
     // ── Helpers ──
 
     const getOverridePrice = (
@@ -182,6 +223,28 @@ export default function ServicePricingPage() {
         value: string
     ) => {
         const numVal = parseFloat(value);
+        // eslint-disable-next-line react-hooks/purity -- runs in an event handler, not during render
+        const newId = `ovr-${Date.now()}`;
+
+        // Persistence side-effect derived from current state (optimistic update follows).
+        const existing = overrides.find(
+            o =>
+                o.serviceId === serviceId &&
+                (o.branchId || undefined) === (opts.branchId || undefined) &&
+                (o.pricingTier || undefined) === (opts.pricingTier || undefined) &&
+                (o.employeeId || undefined) === (opts.employeeId || undefined)
+        );
+        if (!value || isNaN(numVal)) {
+            if (existing) persistDelete(existing.id);
+        } else if (existing) {
+            persistUpdate(existing.id, numVal);
+        } else if (!opts.pricingTier && (opts.branchId || opts.employeeId)) {
+            // Pure branch/employee scope maps cleanly to a service-price record. Tier
+            // overrides map to pricing groups (free-form) and stay local — see `tiers`.
+            const scope = opts.branchId ? { branch_uuid: opts.branchId } : { employee_uuid: opts.employeeId };
+            persistCreate(newId, { service_uuid: serviceId, price: numVal, ...scope });
+        }
+
         setOverrides(prev => {
             const idx = prev.findIndex(
                 o =>
@@ -207,7 +270,7 @@ export default function ServicePricingPage() {
             return [
                 ...prev,
                 {
-                    id: `ovr-${Date.now()}`,
+                    id: newId,
                     serviceId,
                     ...opts,
                     price: numVal,
@@ -217,6 +280,7 @@ export default function ServicePricingPage() {
     };
 
     const removeOverride = (id: string) => {
+        persistDelete(id);
         setOverrides(prev => prev.filter(o => o.id !== id));
         addToast('success', t('servicePricing.deleted'));
     };
@@ -249,6 +313,7 @@ export default function ServicePricingPage() {
 
         if (editingOverrideId) {
             // Update existing
+            persistUpdate(editingOverrideId, numVal);
             setOverrides(prev =>
                 prev.map(o =>
                     o.id === editingOverrideId
@@ -264,10 +329,17 @@ export default function ServicePricingPage() {
             );
         } else {
             // Add new
+            const newId = `eo-${Date.now()}`;
+            persistCreate(newId, {
+                service_uuid: formOverride.serviceId,
+                price: numVal,
+                employee_uuid: formOverride.employeeId,
+                ...(formOverride.branchId && { branch_uuid: formOverride.branchId }),
+            });
             setOverrides(prev => [
                 ...prev,
                 {
-                    id: `eo-${Date.now()}`,
+                    id: newId,
                     serviceId: formOverride.serviceId,
                     employeeId: formOverride.employeeId,
                     branchId: formOverride.branchId || undefined,
@@ -298,13 +370,18 @@ export default function ServicePricingPage() {
                     <div style={{ position: 'relative' }}>
                         <Search
                             size={16}
-                            style={{ position: 'absolute', left: 10, top: 10, color: 'var(--text-tertiary)' }}
+                            style={{
+                                position: 'absolute',
+                                insetInlineStart: 10,
+                                top: 10,
+                                color: 'var(--text-tertiary)',
+                            }}
                         />
                         <Input
                             placeholder={t('servicePricing.searchPh')}
                             value={search}
                             onChange={e => setSearch(e.target.value)}
-                            style={{ paddingLeft: 32, width: 200 }}
+                            style={{ paddingInlineStart: 32, width: 200 }}
                         />
                     </div>
                     <Button onClick={handleSave}>
@@ -359,7 +436,7 @@ export default function ServicePricingPage() {
                                             </Badge>
                                         </td>
                                         <td style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>
-                                            {service.price} EGP
+                                            {service.price} {egpLabel()}
                                         </td>
                                         <td style={{ textAlign: 'center' }}>
                                             <input
@@ -423,7 +500,7 @@ export default function ServicePricingPage() {
                                             </Badge>
                                         </td>
                                         <td style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>
-                                            {service.price} EGP
+                                            {service.price} {egpLabel()}
                                         </td>
                                         {tiers.map(tier => (
                                             <td key={tier} style={{ textAlign: 'center' }}>
@@ -527,7 +604,7 @@ export default function ServicePricingPage() {
                                                     )}
                                                 </td>
                                                 <td style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>
-                                                    {service?.price ?? '—'} EGP
+                                                    {service?.price ?? '—'} {egpLabel()}
                                                 </td>
                                                 <td
                                                     style={{
@@ -536,7 +613,7 @@ export default function ServicePricingPage() {
                                                         color: 'var(--color-primary-600)',
                                                     }}
                                                 >
-                                                    {o.price} EGP
+                                                    {o.price} {egpLabel()}
                                                 </td>
                                                 <td>
                                                     <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
@@ -586,7 +663,7 @@ export default function ServicePricingPage() {
                             label={t('servicePricing.service')}
                             options={[
                                 { label: t('servicePricing.selectService'), value: '' },
-                                ...services.map(s => ({ label: `${s.name} (${s.price} EGP)`, value: s.id })),
+                                ...services.map(s => ({ label: `${s.name} (${s.price} ${egpLabel()})`, value: s.id })),
                             ]}
                             value={formOverride.serviceId}
                             onChange={e => setFormOverride(prev => ({ ...prev, serviceId: e.target.value }))}
@@ -609,7 +686,10 @@ export default function ServicePricingPage() {
                                         }}
                                     >
                                         <Coins size={12} />
-                                        {t('servicePricing.basePrice')}: <strong>{selectedService.price} EGP</strong>
+                                        {t('servicePricing.basePrice')}:{' '}
+                                        <strong>
+                                            {selectedService.price} {egpLabel()}
+                                        </strong>
                                     </div>
                                 ) : null;
                             })()}
@@ -634,7 +714,7 @@ export default function ServicePricingPage() {
                     />
                     <div>
                         <Input
-                            label={`${t('servicePricing.price')} (EGP)`}
+                            label={`${t('servicePricing.price')} (${egpLabel()})`}
                             type="number"
                             min="0"
                             value={formOverride.price}
@@ -656,7 +736,7 @@ export default function ServicePricingPage() {
                                         }}
                                     >
                                         {diff > 0 ? '+' : ''}
-                                        {diff} EGP {t('servicePricing.vsBasePrice')}
+                                        {diff} {egpLabel()} {t('servicePricing.vsBasePrice')}
                                     </div>
                                 );
                             })()}

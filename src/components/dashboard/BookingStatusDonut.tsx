@@ -27,13 +27,13 @@ export default function BookingStatusDonut({ data }: { data: DatumWithColor[] })
                     dataKey="value"
                     stroke="none"
                 >
-                    {data.map((entry, i) => (
-                        <Cell key={i} fill={entry.color} />
+                    {data.map(entry => (
+                        <Cell key={entry.name} fill={entry.color} />
                     ))}
                 </Pie>
                 <RechartsTooltip
                     contentStyle={{
-                        borderRadius: '8px',
+                        borderRadius: 'var(--radius-md)',
                         border: '1px solid var(--border-color)',
                         boxShadow: 'var(--shadow-md)',
                     }}

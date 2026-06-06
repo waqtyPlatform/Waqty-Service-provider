@@ -1,5 +1,6 @@
 'use client';
 
+import { egpLabel } from '@/lib/money';
 import React, { useState, useCallback } from 'react';
 import { TrendingUp, Users, DollarSign, CalendarDays, Filter, Calendar } from 'lucide-react';
 import {
@@ -197,7 +198,7 @@ export default function ReportsPage() {
                                     dir="ltr"
                                     style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}
                                 >
-                                    {kpiData.revenue.toLocaleString()} EGP
+                                    {kpiData.revenue.toLocaleString()} {egpLabel()}
                                 </div>
                                 <div className={styles.kpiLabel}>
                                     {t('reports.kpiRevenue')} ({dateLabel})
@@ -280,7 +281,7 @@ export default function ReportsPage() {
                                     dir="ltr"
                                     style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}
                                 >
-                                    {kpiData.overrideRevenue.toLocaleString()} EGP
+                                    {kpiData.overrideRevenue.toLocaleString()} {egpLabel()}
                                 </div>
                                 <div className={styles.kpiLabel}>
                                     {lang === 'ar' ? 'إيرادات التسعير المخصص' : 'Override Pricing Revenue'}
@@ -333,7 +334,7 @@ export default function ReportsPage() {
                                     />
                                     <Tooltip
                                         contentStyle={{
-                                            borderRadius: 8,
+                                            borderRadius: 'var(--radius-md)',
                                             border: 'none',
                                             boxShadow: 'var(--shadow-lg)',
                                         }}
@@ -390,7 +391,7 @@ export default function ReportsPage() {
                                         </Pie>
                                         <Tooltip
                                             contentStyle={{
-                                                borderRadius: 8,
+                                                borderRadius: 'var(--radius-md)',
                                                 border: 'none',
                                                 boxShadow: 'var(--shadow-lg)',
                                             }}
@@ -414,7 +415,7 @@ export default function ReportsPage() {
                                         style={{
                                             display: 'flex',
                                             alignItems: 'center',
-                                            gap: 6,
+                                            gap: 'var(--space-2)',
                                             fontSize: 'var(--text-sm)',
                                             color: 'var(--text-secondary)',
                                         }}
@@ -459,7 +460,11 @@ export default function ReportsPage() {
                                 />
                                 <Tooltip
                                     cursor={{ fill: 'var(--bg-secondary)' }}
-                                    contentStyle={{ borderRadius: 8, border: 'none', boxShadow: 'var(--shadow-lg)' }}
+                                    contentStyle={{
+                                        borderRadius: 'var(--radius-md)',
+                                        border: 'none',
+                                        boxShadow: 'var(--shadow-lg)',
+                                    }}
                                     formatter={value => [value as number, t('reports.kpiBookings')]}
                                     labelFormatter={label => t(`reports.day${label}`) || label}
                                 />

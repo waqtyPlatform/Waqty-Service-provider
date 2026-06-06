@@ -158,9 +158,9 @@ const s: Record<string, React.CSSProperties> = {
     },
     name: { fontSize: 'var(--text-lg)', fontWeight: 'var(--font-semibold)' },
     discount: { fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)', color: 'var(--color-primary-600)' },
-    services: { padding: '0 var(--space-5) var(--space-4)', display: 'flex', flexWrap: 'wrap', gap: 6 },
+    services: { padding: '0 var(--space-5) var(--space-4)', display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' },
     svcChip: {
-        padding: '2px 10px',
+        padding: '2px var(--space-3)',
         background: 'var(--bg-secondary)',
         borderRadius: 'var(--radius-full)',
         fontSize: 'var(--text-xs)',
@@ -174,7 +174,13 @@ const s: Record<string, React.CSSProperties> = {
         borderTop: '1px solid var(--border-color)',
         background: 'var(--bg-secondary)',
     },
-    stat: { display: 'flex', alignItems: 'center', gap: 4, fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' },
+    stat: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 'var(--space-1)',
+        fontSize: 'var(--text-xs)',
+        color: 'var(--text-tertiary)',
+    },
     actions: { display: 'flex', gap: 'var(--space-2)' },
     btnIcon: {
         display: 'flex',
@@ -213,8 +219,13 @@ const s: Record<string, React.CSSProperties> = {
         marginBottom: 'var(--space-1)',
     },
     infoValue: { fontSize: 'var(--text-sm)', fontWeight: 'var(--font-semibold)', color: 'var(--text-primary)' },
-    progressContainer: { height: 8, background: 'var(--bg-tertiary)', borderRadius: 4, overflow: 'hidden' },
-    progressFill: { height: '100%', borderRadius: 4, transition: 'width 0.5s ease' },
+    progressContainer: {
+        height: 8,
+        background: 'var(--bg-tertiary)',
+        borderRadius: 'var(--radius-sm)',
+        overflow: 'hidden',
+    },
+    progressFill: { height: '100%', borderRadius: 'var(--radius-sm)', transition: 'width 0.5s ease' },
     sectionTitle: {
         fontSize: 'var(--text-sm)',
         fontWeight: 'var(--font-semibold)',
@@ -517,12 +528,12 @@ export default function OffersPage() {
                             <div style={{ ...(s.sectionTitle as React.CSSProperties), marginBottom: 'var(--space-3)' }}>
                                 {t('mkt.lblIncludedServices')}
                             </div>
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
                                 {selectedOffer.services.map((svc: string) => (
                                     <span
                                         key={svc}
                                         style={{
-                                            padding: '6px 14px',
+                                            padding: 'var(--space-2) var(--space-4)',
                                             background: 'var(--bg-secondary)',
                                             borderRadius: 'var(--radius-full)',
                                             fontSize: 'var(--text-sm)',

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Building2,
     Plus,
@@ -9,15 +9,31 @@ import {
     Trash2,
     MapPin,
     ExternalLink,
-    Lock,
     Eye,
     EyeOff,
     KeyRound,
     Mail,
     Crown,
+    AlertCircle,
 } from 'lucide-react';
-import { useToast, SlideOver, Modal, Input, Select, Button, DropdownMenu, Switch } from '@/components/ui';
+import { z } from 'zod';
+import type { UseFormReturn } from 'react-hook-form';
+import {
+    useToast,
+    SlideOver,
+    Modal,
+    Input,
+    Select,
+    Button,
+    DropdownMenu,
+    Switch,
+    ConfirmDialog,
+    Skeleton,
+    EmptyState,
+} from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useValidatedForm } from '@/hooks/useValidatedForm';
+import { useApiQuery } from '@/hooks/useApiQuery';
 import { providerApi, type Branch } from '@/lib/api';
 
 const GOVERNORATES = [
@@ -90,7 +106,7 @@ function mapApiBranch(b: Branch, index: number): BranchData {
         governorate: b.city?.name || '', // GAP: API has city_uuid/city object, no governorate
         city: b.city?.name || '', // GAP: API city is a UUID reference, not a string
         address: '', // GAP: API has no address field
-        mapLink: b.latitude && b.longitude ? `https://maps.google.com/?q=${b.latitude},${b.longitude}` : '', // GAP: API has lat/lng, not a map link
+        mapLink: b.latitude && b.longitude ? `https://maps.google.com/?q=${b.latitude},${b.longitude}` : '',
         phone: b.phone,
         manager: '', // GAP: API has no manager field
         employees: 0, // GAP: API has no employees count
@@ -147,6 +163,17 @@ const fallbackBranches: BranchData[] = [
 
 const s: Record<string, React.CSSProperties> = {
     page: { display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' },
+    sampleBanner: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 'var(--space-2)',
+        padding: 'var(--space-3) var(--space-4)',
+        borderRadius: 'var(--radius-lg)',
+        background: 'var(--color-warning-light)',
+        color: 'var(--color-warning)',
+        fontSize: 'var(--text-sm)',
+        fontWeight: 500,
+    },
     toolbar: { display: 'flex', justifyContent: 'flex-end', marginBottom: 'var(--space-2)' },
     grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: 'var(--space-5)' },
     card: {
@@ -170,7 +197,7 @@ const s: Record<string, React.CSSProperties> = {
     name: { fontSize: 'var(--text-lg)', fontWeight: 'var(--font-semibold)' },
     badge: {
         display: 'inline-flex',
-        padding: '2px 8px',
+        padding: '2px var(--space-2)',
         borderRadius: 'var(--radius-full)',
         fontSize: 11,
         fontWeight: 'var(--font-semibold)',
@@ -186,11 +213,11 @@ const s: Record<string, React.CSSProperties> = {
     },
     rowLast: { borderBottom: 'none' },
     label: { color: 'var(--text-tertiary)' },
-    val: { fontWeight: 'var(--font-medium)', textAlign: 'right' as const, maxWidth: '60%' },
+    val: { fontWeight: 'var(--font-medium)', textAlign: 'end' as const, maxWidth: '60%' },
     mapLink: {
         display: 'inline-flex',
         alignItems: 'center',
-        gap: 4,
+        gap: 'var(--space-1)',
         color: 'var(--color-primary-600)',
         fontSize: 'var(--text-sm)',
         fontWeight: 'var(--font-medium)',
@@ -208,21 +235,21 @@ const s: Record<string, React.CSSProperties> = {
     passwordWrapper: { position: 'relative' as const },
     passwordToggle: {
         position: 'absolute' as const,
-        right: 12,
+        insetInlineEnd: 12,
         top: 34,
         background: 'none',
         border: 'none',
         color: 'var(--text-tertiary)',
         cursor: 'pointer',
-        padding: 4,
+        padding: 'var(--space-1)',
     },
     mainCard: { borderColor: 'var(--color-primary-300)', boxShadow: '0 0 0 1px var(--color-primary-200)' },
     disabledCard: { opacity: 0.6 },
     mainBadge: {
         display: 'inline-flex',
         alignItems: 'center',
-        gap: 4,
-        padding: '2px 8px',
+        gap: 'var(--space-1)',
+        padding: '2px var(--space-2)',
         borderRadius: 'var(--radius-full)',
         fontSize: 11,
         fontWeight: 'var(--font-semibold)' as const,
@@ -240,16 +267,37 @@ const s: Record<string, React.CSSProperties> = {
     },
 };
 
-function BranchForm({
-    defaultValues,
-    mode = 'create',
-}: {
-    defaultValues?: Partial<BranchData>;
-    mode?: 'create' | 'edit';
-}) {
-    const [governorate, setGovernorate] = useState(defaultValues?.governorate || '');
-    const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+// ── Validation schema ──
+const branchSchema = z.object({
+    name: z.string().trim().min(2, 'Branch name must be at least 2 characters'),
+    phone: z.string().trim().min(7, 'Enter a valid phone number'),
+    manager: z.string().optional(),
+    governorate: z.string().optional(),
+    city: z.string().optional(),
+    address: z.string().optional(),
+    mapLink: z.union([z.string().url('Enter a valid link'), z.literal('')]).optional(),
+    email: z.union([z.string().email('Enter a valid email'), z.literal('')]).optional(),
+});
+type BranchFormValues = z.infer<typeof branchSchema>;
+
+const EMPTY_BRANCH: BranchFormValues = {
+    name: '',
+    phone: '',
+    manager: '',
+    governorate: '',
+    city: '',
+    address: '',
+    mapLink: '',
+    email: '',
+};
+
+function BranchForm({ form }: { form: UseFormReturn<BranchFormValues> }) {
+    const {
+        register,
+        watch,
+        formState: { errors },
+    } = form;
+    const governorate = watch('governorate') || '';
     const cities = CITIES[governorate] || [];
     const { t } = useTranslation();
 
@@ -258,17 +306,19 @@ function BranchForm({
             <Input
                 label={t('settings.branches.branchName')}
                 placeholder={t('settings.branches.namePh')}
-                defaultValue={defaultValues?.name}
+                {...register('name')}
+                error={errors.name?.message}
             />
             <Input
                 label={t('settings.branches.contactPhone')}
                 placeholder="+20 1XX XXX XXXX"
-                defaultValue={defaultValues?.phone}
+                {...register('phone')}
+                error={errors.phone?.message}
             />
             <Input
                 label={t('settings.branches.managerName')}
                 placeholder={t('settings.branches.managerPh')}
-                defaultValue={defaultValues?.manager}
+                {...register('manager')}
             />
 
             <div style={s.sectionLabel}>📍 {t('settings.branches.locDetails')}</div>
@@ -276,16 +326,15 @@ function BranchForm({
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
                 <Select
                     label={t('settings.branches.governorate')}
-                    defaultValue={defaultValues?.governorate || ''}
+                    {...register('governorate')}
                     options={[
                         { label: t('settings.branches.selGov'), value: '' },
                         ...GOVERNORATES.map(g => ({ label: g, value: g })),
                     ]}
-                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setGovernorate(e.target.value)}
                 />
                 <Select
                     label={t('settings.branches.city')}
-                    defaultValue={defaultValues?.city || ''}
+                    {...register('city')}
                     options={
                         cities.length > 0
                             ? [
@@ -300,61 +349,21 @@ function BranchForm({
             <Input
                 label={t('settings.branches.fullAddress')}
                 placeholder={t('settings.branches.addressPh')}
-                defaultValue={defaultValues?.address}
+                {...register('address')}
             />
             <Input
                 label={t('settings.branches.mapsLink')}
                 placeholder="https://maps.app.goo.gl/..."
-                defaultValue={defaultValues?.mapLink}
+                {...register('mapLink')}
+                error={errors.mapLink?.message}
             />
-
-            {/* Branch Login Credentials Section */}
-            <div style={{ ...s.sectionLabel, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <Lock size={12} /> {t('settings.branches.credentialsSection')}
-            </div>
-
             <Input
                 label={t('settings.branches.branchEmail')}
                 type="email"
                 placeholder="branch@business.com"
-                defaultValue={defaultValues?.email}
+                {...register('email')}
+                error={errors.email?.message}
             />
-
-            <div style={s.passwordWrapper}>
-                <Input
-                    label={t('settings.branches.branchPassword')}
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder={
-                        mode === 'edit' ? t('settings.branches.passwordHint') : t('settings.branches.passwordMinPh')
-                    }
-                />
-                <button
-                    type="button"
-                    style={s.passwordToggle}
-                    onClick={() => setShowPassword(!showPassword)}
-                    tabIndex={-1}
-                >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-            </div>
-
-            <div style={s.passwordWrapper}>
-                <Input
-                    label={t('settings.branches.confirmPassword')}
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    placeholder={
-                        mode === 'edit' ? t('settings.branches.passwordHint') : t('settings.branches.confirmPasswordPh')
-                    }
-                />
-                <button
-                    type="button"
-                    style={s.passwordToggle}
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    tabIndex={-1}
-                >
-                    {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-            </div>
         </div>
     );
 }
@@ -362,59 +371,161 @@ function BranchForm({
 export default function BranchesPage() {
     const { addToast } = useToast();
     const { t } = useTranslation();
-    const [branches, setBranches] = useState(fallbackBranches);
-    const [apiLoaded, setApiLoaded] = useState(false);
+
+    const { data: apiBranches, loading, error, refetch } = useApiQuery<Branch[]>(() => providerApi.getBranches(), []);
+    const [branches, setBranches] = useState<BranchData[]>(fallbackBranches);
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- sync API data into local state on arrival
+        if (apiBranches) setBranches(apiBranches.map(mapApiBranch));
+    }, [apiBranches]);
+    const apiAvailable = !!apiBranches && !error;
+    const usingSample = !loading && !apiAvailable;
+
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [isResetPasswordOpen, setIsResetPasswordOpen] = useState(false);
     const [selectedBranch, setSelectedBranch] = useState<BranchData | null>(null);
+    const [deleting, setDeleting] = useState(false);
 
-    const [refreshKey, setRefreshKey] = useState(0);
+    const form = useValidatedForm<BranchFormValues>({ schema: branchSchema, defaultValues: EMPTY_BRANCH });
 
-    useEffect(() => {
-        let cancelled = false;
-        (async () => {
+    const openAdd = () => {
+        form.reset(EMPTY_BRANCH);
+        setIsAddOpen(true);
+    };
+    const openEdit = (b: BranchData) => {
+        setSelectedBranch(b);
+        form.reset({
+            name: b.name,
+            phone: b.phone,
+            manager: b.manager,
+            governorate: b.governorate,
+            city: b.city,
+            address: b.address,
+            mapLink: b.mapLink,
+            email: b.email,
+        });
+        setIsEditOpen(true);
+    };
+
+    const buildPayload = (v: BranchFormValues) => ({
+        name: v.name,
+        phone: v.phone,
+        manager: v.manager,
+        governorate: v.governorate,
+        city: v.city,
+        address: v.address,
+        map_link: v.mapLink,
+        email: v.email,
+    });
+
+    const onCreate = form.handleSubmit(async v => {
+        if (apiAvailable) {
             try {
-                const res = await providerApi.getBranches();
-                if (!cancelled && res.success && res.data) {
-                    setBranches(res.data.map((b, i) => mapApiBranch(b, i)));
-                    setApiLoaded(true);
-                }
-            } catch {
-                // Keep fallback data
+                await providerApi.createBranch(buildPayload(v));
+                addToast('success', t('settings.branches.created'));
+                setIsAddOpen(false);
+                refetch();
+            } catch (err: unknown) {
+                addToast('error', (err as { message?: string })?.message || t('settings.branches.createFailed'));
             }
-        })();
-        return () => {
-            cancelled = true;
-        };
-    }, [refreshKey]);
+        } else {
+            setBranches(prev => [
+                ...prev,
+                {
+                    id: Math.max(0, ...prev.map(b => b.id)) + 1,
+                    name: v.name,
+                    governorate: v.governorate || '',
+                    city: v.city || '',
+                    address: v.address || '',
+                    mapLink: v.mapLink || '',
+                    phone: v.phone,
+                    manager: v.manager || '',
+                    employees: 0,
+                    status: 'active',
+                    email: v.email || '',
+                    isMain: false,
+                },
+            ]);
+            addToast('success', t('settings.branches.created'));
+            setIsAddOpen(false);
+        }
+    });
+
+    const onUpdate = form.handleSubmit(async v => {
+        if (apiAvailable && selectedBranch?.uuid) {
+            try {
+                await providerApi.updateBranch(selectedBranch.uuid, buildPayload(v));
+                addToast('success', t('settings.branches.updated'));
+                setIsEditOpen(false);
+                refetch();
+            } catch (err: unknown) {
+                addToast('error', (err as { message?: string })?.message || t('settings.branches.createFailed'));
+            }
+        } else {
+            setBranches(prev =>
+                prev.map(b =>
+                    b.id === selectedBranch?.id
+                        ? {
+                              ...b,
+                              name: v.name,
+                              phone: v.phone,
+                              manager: v.manager || '',
+                              governorate: v.governorate || '',
+                              city: v.city || '',
+                              address: v.address || '',
+                              mapLink: v.mapLink || '',
+                              email: v.email || '',
+                          }
+                        : b
+                )
+            );
+            addToast('success', t('settings.branches.updated'));
+            setIsEditOpen(false);
+        }
+    });
 
     const handleToggleBranch = async (id: number) => {
         const branch = branches.find(b => b.id === id);
         if (!branch) return;
-
         const newStatus: 'active' | 'disabled' = branch.status === 'active' ? 'disabled' : 'active';
-
-        // Optimistic update
         setBranches(prev => prev.map(b => (b.id === id ? { ...b, status: newStatus } : b)));
         addToast(
             'success',
             t(newStatus === 'active' ? 'settings.branches.branchEnabled' : 'settings.branches.branchDisabled')
         );
-
-        // GAP: API has no toggle-active endpoint for branches — only PATCH /main
-        // The active field is set during create/update
-        if (apiLoaded && branch.uuid) {
+        if (apiAvailable && branch.uuid) {
             try {
                 await providerApi.updateBranch(branch.uuid, { active: newStatus === 'active' });
             } catch {
-                // Revert on failure
                 setBranches(prev => prev.map(b => (b.id === id ? { ...b, status: branch.status } : b)));
                 addToast('error', t('settings.branches.statusUpdateFailed'));
             }
         }
     };
+
+    const onDelete = async () => {
+        if (!selectedBranch) return;
+        setDeleting(true);
+        if (apiAvailable && selectedBranch.uuid) {
+            try {
+                await providerApi.deleteBranch(selectedBranch.uuid);
+                addToast('success', t('settings.branches.deleted'));
+                refetch();
+            } catch (err: unknown) {
+                addToast('error', (err as { message?: string })?.message || t('settings.branches.deleteFailed'));
+            }
+        } else {
+            setBranches(prev => prev.filter(b => b.id !== selectedBranch.id));
+            addToast('success', t('settings.branches.deleted'));
+        }
+        setDeleting(false);
+        setIsDeleteOpen(false);
+        setSelectedBranch(null);
+    };
+
+    // Reset-password flow (separate, already controlled)
     const [resetNewPassword, setResetNewPassword] = useState('');
     const [resetConfirmPassword, setResetConfirmPassword] = useState('');
     const [showResetPassword, setShowResetPassword] = useState(false);
@@ -448,160 +559,191 @@ export default function BranchesPage() {
 
     return (
         <div style={s.page}>
+            {usingSample && (
+                <div style={s.sampleBanner}>
+                    <AlertCircle size={16} /> {t('common.sampleData')}
+                </div>
+            )}
+
             <div style={s.toolbar}>
-                <Button onClick={() => setIsAddOpen(true)}>
-                    <Plus size={16} style={{ marginRight: 8 }} /> {t('settings.branches.addBranch')}
+                <Button onClick={openAdd}>
+                    <Plus size={16} style={{ marginInlineEnd: 'var(--space-2)' }} /> {t('settings.branches.addBranch')}
                 </Button>
             </div>
-            <div style={s.grid}>
-                {branches.map(b => (
-                    <div
-                        key={b.id}
-                        style={{
-                            ...s.card,
-                            ...(b.isMain ? s.mainCard : {}),
-                            ...(b.status === 'disabled' ? s.disabledCard : {}),
-                        }}
-                    >
-                        <div style={{ ...(s.cardHead as React.CSSProperties), justifyContent: 'space-between' }}>
-                            <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-                                <div
-                                    style={{
-                                        ...s.icon,
-                                        ...(b.isMain
-                                            ? {
-                                                  background: 'var(--color-primary-100)',
-                                                  color: 'var(--color-primary-700)',
-                                              }
-                                            : {}),
-                                    }}
-                                >
-                                    <Building2 size={20} />
-                                </div>
-                                <div>
-                                    <div style={s.name}>{b.name}</div>
-                                    <div style={{ display: 'flex', gap: 6, marginTop: 2 }}>
-                                        {b.isMain && (
-                                            <span style={s.mainBadge}>
-                                                <Crown size={10} /> {t('settings.branches.mainBranch')}
-                                            </span>
-                                        )}
-                                        <span
-                                            style={{
-                                                ...s.badge,
-                                                ...(b.status === 'disabled' ? s.disabledBadge : {}),
-                                            }}
-                                        >
-                                            {t(
-                                                b.status === 'active'
-                                                    ? 'settings.branches.active'
-                                                    : 'settings.branches.disabled'
-                                            )}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <DropdownMenu
-                                trigger={
-                                    <button
+
+            {loading ? (
+                <div style={s.grid}>
+                    {Array.from({ length: 3 }).map((_, i) => (
+                        <Skeleton key={i} variant="card" height={300} />
+                    ))}
+                </div>
+            ) : branches.length === 0 ? (
+                <EmptyState
+                    icon={<Building2 size={40} />}
+                    title={t('settings.branches.emptyTitle')}
+                    description={t('settings.branches.emptyDesc')}
+                    action={
+                        <Button onClick={openAdd}>
+                            <Plus size={16} style={{ marginInlineEnd: 'var(--space-2)' }} />{' '}
+                            {t('settings.branches.addBranch')}
+                        </Button>
+                    }
+                />
+            ) : (
+                <div style={s.grid}>
+                    {branches.map(b => (
+                        <div
+                            key={b.id}
+                            style={{
+                                ...s.card,
+                                ...(b.isMain ? s.mainCard : {}),
+                                ...(b.status === 'disabled' ? s.disabledCard : {}),
+                            }}
+                        >
+                            <div style={{ ...(s.cardHead as React.CSSProperties), justifyContent: 'space-between' }}>
+                                <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+                                    <div
                                         style={{
-                                            background: 'none',
-                                            border: 'none',
-                                            cursor: 'pointer',
-                                            color: 'var(--text-tertiary)',
+                                            ...s.icon,
+                                            ...(b.isMain
+                                                ? {
+                                                      background: 'var(--color-primary-100)',
+                                                      color: 'var(--color-primary-700)',
+                                                  }
+                                                : {}),
                                         }}
                                     >
-                                        <MoreVertical size={16} />
-                                    </button>
-                                }
-                                items={[
-                                    {
-                                        label: t('settings.branches.editBranch'),
-                                        icon: <Edit size={14} />,
-                                        onClick: () => {
-                                            setSelectedBranch(b);
-                                            setIsEditOpen(true);
+                                        <Building2 size={20} />
+                                    </div>
+                                    <div>
+                                        <div style={s.name}>{b.name}</div>
+                                        <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 2 }}>
+                                            {b.isMain && (
+                                                <span style={s.mainBadge}>
+                                                    <Crown size={10} /> {t('settings.branches.mainBranch')}
+                                                </span>
+                                            )}
+                                            <span
+                                                style={{
+                                                    ...s.badge,
+                                                    ...(b.status === 'disabled' ? s.disabledBadge : {}),
+                                                }}
+                                            >
+                                                {t(
+                                                    b.status === 'active'
+                                                        ? 'settings.branches.active'
+                                                        : 'settings.branches.disabled'
+                                                )}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <DropdownMenu
+                                    trigger={
+                                        <button
+                                            aria-label={t('common.moreOptions')}
+                                            style={{
+                                                background: 'none',
+                                                border: 'none',
+                                                cursor: 'pointer',
+                                                color: 'var(--text-tertiary)',
+                                            }}
+                                        >
+                                            <MoreVertical size={16} />
+                                        </button>
+                                    }
+                                    items={[
+                                        {
+                                            label: t('settings.branches.editBranch'),
+                                            icon: <Edit size={14} />,
+                                            onClick: () => openEdit(b),
                                         },
-                                    },
-                                    {
-                                        label: t('settings.branches.resetPassword'),
-                                        icon: <KeyRound size={14} />,
-                                        onClick: () => {
-                                            setSelectedBranch(b);
-                                            setIsResetPasswordOpen(true);
+                                        {
+                                            label: t('settings.branches.resetPassword'),
+                                            icon: <KeyRound size={14} />,
+                                            onClick: () => {
+                                                setSelectedBranch(b);
+                                                setIsResetPasswordOpen(true);
+                                            },
                                         },
-                                    },
-                                    ...(!b.isMain
-                                        ? [
-                                              {
-                                                  label: t('settings.branches.deleteBranch'),
-                                                  destructive: true,
-                                                  icon: <Trash2 size={14} />,
-                                                  onClick: () => {
-                                                      setSelectedBranch(b);
-                                                      setIsDeleteOpen(true);
+                                        ...(!b.isMain
+                                            ? [
+                                                  {
+                                                      label: t('settings.branches.deleteBranch'),
+                                                      destructive: true,
+                                                      icon: <Trash2 size={14} />,
+                                                      onClick: () => {
+                                                          setSelectedBranch(b);
+                                                          setIsDeleteOpen(true);
+                                                      },
                                                   },
-                                              },
-                                          ]
-                                        : []),
-                                ]}
-                            />
-                        </div>
-                        <div style={s.row}>
-                            <span style={s.label}>{t('settings.branches.governorate')}</span>
-                            <span style={s.val}>{b.governorate}</span>
-                        </div>
-                        <div style={s.row}>
-                            <span style={s.label}>{t('settings.branches.city')}</span>
-                            <span style={s.val}>{b.city}</span>
-                        </div>
-                        <div style={s.row}>
-                            <span style={s.label}>{t('settings.branches.address')}</span>
-                            <span style={s.val}>{b.address}</span>
-                        </div>
-                        <div style={s.row}>
-                            <span style={s.label}>{t('settings.branches.phone')}</span>
-                            <span style={s.val}>{b.phone}</span>
-                        </div>
-                        <div style={s.row}>
-                            <span style={s.label}>{t('settings.branches.email')}</span>
-                            <span style={{ ...s.val, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                                <Mail size={13} style={{ color: 'var(--text-tertiary)' }} /> {b.email}
-                            </span>
-                        </div>
-                        <div style={s.row}>
-                            <span style={s.label}>{t('settings.branches.manager')}</span>
-                            <span style={s.val}>{b.manager}</span>
-                        </div>
-                        <div style={s.row}>
-                            <span style={s.label}>{t('settings.branches.employees')}</span>
-                            <span style={s.val}>{b.employees}</span>
-                        </div>
-                        <div style={{ ...s.row, ...s.rowLast }}>
-                            <span style={s.label}>{t('settings.branches.location')}</span>
-                            <a href={b.mapLink} target="_blank" rel="noopener noreferrer" style={s.mapLink}>
-                                <MapPin size={14} /> {t('settings.branches.viewMap')} <ExternalLink size={12} />
-                            </a>
-                        </div>
-                        {/* Toggle to enable/disable branch (not shown for main branch) */}
-                        {!b.isMain && (
-                            <div style={s.toggleRow}>
-                                <Switch
-                                    checked={b.status === 'active'}
-                                    onChange={() => handleToggleBranch(b.id)}
-                                    label={t(
-                                        b.status === 'active'
-                                            ? 'settings.branches.active'
-                                            : 'settings.branches.disabled'
-                                    )}
+                                              ]
+                                            : []),
+                                    ]}
                                 />
                             </div>
-                        )}
-                    </div>
-                ))}
-            </div>
+                            <div style={s.row}>
+                                <span style={s.label}>{t('settings.branches.governorate')}</span>
+                                <span style={s.val}>{b.governorate}</span>
+                            </div>
+                            <div style={s.row}>
+                                <span style={s.label}>{t('settings.branches.city')}</span>
+                                <span style={s.val}>{b.city}</span>
+                            </div>
+                            <div style={s.row}>
+                                <span style={s.label}>{t('settings.branches.address')}</span>
+                                <span style={s.val}>{b.address}</span>
+                            </div>
+                            <div style={s.row}>
+                                <span style={s.label}>{t('settings.branches.phone')}</span>
+                                <span style={s.val}>{b.phone}</span>
+                            </div>
+                            <div style={s.row}>
+                                <span style={s.label}>{t('settings.branches.email')}</span>
+                                <span
+                                    style={{
+                                        ...s.val,
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: 'var(--space-1)',
+                                    }}
+                                >
+                                    <Mail size={13} style={{ color: 'var(--text-tertiary)' }} /> {b.email}
+                                </span>
+                            </div>
+                            <div style={s.row}>
+                                <span style={s.label}>{t('settings.branches.manager')}</span>
+                                <span style={s.val}>{b.manager}</span>
+                            </div>
+                            <div style={s.row}>
+                                <span style={s.label}>{t('settings.branches.employees')}</span>
+                                <span style={s.val}>{b.employees}</span>
+                            </div>
+                            <div style={{ ...s.row, ...s.rowLast }}>
+                                <span style={s.label}>{t('settings.branches.location')}</span>
+                                <a href={b.mapLink} target="_blank" rel="noopener noreferrer" style={s.mapLink}>
+                                    <MapPin size={14} /> {t('settings.branches.viewMap')} <ExternalLink size={12} />
+                                </a>
+                            </div>
+                            {!b.isMain && (
+                                <div style={s.toggleRow}>
+                                    <Switch
+                                        checked={b.status === 'active'}
+                                        onChange={() => handleToggleBranch(b.id)}
+                                        label={t(
+                                            b.status === 'active'
+                                                ? 'settings.branches.active'
+                                                : 'settings.branches.disabled'
+                                        )}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
 
-            {/* Add Branch SlideOver */}
+            {/* Add Branch */}
             <SlideOver
                 open={isAddOpen}
                 onClose={() => setIsAddOpen(false)}
@@ -611,35 +753,16 @@ export default function BranchesPage() {
                         <Button variant="ghost" onClick={() => setIsAddOpen(false)}>
                             {t('settings.branches.cancel')}
                         </Button>
-                        <Button
-                            onClick={async () => {
-                                if (apiLoaded) {
-                                    try {
-                                        // GAP: BranchForm uses uncontrolled inputs (defaultValue), can't read values
-                                        // A proper integration needs controlled form state
-                                        // For now we close and show success — actual API create needs form refactor
-                                        addToast('success', t('settings.branches.created'));
-                                    } catch (err: unknown) {
-                                        const error = err as { message?: string };
-                                        addToast('error', error.message || t('settings.branches.createFailed'));
-                                        return;
-                                    }
-                                } else {
-                                    addToast('success', t('settings.branches.created'));
-                                }
-                                setIsAddOpen(false);
-                                setRefreshKey(k => k + 1);
-                            }}
-                        >
+                        <Button onClick={onCreate} loading={form.formState.isSubmitting}>
                             {t('settings.branches.saveBranch')}
                         </Button>
                     </div>
                 }
             >
-                <BranchForm mode="create" />
+                <BranchForm form={form} />
             </SlideOver>
 
-            {/* Edit Branch SlideOver */}
+            {/* Edit Branch */}
             <SlideOver
                 open={isEditOpen}
                 onClose={() => {
@@ -652,62 +775,29 @@ export default function BranchesPage() {
                         <Button variant="ghost" onClick={() => setIsEditOpen(false)}>
                             {t('settings.branches.cancel')}
                         </Button>
-                        <Button
-                            onClick={async () => {
-                                // GAP: same uncontrolled form issue as Add
-                                setIsEditOpen(false);
-                                addToast('success', t('settings.branches.updated'));
-                                if (apiLoaded) setRefreshKey(k => k + 1);
-                            }}
-                        >
+                        <Button onClick={onUpdate} loading={form.formState.isSubmitting}>
                             {t('settings.saveChanges')}
                         </Button>
                     </div>
                 }
             >
-                {selectedBranch && <BranchForm defaultValues={selectedBranch} mode="edit" />}
+                <BranchForm form={form} />
             </SlideOver>
 
-            {/* Delete Confirmation Modal */}
-            <Modal
+            {/* Delete confirmation */}
+            <ConfirmDialog
                 open={isDeleteOpen}
                 onClose={() => {
                     setIsDeleteOpen(false);
                     setSelectedBranch(null);
                 }}
+                onConfirm={onDelete}
                 title={t('settings.branches.deleteBranch')}
-                footer={
-                    <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
-                        <Button variant="ghost" onClick={() => setIsDeleteOpen(false)}>
-                            {t('settings.branches.cancel')}
-                        </Button>
-                        <Button
-                            variant="destructive"
-                            onClick={async () => {
-                                if (apiLoaded && selectedBranch?.uuid) {
-                                    try {
-                                        await providerApi.deleteBranch(selectedBranch.uuid);
-                                        addToast('error', t('settings.branches.deleted'));
-                                        setRefreshKey(k => k + 1);
-                                    } catch (err: unknown) {
-                                        const error = err as { message?: string };
-                                        addToast('error', error.message || t('settings.branches.deleteFailed'));
-                                    }
-                                } else {
-                                    addToast('error', t('settings.branches.deleted'));
-                                }
-                                setIsDeleteOpen(false);
-                            }}
-                        >
-                            {t('settings.branches.confirmDelete')}
-                        </Button>
-                    </div>
-                }
-            >
-                <div>
-                    <p style={{ color: 'var(--text-secondary)' }}>{t('settings.branches.deleteWarning')}</p>
-                </div>
-            </Modal>
+                message={t('settings.branches.deleteWarning')}
+                confirmLabel={t('settings.branches.confirmDelete')}
+                variant="danger"
+                loading={deleting}
+            />
 
             {/* Reset Password Modal */}
             <Modal

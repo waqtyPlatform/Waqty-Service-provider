@@ -1,5 +1,6 @@
 'use client';
 
+import { egpLabel } from '@/lib/money';
 import React from 'react';
 import Link from 'next/link';
 import { CalendarDays } from 'lucide-react';
@@ -144,7 +145,7 @@ const s: Record<string, React.CSSProperties> = {
     },
     th: {
         padding: 'var(--space-3) var(--space-4)',
-        textAlign: 'left',
+        textAlign: 'start',
         fontSize: 'var(--text-xs)',
         fontWeight: 'var(--font-semibold)',
         color: 'var(--text-tertiary)',
@@ -160,7 +161,7 @@ const s: Record<string, React.CSSProperties> = {
     },
     badge: {
         display: 'inline-flex',
-        padding: '2px 8px',
+        padding: '2px var(--space-2)',
         borderRadius: 'var(--radius-full)',
         fontSize: 11,
         fontWeight: 'var(--font-semibold)',
@@ -197,13 +198,13 @@ export default function DailiesPage() {
             <div style={s.kpis}>
                 <div style={s.kpi}>
                     <div style={s.kpiVal} dir="ltr">
-                        {totalRev.toLocaleString()} EGP
+                        {totalRev.toLocaleString()} {egpLabel()}
                     </div>
                     <div style={s.kpiLbl}>{t('txn.dailies.weekly')}</div>
                 </div>
                 <div style={s.kpi}>
                     <div style={s.kpiVal} dir="ltr">
-                        {Math.round(totalRev / 7).toLocaleString()} EGP
+                        {Math.round(totalRev / 7).toLocaleString()} {egpLabel()}
                     </div>
                     <div style={s.kpiLbl}>{t('txn.dailies.avg')}</div>
                 </div>
@@ -234,13 +235,7 @@ export default function DailiesPage() {
                                 'txn.dailies.thShifts',
                                 'txn.dailies.thDayStatus',
                             ].map(h => (
-                                <th
-                                    key={h}
-                                    style={{
-                                        ...(s.th as React.CSSProperties),
-                                        textAlign: lang === 'ar' ? 'right' : 'left',
-                                    }}
-                                >
+                                <th key={h} style={s.th as React.CSSProperties}>
                                     {t(h)}
                                 </th>
                             ))}
@@ -260,7 +255,7 @@ export default function DailiesPage() {
                                     }}
                                     dir="ltr"
                                 >
-                                    {row.revenue.toLocaleString()} EGP
+                                    {row.revenue.toLocaleString()} {egpLabel()}
                                 </td>
                                 <td style={s.td}>
                                     <div
@@ -268,7 +263,7 @@ export default function DailiesPage() {
                                             display: 'flex',
                                             gap: 'var(--space-3)',
                                             fontSize: 'var(--text-xs)',
-                                            marginBottom: 4,
+                                            marginBottom: 'var(--space-1)',
                                         }}
                                     >
                                         <span style={{ color: 'var(--color-success)' }} dir="ltr">

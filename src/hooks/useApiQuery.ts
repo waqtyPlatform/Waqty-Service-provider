@@ -12,6 +12,8 @@ interface UseApiQueryResult<T> {
     data: T | null;
     loading: boolean;
     error: string | null;
+    /** True when the fetch failed and `fallbackData` is being shown instead — so the UI can flag "sample data" rather than silently masking the outage. */
+    isFallback: boolean;
     refetch: () => Promise<void>;
     setData: React.Dispatch<React.SetStateAction<T | null>>;
 }
@@ -27,6 +29,7 @@ export function useApiQuery<T = any>(
     const [data, setData] = useState<T | null>((fallbackData as T) ?? null);
     const [loading, setLoading] = useState(enabled);
     const [error, setError] = useState<string | null>(null);
+    const [isFallback, setIsFallback] = useState(false);
     const mountedRef = useRef(true);
 
     const fetchData = useCallback(async () => {
@@ -37,12 +40,15 @@ export function useApiQuery<T = any>(
             const response = await fetcher();
             if (mountedRef.current) {
                 setData(response.data ?? null);
+                setIsFallback(false);
             }
         } catch (err: unknown) {
             if (mountedRef.current) {
                 if (fallbackData !== undefined) {
-                    // API unavailable — silently use fallback data, no error shown
+                    // API unavailable — show fallback data but flag it so the UI can
+                    // surface a "sample data" notice instead of masking the outage.
                     setData(fallbackData as T);
+                    setIsFallback(true);
                 } else {
                     // No fallback — show error to user
                     const message =
@@ -68,7 +74,7 @@ export function useApiQuery<T = any>(
         };
     }, [fetchData]);
 
-    return { data, loading, error, refetch: fetchData, setData };
+    return { data, loading, error, isFallback, refetch: fetchData, setData };
 }
 
 interface UseApiMutationResult<T, V = Record<string, unknown>> {

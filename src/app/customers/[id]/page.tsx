@@ -1,5 +1,6 @@
 'use client';
 
+import { egpLabel } from '@/lib/money';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
@@ -640,7 +641,7 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                                         >
                                             {prefLabel(pref)}
                                             <span
-                                                style={{ cursor: 'pointer', fontWeight: 700, marginLeft: 2 }}
+                                                style={{ cursor: 'pointer', fontWeight: 700, marginInlineStart: 2 }}
                                                 onClick={() => setPreferences(p => p.filter(x => x !== pref))}
                                             >
                                                 ×
@@ -682,7 +683,7 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                                     <button
                                         key={p.key}
                                         style={{
-                                            textAlign: 'left',
+                                            textAlign: 'start',
                                             padding: 'var(--space-2) var(--space-3)',
                                             borderRadius: 'var(--radius-md)',
                                             border: 'none',
@@ -784,17 +785,17 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                                                         textDecoration: 'line-through',
                                                         color: 'var(--text-tertiary)',
                                                         fontSize: 'var(--text-xs)',
-                                                        marginRight: 4,
+                                                        marginInlineEnd: 'var(--space-1)',
                                                     }}
                                                 >
                                                     {b.basePrice}
                                                 </span>
                                             )}
-                                            {b.price} EGP
+                                            {b.price} {egpLabel()}
                                             {b.priceSource !== 'base' && (
                                                 <span
                                                     style={{
-                                                        marginLeft: 4,
+                                                        marginInlineStart: 'var(--space-1)',
                                                         padding: '1px 5px',
                                                         borderRadius: 'var(--radius-full)',
                                                         fontSize: 10,
@@ -868,7 +869,9 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                                         <td style={{ fontFamily: 'var(--font-mono)' }}>{s.id}</td>
                                         <td>{s.date}</td>
                                         <td>{s.items}</td>
-                                        <td style={{ fontWeight: 'var(--font-bold)' }}>{s.total} EGP</td>
+                                        <td style={{ fontWeight: 'var(--font-bold)' }}>
+                                            {s.total} {egpLabel()}
+                                        </td>
                                         <td>
                                             <Badge color="success">
                                                 {s.status === 'paid' ? t('custProfile.statusPaid') : s.status}
@@ -1374,7 +1377,9 @@ export default function CustomerProfilePage({ params }: { params: Promise<{ id: 
                             <span className={styles.statLabel}>{t('custProfile.statVisits')}</span>
                         </div>
                         <div className={styles.statItem}>
-                            <span className={styles.statValue}>{client.stats.spend} EGP</span>
+                            <span className={styles.statValue}>
+                                {client.stats.spend} {egpLabel()}
+                            </span>
                             <span className={styles.statLabel}>{t('custProfile.statSpend')}</span>
                         </div>
                         <div className={styles.statItem}>

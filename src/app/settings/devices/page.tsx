@@ -114,7 +114,7 @@ const s: Record<string, React.CSSProperties> = {
     },
     th: {
         padding: 'var(--space-3) var(--space-4)',
-        textAlign: 'left',
+        textAlign: 'start',
         fontSize: 'var(--text-xs)',
         fontWeight: 'var(--font-semibold)',
         color: 'var(--text-tertiary)',
@@ -131,8 +131,8 @@ const s: Record<string, React.CSSProperties> = {
     badge: {
         display: 'inline-flex',
         alignItems: 'center',
-        gap: 4,
-        padding: '2px 8px',
+        gap: 'var(--space-1)',
+        padding: '2px var(--space-2)',
         borderRadius: 'var(--radius-full)',
         fontSize: 11,
         fontWeight: 'var(--font-semibold)',
@@ -140,7 +140,7 @@ const s: Record<string, React.CSSProperties> = {
 };
 
 export default function DevicesPage() {
-    const { t, lang } = useTranslation();
+    const { t } = useTranslation();
 
     const {
         data: devices,
@@ -176,7 +176,7 @@ export default function DevicesPage() {
                             <th
                                 style={{
                                     ...(s.th as React.CSSProperties),
-                                    textAlign: lang === 'ar' ? 'right' : 'left',
+                                    textAlign: 'start',
                                 }}
                             >
                                 {t('settings.devices.colDevice')}
@@ -184,7 +184,7 @@ export default function DevicesPage() {
                             <th
                                 style={{
                                     ...(s.th as React.CSSProperties),
-                                    textAlign: lang === 'ar' ? 'right' : 'left',
+                                    textAlign: 'start',
                                 }}
                             >
                                 {t('settings.devices.colType')}
@@ -192,7 +192,7 @@ export default function DevicesPage() {
                             <th
                                 style={{
                                     ...(s.th as React.CSSProperties),
-                                    textAlign: lang === 'ar' ? 'right' : 'left',
+                                    textAlign: 'start',
                                 }}
                             >
                                 {t('settings.devices.colModel')}
@@ -200,7 +200,7 @@ export default function DevicesPage() {
                             <th
                                 style={{
                                     ...(s.th as React.CSSProperties),
-                                    textAlign: lang === 'ar' ? 'right' : 'left',
+                                    textAlign: 'start',
                                 }}
                             >
                                 {t('settings.devices.colBranch')}
@@ -208,7 +208,7 @@ export default function DevicesPage() {
                             <th
                                 style={{
                                     ...(s.th as React.CSSProperties),
-                                    textAlign: lang === 'ar' ? 'right' : 'left',
+                                    textAlign: 'start',
                                 }}
                             >
                                 {t('settings.devices.colLastSeen')}
@@ -216,7 +216,7 @@ export default function DevicesPage() {
                             <th
                                 style={{
                                     ...(s.th as React.CSSProperties),
-                                    textAlign: lang === 'ar' ? 'right' : 'left',
+                                    textAlign: 'start',
                                 }}
                             >
                                 {t('settings.devices.colStatus')}
@@ -230,20 +230,20 @@ export default function DevicesPage() {
                                     style={{
                                         ...s.td,
                                         fontWeight: 'var(--font-medium)',
-                                        textAlign: lang === 'ar' ? 'right' : 'left',
+                                        textAlign: 'start',
                                     }}
                                 >
                                     {d.name}
                                 </td>
-                                <td style={{ ...s.td, textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <td style={{ ...s.td, textAlign: 'start' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                                         {getTypeIcon(d.type)} {getTranslatedType(d.type, t)}
                                     </div>
                                 </td>
-                                <td style={{ ...s.td, textAlign: lang === 'ar' ? 'right' : 'left' }}>{d.model}</td>
-                                <td style={{ ...s.td, textAlign: lang === 'ar' ? 'right' : 'left' }}>{d.branch}</td>
-                                <td style={{ ...s.td, textAlign: lang === 'ar' ? 'right' : 'left' }}>{d.lastSeen}</td>
-                                <td style={{ ...s.td, textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                <td style={{ ...s.td, textAlign: 'start' }}>{d.model}</td>
+                                <td style={{ ...s.td, textAlign: 'start' }}>{d.branch}</td>
+                                <td style={{ ...s.td, textAlign: 'start' }}>{d.lastSeen}</td>
+                                <td style={{ ...s.td, textAlign: 'start' }}>
                                     <span
                                         style={{
                                             ...s.badge,

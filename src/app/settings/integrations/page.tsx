@@ -155,7 +155,7 @@ const s: Record<string, React.CSSProperties> = {
         flexShrink: 0,
     },
     name: { fontSize: 'var(--text-base)', fontWeight: 'var(--font-semibold)' },
-    desc: { fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginTop: 4, lineHeight: 1.5 },
+    desc: { fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginTop: 'var(--space-1)', lineHeight: 1.5 },
     statusRow: {
         display: 'flex',
         alignItems: 'center',
@@ -166,8 +166,8 @@ const s: Record<string, React.CSSProperties> = {
     badge: {
         display: 'inline-flex',
         alignItems: 'center',
-        gap: 4,
-        padding: '3px 10px',
+        gap: 'var(--space-1)',
+        padding: '3px var(--space-3)',
         borderRadius: 'var(--radius-full)',
         fontSize: 11,
         fontWeight: 'var(--font-semibold)',
@@ -175,8 +175,8 @@ const s: Record<string, React.CSSProperties> = {
     actionBtn: {
         display: 'inline-flex',
         alignItems: 'center',
-        gap: 4,
-        padding: '5px 14px',
+        gap: 'var(--space-1)',
+        padding: 'var(--space-1) var(--space-4)',
         borderRadius: 'var(--radius-md)',
         border: '1px solid var(--border-color)',
         background: 'var(--bg-primary)',
@@ -369,7 +369,10 @@ export default function IntegrationsPage() {
                                                         onClick={() => handleSettings(i)}
                                                         style={{ ...s.actionBtn, color: 'var(--text-tertiary)' }}
                                                     >
-                                                        <Settings size={12} style={{ marginInlineEnd: 4 }} />{' '}
+                                                        <Settings
+                                                            size={12}
+                                                            style={{ marginInlineEnd: 'var(--space-1)' }}
+                                                        />{' '}
                                                         {t('settings.integrations.settings')}
                                                     </button>
                                                     <button
@@ -380,7 +383,10 @@ export default function IntegrationsPage() {
                                                             borderColor: 'var(--color-error)',
                                                         }}
                                                     >
-                                                        <XCircle size={12} style={{ marginInlineEnd: 4 }} />{' '}
+                                                        <XCircle
+                                                            size={12}
+                                                            style={{ marginInlineEnd: 'var(--space-1)' }}
+                                                        />{' '}
                                                         {t('settings.integrations.disconnect')}
                                                     </button>
                                                 </>
@@ -393,7 +399,7 @@ export default function IntegrationsPage() {
                                                         borderColor: 'var(--color-primary-400)',
                                                     }}
                                                 >
-                                                    <Zap size={12} style={{ marginInlineEnd: 4 }} />{' '}
+                                                    <Zap size={12} style={{ marginInlineEnd: 'var(--space-1)' }} />{' '}
                                                     {t('settings.integrations.connect')}
                                                 </button>
                                             )}
@@ -614,7 +620,7 @@ export default function IntegrationsPage() {
                                     handleDisconnect(selectedIntegration);
                                 }}
                             >
-                                <XCircle size={14} style={{ marginInlineEnd: 8 }} />{' '}
+                                <XCircle size={14} style={{ marginInlineEnd: 'var(--space-2)' }} />{' '}
                                 {t('settings.integrations.disconnect')} {selectedIntegration.name}
                             </Button>
                         </div>

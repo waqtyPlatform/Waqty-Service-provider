@@ -1,5 +1,6 @@
 'use client';
 
+import { egpLabel } from '@/lib/money';
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Search, AlertTriangle } from 'lucide-react';
@@ -42,11 +43,11 @@ const s: Record<string, React.CSSProperties> = {
     },
     tabActive: { color: 'var(--color-primary-500)', borderBottomColor: 'var(--color-primary-500)' },
     title: { fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)' },
-    desc: { fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginTop: 4 },
+    desc: { fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginTop: 'var(--space-1)' },
     searchBox: { position: 'relative', maxWidth: 400 },
     searchIcon: {
         position: 'absolute',
-        left: 12,
+        insetInlineStart: 12,
         top: '50%',
         transform: 'translateY(-50%)',
         color: 'var(--text-tertiary)',
@@ -54,7 +55,8 @@ const s: Record<string, React.CSSProperties> = {
     searchInput: {
         width: '100%',
         height: 42,
-        paddingLeft: 40,
+        paddingInlineStart: 40,
+        paddingInlineEnd: 'var(--space-3)',
         border: '1px solid var(--border-color)',
         borderRadius: 'var(--radius-lg)',
         background: 'var(--bg-primary)',
@@ -78,7 +80,12 @@ const s: Record<string, React.CSSProperties> = {
         padding: 'var(--space-6)',
         maxWidth: 500,
     },
-    label: { fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)', marginBottom: 6, display: 'block' },
+    label: {
+        fontSize: 'var(--text-sm)',
+        fontWeight: 'var(--font-medium)',
+        marginBottom: 'var(--space-2)',
+        display: 'block',
+    },
     select: {
         width: '100%',
         height: 42,
@@ -189,20 +196,9 @@ export default function CancelDownPaymentPage() {
             {selected === null ? (
                 <>
                     <div style={s.searchBox as React.CSSProperties}>
-                        <Search
-                            size={16}
-                            style={{
-                                ...(s.searchIcon as React.CSSProperties),
-                                left: lang === 'ar' ? 'auto' : 12,
-                                right: lang === 'ar' ? 12 : 'auto',
-                            }}
-                        />
+                        <Search size={16} style={s.searchIcon as React.CSSProperties} />
                         <input
-                            style={{
-                                ...s.searchInput,
-                                paddingLeft: lang === 'ar' ? 12 : 40,
-                                paddingRight: lang === 'ar' ? 40 : 12,
-                            }}
+                            style={s.searchInput}
                             placeholder={t('rtn.searchBkClient')}
                             value={search}
                             onChange={e => setSearch(e.target.value)}
@@ -214,7 +210,7 @@ export default function CancelDownPaymentPage() {
                         data={filtered}
                         emptyIcon={<Search size={48} />}
                         emptyTitle={t('rtn.cancelTitle')}
-                        emptyDescription="No bookings with down payments found"
+                        emptyDescription={t('rtn.noBookingsFound')}
                         onRetry={refetchReturns}
                     >
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
@@ -235,7 +231,7 @@ export default function CancelDownPaymentPage() {
                                             {bk.service} · {t('rtn.lblScheduled')}: {bk.date}
                                         </div>
                                     </div>
-                                    <div style={{ textAlign: lang === 'ar' ? 'left' : 'right' }}>
+                                    <div style={{ textAlign: 'end' }}>
                                         <div
                                             style={{
                                                 fontSize: 'var(--text-lg)',
@@ -244,10 +240,10 @@ export default function CancelDownPaymentPage() {
                                             }}
                                             dir="ltr"
                                         >
-                                            {bk.paid} EGP {t('rtn.lblPaid')}
+                                            {bk.paid} {egpLabel()} {t('rtn.lblPaid')}
                                         </div>
                                         <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
-                                            {t('rtn.lblOfTotal').replace('{total}', `${bk.total} EGP`)}
+                                            {t('rtn.lblOfTotal').replace('{total}', `${bk.total} ${egpLabel()}`)}
                                         </div>
                                     </div>
                                 </div>
@@ -284,9 +280,11 @@ export default function CancelDownPaymentPage() {
                         <div>
                             <strong>{t('rtn.lblScheduled')}:</strong> {bookings[selected].date}
                         </div>
-                        <div style={{ display: 'flex', gap: '4px' }}>
+                        <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
                             <strong>{t('rtn.lblDownPayment')}:</strong>{' '}
-                            <span dir="ltr">{bookings[selected].paid} EGP</span>
+                            <span dir="ltr">
+                                {bookings[selected].paid} {egpLabel()}
+                            </span>
                         </div>
                     </div>
                     <div style={s.warning}>
@@ -296,12 +294,14 @@ export default function CancelDownPaymentPage() {
                                 color: 'var(--color-warning)',
                                 flexShrink: 0,
                                 marginTop: 2,
-                                marginLeft: lang === 'ar' ? 12 : 0,
-                                marginRight: lang === 'ar' ? 0 : 12,
+                                marginInlineEnd: 'var(--space-3)',
                             }}
                         />
                         <div>
-                            {t('rtn.warnCancel1')} <span dir="ltr">{bookings[selected].paid} EGP</span>{' '}
+                            {t('rtn.warnCancel1')}{' '}
+                            <span dir="ltr">
+                                {bookings[selected].paid} {egpLabel()}
+                            </span>{' '}
                             {t('rtn.warnCancel2')}
                         </div>
                     </div>
@@ -326,7 +326,10 @@ export default function CancelDownPaymentPage() {
                             {lang === 'ar' ? '→' : '←'} {t('rtn.btnBack')}
                         </button>
                         <button style={s.submitBtn} disabled={submitting} onClick={handleCancelRefund}>
-                            {t('rtn.btnCancelRefund')} <span dir="ltr">{bookings[selected].paid} EGP</span>
+                            {t('rtn.btnCancelRefund')}{' '}
+                            <span dir="ltr">
+                                {bookings[selected].paid} {egpLabel()}
+                            </span>
                         </button>
                     </div>
                 </div>

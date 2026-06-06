@@ -248,13 +248,21 @@ export default function CommissionsPage() {
         data: apiCommissions,
         loading: apiLoading,
         error: apiError,
+        isFallback,
         refetch,
     } = useApiQuery<Commission[]>(() => payrollApi.getCommissions() as never, [], { fallbackData: allCommissionsData });
 
     // Map API data to local format, or use fallback
     const resolvedCommissions: CommissionData[] = useMemo(() => {
-        if (apiCommissions && apiCommissions.length > 0) {
-            return apiCommissions.map((c, i) => ({
+        // useApiQuery seeds `data` with the local-shaped fallback (no `amount` field)
+        // and keeps isFallback=false until the request resolves, so detect the API
+        // shape by its own fields rather than relying on isFallback — otherwise the
+        // API-shape map runs on local rows on first render and `commission` becomes
+        // undefined, crashing `row.commission.toLocaleString()`.
+        const firstCommission = apiCommissions?.[0] as { amount?: unknown } | undefined;
+        const isApiShaped = typeof firstCommission?.amount === 'number';
+        if (apiCommissions && apiCommissions.length > 0 && isApiShaped && !isFallback) {
+            return (apiCommissions as unknown as Commission[]).map((c, i) => ({
                 id: c.uuid || String(i + 1),
                 date: c.created_at?.split('T')[0] || '',
                 employee: c.employee?.name || 'Unknown',
@@ -270,8 +278,12 @@ export default function CommissionsPage() {
                 commission: c.amount,
             }));
         }
+        // Fallback (offline/demo) or empty API: data is already in local shape.
+        if (apiCommissions && apiCommissions.length > 0) {
+            return apiCommissions as unknown as CommissionData[];
+        }
         return allCommissionsData;
-    }, [apiCommissions]);
+    }, [apiCommissions, isFallback]);
 
     const [activeTab, setActiveTab] = useState(0);
 
@@ -730,7 +742,7 @@ export default function CommissionsPage() {
                                                 style={
                                                     {
                                                         ...s.th,
-                                                        textAlign: isRtl ? 'right' : 'left',
+                                                        textAlign: 'start',
                                                     } as React.CSSProperties
                                                 }
                                             >
@@ -793,7 +805,7 @@ export default function CommissionsPage() {
                                             <td style={s.td}>
                                                 <span
                                                     style={{
-                                                        padding: '2px 8px',
+                                                        padding: '2px var(--space-2)',
                                                         borderRadius: 'var(--radius-full)',
                                                         fontSize: 'var(--text-xs)',
                                                         fontWeight: 'var(--font-medium)',
@@ -867,7 +879,7 @@ export default function CommissionsPage() {
                                                 style={
                                                     {
                                                         ...s.th,
-                                                        textAlign: isRtl ? 'right' : 'left',
+                                                        textAlign: 'start',
                                                     } as React.CSSProperties
                                                 }
                                             >
@@ -971,7 +983,7 @@ export default function CommissionsPage() {
                                                 style={
                                                     {
                                                         ...s.th,
-                                                        textAlign: isRtl ? 'right' : 'left',
+                                                        textAlign: 'start',
                                                     } as React.CSSProperties
                                                 }
                                             >
@@ -1082,7 +1094,7 @@ export default function CommissionsPage() {
                                                 style={
                                                     {
                                                         ...s.th,
-                                                        textAlign: isRtl ? 'right' : 'left',
+                                                        textAlign: 'start',
                                                     } as React.CSSProperties
                                                 }
                                             >

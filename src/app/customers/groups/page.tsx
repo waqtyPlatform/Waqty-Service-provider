@@ -105,7 +105,7 @@ const s: Record<string, React.CSSProperties> = {
     searchBox: { position: 'relative', flex: 1, maxWidth: 320 },
     searchIcon: {
         position: 'absolute',
-        left: 12,
+        insetInlineStart: 12,
         top: '50%',
         transform: 'translateY(-50%)',
         color: 'var(--text-tertiary)',
@@ -113,7 +113,8 @@ const s: Record<string, React.CSSProperties> = {
     searchInput: {
         width: '100%',
         height: 40,
-        paddingLeft: 40,
+        paddingInlineStart: 40,
+        paddingInlineEnd: 'var(--space-3)',
         border: '1px solid var(--border-color)',
         borderRadius: 'var(--radius-lg)',
         background: 'var(--bg-primary)',
@@ -185,6 +186,11 @@ export default function CustomerGroupsPage() {
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [selectedGroup, setSelectedGroup] = useState<(typeof fallbackGroups)[0] | null>(null);
 
+    // Controlled form for the Add/Edit modals. Previously the inputs were unbound
+    // and Save sent an empty payload ({}), so the list never changed — silent data loss.
+    const emptyForm = { name: '', description: '', discount: '0', status: 'active' };
+    const [form, setForm] = useState(emptyForm);
+
     const {
         data: apiGroups,
         loading,
@@ -194,6 +200,22 @@ export default function CustomerGroupsPage() {
     } = useApiQuery<CustomerGroup[]>(() => customerApi.getGroups() as never, [], {
         fallbackData: fallbackGroups as never,
     });
+
+    const openAdd = () => {
+        setForm(emptyForm);
+        setIsAddOpen(true);
+    };
+
+    const openEdit = (g: (typeof fallbackGroups)[0]) => {
+        setSelectedGroup(g);
+        setForm({
+            name: g.name,
+            description: g.description,
+            discount: String(g.discount),
+            status: g.status,
+        });
+        setIsEditOpen(true);
+    };
 
     // Map API groups to local shape, or use fallback
     const groups =
@@ -231,30 +253,15 @@ export default function CustomerGroupsPage() {
 
             <div style={s.toolbar as React.CSSProperties}>
                 <div style={s.searchBox as React.CSSProperties}>
-                    <Search
-                        size={16}
-                        style={
-                            {
-                                ...s.searchIcon,
-                                ...(lang === 'ar' ? { right: 12, left: 'auto' } : { left: 12, right: 'auto' }),
-                            } as React.CSSProperties
-                        }
-                    />
+                    <Search size={16} style={s.searchIcon as React.CSSProperties} />
                     <input
-                        style={
-                            {
-                                ...s.searchInput,
-                                ...(lang === 'ar'
-                                    ? { paddingRight: 40, paddingLeft: 12 }
-                                    : { paddingLeft: 40, paddingRight: 12 }),
-                            } as React.CSSProperties
-                        }
+                        style={s.searchInput as React.CSSProperties}
                         placeholder={t('custGroups.searchPlaceholder')}
                         value={search}
                         onChange={e => setSearch(e.target.value)}
                     />
                 </div>
-                <button style={s.addBtn as React.CSSProperties} onClick={() => setIsAddOpen(true)}>
+                <button style={s.addBtn as React.CSSProperties} onClick={openAdd}>
                     <Plus size={16} /> {t('custGroups.newGroup')}
                 </button>
             </div>
@@ -268,7 +275,7 @@ export default function CustomerGroupsPage() {
                 emptyTitle={t('custGroups.noGroups') || t('custGroups.noGroupsFound')}
                 emptyDescription={t('custGroups.noGroupsDesc') || t('custGroups.noGroupsFoundDesc')}
                 emptyAction={
-                    <button style={s.addBtn as React.CSSProperties} onClick={() => setIsAddOpen(true)}>
+                    <button style={s.addBtn as React.CSSProperties} onClick={openAdd}>
                         <Plus size={16} /> {t('custGroups.newGroup')}
                     </button>
                 }
@@ -304,13 +311,7 @@ export default function CustomerGroupsPage() {
                                 </div>
                             </div>
                             <div style={s.cardFooter as React.CSSProperties}>
-                                <button
-                                    style={s.btnIcon as React.CSSProperties}
-                                    onClick={() => {
-                                        setSelectedGroup(g);
-                                        setIsEditOpen(true);
-                                    }}
-                                >
+                                <button style={s.btnIcon as React.CSSProperties} onClick={() => openEdit(g)}>
                                     <Edit size={14} />
                                 </button>
                                 <button
@@ -340,11 +341,32 @@ export default function CustomerGroupsPage() {
                         </Button>
                         <Button
                             onClick={async () => {
+                                if (!form.name.trim()) {
+                                    addToast('error', t('custGroups.groupNameRequired'));
+                                    return;
+                                }
+                                const discount = Number(form.discount) || 0;
+                                const newGroup: CustomerGroup = {
+                                    uuid: `g-${Date.now()}`,
+                                    name: form.name.trim(),
+                                    discount_percentage: discount,
+                                    color: '#3B82F6',
+                                    description: form.description.trim() || null,
+                                    customers_count: 0,
+                                    created_at: '',
+                                    updated_at: '',
+                                };
+                                setGroups(prev => [newGroup, ...(prev ?? [])]);
                                 try {
-                                    await customerApi.createGroup({});
+                                    await customerApi.createGroup({
+                                        name: newGroup.name,
+                                        description: newGroup.description,
+                                        discount_percentage: discount,
+                                        status: form.status,
+                                    });
                                     await refetch();
                                 } catch {
-                                    /* fallback */
+                                    // offline/demo: keep the optimistic local row
                                 }
                                 setIsAddOpen(false);
                                 addToast('success', t('custGroups.msgCreated'));
@@ -356,11 +378,28 @@ export default function CustomerGroupsPage() {
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label={t('custGroups.groupName')} placeholder={t('custGroups.groupNamePlaceholder')} />
-                    <Input label={t('custGroups.description')} placeholder={t('custGroups.descPlaceholder')} />
-                    <Input label={t('custGroups.discountPercent')} type="number" defaultValue={0} />
+                    <Input
+                        label={t('custGroups.groupName')}
+                        placeholder={t('custGroups.groupNamePlaceholder')}
+                        value={form.name}
+                        onChange={e => setForm(prev => ({ ...prev, name: e.target.value }))}
+                    />
+                    <Input
+                        label={t('custGroups.description')}
+                        placeholder={t('custGroups.descPlaceholder')}
+                        value={form.description}
+                        onChange={e => setForm(prev => ({ ...prev, description: e.target.value }))}
+                    />
+                    <Input
+                        label={t('custGroups.discountPercent')}
+                        type="number"
+                        value={form.discount}
+                        onChange={e => setForm(prev => ({ ...prev, discount: e.target.value }))}
+                    />
                     <Select
                         label={t('custGroups.status')}
+                        value={form.status}
+                        onChange={e => setForm(prev => ({ ...prev, status: e.target.value }))}
                         options={[
                             { label: t('custGroups.active'), value: 'active' },
                             { label: t('custGroups.draft'), value: 'draft' },
@@ -385,11 +424,40 @@ export default function CustomerGroupsPage() {
                         <Button
                             onClick={async () => {
                                 if (selectedGroup) {
+                                    if (!form.name.trim()) {
+                                        addToast('error', t('custGroups.groupNameRequired'));
+                                        return;
+                                    }
+                                    const discount = Number(form.discount) || 0;
+                                    const name = form.name.trim();
+                                    const description = form.description.trim();
+                                    // Optimistically patch both the API shape (discount_percentage/
+                                    // customers_count) and the fallback shape (discount/members) so the
+                                    // edit is reflected regardless of which data source is live.
+                                    setGroups(prev =>
+                                        (prev ?? []).map(g =>
+                                            g.uuid === selectedGroup.uuid
+                                                ? ({
+                                                      ...g,
+                                                      name,
+                                                      description: description || null,
+                                                      discount,
+                                                      discount_percentage: discount,
+                                                      status: form.status,
+                                                  } as never)
+                                                : g
+                                        )
+                                    );
                                     try {
-                                        await customerApi.updateGroup(selectedGroup.uuid, {});
+                                        await customerApi.updateGroup(selectedGroup.uuid, {
+                                            name,
+                                            description: description || null,
+                                            discount_percentage: discount,
+                                            status: form.status,
+                                        });
                                         await refetch();
                                     } catch {
-                                        /* fallback */
+                                        // offline/demo: keep the optimistic local edit
                                     }
                                 }
                                 setIsEditOpen(false);
@@ -403,16 +471,26 @@ export default function CustomerGroupsPage() {
             >
                 {selectedGroup && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                        <Input label={t('custGroups.groupName')} defaultValue={selectedGroup.name} />
-                        <Input label={t('custGroups.description')} defaultValue={selectedGroup.description} />
+                        <Input
+                            label={t('custGroups.groupName')}
+                            value={form.name}
+                            onChange={e => setForm(prev => ({ ...prev, name: e.target.value }))}
+                        />
+                        <Input
+                            label={t('custGroups.description')}
+                            value={form.description}
+                            onChange={e => setForm(prev => ({ ...prev, description: e.target.value }))}
+                        />
                         <Input
                             label={t('custGroups.discountPercent')}
                             type="number"
-                            defaultValue={selectedGroup.discount}
+                            value={form.discount}
+                            onChange={e => setForm(prev => ({ ...prev, discount: e.target.value }))}
                         />
                         <Select
                             label={t('custGroups.status')}
-                            defaultValue={selectedGroup.status}
+                            value={form.status}
+                            onChange={e => setForm(prev => ({ ...prev, status: e.target.value }))}
                             options={[
                                 { label: t('custGroups.active'), value: 'active' },
                                 { label: t('custGroups.draft'), value: 'draft' },

@@ -99,7 +99,12 @@ const s: Record<string, React.CSSProperties> = {
     name: { fontSize: 'var(--text-lg)', fontWeight: 'var(--font-semibold)' },
     price: { fontSize: 'var(--text-xl)', fontWeight: 'var(--font-bold)', color: 'var(--color-primary-600)' },
     target: { fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' },
-    services: { padding: '0 var(--space-5) var(--space-4)', display: 'flex', flexDirection: 'column', gap: 6 },
+    services: {
+        padding: '0 var(--space-5) var(--space-4)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 'var(--space-2)',
+    },
     svcItem: {
         display: 'flex',
         alignItems: 'center',
@@ -234,7 +239,7 @@ export default function MarketingPackagesPage() {
                                         {t('mkt.lblTarget')} {pkg.target}
                                     </div>
                                 </div>
-                                <div style={{ marginLeft: 'auto' }} onClick={e => e.stopPropagation()}>
+                                <div style={{ marginInlineStart: 'auto' }} onClick={e => e.stopPropagation()}>
                                     <DropdownMenu
                                         trigger={
                                             <button
@@ -278,7 +283,7 @@ export default function MarketingPackagesPage() {
                             </div>
                             <div style={s.footer}>
                                 <span>
-                                    <Users size={12} style={{ display: 'inline', marginRight: 4 }} /> {pkg.sold}{' '}
+                                    <Users size={12} style={{ display: 'inline', marginInlineEnd: 4 }} /> {pkg.sold}{' '}
                                     {t('mkt.lblSold')}
                                 </span>
                                 <span>{pkg.active ? `🟢 ${t('mkt.lblActive')}` : `⚪ ${t('mkt.lblInactive')}`}</span>
@@ -384,7 +389,7 @@ export default function MarketingPackagesPage() {
                             <div style={{ ...(s.sectionTitle as React.CSSProperties), marginBottom: 'var(--space-3)' }}>
                                 {t('mkt.lblIncludedServices')} ({selectedPackage.services.length})
                             </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
                                 {selectedPackage.services.map((svc: string, i: number) => (
                                     <div
                                         key={i}

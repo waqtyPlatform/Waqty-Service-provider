@@ -27,7 +27,7 @@ import {
     type ShiftTemplate,
     type DayKey,
 } from '@/lib/shiftData';
-import { providerApi, employeeExtApi } from '@/lib/api';
+import { providerApi } from '@/lib/api';
 
 /* ─── Mock Data ───────────────────────── */
 const days: DayKey[] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -69,6 +69,35 @@ const mkShift = (
     templateName: tplName ?? null,
     templateColor: tplColor ?? null,
 });
+
+/** Live `GET /provider/shifts/{uuid}` detail shape (differs from the api.ts `Shift` type). */
+interface ApiShiftDetail {
+    uuid: string;
+    title?: string | null;
+    template?: { uuid: string; name: { ar?: string; en?: string } | string } | null;
+    shift_dates?: Array<{
+        shift_date: string;
+        start_time?: string | null;
+        end_time?: string | null;
+        break_start?: string | null;
+        break_end?: string | null;
+        employees?: Array<{ uuid: string; name: string }>;
+    }>;
+}
+
+// getDay() is 0=Sun..6=Sat; the grid keys are Mon..Sun.
+const DAY_KEYS: DayKey[] = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const hhmm = (tm?: string | null) => (tm ? tm.slice(0, 5) : '09:00');
+function localizedShiftName(n: { ar?: string; en?: string } | string | undefined | null): string {
+    if (!n) return '';
+    if (typeof n === 'string') return n;
+    return n.en || n.ar || '';
+}
+function dayKeyFromDate(dateStr: string): DayKey | null {
+    const d = new Date(dateStr + 'T00:00:00');
+    if (Number.isNaN(d.getTime())) return null;
+    return DAY_KEYS[d.getDay()];
+}
 
 // Template shortcuts for seed data
 const morning = (s: string, e: string, bs = '13:00', be = '13:30') =>
@@ -249,7 +278,7 @@ const s: Record<string, React.CSSProperties> = {
         color: '#fff',
         flexShrink: 0,
     },
-    empCell: { display: 'flex', alignItems: 'center', gap: 'var(--space-2)', textAlign: 'left' },
+    empCell: { display: 'flex', alignItems: 'center', gap: 'var(--space-2)', textAlign: 'start' },
     shiftCell: {
         display: 'inline-flex',
         flexDirection: 'column',
@@ -383,7 +412,7 @@ export default function SchedulePage() {
         loading: scheduleLoading,
         error: scheduleError,
         refetch: refetchSchedule,
-    } = useApiQuery(() => employeeExtApi.getSchedule() as never, [], { fallbackData: initialSchedule });
+    } = useApiQuery(() => providerApi.getShifts(), [], { fallbackData: [] });
 
     const [scheduleData, setScheduleData] = useState(initialSchedule);
 
@@ -420,12 +449,26 @@ export default function SchedulePage() {
         let cancelled = false;
         (async () => {
             try {
-                const [empRes, tplRes] = await Promise.allSettled([
+                const [empRes, tplRes, shiftsRes] = await Promise.allSettled([
                     providerApi.getEmployees(),
                     providerApi.getShiftTemplates(),
+                    providerApi.getShifts(),
                 ]);
 
                 if (cancelled) return;
+
+                if (tplRes.status === 'fulfilled' && tplRes.value.data && tplRes.value.data.length > 0) {
+                    const apiTemplates: ShiftTemplate[] = tplRes.value.data.map((t, i) => ({
+                        id: t.uuid,
+                        name: t.name,
+                        color: COLORS[i % COLORS.length],
+                        start: t.start_time,
+                        end: t.end_time,
+                        breakStart: t.break_start || '13:00',
+                        breakEnd: t.break_end || '13:30',
+                    }));
+                    setTemplates(apiTemplates);
+                }
 
                 if (empRes.status === 'fulfilled' && empRes.value.data && empRes.value.data.length > 0) {
                     const apiRows: ShiftRow[] = empRes.value.data.map((e, i) => ({
@@ -441,20 +484,43 @@ export default function SchedulePage() {
                         color: COLORS[i % COLORS.length],
                         shifts: {},
                     }));
-                    setScheduleData(apiRows);
-                }
 
-                if (tplRes.status === 'fulfilled' && tplRes.value.data && tplRes.value.data.length > 0) {
-                    const apiTemplates: ShiftTemplate[] = tplRes.value.data.map((t, i) => ({
-                        id: t.uuid,
-                        name: t.name,
-                        color: COLORS[i % COLORS.length],
-                        start: t.start_time,
-                        end: t.end_time,
-                        breakStart: t.break_start || '13:00',
-                        breakEnd: t.break_end || '13:30',
-                    }));
-                    setTemplates(apiTemplates);
+                    // Overlay real shift assignments onto the weekly grid. The list endpoint
+                    // omits dates/employees, so read each shift's detail (dates + assigned
+                    // staff) and map every assigned (employee, weekday) to its template cell.
+                    if (shiftsRes.status === 'fulfilled' && shiftsRes.value.data && shiftsRes.value.data.length > 0) {
+                        const rowByUuid = new Map(apiRows.map(r => [r.id, r] as const));
+                        const details = await Promise.allSettled(
+                            shiftsRes.value.data.map(s => providerApi.getShift(s.uuid))
+                        );
+                        if (cancelled) return;
+                        details.forEach((d, idx) => {
+                            if (d.status !== 'fulfilled' || !d.value.data) return;
+                            const detail = d.value.data as unknown as ApiShiftDetail;
+                            const tplName = localizedShiftName(detail.template?.name) || detail.title || '';
+                            const tplColor = COLORS[idx % COLORS.length];
+                            const tplId = detail.template?.uuid ?? undefined;
+                            (detail.shift_dates ?? []).forEach(sd => {
+                                const dayKey = dayKeyFromDate(sd.shift_date);
+                                if (!dayKey) return;
+                                const cell = mkShift(
+                                    hhmm(sd.start_time),
+                                    hhmm(sd.end_time),
+                                    hhmm(sd.break_start),
+                                    hhmm(sd.break_end),
+                                    tplId,
+                                    tplName || undefined,
+                                    tplColor
+                                );
+                                (sd.employees ?? []).forEach(emp => {
+                                    const row = rowByUuid.get(emp.uuid);
+                                    if (row) row.shifts[dayKey] = cell;
+                                });
+                            });
+                        });
+                    }
+
+                    setScheduleData(apiRows);
                 }
             } catch {
                 // API unavailable — keep mock data
@@ -860,7 +926,7 @@ export default function SchedulePage() {
                                                 style={
                                                     {
                                                         ...s.th,
-                                                        textAlign: lang === 'ar' ? 'right' : 'left',
+                                                        textAlign: 'start',
                                                         minWidth: 160,
                                                     } as React.CSSProperties
                                                 }
@@ -895,7 +961,7 @@ export default function SchedulePage() {
                                                 }
                                                 onMouseLeave={e => (e.currentTarget.style.background = '')}
                                             >
-                                                <td style={{ ...s.td, textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                                <td style={{ ...s.td, textAlign: 'start' }}>
                                                     <div style={{ ...s.empCell, justifyContent: 'space-between' }}>
                                                         <div
                                                             style={{

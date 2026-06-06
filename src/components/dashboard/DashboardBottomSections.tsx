@@ -84,7 +84,6 @@ function DashboardBottomSections({
     summary,
     totalBookings,
     activeDate,
-    lang,
     t,
     clientTerm,
     clientsTerm,
@@ -94,8 +93,8 @@ function DashboardBottomSections({
     formatNum,
 }: Props) {
     const router = useRouter();
-    const alignStart = lang === 'ar' ? 'right' : 'left';
-    const alignEnd = lang === 'ar' ? 'left' : 'right';
+    const alignStart = 'start';
+    const alignEnd = 'end';
 
     return (
         <>

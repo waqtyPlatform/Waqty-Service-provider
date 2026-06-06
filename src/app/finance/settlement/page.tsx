@@ -31,7 +31,7 @@ const s: Record<string, React.CSSProperties> = {
         color: 'white',
     },
     heroLabel: { fontSize: 'var(--text-xs)', opacity: 0.85, textTransform: 'uppercase', letterSpacing: '0.05em' },
-    heroValue: { fontSize: 'var(--text-3xl)', fontWeight: 'var(--font-bold)', marginTop: 4 },
+    heroValue: { fontSize: 'var(--text-3xl)', fontWeight: 'var(--font-bold)', marginTop: 'var(--space-1)' },
     statGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 'var(--space-4)' },
     statCard: {
         display: 'flex',
@@ -59,7 +59,7 @@ const s: Record<string, React.CSSProperties> = {
     },
     th: {
         padding: 'var(--space-3) var(--space-4)',
-        textAlign: 'left',
+        textAlign: 'start',
         fontSize: 'var(--text-xs)',
         fontWeight: 'var(--font-semibold)',
         color: 'var(--text-tertiary)',

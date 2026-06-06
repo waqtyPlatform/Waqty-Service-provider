@@ -1,5 +1,6 @@
 'use client';
 
+import { egpLabel } from '@/lib/money';
 import React from 'react';
 import Link from 'next/link';
 import { Vault, TrendingUp, TrendingDown, Minus } from 'lucide-react';
@@ -101,7 +102,7 @@ const s: Record<string, React.CSSProperties> = {
     },
     safeName: { fontSize: 'var(--text-lg)', fontWeight: 'var(--font-semibold)', color: 'var(--text-primary)' },
     safeType: { fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' },
-    balance: { marginLeft: 'auto', textAlign: 'right' },
+    balance: { marginInlineStart: 'auto', textAlign: 'end' },
     balVal: { fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)', color: 'var(--color-primary-600)' },
     balLbl: { fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' },
     rows: { borderTop: '1px solid var(--border-color)' },
@@ -159,11 +160,11 @@ export default function SafeBalancesPage() {
                         fontSize: 'var(--text-4xl)',
                         fontWeight: 'var(--font-bold)',
                         color: 'var(--color-primary-600)',
-                        marginTop: 4,
+                        marginTop: 'var(--space-1)',
                     }}
                     dir="ltr"
                 >
-                    {totalBalance.toLocaleString()} EGP
+                    {totalBalance.toLocaleString()} {egpLabel()}
                 </div>
             </div>
 
@@ -187,14 +188,7 @@ export default function SafeBalancesPage() {
                                     <div style={s.safeName}>{safe.name}</div>
                                     <div style={s.safeType}>{safe.type}</div>
                                 </div>
-                                <div
-                                    style={{
-                                        ...(s.balance as React.CSSProperties),
-                                        marginLeft: lang === 'ar' ? 0 : 'auto',
-                                        marginRight: lang === 'ar' ? 'auto' : 0,
-                                        textAlign: lang === 'ar' ? 'left' : 'right',
-                                    }}
-                                >
+                                <div style={s.balance as React.CSSProperties}>
                                     <div style={s.balVal} dir="ltr">
                                         {safe.balance.toLocaleString()}
                                     </div>
@@ -207,7 +201,7 @@ export default function SafeBalancesPage() {
                                         <Minus size={14} /> {t('txn.safe.opening')}
                                     </span>
                                     <span style={s.rowVal} dir="ltr">
-                                        {safe.opening.toLocaleString()} EGP
+                                        {safe.opening.toLocaleString()} {egpLabel()}
                                     </span>
                                 </div>
                                 <div style={s.row}>
@@ -215,7 +209,7 @@ export default function SafeBalancesPage() {
                                         <TrendingUp size={14} /> {t('txn.safe.deposits')}
                                     </span>
                                     <span style={{ ...s.rowVal, color: 'var(--color-success)' }} dir="ltr">
-                                        +{safe.deposits.toLocaleString()} EGP
+                                        +{safe.deposits.toLocaleString()} {egpLabel()}
                                     </span>
                                 </div>
                                 <div style={{ ...s.row, borderBottom: 'none' }}>
@@ -223,7 +217,7 @@ export default function SafeBalancesPage() {
                                         <TrendingDown size={14} /> {t('txn.safe.withdrawals')}
                                     </span>
                                     <span style={{ ...s.rowVal, color: 'var(--color-error)' }} dir="ltr">
-                                        -{safe.withdrawals.toLocaleString()} EGP
+                                        -{safe.withdrawals.toLocaleString()} {egpLabel()}
                                     </span>
                                 </div>
                             </div>

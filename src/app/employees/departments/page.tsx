@@ -216,7 +216,7 @@ export default function DepartmentsPage() {
                         size={16}
                         style={{
                             position: 'absolute',
-                            ...(lang === 'ar' ? { right: 12 } : { left: 12 }),
+                            insetInlineStart: 12,
                             top: '50%',
                             transform: 'translateY(-50%)',
                             color: 'var(--text-tertiary)',
@@ -226,9 +226,8 @@ export default function DepartmentsPage() {
                         style={{
                             width: '100%',
                             height: 40,
-                            ...(lang === 'ar'
-                                ? { paddingRight: 40, paddingLeft: 12 }
-                                : { paddingLeft: 40, paddingRight: 12 }),
+                            paddingInlineStart: 40,
+                            paddingInlineEnd: 12,
                             border: '1px solid var(--border-color)',
                             borderRadius: 'var(--radius-lg)',
                             background: 'var(--bg-primary)',
@@ -254,7 +253,7 @@ export default function DepartmentsPage() {
                         overflow: 'hidden',
                     }}
                 >
-                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'start' }}>
                         <thead>
                             <tr>
                                 {[
@@ -275,7 +274,7 @@ export default function DepartmentsPage() {
                                             letterSpacing: '0.05em',
                                             background: 'var(--bg-secondary)',
                                             borderBottom: '1px solid var(--border-color)',
-                                            textAlign: lang === 'ar' ? 'right' : 'left',
+                                            textAlign: 'start',
                                         }}
                                     >
                                         {h.label}
@@ -751,10 +750,7 @@ export default function DepartmentsPage() {
                                     {t('departments.assignedStaff')} ({staffList.length})
                                 </h3>
                                 <Button variant="secondary" onClick={() => setIsAddStaffOpen(true)}>
-                                    <Plus
-                                        size={14}
-                                        style={{ ...(lang === 'ar' ? { marginLeft: 4 } : { marginRight: 4 }) }}
-                                    />{' '}
+                                    <Plus size={14} style={{ marginInlineEnd: 'var(--space-1)' }} />{' '}
                                     {t('departments.btnAddStaff')}
                                 </Button>
                             </div>

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter, Noto_Sans_Arabic } from 'next/font/google';
+import { IBM_Plex_Sans, IBM_Plex_Sans_Arabic, IBM_Plex_Mono } from 'next/font/google';
 import './globals.css';
 import './responsive.css';
 import AppShell from '@/components/layout/AppShell';
@@ -8,23 +8,29 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 
-// Self-host the same fonts that were previously fetched at runtime via
-// `@import url('https://fonts.googleapis.com/...')` in globals.css. Doing it
-// through `next/font/google` eliminates the cross-origin round-trip
-// (fonts.googleapis.com → fonts.gstatic.com → woff2) that was costing ~400ms
-// of LCP on cold load. Fonts are bundled with the app and served same-origin.
-const inter = Inter({
+// Self-host fonts via `next/font/google` (same-origin, no cross-origin round-trip
+// to fonts.googleapis.com → fonts.gstatic.com that was costing ~400ms of LCP).
+// Design Language v2 — "Refined & premium": IBM Plex Sans (Latin UI), IBM Plex
+// Sans Arabic (RTL), IBM Plex Mono (money / tabular figures). Plex tops out at 700.
+const plexSans = IBM_Plex_Sans({
     subsets: ['latin'],
-    weight: ['300', '400', '500', '600', '700', '800'],
+    weight: ['300', '400', '500', '600', '700'],
     display: 'swap',
-    variable: '--font-inter',
+    variable: '--font-plex-sans',
 });
 
-const notoSansArabic = Noto_Sans_Arabic({
+const plexArabic = IBM_Plex_Sans_Arabic({
     subsets: ['arabic'],
-    weight: ['300', '400', '500', '600', '700', '800'],
+    weight: ['300', '400', '500', '600', '700'],
     display: 'swap',
-    variable: '--font-noto-arabic',
+    variable: '--font-plex-arabic',
+});
+
+const plexMono = IBM_Plex_Mono({
+    subsets: ['latin'],
+    weight: ['400', '500', '600', '700'],
+    display: 'swap',
+    variable: '--font-plex-mono',
 });
 
 export const viewport: Viewport = {
@@ -54,7 +60,12 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en" dir="ltr" suppressHydrationWarning className={`${inter.variable} ${notoSansArabic.variable}`}>
+        <html
+            lang="en"
+            dir="ltr"
+            suppressHydrationWarning
+            className={`${plexSans.variable} ${plexArabic.variable} ${plexMono.variable}`}
+        >
             <head>
                 <link rel="manifest" href="/manifest.json" />
             </head>

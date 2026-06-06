@@ -197,8 +197,8 @@ const s: Record<string, React.CSSProperties> = {
     smallBtn: {
         display: 'flex',
         alignItems: 'center',
-        gap: 4,
-        padding: '4px 14px',
+        gap: 'var(--space-1)',
+        padding: 'var(--space-1) var(--space-4)',
         borderRadius: 'var(--radius-md)',
         fontSize: 12,
         fontWeight: 'var(--font-semibold)',
@@ -210,8 +210,8 @@ const s: Record<string, React.CSSProperties> = {
     sendBtn: {
         display: 'flex',
         alignItems: 'center',
-        gap: 4,
-        padding: '4px 14px',
+        gap: 'var(--space-1)',
+        padding: 'var(--space-1) var(--space-4)',
         background: 'var(--color-primary-500)',
         color: 'white',
         borderRadius: 'var(--radius-md)',
@@ -229,7 +229,7 @@ const s: Record<string, React.CSSProperties> = {
     },
     th: {
         padding: 'var(--space-3) var(--space-4)',
-        textAlign: 'left',
+        textAlign: 'start',
         fontSize: 'var(--text-xs)',
         fontWeight: 'var(--font-semibold)',
         color: 'var(--text-tertiary)',
@@ -255,8 +255,8 @@ const s: Record<string, React.CSSProperties> = {
     recipientChip: {
         display: 'inline-flex',
         alignItems: 'center',
-        gap: 4,
-        padding: '4px 10px',
+        gap: 'var(--space-1)',
+        padding: 'var(--space-1) var(--space-2)',
         background: 'var(--color-primary-50)',
         color: 'var(--color-primary-700)',
         borderRadius: 'var(--radius-full)',
@@ -282,7 +282,7 @@ const s: Record<string, React.CSSProperties> = {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '8px 12px',
+        padding: 'var(--space-2) var(--space-3)',
         cursor: 'pointer',
         fontSize: 'var(--text-sm)',
         borderBottom: '1px solid var(--border-color)',
@@ -290,7 +290,7 @@ const s: Record<string, React.CSSProperties> = {
     phKey: {
         fontFamily: 'monospace',
         fontSize: 'var(--text-xs)',
-        padding: '2px 8px',
+        padding: '2px var(--space-2)',
         background: 'var(--color-primary-50)',
         color: 'var(--color-primary-700)',
         borderRadius: 'var(--radius-md)',
@@ -308,7 +308,7 @@ const s: Record<string, React.CSSProperties> = {
     kpiLbl: { fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: 2 },
     filterBar: { display: 'flex', gap: 'var(--space-2)' },
     filterBtn: {
-        padding: '4px 12px',
+        padding: 'var(--space-1) var(--space-3)',
         borderRadius: 'var(--radius-full)',
         fontSize: 'var(--text-xs)',
         fontWeight: 'var(--font-semibold)',
@@ -752,7 +752,7 @@ export default function MessagesPage() {
                             size={14}
                             style={{
                                 position: 'absolute' as const,
-                                left: 10,
+                                insetInlineStart: 10,
                                 top: '50%',
                                 transform: 'translateY(-50%)',
                                 color: 'var(--text-tertiary)',
@@ -762,7 +762,7 @@ export default function MessagesPage() {
                             style={{
                                 width: '100%',
                                 height: 36,
-                                paddingLeft: 32,
+                                paddingInlineStart: 32,
                                 border: '1px solid var(--border-color)',
                                 borderRadius: 'var(--radius-lg)',
                                 background: 'var(--bg-primary)',
@@ -820,7 +820,13 @@ export default function MessagesPage() {
                                         {m.recipients.length === 1 ? (
                                             m.recipients[0]
                                         ) : (
-                                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                            <span
+                                                style={{
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    gap: 'var(--space-1)',
+                                                }}
+                                            >
                                                 <Users size={13} />{' '}
                                                 {t('mkt.lblRecipientsCount').replace(
                                                     '{count}',
@@ -1098,7 +1104,7 @@ export default function MessagesPage() {
                                     style={{
                                         display: 'flex',
                                         flexWrap: 'wrap',
-                                        gap: 6,
+                                        gap: 'var(--space-2)',
                                         marginBottom: 'var(--space-3)',
                                     }}
                                 >
@@ -1120,7 +1126,7 @@ export default function MessagesPage() {
                                     size={14}
                                     style={{
                                         position: 'absolute' as const,
-                                        left: 10,
+                                        insetInlineStart: 10,
                                         top: '50%',
                                         transform: 'translateY(-50%)',
                                         color: 'var(--text-tertiary)',
@@ -1130,7 +1136,7 @@ export default function MessagesPage() {
                                     style={{
                                         width: '100%',
                                         height: 36,
-                                        paddingLeft: 32,
+                                        paddingInlineStart: 32,
                                         border: '1px solid var(--border-color)',
                                         borderRadius: 'var(--radius-lg)',
                                         background: 'var(--bg-primary)',
@@ -1201,14 +1207,14 @@ export default function MessagesPage() {
                                                 style={{
                                                     width: 20,
                                                     height: 20,
-                                                    borderRadius: 4,
+                                                    borderRadius: 'var(--radius-sm)',
                                                     border: `1px solid ${isSelected ? 'var(--color-primary-600)' : 'var(--border-color)'}`,
                                                     background: isSelected ? 'var(--color-primary-600)' : 'transparent',
                                                     display: 'flex',
                                                     alignItems: 'center',
                                                     justifyContent: 'center',
                                                     color: 'white',
-                                                    marginRight: 'var(--space-3)',
+                                                    marginInlineEnd: 'var(--space-3)',
                                                     flexShrink: 0,
                                                 }}
                                             >

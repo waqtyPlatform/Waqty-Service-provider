@@ -21,7 +21,7 @@ const s: Record<string, React.CSSProperties> = {
     searchWrap: { position: 'relative' as const, flex: 1, maxWidth: 320 },
     searchIcon: {
         position: 'absolute' as const,
-        left: 12,
+        insetInlineStart: 12,
         top: '50%',
         transform: 'translateY(-50%)',
         color: 'var(--text-tertiary)',
@@ -30,7 +30,7 @@ const s: Record<string, React.CSSProperties> = {
     searchInput: {
         width: '100%',
         height: 40,
-        paddingLeft: 40,
+        paddingInlineStart: 40,
         border: '1px solid var(--border-color)',
         borderRadius: 'var(--radius-lg)',
         background: 'var(--bg-primary)',
@@ -62,21 +62,26 @@ const s: Record<string, React.CSSProperties> = {
         color: 'var(--text-tertiary)',
         flexShrink: 0,
     },
-    name: { fontWeight: 700, fontSize: 'var(--text-base)', color: 'var(--text-primary)', marginBottom: 4 },
+    name: {
+        fontWeight: 700,
+        fontSize: 'var(--text-base)',
+        color: 'var(--text-primary)',
+        marginBottom: 'var(--space-1)',
+    },
     count: { fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)' },
     badge: {
         display: 'inline-flex',
         alignItems: 'center',
-        padding: '2px 8px',
-        borderRadius: 999,
+        padding: '2px var(--space-2)',
+        borderRadius: 'var(--radius-full)',
         fontSize: 11,
         fontWeight: 600,
     },
     memberRow: {
         display: 'flex',
         alignItems: 'center',
-        gap: 8,
-        padding: '6px 0',
+        gap: 'var(--space-2)',
+        padding: 'var(--space-2) 0',
         borderTop: '1px solid var(--border-color)',
     },
     memberAvatar: {
@@ -162,6 +167,7 @@ interface FormProps {
     employees: Employee[];
 }
 function GroupForm({ form, onChange, employees }: FormProps) {
+    const { t } = useTranslation();
     const set = (p: Partial<GrpForm>) => onChange({ ...form, ...p });
     const toggle = (uuid: string) => {
         const sel = form.employee_uuids.includes(uuid)
@@ -172,13 +178,13 @@ function GroupForm({ form, onChange, employees }: FormProps) {
     return (
         <div style={s.formGrid}>
             <Input
-                label="Group Name *"
+                label={`${t('settings.pricingGroups.groupName')} *`}
                 value={form.name}
                 onChange={e => set({ name: e.target.value })}
-                placeholder="e.g. Senior Therapists"
+                placeholder={t('settings.pricingGroups.groupNamePlaceholder')}
             />
             <div>
-                <div style={s.sectionTitle}>Assign Employees</div>
+                <div style={s.sectionTitle}>{t('settings.pricingGroups.assignEmployees')}</div>
                 <div
                     style={{
                         border: '1px solid var(--border-color)',
@@ -197,7 +203,7 @@ function GroupForm({ form, onChange, employees }: FormProps) {
                                 fontSize: 'var(--text-sm)',
                             }}
                         >
-                            No employees found
+                            {t('settings.pricingGroups.noEmployees')}
                         </div>
                     ) : (
                         employees.map((emp, i) => {
@@ -258,7 +264,7 @@ function GroupForm({ form, onChange, employees }: FormProps) {
 
 export default function PricingGroupsPage() {
     const { addToast } = useToast();
-    const { lang } = useTranslation();
+    const { t, lang } = useTranslation();
     const [groups, setGroups] = useState<PricingGroup[]>([]);
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [loading, setLoading] = useState(true);
@@ -281,7 +287,7 @@ export default function PricingGroupsPage() {
             const res = await providerApi.getPricingGroups();
             if (res.data) setGroups(res.data);
         } catch (err) {
-            setError(err instanceof ApiError ? err.message : 'Failed to load pricing groups');
+            setError(err instanceof ApiError ? err.message : t('settings.pricingGroups.loadFailed'));
         } finally {
             setLoading(false);
         }
@@ -299,7 +305,7 @@ export default function PricingGroupsPage() {
 
     const handleAdd = async () => {
         if (!addForm.name.trim()) {
-            addToast('error', 'Group name is required.');
+            addToast('error', t('settings.pricingGroups.nameRequired'));
             return;
         }
         setSaving(true);
@@ -309,7 +315,7 @@ export default function PricingGroupsPage() {
                 active: addForm.active,
                 employee_uuids: addForm.employee_uuids,
             });
-            addToast('success', 'Pricing group created.');
+            addToast('success', t('settings.pricingGroups.toastCreated'));
             setIsAddOpen(false);
             setAddForm(emptyForm());
             await load();
@@ -319,8 +325,8 @@ export default function PricingGroupsPage() {
                     ? Object.values(err.validationErrors)[0]?.[0]
                     : err instanceof ApiError
                       ? err.message
-                      : 'Failed';
-            addToast('error', msg || 'Failed to create group');
+                      : t('settings.pricingGroups.toastFailed');
+            addToast('error', msg || t('settings.pricingGroups.toastCreateFailed'));
         } finally {
             setSaving(false);
         }
@@ -329,14 +335,14 @@ export default function PricingGroupsPage() {
     const handleEdit = async () => {
         if (!selected) return;
         if (!editForm.name.trim()) {
-            addToast('error', 'Group name is required.');
+            addToast('error', t('settings.pricingGroups.nameRequired'));
             return;
         }
         setSaving(true);
         try {
             await providerApi.updatePricingGroup(selected.uuid, { name: editForm.name, active: editForm.active });
             await providerApi.syncPricingGroupEmployees(selected.uuid, editForm.employee_uuids);
-            addToast('success', 'Pricing group updated.');
+            addToast('success', t('settings.pricingGroups.toastUpdated'));
             setIsEditOpen(false);
             setSelected(null);
             await load();
@@ -346,8 +352,8 @@ export default function PricingGroupsPage() {
                     ? Object.values(err.validationErrors)[0]?.[0]
                     : err instanceof ApiError
                       ? err.message
-                      : 'Failed';
-            addToast('error', msg || 'Failed to update group');
+                      : t('settings.pricingGroups.toastFailed');
+            addToast('error', msg || t('settings.pricingGroups.toastUpdateFailed'));
         } finally {
             setSaving(false);
         }
@@ -358,12 +364,12 @@ export default function PricingGroupsPage() {
         setDeleting(true);
         try {
             await providerApi.deletePricingGroup(selected.uuid);
-            addToast('success', 'Pricing group deleted.');
+            addToast('success', t('settings.pricingGroups.toastDeleted'));
             setIsDeleteOpen(false);
             setSelected(null);
             await load();
         } catch (err) {
-            addToast('error', err instanceof ApiError ? err.message : 'Failed to delete');
+            addToast('error', err instanceof ApiError ? err.message : t('settings.pricingGroups.toastDeleteFailed'));
         } finally {
             setDeleting(false);
         }
@@ -375,7 +381,7 @@ export default function PricingGroupsPage() {
             await providerApi.togglePricingGroupActive(grp.uuid);
         } catch (err) {
             setGroups(prev => prev.map(g => (g.uuid === grp.uuid ? { ...g, active: grp.active } : g)));
-            addToast('error', err instanceof ApiError ? err.message : 'Failed');
+            addToast('error', err instanceof ApiError ? err.message : t('settings.pricingGroups.toastFailed'));
         }
     };
 
@@ -388,7 +394,7 @@ export default function PricingGroupsPage() {
                     <Search size={16} style={s.searchIcon} />
                     <input
                         style={s.searchInput}
-                        placeholder="Search groups..."
+                        placeholder={t('settings.pricingGroups.searchPlaceholder')}
                         value={search}
                         onChange={e => setSearch(e.target.value)}
                     />
@@ -399,7 +405,7 @@ export default function PricingGroupsPage() {
                         setIsAddOpen(true);
                     }}
                 >
-                    <Plus size={16} style={{ marginInlineEnd: 8 }} /> Add Pricing Group
+                    <Plus size={16} style={{ marginInlineEnd: 8 }} /> {t('settings.pricingGroups.addGroup')}
                 </Button>
             </div>
 
@@ -408,8 +414,8 @@ export default function PricingGroupsPage() {
                 error={error}
                 data={groups}
                 emptyIcon={<Users size={48} />}
-                emptyTitle="No pricing groups"
-                emptyDescription="Create pricing groups to apply shared prices across employees."
+                emptyTitle={t('settings.pricingGroups.emptyTitle')}
+                emptyDescription={t('settings.pricingGroups.emptyDesc')}
             >
                 <div style={s.grid}>
                     {filtered.map(grp => (
@@ -421,18 +427,23 @@ export default function PricingGroupsPage() {
                                     </div>
                                     <div>
                                         <div style={s.name}>{grp.name}</div>
-                                        <div style={s.count}>{grp.employees?.length ?? 0} employees</div>
+                                        <div style={s.count}>
+                                            {t('settings.pricingGroups.employeesCount').replace(
+                                                '{n}',
+                                                String(grp.employees?.length ?? 0)
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                                 <DropdownMenu
                                     trigger={
-                                        <button style={s.menuBtn}>
+                                        <button style={s.menuBtn} aria-label={t('common.moreOptions')}>
                                             <MoreVertical size={16} />
                                         </button>
                                     }
                                     items={[
                                         {
-                                            label: 'Edit',
+                                            label: t('common.edit'),
                                             icon: <Edit size={14} />,
                                             onClick: () => {
                                                 setSelected(grp);
@@ -441,7 +452,7 @@ export default function PricingGroupsPage() {
                                             },
                                         },
                                         {
-                                            label: 'Delete',
+                                            label: t('common.delete'),
                                             destructive: true,
                                             icon: <Trash2 size={14} />,
                                             onClick: () => {
@@ -474,8 +485,11 @@ export default function PricingGroupsPage() {
                                         fontSize: 'var(--text-xs)',
                                     }}
                                 >
-                                    <UserPlus size={12} style={{ marginInlineEnd: 6 }} />+
-                                    {(grp.employees?.length ?? 0) - 3} more
+                                    <UserPlus size={12} style={{ marginInlineEnd: 6 }} />
+                                    {t('settings.pricingGroups.moreCount').replace(
+                                        '{n}',
+                                        String((grp.employees?.length ?? 0) - 3)
+                                    )}
                                 </div>
                             )}
 
@@ -488,7 +502,9 @@ export default function PricingGroupsPage() {
                                             color: grp.active ? '#16a34a' : '#6b7280',
                                         }}
                                     >
-                                        {grp.active ? 'Active' : 'Inactive'}
+                                        {grp.active
+                                            ? t('settings.pricingGroups.statusActive')
+                                            : t('settings.pricingGroups.statusInactive')}
                                     </span>
                                 </span>
                                 <Switch checked={grp.active} onChange={() => handleToggleActive(grp)} />
@@ -501,14 +517,14 @@ export default function PricingGroupsPage() {
             <SlideOver
                 open={isAddOpen}
                 onClose={() => setIsAddOpen(false)}
-                title="Add Pricing Group"
+                title={t('settings.pricingGroups.addGroup')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
                         <Button variant="ghost" onClick={() => setIsAddOpen(false)} disabled={saving}>
-                            Cancel
+                            {t('common.cancel')}
                         </Button>
                         <Button onClick={handleAdd} disabled={saving}>
-                            {saving ? 'Saving…' : 'Save Group'}
+                            {saving ? t('common.saving') : t('settings.pricingGroups.saveGroup')}
                         </Button>
                     </div>
                 }
@@ -522,19 +538,19 @@ export default function PricingGroupsPage() {
                     setIsEditOpen(false);
                     setSelected(null);
                 }}
-                title="Edit Pricing Group"
+                title={t('settings.pricingGroups.editGroup')}
                 footer={
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
                         <Button variant="ghost" onClick={() => setIsEditOpen(false)} disabled={saving}>
-                            Cancel
+                            {t('common.cancel')}
                         </Button>
                         <Button onClick={handleEdit} disabled={saving}>
                             {saving ? (
-                                'Saving…'
+                                t('common.saving')
                             ) : (
                                 <>
                                     <RefreshCw size={14} style={{ marginInlineEnd: 6 }} />
-                                    Save & Sync
+                                    {t('settings.pricingGroups.saveSync')}
                                 </>
                             )}
                         </Button>
@@ -550,20 +566,22 @@ export default function PricingGroupsPage() {
                     setIsDeleteOpen(false);
                     setSelected(null);
                 }}
-                title="Delete Pricing Group"
+                title={t('settings.pricingGroups.deleteGroup')}
                 footer={
                     <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
                         <Button variant="ghost" onClick={() => setIsDeleteOpen(false)} disabled={deleting}>
-                            Cancel
+                            {t('common.cancel')}
                         </Button>
                         <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
-                            {deleting ? 'Deleting…' : 'Delete'}
+                            {deleting ? t('settings.pricingGroups.deleting') : t('common.delete')}
                         </Button>
                     </div>
                 }
             >
                 <p style={{ color: 'var(--text-secondary)', margin: 0 }}>
-                    Delete group <strong>{selected?.name}</strong>? This cannot be undone.
+                    {t('settings.pricingGroups.deleteConfirmPre')}
+                    <strong>{selected?.name}</strong>
+                    {t('settings.pricingGroups.deleteConfirmPost')}
                 </p>
             </Modal>
         </div>

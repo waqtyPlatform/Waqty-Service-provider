@@ -43,8 +43,8 @@ const cs: Record<string, React.CSSProperties> = {
     badge: {
         display: 'inline-flex',
         alignItems: 'center',
-        padding: '2px 10px',
-        borderRadius: 999,
+        padding: '2px var(--space-3)',
+        borderRadius: 'var(--radius-full)',
         fontSize: 'var(--text-xs)',
         fontWeight: 600,
     },
@@ -56,7 +56,7 @@ const cs: Record<string, React.CSSProperties> = {
     field: {
         display: 'flex',
         flexDirection: 'column' as const,
-        gap: 4,
+        gap: 'var(--space-1)',
     },
     label: {
         fontSize: 'var(--text-xs)',
@@ -138,7 +138,13 @@ export default function ProfileSettingsPage() {
                             >
                                 {profile?.name}
                             </div>
-                            <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', marginBottom: 8 }}>
+                            <div
+                                style={{
+                                    fontSize: 'var(--text-sm)',
+                                    color: 'var(--text-tertiary)',
+                                    marginBottom: 'var(--space-2)',
+                                }}
+                            >
                                 {profile?.email}
                             </div>
                             <span

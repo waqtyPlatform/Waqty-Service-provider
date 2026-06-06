@@ -255,7 +255,7 @@
 }
 
 .tag {
-    padding: 4px 10px;
+    padding: var(--space-1) var(--space-3);
     border-radius: var(--radius-full);
     background: var(--bg-secondary);
     color: var(--text-secondary);

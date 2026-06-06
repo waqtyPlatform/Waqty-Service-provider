@@ -5,6 +5,7 @@ import { Target, TrendingUp, AlertCircle, CheckCircle, Edit } from 'lucide-react
 import { Button, Modal, Input, Select, useToast } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useApiQuery } from '@/hooks/useApiQuery';
+import { egpLabel } from '@/lib/money';
 import { employeeExtApi, type EmployeeTarget } from '@/lib/api';
 import { DataGuard } from '@/components/DataGuard';
 
@@ -130,7 +131,7 @@ const s: Record<string, React.CSSProperties> = {
     table: { width: '100%', minWidth: 900, borderCollapse: 'collapse' },
     th: {
         padding: 'var(--space-3) var(--space-4)',
-        textAlign: 'left',
+        textAlign: 'start',
         fontSize: 'var(--text-xs)',
         fontWeight: 'var(--font-semibold)',
         color: 'var(--text-tertiary)',
@@ -375,7 +376,7 @@ export default function TargetsPage() {
                                             </div>
                                         </td>
                                         <td style={{ ...s.td, fontWeight: 'var(--font-semibold)' }} dir="ltr">
-                                            {(row.targetRevenue / 1000).toFixed(0)}K EGP
+                                            {(row.targetRevenue / 1000).toFixed(0)}K {egpLabel()}
                                         </td>
                                         <td
                                             style={{
@@ -385,7 +386,7 @@ export default function TargetsPage() {
                                             }}
                                             dir="ltr"
                                         >
-                                            {(row.achievedRevenue / 1000).toFixed(1)}K EGP
+                                            {(row.achievedRevenue / 1000).toFixed(1)}K {egpLabel()}
                                         </td>
                                         <td style={s.td}>
                                             <div
@@ -434,7 +435,7 @@ export default function TargetsPage() {
                                             }}
                                         >
                                             <span dir="ltr">
-                                                {pct >= 90 ? `${row.bonus.toLocaleString()} EGP` : '—'}
+                                                {pct >= 90 ? `${row.bonus.toLocaleString()} ${egpLabel()}` : '—'}
                                             </span>
                                         </td>
                                     </tr>

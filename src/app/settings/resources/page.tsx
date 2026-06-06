@@ -70,12 +70,95 @@ export default function ResourcesPage() {
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
 
+    // Controlled form for the Add/Edit modals. Previously the inputs were unbound
+    // (defaultValue only) and Save re-sent the unchanged selected row, so user edits
+    // were silently lost.
+    type ResourceForm = { name: string; type: Resource['type']; capacity: number; active: boolean };
+    const emptyForm: ResourceForm = { name: '', type: 'chair', capacity: 1, active: true };
+    const [form, setForm] = useState<ResourceForm>(emptyForm);
+
     const {
         data: apiResources,
         loading,
         error,
         refetch,
+        setData: setApiResources,
     } = useApiQuery<Resource[]>(() => settingsApi.getResources(), [], { fallbackData: fallbackResources });
+
+    const openAdd = () => {
+        setForm(emptyForm);
+        setIsAddOpen(true);
+    };
+    const openEdit = (r: Resource) => {
+        setSelectedResource(r);
+        setForm({ name: r.name, type: r.type, capacity: r.capacity, active: r.active });
+        setIsEditOpen(true);
+    };
+
+    const saveAdd = async () => {
+        if (!form.name.trim()) {
+            addToast('error', t('settings.resources.nameRequired'));
+            return;
+        }
+        const newResource: Resource = {
+            uuid: `res-${Date.now()}`,
+            name: form.name.trim(),
+            type: form.type,
+            branch_uuid: '',
+            capacity: Number(form.capacity) || 0,
+            active: form.active,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+        };
+        setApiResources(prev => [...(prev || []), newResource]);
+        setIsAddOpen(false);
+        try {
+            await settingsApi.createResource({
+                name: newResource.name,
+                type: newResource.type,
+                capacity: newResource.capacity,
+                active: newResource.active,
+                branch_uuid: '',
+            });
+            addToast('success', t('settings.resources.created'));
+        } catch {
+            addToast('error', t('settings.resources.createFailed'));
+        }
+    };
+
+    const saveEdit = async () => {
+        if (!selectedResource) return;
+        if (!form.name.trim()) {
+            addToast('error', t('settings.resources.nameRequired'));
+            return;
+        }
+        const uuid = selectedResource.uuid;
+        setApiResources(prev =>
+            (prev || []).map(r =>
+                r.uuid === uuid
+                    ? {
+                          ...r,
+                          name: form.name.trim(),
+                          type: form.type,
+                          capacity: Number(form.capacity) || 0,
+                          active: form.active,
+                      }
+                    : r
+            )
+        );
+        setIsEditOpen(false);
+        try {
+            await settingsApi.updateResource(uuid, {
+                name: form.name.trim(),
+                type: form.type,
+                capacity: Number(form.capacity) || 0,
+                active: form.active,
+            });
+            addToast('success', t('settings.resources.updated'));
+        } catch {
+            addToast('error', t('settings.resources.updateFailed'));
+        }
+    };
 
     const resources = (apiResources || []).map(r => ({
         id: r.uuid,
@@ -95,7 +178,7 @@ export default function ResourcesPage() {
                     <div className={styles.subtitle}>{t('settings.resources.desc')}</div>
                 </div>
                 <div className={styles.actions}>
-                    <Button onClick={() => setIsAddOpen(true)}>
+                    <Button onClick={openAdd}>
                         <Plus size={16} style={{ marginInlineEnd: 8 }} /> {t('settings.resources.add')}
                     </Button>
                 </div>
@@ -111,21 +194,11 @@ export default function ResourcesPage() {
                     <table className="data-table">
                         <thead>
                             <tr>
-                                <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                    {t('settings.resources.colName')}
-                                </th>
-                                <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                    {t('settings.resources.colType')}
-                                </th>
-                                <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                    {t('settings.resources.colCapacity')}
-                                </th>
-                                <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                    {t('settings.resources.colStatus')}
-                                </th>
-                                <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                    {t('settings.resources.colActions')}
-                                </th>
+                                <th style={{ textAlign: 'start' }}>{t('settings.resources.colName')}</th>
+                                <th style={{ textAlign: 'start' }}>{t('settings.resources.colType')}</th>
+                                <th style={{ textAlign: 'start' }}>{t('settings.resources.colCapacity')}</th>
+                                <th style={{ textAlign: 'start' }}>{t('settings.resources.colStatus')}</th>
+                                <th style={{ textAlign: 'start' }}>{t('settings.resources.colActions')}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -164,10 +237,8 @@ export default function ResourcesPage() {
                                                 variant="ghost"
                                                 size="sm"
                                                 iconOnly
-                                                onClick={() => {
-                                                    setSelectedResource(res._raw);
-                                                    setIsEditOpen(true);
-                                                }}
+                                                aria-label={t('common.edit')}
+                                                onClick={() => openEdit(res._raw)}
                                             >
                                                 <Edit size={14} />
                                             </Button>
@@ -175,6 +246,7 @@ export default function ResourcesPage() {
                                                 variant="destructive"
                                                 size="sm"
                                                 iconOnly
+                                                aria-label={t('common.delete')}
                                                 onClick={() => {
                                                     setSelectedResource(res._raw);
                                                     setIsDeleteOpen(true);
@@ -201,42 +273,39 @@ export default function ResourcesPage() {
                         <Button variant="ghost" onClick={() => setIsAddOpen(false)}>
                             {t('settings.resources.cancel')}
                         </Button>
-                        <Button
-                            onClick={async () => {
-                                try {
-                                    await settingsApi.createResource({
-                                        name: 'New Resource',
-                                        type: 'chair',
-                                        capacity: 1,
-                                        active: true,
-                                        branch_uuid: '',
-                                    });
-                                    setIsAddOpen(false);
-                                    addToast('success', t('settings.resources.created'));
-                                    refetch();
-                                } catch {
-                                    addToast('error', t('settings.resources.createFailed'));
-                                }
-                            }}
-                        >
-                            {t('settings.resources.saveResource')}
-                        </Button>
+                        <Button onClick={saveAdd}>{t('settings.resources.saveResource')}</Button>
                     </div>
                 }
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <Input label={t('settings.resources.resName')} placeholder={t('settings.resources.namePh')} />
+                    <Input
+                        label={t('settings.resources.resName')}
+                        placeholder={t('settings.resources.namePh')}
+                        value={form.name}
+                        onChange={e => setForm(prev => ({ ...prev, name: e.target.value }))}
+                    />
                     <Select
                         label={t('settings.resources.resType')}
+                        value={form.type}
+                        onChange={e => setForm(prev => ({ ...prev, type: e.target.value as Resource['type'] }))}
                         options={[
                             { label: t('settings.resources.typeChair'), value: 'chair' },
                             { label: t('settings.resources.typeRoom'), value: 'room' },
                             { label: t('settings.resources.typeEquip'), value: 'equipment' },
                         ]}
                     />
-                    <Input label={t('settings.resources.capPersons')} type="number" placeholder="1" dir="ltr" />
+                    <Input
+                        label={t('settings.resources.capPersons')}
+                        type="number"
+                        placeholder="1"
+                        dir="ltr"
+                        value={form.capacity}
+                        onChange={e => setForm(prev => ({ ...prev, capacity: Number(e.target.value) }))}
+                    />
                     <Select
                         label={t('settings.resources.colStatus')}
+                        value={form.active ? 'active' : 'maintenance'}
+                        onChange={e => setForm(prev => ({ ...prev, active: e.target.value === 'active' }))}
                         options={[
                             { label: t('settings.resources.statusActive'), value: 'active' },
                             { label: t('settings.resources.statusMaint'), value: 'maintenance' },
@@ -258,35 +327,21 @@ export default function ResourcesPage() {
                         <Button variant="ghost" onClick={() => setIsEditOpen(false)}>
                             {t('settings.resources.cancel')}
                         </Button>
-                        <Button
-                            onClick={async () => {
-                                try {
-                                    if (selectedResource)
-                                        await settingsApi.updateResource(selectedResource.uuid, {
-                                            name: selectedResource.name,
-                                            type: selectedResource.type,
-                                            capacity: selectedResource.capacity,
-                                            active: selectedResource.active,
-                                        });
-                                    setIsEditOpen(false);
-                                    addToast('success', t('settings.resources.updated'));
-                                    refetch();
-                                } catch {
-                                    addToast('error', t('settings.resources.updateFailed'));
-                                }
-                            }}
-                        >
-                            {t('settings.resources.saveChanges')}
-                        </Button>
+                        <Button onClick={saveEdit}>{t('settings.resources.saveChanges')}</Button>
                     </div>
                 }
             >
                 {selectedResource && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                        <Input label={t('settings.resources.resName')} defaultValue={selectedResource.name} />
+                        <Input
+                            label={t('settings.resources.resName')}
+                            value={form.name}
+                            onChange={e => setForm(prev => ({ ...prev, name: e.target.value }))}
+                        />
                         <Select
                             label={t('settings.resources.resType')}
-                            defaultValue={selectedResource.type}
+                            value={form.type}
+                            onChange={e => setForm(prev => ({ ...prev, type: e.target.value as Resource['type'] }))}
                             options={[
                                 { label: t('settings.resources.typeChair'), value: 'chair' },
                                 { label: t('settings.resources.typeRoom'), value: 'room' },
@@ -296,12 +351,14 @@ export default function ResourcesPage() {
                         <Input
                             label={t('settings.resources.capPersons')}
                             type="number"
-                            defaultValue={selectedResource.capacity}
                             dir="ltr"
+                            value={form.capacity}
+                            onChange={e => setForm(prev => ({ ...prev, capacity: Number(e.target.value) }))}
                         />
                         <Select
                             label={t('settings.resources.colStatus')}
-                            defaultValue={selectedResource.active ? 'active' : 'inactive'}
+                            value={form.active ? 'active' : 'maintenance'}
+                            onChange={e => setForm(prev => ({ ...prev, active: e.target.value === 'active' }))}
                             options={[
                                 { label: t('settings.resources.statusActive'), value: 'active' },
                                 { label: t('settings.resources.statusMaint'), value: 'maintenance' },

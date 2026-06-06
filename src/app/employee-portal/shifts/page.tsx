@@ -119,7 +119,7 @@ export default function EmployeeShiftsPage() {
                         color: 'var(--text-primary)',
                     }}
                 >
-                    <ChevronLeft size={18} />
+                    {lang === 'ar' ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
                 </button>
                 <h2 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-semibold)' }}>{monthStr}</h2>
                 <button
@@ -134,7 +134,7 @@ export default function EmployeeShiftsPage() {
                         color: 'var(--text-primary)',
                     }}
                 >
-                    <ChevronRight size={18} />
+                    {lang === 'ar' ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
                 </button>
             </div>
 
@@ -189,7 +189,7 @@ export default function EmployeeShiftsPage() {
                                             style={{
                                                 minHeight: 80,
                                                 borderBottom: '1px solid var(--border-color)',
-                                                borderRight: '1px solid var(--border-color)',
+                                                borderInlineEnd: '1px solid var(--border-color)',
                                             }}
                                         />
                                     );
@@ -204,7 +204,7 @@ export default function EmployeeShiftsPage() {
                                             minHeight: 80,
                                             padding: 'var(--space-2)',
                                             borderBottom: '1px solid var(--border-color)',
-                                            borderRight: '1px solid var(--border-color)',
+                                            borderInlineEnd: '1px solid var(--border-color)',
                                             background: isToday ? 'var(--color-primary-50)' : 'transparent',
                                         }}
                                     >
@@ -222,14 +222,14 @@ export default function EmployeeShiftsPage() {
                                             <div
                                                 style={{
                                                     fontSize: 10,
-                                                    padding: '2px 4px',
+                                                    padding: '2px var(--space-1)',
                                                     borderRadius: 'var(--radius-sm)',
                                                     background: 'var(--color-primary-100)',
                                                     color: 'var(--color-primary-700)',
                                                     fontWeight: 'var(--font-medium)',
                                                 }}
                                             >
-                                                <Clock size={10} style={{ display: 'inline', marginRight: 2 }} />
+                                                <Clock size={10} style={{ display: 'inline', marginInlineEnd: 2 }} />
                                                 {t('employeePortal.shift')}
                                             </div>
                                         )}
@@ -327,7 +327,7 @@ export default function EmployeeShiftsPage() {
                                                 style={{
                                                     fontSize: 'var(--text-xs)',
                                                     fontWeight: 'var(--font-semibold)',
-                                                    padding: '2px 8px',
+                                                    padding: '2px var(--space-2)',
                                                     borderRadius: 'var(--radius-full)',
                                                     background: 'var(--color-primary-100)',
                                                     color: 'var(--color-primary-700)',

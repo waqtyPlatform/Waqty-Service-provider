@@ -126,7 +126,7 @@
 
 .dataTable th {
     padding: var(--space-3) var(--space-4);
-    text-align: left;
+    text-align: start;
     font-size: var(--text-xs);
     font-weight: var(--font-semibold);
     color: var(--text-tertiary);

@@ -1,5 +1,6 @@
 'use client';
 
+import { egpLabel } from '@/lib/money';
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Search, Plus, Wallet } from 'lucide-react';
@@ -143,7 +144,7 @@ const s: Record<string, React.CSSProperties> = {
     searchBox: { position: 'relative', flex: 1, maxWidth: 320 },
     searchIcon: {
         position: 'absolute',
-        left: 12,
+        insetInlineStart: 12,
         top: '50%',
         transform: 'translateY(-50%)',
         color: 'var(--text-tertiary)',
@@ -151,7 +152,8 @@ const s: Record<string, React.CSSProperties> = {
     searchInput: {
         width: '100%',
         height: 40,
-        paddingLeft: 40,
+        paddingInlineStart: 40,
+        paddingInlineEnd: 'var(--space-3)',
         border: '1px solid var(--border-color)',
         borderRadius: 'var(--radius-lg)',
         background: 'var(--bg-primary)',
@@ -167,7 +169,7 @@ const s: Record<string, React.CSSProperties> = {
     },
     th: {
         padding: 'var(--space-3) var(--space-4)',
-        textAlign: 'left',
+        textAlign: 'start',
         fontSize: 'var(--text-xs)',
         fontWeight: 'var(--font-semibold)',
         color: 'var(--text-tertiary)',
@@ -181,10 +183,10 @@ const s: Record<string, React.CSSProperties> = {
         color: 'var(--text-primary)',
         borderTop: '1px solid var(--border-color)',
     },
-    dot: { width: 8, height: 8, borderRadius: '50%', display: 'inline-block', marginRight: 8 },
+    dot: { width: 8, height: 8, borderRadius: '50%', display: 'inline-block', marginInlineEnd: 'var(--space-2)' },
     badge: {
         display: 'inline-flex',
-        padding: '2px 8px',
+        padding: '2px var(--space-2)',
         borderRadius: 'var(--radius-full)',
         fontSize: 11,
         fontWeight: 'var(--font-semibold)',
@@ -241,13 +243,13 @@ export default function PettyCashPage() {
             <div style={s.kpis}>
                 <div style={s.kpi}>
                     <div style={s.kpiVal} dir="ltr">
-                        {total.toLocaleString()} EGP
+                        {total.toLocaleString()} {egpLabel()}
                     </div>
                     <div style={s.kpiLbl}>{t('txn.petty.total')}</div>
                 </div>
                 <div style={s.kpi}>
                     <div style={{ ...s.kpiVal, color: 'var(--color-warning)' }} dir="ltr">
-                        {pending.toLocaleString()} EGP
+                        {pending.toLocaleString()} {egpLabel()}
                     </div>
                     <div style={s.kpiLbl}>{t('txn.petty.pending')}</div>
                 </div>
@@ -261,20 +263,9 @@ export default function PettyCashPage() {
 
             <div style={s.toolbar}>
                 <div style={s.searchBox as React.CSSProperties}>
-                    <Search
-                        size={16}
-                        style={{
-                            ...(s.searchIcon as React.CSSProperties),
-                            left: lang === 'ar' ? 'auto' : 12,
-                            right: lang === 'ar' ? 12 : 'auto',
-                        }}
-                    />
+                    <Search size={16} style={s.searchIcon as React.CSSProperties} />
                     <input
-                        style={{
-                            ...s.searchInput,
-                            paddingLeft: lang === 'ar' ? 12 : 40,
-                            paddingRight: lang === 'ar' ? 40 : 12,
-                        }}
+                        style={s.searchInput}
                         placeholder={t('txn.petty.search')}
                         value={search}
                         onChange={e => setSearch(e.target.value)}
@@ -307,13 +298,7 @@ export default function PettyCashPage() {
                                 'txn.petty.thApprovedBy',
                                 'txn.thStatus',
                             ].map(h => (
-                                <th
-                                    key={h}
-                                    style={{
-                                        ...(s.th as React.CSSProperties),
-                                        textAlign: lang === 'ar' ? 'right' : 'left',
-                                    }}
-                                >
+                                <th key={h} style={s.th as React.CSSProperties}>
                                     {t(h)}
                                 </th>
                             ))}
@@ -331,7 +316,6 @@ export default function PettyCashPage() {
                                         style={{
                                             ...s.dot,
                                             background: catColors[row.category] || '#6B7280',
-                                            [lang === 'ar' ? 'marginLeft' : 'marginRight']: 8,
                                         }}
                                     />
                                     {row.category}
@@ -342,7 +326,7 @@ export default function PettyCashPage() {
                                     style={{ ...s.td, fontWeight: 'var(--font-semibold)', color: 'var(--color-error)' }}
                                     dir="ltr"
                                 >
-                                    -{row.amount} EGP
+                                    -{row.amount} {egpLabel()}
                                 </td>
                                 <td style={s.td}>{row.approvedBy}</td>
                                 <td style={s.td}>

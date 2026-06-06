@@ -1,5 +1,6 @@
 'use client';
 
+import { egpLabel } from '@/lib/money';
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Search, Download, CreditCard } from 'lucide-react';
@@ -130,7 +131,7 @@ const s: Record<string, React.CSSProperties> = {
     searchBox: { position: 'relative', flex: 1, maxWidth: 320 },
     searchIcon: {
         position: 'absolute',
-        left: 12,
+        insetInlineStart: 12,
         top: '50%',
         transform: 'translateY(-50%)',
         color: 'var(--text-tertiary)',
@@ -138,7 +139,8 @@ const s: Record<string, React.CSSProperties> = {
     searchInput: {
         width: '100%',
         height: 40,
-        paddingLeft: 40,
+        paddingInlineStart: 40,
+        paddingInlineEnd: 'var(--space-3)',
         border: '1px solid var(--border-color)',
         borderRadius: 'var(--radius-lg)',
         background: 'var(--bg-primary)',
@@ -154,7 +156,7 @@ const s: Record<string, React.CSSProperties> = {
     },
     th: {
         padding: 'var(--space-3) var(--space-4)',
-        textAlign: 'left',
+        textAlign: 'start',
         fontSize: 'var(--text-xs)',
         fontWeight: 'var(--font-semibold)',
         color: 'var(--text-tertiary)',
@@ -170,7 +172,7 @@ const s: Record<string, React.CSSProperties> = {
     },
     badge: {
         display: 'inline-flex',
-        padding: '2px 8px',
+        padding: '2px var(--space-2)',
         borderRadius: 'var(--radius-full)',
         fontSize: 11,
         fontWeight: 'var(--font-semibold)',
@@ -219,13 +221,13 @@ export default function AdvancePaymentsPage() {
             <div style={s.kpis}>
                 <div style={s.kpi}>
                     <div style={s.kpiVal} dir="ltr">
-                        {data.reduce((a, d) => a + d.paid, 0).toLocaleString()} EGP
+                        {data.reduce((a, d) => a + d.paid, 0).toLocaleString()} {egpLabel()}
                     </div>
                     <div style={s.kpiLbl}>{t('txn.adv.totalCollected')}</div>
                 </div>
                 <div style={s.kpi}>
                     <div style={s.kpiVal} dir="ltr">
-                        {data.reduce((a, d) => a + d.balance, 0).toLocaleString()} EGP
+                        {data.reduce((a, d) => a + d.balance, 0).toLocaleString()} {egpLabel()}
                     </div>
                     <div style={s.kpiLbl}>{t('txn.adv.outstanding')}</div>
                 </div>
@@ -237,20 +239,9 @@ export default function AdvancePaymentsPage() {
 
             <div style={s.toolbar}>
                 <div style={s.searchBox as React.CSSProperties}>
-                    <Search
-                        size={16}
-                        style={{
-                            ...(s.searchIcon as React.CSSProperties),
-                            left: lang === 'ar' ? 'auto' : 12,
-                            right: lang === 'ar' ? 12 : 'auto',
-                        }}
-                    />
+                    <Search size={16} style={s.searchIcon as React.CSSProperties} />
                     <input
-                        style={{
-                            ...s.searchInput,
-                            paddingLeft: lang === 'ar' ? 12 : 40,
-                            paddingRight: lang === 'ar' ? 40 : 12,
-                        }}
+                        style={s.searchInput}
                         placeholder={t('txn.adv.search')}
                         value={search}
                         onChange={e => setSearch(e.target.value)}
@@ -284,13 +275,7 @@ export default function AdvancePaymentsPage() {
                                 'txn.adv.thBalance',
                                 'txn.adv.thStatus',
                             ].map(h => (
-                                <th
-                                    key={h}
-                                    style={{
-                                        ...(s.th as React.CSSProperties),
-                                        textAlign: lang === 'ar' ? 'right' : 'left',
-                                    }}
-                                >
+                                <th key={h} style={s.th as React.CSSProperties}>
                                     {t(h)}
                                 </th>
                             ))}
@@ -305,7 +290,7 @@ export default function AdvancePaymentsPage() {
                                 <td style={s.td}>{row.booking}</td>
                                 <td style={s.td}>{row.service}</td>
                                 <td style={s.td} dir="ltr">
-                                    {row.total} EGP
+                                    {row.total} {egpLabel()}
                                 </td>
                                 <td
                                     style={{
@@ -315,7 +300,7 @@ export default function AdvancePaymentsPage() {
                                     }}
                                     dir="ltr"
                                 >
-                                    {row.paid} EGP
+                                    {row.paid} {egpLabel()}
                                 </td>
                                 <td
                                     style={{
@@ -325,7 +310,7 @@ export default function AdvancePaymentsPage() {
                                     }}
                                     dir="ltr"
                                 >
-                                    {row.balance} EGP
+                                    {row.balance} {egpLabel()}
                                 </td>
                                 <td style={s.td}>
                                     <span

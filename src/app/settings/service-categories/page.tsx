@@ -40,6 +40,7 @@ const fallbackCategories: ServiceCategory[] = [
 ];
 
 const colorMap: Record<number, string> = { 0: '#8b5cf6', 1: '#ec4899', 2: '#10b981', 3: '#f59e0b', 4: '#3b82f6' };
+const DEFAULT_COLOR = '#8b5cf6';
 
 export default function ServiceCategoriesPage() {
     const { addToast } = useToast();
@@ -49,11 +50,24 @@ export default function ServiceCategoriesPage() {
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [selectedCat, setSelectedCat] = useState<ServiceCategory | null>(null);
 
+    // Controlled form for the Add/Edit modals. Previously the Add modal saved a
+    // hardcoded "New Category" and the Edit modal re-sent the unchanged row name
+    // (defaultValue-only inputs) — both silently dropped what the user typed.
+    type CategoryForm = { name: string; color: string };
+    const emptyForm: CategoryForm = { name: '', color: DEFAULT_COLOR };
+    const [form, setForm] = useState<CategoryForm>(emptyForm);
+
+    // `color` is a display-only concept (the ServiceCategory type has no color
+    // field). Track per-uuid overrides so a chosen color survives the optimistic
+    // update and shows immediately, falling back to the index-based palette.
+    const [colorOverrides, setColorOverrides] = useState<Record<string, string>>({});
+
     const {
         data: apiCategories,
         loading,
         error,
         refetch,
+        setData: setCategories,
     } = useApiQuery<ServiceCategory[]>(() => settingsApi.getServiceCategories(), [], {
         fallbackData: fallbackCategories,
     });
@@ -61,11 +75,67 @@ export default function ServiceCategoriesPage() {
     const categories = (apiCategories || []).map((c, i) => ({
         id: c.uuid,
         name: c.name,
-        color: colorMap[i % 5] || '#8b5cf6',
+        color: colorOverrides[c.uuid] || colorMap[i % 5] || DEFAULT_COLOR,
         services: c.services_count,
         order: c.sort_order,
         _raw: c,
     }));
+
+    const openAdd = () => {
+        setForm(emptyForm);
+        setIsAddOpen(true);
+    };
+
+    const openEdit = (cat: ServiceCategory, color: string) => {
+        setSelectedCat(cat);
+        setForm({ name: cat.name, color });
+        setIsEditOpen(true);
+    };
+
+    const saveAdd = async () => {
+        if (!form.name.trim()) {
+            addToast('error', t('settings.serviceCategories.nameRequired'));
+            return;
+        }
+        const name = form.name.trim();
+        const newCat: ServiceCategory = {
+            uuid: `cat-${Date.now()}`,
+            name,
+            sort_order: (apiCategories || []).length + 1,
+            services_count: 0,
+            active: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+        };
+        setColorOverrides(prev => ({ ...prev, [newCat.uuid]: form.color }));
+        setCategories(prev => [...(prev || []), newCat]);
+        setIsAddOpen(false);
+        try {
+            await settingsApi.createServiceCategory({ name, color: form.color, active: true });
+            addToast('success', t('settings.serviceCategories.created'));
+        } catch {
+            addToast('error', t('settings.serviceCategories.createFailed'));
+        }
+    };
+
+    const saveEdit = async () => {
+        if (!selectedCat) return;
+        if (!form.name.trim()) {
+            addToast('error', t('settings.serviceCategories.nameRequired'));
+            return;
+        }
+        const uuid = selectedCat.uuid;
+        const name = form.name.trim();
+        setColorOverrides(prev => ({ ...prev, [uuid]: form.color }));
+        setCategories(prev => (prev || []).map(c => (c.uuid === uuid ? { ...c, name } : c)));
+        setIsEditOpen(false);
+        try {
+            await settingsApi.updateServiceCategory(uuid, { name, color: form.color });
+            addToast('success', t('settings.serviceCategories.updated'));
+        } catch {
+            addToast('error', t('settings.serviceCategories.updateFailed'));
+        }
+    };
 
     return (
         <div className={styles.page}>
@@ -75,7 +145,7 @@ export default function ServiceCategoriesPage() {
                     <div className={styles.subtitle}>{t('settings.serviceCategories.desc')}</div>
                 </div>
                 <div className={styles.actions}>
-                    <Button onClick={() => setIsAddOpen(true)}>
+                    <Button onClick={openAdd}>
                         <Plus size={16} /> {t('settings.serviceCategories.newCategory')}
                     </Button>
                 </div>
@@ -125,10 +195,7 @@ export default function ServiceCategoriesPage() {
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
-                                                onClick={() => {
-                                                    setSelectedCat(cat._raw);
-                                                    setIsEditOpen(true);
-                                                }}
+                                                onClick={() => openEdit(cat._raw, cat.color)}
                                             >
                                                 <Edit size={14} />
                                             </Button>
@@ -161,20 +228,7 @@ export default function ServiceCategoriesPage() {
                         <Button variant="ghost" onClick={() => setIsAddOpen(false)}>
                             {t('settings.serviceCategories.cancel')}
                         </Button>
-                        <Button
-                            onClick={async () => {
-                                try {
-                                    await settingsApi.createServiceCategory({ name: 'New Category', active: true });
-                                    setIsAddOpen(false);
-                                    addToast('success', t('settings.serviceCategories.created'));
-                                    refetch();
-                                } catch {
-                                    addToast('error', t('settings.serviceCategories.createFailed'));
-                                }
-                            }}
-                        >
-                            {t('settings.serviceCategories.saveCategory')}
-                        </Button>
+                        <Button onClick={saveAdd}>{t('settings.serviceCategories.saveCategory')}</Button>
                     </div>
                 }
             >
@@ -182,9 +236,13 @@ export default function ServiceCategoriesPage() {
                     <Input
                         label={t('settings.serviceCategories.categoryName')}
                         placeholder={t('settings.serviceCategories.namePh')}
+                        value={form.name}
+                        onChange={e => setForm(prev => ({ ...prev, name: e.target.value }))}
                     />
                     <Select
                         label={t('settings.serviceCategories.colorTag')}
+                        value={form.color}
+                        onChange={e => setForm(prev => ({ ...prev, color: e.target.value }))}
                         options={[
                             { label: t('settings.serviceCategories.colors.purple'), value: '#8b5cf6' },
                             { label: t('settings.serviceCategories.colors.pink'), value: '#ec4899' },
@@ -209,32 +267,21 @@ export default function ServiceCategoriesPage() {
                         <Button variant="ghost" onClick={() => setIsEditOpen(false)}>
                             {t('settings.serviceCategories.cancel')}
                         </Button>
-                        <Button
-                            onClick={async () => {
-                                try {
-                                    if (selectedCat)
-                                        await settingsApi.updateServiceCategory(selectedCat.uuid, {
-                                            name: selectedCat.name,
-                                        });
-                                    setIsEditOpen(false);
-                                    addToast('success', t('settings.serviceCategories.updated'));
-                                    refetch();
-                                } catch {
-                                    addToast('error', t('settings.serviceCategories.updateFailed'));
-                                }
-                            }}
-                        >
-                            {t('settings.serviceCategories.saveChanges')}
-                        </Button>
+                        <Button onClick={saveEdit}>{t('settings.serviceCategories.saveChanges')}</Button>
                     </div>
                 }
             >
                 {selectedCat && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                        <Input label={t('settings.serviceCategories.categoryName')} defaultValue={selectedCat.name} />
+                        <Input
+                            label={t('settings.serviceCategories.categoryName')}
+                            value={form.name}
+                            onChange={e => setForm(prev => ({ ...prev, name: e.target.value }))}
+                        />
                         <Select
                             label={t('settings.serviceCategories.colorTag')}
-                            defaultValue={'#8b5cf6'}
+                            value={form.color}
+                            onChange={e => setForm(prev => ({ ...prev, color: e.target.value }))}
                             options={[
                                 { label: t('settings.serviceCategories.colors.purple'), value: '#8b5cf6' },
                                 { label: t('settings.serviceCategories.colors.pink'), value: '#ec4899' },

@@ -1,5 +1,6 @@
 'use client';
 
+import { egpLabel } from '@/lib/money';
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Search, Download, Banknote } from 'lucide-react';
@@ -175,7 +176,7 @@ const s: Record<string, React.CSSProperties> = {
     searchBox: { position: 'relative', flex: 1, maxWidth: 320 },
     searchIcon: {
         position: 'absolute',
-        left: 12,
+        insetInlineStart: 12,
         top: '50%',
         transform: 'translateY(-50%)',
         color: 'var(--text-tertiary)',
@@ -183,7 +184,8 @@ const s: Record<string, React.CSSProperties> = {
     searchInput: {
         width: '100%',
         height: 40,
-        paddingLeft: 40,
+        paddingInlineStart: 40,
+        paddingInlineEnd: 'var(--space-3)',
         border: '1px solid var(--border-color)',
         borderRadius: 'var(--radius-lg)',
         background: 'var(--bg-primary)',
@@ -208,7 +210,7 @@ const s: Record<string, React.CSSProperties> = {
     },
     th: {
         padding: 'var(--space-3) var(--space-4)',
-        textAlign: 'left',
+        textAlign: 'start',
         fontSize: 'var(--text-xs)',
         fontWeight: 'var(--font-semibold)',
         color: 'var(--text-tertiary)',
@@ -274,7 +276,7 @@ export default function CashSalesPage() {
             <div style={s.kpis}>
                 <div style={s.kpi}>
                     <div style={s.kpiVal} dir="ltr">
-                        {total.toLocaleString()} EGP
+                        {total.toLocaleString()} {egpLabel()}
                     </div>
                     <div style={s.kpiLbl}>{t('txn.cash.total')}</div>
                 </div>
@@ -284,7 +286,7 @@ export default function CashSalesPage() {
                 </div>
                 <div style={s.kpi}>
                     <div style={s.kpiVal} dir="ltr">
-                        {Math.round(total / Math.max(filtered.length, 1))} EGP
+                        {Math.round(total / Math.max(filtered.length, 1))} {egpLabel()}
                     </div>
                     <div style={s.kpiLbl}>{t('txn.cash.avgTicket')}</div>
                 </div>
@@ -292,20 +294,9 @@ export default function CashSalesPage() {
 
             <div style={s.toolbar}>
                 <div style={s.searchBox as React.CSSProperties}>
-                    <Search
-                        size={16}
-                        style={{
-                            ...(s.searchIcon as React.CSSProperties),
-                            left: lang === 'ar' ? 'auto' : 12,
-                            right: lang === 'ar' ? 12 : 'auto',
-                        }}
-                    />
+                    <Search size={16} style={s.searchIcon as React.CSSProperties} />
                     <input
-                        style={{
-                            ...s.searchInput,
-                            paddingLeft: lang === 'ar' ? 12 : 40,
-                            paddingRight: lang === 'ar' ? 40 : 12,
-                        }}
+                        style={s.searchInput}
                         placeholder={t('txn.cash.search')}
                         value={search}
                         onChange={e => setSearch(e.target.value)}
@@ -338,13 +329,7 @@ export default function CashSalesPage() {
                                 'txn.cash.thReceipt',
                                 'txn.cash.thCashier',
                             ].map(h => (
-                                <th
-                                    key={h}
-                                    style={{
-                                        ...(s.th as React.CSSProperties),
-                                        textAlign: lang === 'ar' ? 'right' : 'left',
-                                    }}
-                                >
+                                <th key={h} style={s.th as React.CSSProperties}>
                                     {t(h)}
                                 </th>
                             ))}
@@ -363,12 +348,12 @@ export default function CashSalesPage() {
                                 <td style={s.td}>{row.client}</td>
                                 <td style={s.td}>{row.services}</td>
                                 <td style={{ ...s.td, ...s.amount }} dir="ltr">
-                                    {row.amount} EGP
+                                    {row.amount} {egpLabel()}
                                     {row.priceSource !== 'base' && (
                                         <span
                                             style={{
-                                                marginLeft: 4,
-                                                padding: '1px 5px',
+                                                marginInlineStart: 'var(--space-1)',
+                                                padding: '1px var(--space-1)',
                                                 borderRadius: 'var(--radius-full)',
                                                 fontSize: 10,
                                                 fontWeight: 600,

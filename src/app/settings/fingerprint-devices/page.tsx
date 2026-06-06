@@ -122,21 +122,11 @@ export default function FingerprintDevicesPage() {
                         <table className="data-table">
                             <thead>
                                 <tr>
-                                    <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                        {t('settings.fingerprint.colName')}
-                                    </th>
-                                    <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                        {t('settings.fingerprint.colIp')}
-                                    </th>
-                                    <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                        {t('settings.fingerprint.colStatus')}
-                                    </th>
-                                    <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                        {t('settings.fingerprint.colLastSync')}
-                                    </th>
-                                    <th style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                        {t('settings.fingerprint.colActions')}
-                                    </th>
+                                    <th style={{ textAlign: 'start' }}>{t('settings.fingerprint.colName')}</th>
+                                    <th style={{ textAlign: 'start' }}>{t('settings.fingerprint.colIp')}</th>
+                                    <th style={{ textAlign: 'start' }}>{t('settings.fingerprint.colStatus')}</th>
+                                    <th style={{ textAlign: 'start' }}>{t('settings.fingerprint.colLastSync')}</th>
+                                    <th style={{ textAlign: 'start' }}>{t('settings.fingerprint.colActions')}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -145,7 +135,7 @@ export default function FingerprintDevicesPage() {
                                         <td
                                             style={{
                                                 fontWeight: 'var(--font-medium)',
-                                                textAlign: lang === 'ar' ? 'right' : 'left',
+                                                textAlign: 'start',
                                             }}
                                         >
                                             {device.name}
@@ -153,14 +143,20 @@ export default function FingerprintDevicesPage() {
                                         <td
                                             style={{
                                                 fontFamily: 'var(--font-mono)',
-                                                textAlign: lang === 'ar' ? 'right' : 'left',
+                                                textAlign: 'start',
                                             }}
                                         >
                                             {device.ip}
                                         </td>
-                                        <td style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                                        <td style={{ textAlign: 'start' }}>
                                             <Badge color={device.status === 'Online' ? 'success' : 'destructive'}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                <div
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: 'var(--space-1)',
+                                                    }}
+                                                >
                                                     <Wifi size={12} />{' '}
                                                     {device.status === 'Online'
                                                         ? t('settings.fingerprint.online')
@@ -171,20 +167,26 @@ export default function FingerprintDevicesPage() {
                                         <td
                                             style={{
                                                 color: 'var(--text-secondary)',
-                                                textAlign: lang === 'ar' ? 'right' : 'left',
+                                                textAlign: 'start',
                                             }}
                                         >
                                             {getTranslatedSync(device.lastSync)}
                                         </td>
-                                        <td style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                                            <div style={{ display: 'flex', gap: 8 }}>
-                                                <Button variant="ghost" size="sm" iconOnly>
+                                        <td style={{ textAlign: 'start' }}>
+                                            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    iconOnly
+                                                    aria-label={t('common.edit')}
+                                                >
                                                     <Edit size={14} />
                                                 </Button>
                                                 <Button
                                                     variant="destructive"
                                                     size="sm"
                                                     iconOnly
+                                                    aria-label={t('common.delete')}
                                                     onClick={() => handleDelete(device.id)}
                                                 >
                                                     <Trash2 size={14} />

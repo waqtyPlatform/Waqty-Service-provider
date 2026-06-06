@@ -1,308 +1,50 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { Command } from 'cmdk';
 import { useRouter } from 'next/navigation';
-import {
-    LayoutDashboard,
-    CalendarDays,
-    Users,
-    UserCog,
-    ShoppingBag,
-    Receipt,
-    Megaphone,
-    BarChart3,
-    Settings,
-    RotateCcw,
-    Search,
-    Plus,
-    FileText,
-    CreditCard,
-    Clock,
-    Target,
-    Shield,
-    Building2,
-    Palette,
-    Bell,
-    Globe,
-    Database,
-    Lock,
-    Wallet,
-} from 'lucide-react';
+import { Search, Plus, UserPlus, ShoppingBag, Wallet, CalendarPlus } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useAuth } from '@/contexts/AuthContext';
+import { buildNavigation } from '@/lib/navigation';
 
-interface CommandItem {
+interface CommandEntry {
     id: string;
     label: string;
     href: string;
     icon: React.ReactNode;
-    group: string;
     keywords?: string[];
 }
+
+// Other surfaces (e.g. the TopBar search box) dispatch this event to summon the palette.
+export const PALETTE_EVENT = 'waqty:command-palette';
+
+const sized = (icon: React.ReactNode) =>
+    React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<{ size?: number }>, { size: 16 }) : icon;
 
 export default function CommandPalette() {
     const [open, setOpen] = useState(false);
     const router = useRouter();
     const { t } = useTranslation();
+    const { user } = useAuth();
 
-    const COMMANDS: CommandItem[] = [
-        // ── Navigation ──
-        {
-            id: 'dashboard',
-            label: t('cmd.dashboard'),
-            href: '/',
-            icon: <LayoutDashboard size={16} />,
-            group: t('cmd.groupNavigation'),
-        },
-        {
-            id: 'bookings-calendar',
-            label: t('cmd.bookingsCalendar'),
-            href: '/bookings',
-            icon: <CalendarDays size={16} />,
-            group: t('cmd.groupNavigation'),
-            keywords: ['appointments', 'schedule'],
-        },
-        {
-            id: 'bookings-list',
-            label: t('cmd.bookingsList'),
-            href: '/bookings/list',
-            icon: <CalendarDays size={16} />,
-            group: t('cmd.groupNavigation'),
-        },
-        {
-            id: 'customers',
-            label: t('cmd.customers'),
-            href: '/customers',
-            icon: <Users size={16} />,
-            group: t('cmd.groupNavigation'),
-            keywords: ['clients', 'patients'],
-        },
-        {
-            id: 'employees',
-            label: t('cmd.employees'),
-            href: '/employees',
-            icon: <UserCog size={16} />,
-            group: t('cmd.groupNavigation'),
-            keywords: ['staff', 'team'],
-        },
-        {
-            id: 'sales',
-            label: t('cmd.salesPos'),
-            href: '/sales',
-            icon: <ShoppingBag size={16} />,
-            group: t('cmd.groupNavigation'),
-        },
-        {
-            id: 'transactions',
-            label: t('cmd.transactions'),
-            href: '/transactions',
-            icon: <Receipt size={16} />,
-            group: t('cmd.groupNavigation'),
-        },
-        {
-            id: 'expenses',
-            label: t('cmd.expenses'),
-            href: '/expenses',
-            icon: <Wallet size={16} />,
-            group: t('cmd.groupNavigation'),
-        },
-        {
-            id: 'returns',
-            label: t('cmd.returns'),
-            href: '/returns',
-            icon: <RotateCcw size={16} />,
-            group: t('cmd.groupNavigation'),
-        },
-        {
-            id: 'marketing',
-            label: t('cmd.marketing'),
-            href: '/marketing',
-            icon: <Megaphone size={16} />,
-            group: t('cmd.groupNavigation'),
-        },
-        {
-            id: 'reports',
-            label: t('cmd.reports'),
-            href: '/reports',
-            icon: <BarChart3 size={16} />,
-            group: t('cmd.groupNavigation'),
-        },
-
-        // ── Quick Actions ──
-        {
-            id: 'new-booking',
-            label: t('cmd.newBooking'),
-            href: '/bookings/new',
-            icon: <Plus size={16} />,
-            group: t('cmd.groupQuickActions'),
-            keywords: ['create appointment'],
-        },
-        {
-            id: 'new-service',
-            label: t('cmd.addNewService'),
-            href: '/settings/services/new',
-            icon: <Plus size={16} />,
-            group: t('cmd.groupQuickActions'),
-        },
-        {
-            id: 'print-bookings',
-            label: t('cmd.printBookings'),
-            href: '/bookings/print',
-            icon: <FileText size={16} />,
-            group: t('cmd.groupQuickActions'),
-        },
-
-        // ── Employee Management ──
-        {
-            id: 'payroll',
-            label: t('cmd.payroll'),
-            href: '/employees/payroll',
-            icon: <CreditCard size={16} />,
-            group: t('cmd.groupEmployees'),
-            keywords: ['salary', 'wages'],
-        },
-        {
-            id: 'attendance',
-            label: t('cmd.attendance'),
-            href: '/employees/attendance',
-            icon: <Clock size={16} />,
-            group: t('cmd.groupEmployees'),
-        },
-        {
-            id: 'schedule',
-            label: t('cmd.employeeSchedule'),
-            href: '/employees/schedule',
-            icon: <CalendarDays size={16} />,
-            group: t('cmd.groupEmployees'),
-            keywords: ['shifts', 'roster'],
-        },
-        {
-            id: 'performance',
-            label: t('cmd.performance'),
-            href: '/employees/performance',
-            icon: <Target size={16} />,
-            group: t('cmd.groupEmployees'),
-        },
-        {
-            id: 'commissions',
-            label: t('cmd.commissions'),
-            href: '/employees/commissions',
-            icon: <CreditCard size={16} />,
-            group: t('cmd.groupEmployees'),
-        },
-        {
-            id: 'deductions',
-            label: t('cmd.deductions'),
-            href: '/employees/deductions',
-            icon: <CreditCard size={16} />,
-            group: t('cmd.groupEmployees'),
-        },
-        {
-            id: 'permissions',
-            label: t('cmd.permissions'),
-            href: '/employees/permissions',
-            icon: <Shield size={16} />,
-            group: t('cmd.groupEmployees'),
-        },
-
-        // ── Transactions ──
-        {
-            id: 'cash-sales',
-            label: t('cmd.cashSales'),
-            href: '/transactions/cash-sales',
-            icon: <Receipt size={16} />,
-            group: t('cmd.groupTransactions'),
-        },
-        {
-            id: 'daily-settlements',
-            label: t('cmd.dailySettlements'),
-            href: '/transactions/dailies',
-            icon: <Receipt size={16} />,
-            group: t('cmd.groupTransactions'),
-        },
-        {
-            id: 'petty-cash',
-            label: t('cmd.pettyCash'),
-            href: '/transactions/petty-cash',
-            icon: <Wallet size={16} />,
-            group: t('cmd.groupTransactions'),
-        },
-
-        // ── Settings ──
-        {
-            id: 'settings',
-            label: t('cmd.settings'),
-            href: '/settings',
-            icon: <Settings size={16} />,
-            group: t('cmd.groupSettings'),
-        },
-        {
-            id: 'settings-branches',
-            label: t('cmd.branchSettings'),
-            href: '/settings/branches',
-            icon: <Building2 size={16} />,
-            group: t('cmd.groupSettings'),
-        },
-        {
-            id: 'settings-appearance',
-            label: t('cmd.appearance'),
-            href: '/settings/appearance',
-            icon: <Palette size={16} />,
-            group: t('cmd.groupSettings'),
-            keywords: ['theme', 'branding'],
-        },
-        {
-            id: 'settings-services',
-            label: t('cmd.serviceCatalog'),
-            href: '/settings/services',
-            icon: <ShoppingBag size={16} />,
-            group: t('cmd.groupSettings'),
-        },
-        {
-            id: 'settings-notifications',
-            label: t('cmd.notifications'),
-            href: '/settings/notifications',
-            icon: <Bell size={16} />,
-            group: t('cmd.groupSettings'),
-        },
-        {
-            id: 'settings-localization',
-            label: t('cmd.localization'),
-            href: '/settings/localization',
-            icon: <Globe size={16} />,
-            group: t('cmd.groupSettings'),
-            keywords: ['language', 'arabic'],
-        },
-        {
-            id: 'settings-data',
-            label: t('cmd.dataManagement'),
-            href: '/settings/data',
-            icon: <Database size={16} />,
-            group: t('cmd.groupSettings'),
-            keywords: ['import', 'export'],
-        },
-        {
-            id: 'settings-security',
-            label: t('cmd.security'),
-            href: '/settings/security',
-            icon: <Lock size={16} />,
-            group: t('cmd.groupSettings'),
-        },
-    ];
-
-    // Toggle with Ctrl+K
+    // Open via Ctrl/Cmd+K or the custom event; Escape closes.
     useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        const onKey = (e: KeyboardEvent) => {
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
                 e.preventDefault();
-                setOpen(prev => !prev);
-            }
-            if (e.key === 'Escape') {
+                setOpen(p => !p);
+            } else if (e.key === 'Escape') {
                 setOpen(false);
             }
         };
-        document.addEventListener('keydown', handleKeyDown);
-        return () => document.removeEventListener('keydown', handleKeyDown);
+        const onOpen = () => setOpen(true);
+        document.addEventListener('keydown', onKey);
+        window.addEventListener(PALETTE_EVENT, onOpen);
+        return () => {
+            document.removeEventListener('keydown', onKey);
+            window.removeEventListener(PALETTE_EVENT, onOpen);
+        };
     }, []);
 
     const handleSelect = useCallback(
@@ -313,24 +55,125 @@ export default function CommandPalette() {
         [router]
     );
 
+    // Actions — the fast path to *do*, not just navigate.
+    const actions: CommandEntry[] = useMemo(
+        () => [
+            {
+                id: 'act-new-booking',
+                label: t('cmd.newBooking'),
+                href: '/bookings/new',
+                icon: <CalendarPlus size={16} />,
+                keywords: ['create', 'appointment', 'new'],
+            },
+            {
+                id: 'act-add-client',
+                label: t('cmd.addClient'),
+                href: '/customers',
+                icon: <UserPlus size={16} />,
+                keywords: ['customer', 'patient', 'new'],
+            },
+            {
+                id: 'act-new-sale',
+                label: t('cmd.newSale'),
+                href: '/sales',
+                icon: <ShoppingBag size={16} />,
+                keywords: ['checkout', 'pos', 'sell'],
+            },
+            {
+                id: 'act-record-expense',
+                label: t('cmd.recordExpense'),
+                href: '/expenses',
+                icon: <Wallet size={16} />,
+                keywords: ['cost', 'spend'],
+            },
+            {
+                id: 'act-add-service',
+                label: t('cmd.addNewService'),
+                href: '/settings/services/new',
+                icon: <Plus size={16} />,
+                keywords: ['catalog'],
+            },
+        ],
+        [t]
+    );
+
+    // Navigation commands generated from the single nav manifest (role/business aware,
+    // always in sync with the sidebar — no hand-maintained list to drift).
+    const navSections = useMemo(() => {
+        const { primary, footer } = buildNavigation(t, user?.businessType, user?.role);
+        const groups = [...primary, ...footer];
+        const sections: { heading: string; items: CommandEntry[] }[] = [];
+        const direct: CommandEntry[] = [];
+        for (const g of groups) {
+            if (g.href && (!g.children || g.children.length === 0)) {
+                direct.push({ id: g.id, label: g.label, href: g.href, icon: g.icon });
+            } else if (g.children && g.children.length) {
+                sections.push({
+                    heading: g.label,
+                    items: g.children.map(c => ({
+                        id: c.href,
+                        label: c.label,
+                        href: c.href,
+                        icon: g.icon,
+                        keywords: [g.label],
+                    })),
+                });
+            }
+        }
+        if (direct.length) sections.unshift({ heading: t('cmd.groupNavigation'), items: direct });
+        return sections;
+    }, [t, user?.businessType, user?.role]);
+
     if (!open) return null;
 
-    // Group commands
-    const groups = COMMANDS.reduce<Record<string, CommandItem[]>>((acc, cmd) => {
-        if (!acc[cmd.group]) acc[cmd.group] = [];
-        acc[cmd.group].push(cmd);
-        return acc;
-    }, {});
+    const renderItem = (item: CommandEntry) => (
+        <Command.Item
+            key={item.id}
+            value={`${item.label} ${item.keywords?.join(' ') ?? ''}`}
+            onSelect={() => handleSelect(item.href)}
+            style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--space-3)',
+                padding: 'var(--space-2) var(--space-3)',
+                borderRadius: 'var(--radius-md)',
+                fontSize: 'var(--text-sm)',
+                color: 'var(--text-primary)',
+                cursor: 'pointer',
+            }}
+        >
+            <span style={{ color: 'var(--text-tertiary)', flexShrink: 0, display: 'inline-flex' }}>
+                {sized(item.icon)}
+            </span>
+            <span>{item.label}</span>
+        </Command.Item>
+    );
 
     return (
         <>
+            {/* Keyboard-selected + hover highlight (cmdk sets data-selected on the active item). */}
+            <style>{`
+                [cmdk-group-heading] {
+                    font-size: var(--text-xs);
+                    font-weight: var(--font-semibold);
+                    text-transform: uppercase;
+                    letter-spacing: var(--tracking-wide);
+                    color: var(--text-tertiary);
+                    padding: var(--space-2) var(--space-3);
+                }
+                [cmdk-item][data-selected='true'],
+                [cmdk-item]:hover { background: var(--bg-secondary); }
+                [cmdk-item][data-selected='true'] { box-shadow: inset 2px 0 0 var(--color-primary-500); }
+            `}</style>
+
             {/* Backdrop */}
             <div
                 style={{
                     position: 'fixed',
                     inset: 0,
                     background: 'var(--bg-overlay)',
-                    zIndex: 9998,
+                    backdropFilter: 'blur(2px)',
+                    zIndex: 'var(--z-overlay)' as React.CSSProperties['zIndex'],
                     animation: 'fadeIn 150ms ease',
                 }}
                 onClick={() => setOpen(false)}
@@ -340,13 +183,14 @@ export default function CommandPalette() {
             <div
                 style={{
                     position: 'fixed',
-                    top: '20%',
+                    top: '16%',
                     left: '50%',
                     transform: 'translateX(-50%)',
                     width: '100%',
-                    maxWidth: 560,
-                    zIndex: 9999,
+                    maxWidth: 580,
+                    zIndex: 'var(--z-modal)' as React.CSSProperties['zIndex'],
                     animation: 'scaleIn 150ms ease both',
+                    padding: '0 var(--space-4)',
                 }}
             >
                 <Command
@@ -371,6 +215,7 @@ export default function CommandPalette() {
                     >
                         <Search size={18} style={{ color: 'var(--text-tertiary)', flexShrink: 0 }} />
                         <Command.Input
+                            autoFocus
                             placeholder={t('cmd.searchPlaceholder')}
                             style={{
                                 flex: 1,
@@ -384,7 +229,7 @@ export default function CommandPalette() {
                         />
                         <kbd
                             style={{
-                                padding: '2px 8px',
+                                padding: '2px var(--space-2)',
                                 fontSize: 'var(--text-xs)',
                                 color: 'var(--text-tertiary)',
                                 background: 'var(--bg-tertiary)',
@@ -397,13 +242,7 @@ export default function CommandPalette() {
                     </div>
 
                     {/* Results */}
-                    <Command.List
-                        style={{
-                            maxHeight: 400,
-                            overflowY: 'auto',
-                            padding: 'var(--space-2)',
-                        }}
-                    >
+                    <Command.List style={{ maxHeight: 420, overflowY: 'auto', padding: 'var(--space-2)' }}>
                         <Command.Empty
                             style={{
                                 padding: 'var(--space-8)',
@@ -415,37 +254,11 @@ export default function CommandPalette() {
                             {t('cmd.noResults')}
                         </Command.Empty>
 
-                        {Object.entries(groups).map(([group, items]) => (
-                            <Command.Group
-                                key={group}
-                                heading={group}
-                                style={{
-                                    padding: 'var(--space-2) 0',
-                                }}
-                            >
-                                {items.map(item => (
-                                    <Command.Item
-                                        key={item.id}
-                                        value={`${item.label} ${item.keywords?.join(' ') || ''}`}
-                                        onSelect={() => handleSelect(item.href)}
-                                        style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: 'var(--space-3)',
-                                            padding: 'var(--space-2) var(--space-3)',
-                                            borderRadius: 'var(--radius-md)',
-                                            fontSize: 'var(--text-sm)',
-                                            color: 'var(--text-primary)',
-                                            cursor: 'pointer',
-                                            transition: 'background var(--transition-fast)',
-                                        }}
-                                    >
-                                        <span style={{ color: 'var(--text-tertiary)', flexShrink: 0 }}>
-                                            {item.icon}
-                                        </span>
-                                        <span>{item.label}</span>
-                                    </Command.Item>
-                                ))}
+                        <Command.Group heading={t('cmd.groupQuickActions')}>{actions.map(renderItem)}</Command.Group>
+
+                        {navSections.map(section => (
+                            <Command.Group key={section.heading} heading={section.heading}>
+                                {section.items.map(renderItem)}
                             </Command.Group>
                         ))}
                     </Command.List>

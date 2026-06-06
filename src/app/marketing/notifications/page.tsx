@@ -184,7 +184,7 @@ const s: Record<string, React.CSSProperties> = {
     },
     th: {
         padding: 'var(--space-3) var(--space-4)',
-        textAlign: 'left',
+        textAlign: 'start',
         fontSize: 'var(--text-xs)',
         fontWeight: 'var(--font-semibold)',
         color: 'var(--text-tertiary)',
@@ -216,12 +216,17 @@ const s: Record<string, React.CSSProperties> = {
         textTransform: 'uppercase',
         letterSpacing: '0.05em',
     },
-    progressContainer: { height: 8, background: 'var(--bg-tertiary)', borderRadius: 4, overflow: 'hidden' },
-    progressFill: { height: '100%', borderRadius: 4, transition: 'width 0.5s ease' },
+    progressContainer: {
+        height: 8,
+        background: 'var(--bg-tertiary)',
+        borderRadius: 'var(--radius-sm)',
+        overflow: 'hidden',
+    },
+    progressFill: { height: '100%', borderRadius: 'var(--radius-sm)', transition: 'width 0.5s ease' },
     // Recipient list
     filterBar: { display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-3)' },
     filterBtn: {
-        padding: '4px 12px',
+        padding: 'var(--space-1) var(--space-3)',
         borderRadius: 'var(--radius-full)',
         fontSize: 'var(--text-xs)',
         fontWeight: 'var(--font-semibold)',
@@ -415,7 +420,7 @@ export default function NotificationsPage() {
                                             n.status}
                                     </Badge>
                                 </td>
-                                <td style={{ ...s.td, textAlign: 'right' }} onClick={e => e.stopPropagation()}>
+                                <td style={{ ...s.td, textAlign: 'end' }} onClick={e => e.stopPropagation()}>
                                     <DropdownMenu
                                         trigger={
                                             <button
@@ -606,7 +611,7 @@ export default function NotificationsPage() {
                                     size={14}
                                     style={{
                                         position: 'absolute' as const,
-                                        left: 10,
+                                        insetInlineStart: 10,
                                         top: '50%',
                                         transform: 'translateY(-50%)',
                                         color: 'var(--text-tertiary)',
@@ -616,7 +621,7 @@ export default function NotificationsPage() {
                                     style={{
                                         width: '100%',
                                         height: 36,
-                                        paddingLeft: 32,
+                                        paddingInlineStart: 32,
                                         border: '1px solid var(--border-color)',
                                         borderRadius: 'var(--radius-lg)',
                                         background: 'var(--bg-primary)',
@@ -691,14 +696,14 @@ export default function NotificationsPage() {
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div style={{ textAlign: 'right' }}>
+                                            <div style={{ textAlign: 'end' }}>
                                                 {r.opened ? (
                                                     <>
                                                         <div
                                                             style={{
                                                                 display: 'flex',
                                                                 alignItems: 'center',
-                                                                gap: 4,
+                                                                gap: 'var(--space-1)',
                                                                 color: 'var(--color-success)',
                                                                 fontSize: 'var(--text-xs)',
                                                                 fontWeight: 'var(--font-semibold)',
@@ -720,7 +725,7 @@ export default function NotificationsPage() {
                                                         style={{
                                                             display: 'flex',
                                                             alignItems: 'center',
-                                                            gap: 4,
+                                                            gap: 'var(--space-1)',
                                                             color: 'var(--color-gray-400)',
                                                             fontSize: 'var(--text-xs)',
                                                             fontWeight: 'var(--font-semibold)',

@@ -4,7 +4,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight, Plus, Filter, CalendarDays, Clock, Building2, AlertTriangle } from 'lucide-react';
-import { EmptyState } from '@/components/ui';
 import styles from './bookings.module.css';
 import BookingsTabs from './BookingsTabs';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -12,7 +11,16 @@ import { isEmployeeOnShift } from '@/lib/shiftData';
 import { providerApi, getImageUrl, type Employee } from '@/lib/api';
 import type { BookingStatus } from '@/lib/contract';
 import { egp } from '@/lib/money';
-import { type VisitView, type VisitSeed, buildVisitView, visitViewFromBooking, hhmm } from './_visits';
+import { Modal, Select, Button } from '@/components/ui';
+import {
+    type VisitView,
+    type VisitSeed,
+    buildVisitView,
+    visitViewFromBooking,
+    hhmm,
+    STATUS_ORDER,
+    STATUS_LABEL_KEY,
+} from './_visits';
 
 interface CalEmployee {
     name: string;
@@ -371,14 +379,65 @@ function formatDate(d: Date): string {
     return d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
 }
 
+// ─── Week / Month date helpers ──────────────────────────────────────────────
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const MONTHS = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+];
+
+function startOfWeek(d: Date): Date {
+    const n = new Date(d);
+    n.setDate(n.getDate() - n.getDay());
+    n.setHours(0, 0, 0, 0);
+    return n;
+}
+function addDays(d: Date, n: number): Date {
+    const x = new Date(d);
+    x.setDate(x.getDate() + n);
+    return x;
+}
+function isSameDay(a: Date, b: Date): boolean {
+    return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+function monthMatrix(d: Date): Date[] {
+    const first = new Date(d.getFullYear(), d.getMonth(), 1);
+    const start = startOfWeek(first);
+    return Array.from({ length: 42 }, (_, i) => addDays(start, i));
+}
+
+// Status → CSS color token (for the colored edge on week/month chips).
+const statusVar: Record<BookingStatus, string> = {
+    pending: '--status-unconfirmed',
+    confirmed: '--status-confirmed',
+    in_progress: '--status-arrived',
+    completed: '--status-completed',
+    cancelled: '--status-cancelled',
+    no_show: '--status-no-show',
+};
+
 export default function BookingsCalendarPage() {
     const [calendarView, setCalendarView] = useState<'day' | 'week' | 'month'>('day');
     const [currentDate, setCurrentDate] = useState(new Date());
     const [employees, setEmployees] = useState<CalEmployee[]>(fallbackEmployees);
     const [visits, setVisits] = useState<VisitView[]>(mockCalVisits);
     const [apiLoaded, setApiLoaded] = useState(false);
+    // Calendar filters: by booking status and/or by employee (empty string = "all").
+    const [filterOpen, setFilterOpen] = useState(false);
+    const [statusFilter, setStatusFilter] = useState<BookingStatus | ''>('');
+    const [employeeFilter, setEmployeeFilter] = useState('');
     const router = useRouter();
-    const { t } = useTranslation();
+    const { t, lang } = useTranslation();
 
     // Fetch employees once
     useEffect(() => {
@@ -409,25 +468,69 @@ export default function BookingsCalendarPage() {
             });
     }, [currentDate]);
 
-    const blocks = useMemo(() => visitsToBlocks(visits, employees, timeSlots), [visits, employees]);
+    // Apply the active filters (status / employee) to the canonical visits. An
+    // employee match keeps a visit when ANY of its line items is that specialist.
+    const filteredVisits = useMemo(
+        () =>
+            visits.filter(v => {
+                if (statusFilter && v.visit.status !== statusFilter) return false;
+                if (employeeFilter && !v.lines.some(l => l.line.employee_uuid === employeeFilter)) return false;
+                return true;
+            }),
+        [visits, statusFilter, employeeFilter]
+    );
+    const activeFilterCount = (statusFilter ? 1 : 0) + (employeeFilter ? 1 : 0);
+
+    const blocks = useMemo(() => visitsToBlocks(filteredVisits, employees, timeSlots), [filteredVisits, employees]);
     const queueMap = computeQueueNumbers(blocks);
 
-    const countBy = (s: BookingStatus) => visits.filter(v => v.visit.status === s).length;
-    const revenueToday = visits.reduce((sum, v) => (v.visit.status === 'cancelled' ? sum : sum + v.visit.total), 0);
+    const countBy = (s: BookingStatus) => filteredVisits.filter(v => v.visit.status === s).length;
+    const revenueToday = filteredVisits.reduce(
+        (sum, v) => (v.visit.status === 'cancelled' ? sum : sum + v.visit.total),
+        0
+    );
 
-    const goToday = () => setCurrentDate(new Date());
-    const goPrev = () =>
-        setCurrentDate(d => {
-            const n = new Date(d);
-            n.setDate(n.getDate() - 1);
-            return n;
-        });
-    const goNext = () =>
-        setCurrentDate(d => {
-            const n = new Date(d);
-            n.setDate(n.getDate() + 1);
-            return n;
-        });
+    // Deep-linkable: restore view + date from the URL once on mount.
+    useEffect(() => {
+        const p = new URLSearchParams(window.location.search);
+        const v = p.get('view');
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time URL→state restore on mount
+        if (v === 'day' || v === 'week' || v === 'month') setCalendarView(v);
+        const dt = p.get('date');
+        if (dt) {
+            const d = new Date(dt);
+            if (!isNaN(d.getTime())) setCurrentDate(d);
+        }
+    }, []);
+
+    // Write to the URL only from user actions (no read-back ⇒ no effect race).
+    const writeUrl = (view: 'day' | 'week' | 'month', date: Date) => {
+        const p = new URLSearchParams(window.location.search);
+        p.set('view', view);
+        p.set('date', date.toISOString().split('T')[0]);
+        window.history.replaceState(null, '', `?${p.toString()}`);
+    };
+    const selectView = (view: 'day' | 'week' | 'month') => {
+        setCalendarView(view);
+        writeUrl(view, currentDate);
+    };
+    const selectDate = (date: Date, view: 'day' | 'week' | 'month' = calendarView) => {
+        setCurrentDate(date);
+        setCalendarView(view);
+        writeUrl(view, date);
+    };
+
+    // Prev/next step by the active view's unit (day / week / month).
+    const step = (dir: number) => {
+        const n = new Date(currentDate);
+        if (calendarView === 'week') n.setDate(n.getDate() + 7 * dir);
+        else if (calendarView === 'month') n.setMonth(n.getMonth() + dir);
+        else n.setDate(n.getDate() + dir);
+        selectDate(n, calendarView);
+    };
+    const goToday = () => selectDate(new Date(), calendarView);
+    const goPrev = () => step(-1);
+    const goNext = () => step(1);
 
     const handleEmptyCellClick = (empIndex: number, slotIndex: number) => {
         const time = timeSlots[slotIndex];
@@ -435,6 +538,114 @@ export default function BookingsCalendarPage() {
         const dateStr = currentDate.toISOString().split('T')[0];
         router.push(`/bookings/new?emp=${emp.initials}&date=${dateStr}&time=${time}`);
     };
+
+    const viewTitle =
+        calendarView === 'day'
+            ? formatDate(currentDate)
+            : calendarView === 'week'
+              ? (() => {
+                    const sow = startOfWeek(currentDate);
+                    const eow = addDays(sow, 6);
+                    return `${MONTHS[sow.getMonth()].slice(0, 3)} ${sow.getDate()} – ${MONTHS[eow.getMonth()].slice(0, 3)} ${eow.getDate()}, ${eow.getFullYear()}`;
+                })()
+              : `${MONTHS[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+
+    // The mock seed loads for the selected day; place loaded visits on currentDate's
+    // cell/column (a week/month range fetch will populate the rest once wired).
+    const today = new Date();
+    const visitTime = (v: VisitView) => hhmm(v.lines[0]?.line.start_time || '');
+    const visitSvc = (v: VisitView) => v.lines[0]?.serviceName || '';
+    const sortByTime = (a: VisitView, b: VisitView) =>
+        (a.lines[0]?.line.start_time || '').localeCompare(b.lines[0]?.line.start_time || '');
+    const dayVisitsFor = (day: Date) => (isSameDay(day, currentDate) ? [...filteredVisits].sort(sortByTime) : []);
+
+    const weekGrid = (
+        <div className={styles.weekView}>
+            {Array.from({ length: 7 }, (_, i) => addDays(startOfWeek(currentDate), i)).map(day => {
+                const dayVisits = dayVisitsFor(day);
+                return (
+                    <div
+                        key={day.toISOString()}
+                        className={`${styles.weekCol} ${isSameDay(day, currentDate) ? styles.weekColActive : ''}`}
+                    >
+                        <div className={styles.weekColHead}>
+                            <span className={styles.weekColDow}>{WEEKDAYS[day.getDay()]}</span>
+                            <span
+                                className={`${styles.weekColDate} ${isSameDay(day, today) ? styles.weekColToday : ''}`}
+                            >
+                                {day.getDate()}
+                            </span>
+                        </div>
+                        <div className={styles.weekColBody} onClick={() => selectDate(day, 'day')}>
+                            {dayVisits.map(v => (
+                                <div
+                                    key={v.visit.uuid}
+                                    className={styles.weekChip}
+                                    style={{ borderInlineStartColor: `var(${statusVar[v.visit.status]})` }}
+                                    onClick={e => {
+                                        e.stopPropagation();
+                                        router.push(`/bookings/${v.visit.uuid}`);
+                                    }}
+                                >
+                                    <span className={styles.weekChipTime}>{visitTime(v)}</span>
+                                    <span className={styles.weekChipName}>{v.clientName}</span>
+                                    <span className={styles.weekChipSvc}>{visitSvc(v)}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
+    );
+
+    const monthGrid = (
+        <div className={styles.monthView}>
+            <div className={styles.monthDow}>
+                {WEEKDAYS.map(d => (
+                    <div key={d} className={styles.monthDowCell}>
+                        {d}
+                    </div>
+                ))}
+            </div>
+            <div className={styles.monthGrid}>
+                {monthMatrix(currentDate).map(day => {
+                    const inMonth = day.getMonth() === currentDate.getMonth();
+                    const dayVisits = dayVisitsFor(day);
+                    return (
+                        <div
+                            key={day.toISOString()}
+                            className={`${styles.monthCell} ${inMonth ? '' : styles.monthCellOut} ${isSameDay(day, currentDate) ? styles.monthCellActive : ''}`}
+                            onClick={() => selectDate(day, 'day')}
+                        >
+                            <div className={styles.monthCellHead}>
+                                <span
+                                    className={`${styles.monthCellNum} ${isSameDay(day, today) ? styles.monthCellToday : ''}`}
+                                >
+                                    {day.getDate()}
+                                </span>
+                                {dayVisits.length > 0 && <span className={styles.monthCount}>{dayVisits.length}</span>}
+                            </div>
+                            <div className={styles.monthCellBody}>
+                                {dayVisits.slice(0, 3).map(v => (
+                                    <div
+                                        key={v.visit.uuid}
+                                        className={styles.monthEvent}
+                                        style={{ borderInlineStartColor: `var(${statusVar[v.visit.status]})` }}
+                                    >
+                                        {visitTime(v)} {v.clientName}
+                                    </div>
+                                ))}
+                                {dayVisits.length > 3 && (
+                                    <div className={styles.monthMore}>+{dayVisits.length - 3}</div>
+                                )}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
 
     return (
         <div className={styles.bookingsPage}>
@@ -445,11 +656,11 @@ export default function BookingsCalendarPage() {
             <div className={styles.calendarHeader}>
                 <div className={styles.calendarNav}>
                     <button className={styles.navBtn} onClick={goPrev}>
-                        <ChevronLeft size={18} />
+                        <ChevronLeft size={18} style={{ transform: lang === 'ar' ? 'scaleX(-1)' : 'none' }} />
                     </button>
-                    <span className={styles.calendarTitle}>{formatDate(currentDate)}</span>
+                    <span className={styles.calendarTitle}>{viewTitle}</span>
                     <button className={styles.navBtn} onClick={goNext}>
-                        <ChevronRight size={18} />
+                        <ChevronRight size={18} style={{ transform: lang === 'ar' ? 'scaleX(-1)' : 'none' }} />
                     </button>
                     <button className={styles.todayBtn} onClick={goToday}>
                         {t('bookings.today')}
@@ -461,7 +672,7 @@ export default function BookingsCalendarPage() {
                         <button
                             key={v}
                             className={`${styles.viewBtn} ${calendarView === v ? styles.viewBtnActive : ''}`}
-                            onClick={() => setCalendarView(v)}
+                            onClick={() => selectView(v)}
                         >
                             {t(`bookings.${v}`)}
                         </button>
@@ -469,8 +680,33 @@ export default function BookingsCalendarPage() {
                 </div>
 
                 <div className={styles.calendarActions}>
-                    <button className={styles.filterBtn}>
+                    <button
+                        className={styles.filterBtn}
+                        onClick={() => setFilterOpen(true)}
+                        aria-haspopup="dialog"
+                        aria-expanded={filterOpen}
+                    >
                         <Filter size={16} /> {t('bookings.filters')}
+                        {activeFilterCount > 0 && (
+                            <span
+                                style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    minWidth: 18,
+                                    height: 18,
+                                    padding: '0 var(--space-1)',
+                                    borderRadius: 'var(--radius-full)',
+                                    background: 'var(--color-primary-500)',
+                                    color: 'white',
+                                    fontSize: 11,
+                                    fontWeight: 'var(--font-bold)',
+                                    lineHeight: 1,
+                                }}
+                            >
+                                {activeFilterCount}
+                            </span>
+                        )}
                     </button>
                     <Link href="/bookings/new" className={styles.btnPrimary}>
                         <Plus size={16} /> {t('bookings.newBooking')}
@@ -585,24 +821,10 @@ export default function BookingsCalendarPage() {
                             ))}
                         </div>
                     </div>
+                ) : calendarView === 'week' ? (
+                    weekGrid
                 ) : (
-                    <div
-                        style={{
-                            flex: 1,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            background: 'var(--bg-primary)',
-                            borderRadius: 'var(--radius-xl)',
-                            border: '1px solid var(--border-color)',
-                        }}
-                    >
-                        <EmptyState
-                            icon={<CalendarDays size={48} />}
-                            title={t('bookings.advancedViewTitle')}
-                            description={t('bookings.advancedViewDesc')}
-                        />
-                    </div>
+                    monthGrid
                 )}
 
                 {/* Side Panel */}
@@ -681,7 +903,7 @@ export default function BookingsCalendarPage() {
                         </div>
                         <div className={styles.summaryGrid}>
                             <div className={styles.summaryItem}>
-                                <div className={styles.summaryValue}>{visits.length}</div>
+                                <div className={styles.summaryValue}>{filteredVisits.length}</div>
                                 <div className={styles.summaryLabel}>{t('bookings.total')}</div>
                             </div>
                             <div className={styles.summaryItem}>
@@ -727,12 +949,57 @@ export default function BookingsCalendarPage() {
                                     marginTop: 'var(--space-1)',
                                 }}
                             >
-                                {t('bookings.fromBookings').replace('%count%', String(visits.length))}
+                                {t('bookings.fromBookings').replace('%count%', String(filteredVisits.length))}
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            {/* Filters: by status and/or employee. Applied live to the rendered visits. */}
+            <Modal
+                open={filterOpen}
+                onClose={() => setFilterOpen(false)}
+                title={t('bookings.filters')}
+                footer={
+                    <>
+                        <Button
+                            variant="ghost"
+                            onClick={() => {
+                                setStatusFilter('');
+                                setEmployeeFilter('');
+                            }}
+                            disabled={activeFilterCount === 0}
+                        >
+                            {t('bookings.clearFilters')}
+                        </Button>
+                        <Button variant="primary" onClick={() => setFilterOpen(false)}>
+                            {t('bookings.applyFilters')}
+                        </Button>
+                    </>
+                }
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    <Select
+                        label={t('common.status')}
+                        value={statusFilter}
+                        onChange={e => setStatusFilter(e.target.value as BookingStatus | '')}
+                        options={[
+                            { value: '', label: t('bk.allStatuses') },
+                            ...STATUS_ORDER.map(s => ({ value: s, label: t(STATUS_LABEL_KEY[s]) })),
+                        ]}
+                    />
+                    <Select
+                        label={t('bookings.employee')}
+                        value={employeeFilter}
+                        onChange={e => setEmployeeFilter(e.target.value)}
+                        options={[
+                            { value: '', label: t('mkt.lblAllEmployees') },
+                            ...employees.map(emp => ({ value: emp.uuid, label: emp.name })),
+                        ]}
+                    />
+                </div>
+            </Modal>
         </div>
     );
 }

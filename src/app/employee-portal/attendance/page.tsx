@@ -97,7 +97,7 @@ export default function EmployeeAttendancePage() {
                         color: 'var(--text-primary)',
                     }}
                 >
-                    <ChevronLeft size={18} />
+                    {lang === 'ar' ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
                 </button>
                 <h2 style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-semibold)' }}>{monthStr}</h2>
                 <button
@@ -112,7 +112,7 @@ export default function EmployeeAttendancePage() {
                         color: 'var(--text-primary)',
                     }}
                 >
-                    <ChevronRight size={18} />
+                    {lang === 'ar' ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
                 </button>
             </div>
 
@@ -254,7 +254,7 @@ export default function EmployeeAttendancePage() {
                                     <th
                                         style={{
                                             padding: 'var(--space-3) var(--space-4)',
-                                            textAlign: 'left',
+                                            textAlign: 'start',
                                             fontSize: 'var(--text-xs)',
                                             fontWeight: 'var(--font-semibold)',
                                             color: 'var(--text-tertiary)',
@@ -385,10 +385,10 @@ export default function EmployeeAttendancePage() {
                                                         style={{
                                                             display: 'inline-flex',
                                                             alignItems: 'center',
-                                                            gap: 4,
+                                                            gap: 'var(--space-1)',
                                                             fontSize: 'var(--text-xs)',
                                                             fontWeight: 'var(--font-semibold)',
-                                                            padding: '2px 8px',
+                                                            padding: '2px var(--space-2)',
                                                             borderRadius: 'var(--radius-full)',
                                                             background: isComplete
                                                                 ? 'var(--color-success-light)'

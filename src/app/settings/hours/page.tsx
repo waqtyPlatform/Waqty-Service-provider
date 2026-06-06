@@ -139,6 +139,12 @@ export default function WorkingHoursPage() {
         setHours(newHours);
     };
 
+    const updateTime = (dayIndex: number, field: 'openTime' | 'closeTime', value: string) => {
+        const newHours = [...hours];
+        newHours[dayIndex][field] = value;
+        setHours(newHours);
+    };
+
     const addBreak = (dayIndex: number) => {
         const newHours = [...hours];
         newHours[dayIndex].breaks.push({ start: '13:00', end: '14:00' });
@@ -220,12 +226,22 @@ export default function WorkingHoursPage() {
                                     style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}
                                 >
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                                        <Input type="time" defaultValue={h.openTime} dir="ltr" />
+                                        <Input
+                                            type="time"
+                                            value={h.openTime}
+                                            onChange={e => updateTime(i, 'openTime', e.target.value)}
+                                            dir="ltr"
+                                        />
                                         <span style={{ color: 'var(--text-tertiary)' }}>{t('settings.hours.to')}</span>
-                                        <Input type="time" defaultValue={h.closeTime} dir="ltr" />
+                                        <Input
+                                            type="time"
+                                            value={h.closeTime}
+                                            onChange={e => updateTime(i, 'closeTime', e.target.value)}
+                                            dir="ltr"
+                                        />
                                         <div style={{ marginInlineStart: 'auto' }}>
                                             <Button variant="ghost" size="sm" onClick={() => addBreak(i)}>
-                                                <Plus size={14} style={{ marginInlineEnd: 8 }} />{' '}
+                                                <Plus size={14} style={{ marginInlineEnd: 'var(--space-2)' }} />{' '}
                                                 {t('settings.hours.addBreak')}
                                             </Button>
                                         </div>
@@ -276,6 +292,7 @@ export default function WorkingHoursPage() {
                                                         variant="ghost"
                                                         size="sm"
                                                         iconOnly
+                                                        aria-label={t('settings.hours.removeBreak')}
                                                         onClick={() => removeBreak(i, bIdx)}
                                                     >
                                                         <Trash2 size={14} color="var(--color-error)" />

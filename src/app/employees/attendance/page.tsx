@@ -133,7 +133,7 @@ const s: Record<string, React.CSSProperties> = {
     searchBox: { position: 'relative', width: '100%', maxWidth: 320 },
     searchIcon: {
         position: 'absolute',
-        left: 12,
+        insetInlineStart: 12,
         top: '50%',
         transform: 'translateY(-50%)',
         color: 'var(--text-tertiary)',
@@ -141,7 +141,7 @@ const s: Record<string, React.CSSProperties> = {
     searchInput: {
         width: '100%',
         height: 40,
-        paddingLeft: 40,
+        paddingInlineStart: 40,
         border: '1px solid var(--border-color)',
         borderRadius: 'var(--radius-lg)',
         background: 'var(--bg-primary)',
@@ -157,7 +157,7 @@ const s: Record<string, React.CSSProperties> = {
     },
     th: {
         padding: 'var(--space-3) var(--space-4)',
-        textAlign: 'left',
+        textAlign: 'start',
         fontSize: 'var(--text-xs)',
         fontWeight: 'var(--font-semibold)',
         color: 'var(--text-tertiary)',
@@ -174,7 +174,7 @@ const s: Record<string, React.CSSProperties> = {
     },
     badge: {
         display: 'inline-flex',
-        padding: '2px 8px',
+        padding: '2px var(--space-2)',
         borderRadius: 'var(--radius-full)',
         fontSize: 11,
         fontWeight: 'var(--font-semibold)',
@@ -460,19 +460,11 @@ export default function AttendancePage() {
                             <div style={s.toolbar}>
                                 <div style={s.filterGroup as React.CSSProperties}>
                                     <div style={s.searchBox as React.CSSProperties}>
-                                        <Search
-                                            size={16}
-                                            style={{
-                                                ...(s.searchIcon as React.CSSProperties),
-                                                left: lang === 'ar' ? 'auto' : 12,
-                                                right: lang === 'ar' ? 12 : 'auto',
-                                            }}
-                                        />
+                                        <Search size={16} style={s.searchIcon as React.CSSProperties} />
                                         <input
                                             style={{
                                                 ...s.searchInput,
-                                                paddingLeft: lang === 'ar' ? 16 : 40,
-                                                paddingRight: lang === 'ar' ? 40 : 16,
+                                                paddingInlineEnd: 'var(--space-4)',
                                             }}
                                             placeholder={t('attendance.searchEmp')}
                                             value={search}
@@ -531,7 +523,7 @@ export default function AttendancePage() {
                                                     key={h}
                                                     style={{
                                                         ...(s.th as React.CSSProperties),
-                                                        textAlign: lang === 'ar' ? 'right' : 'left',
+                                                        textAlign: 'start',
                                                     }}
                                                 >
                                                     {h}
@@ -549,32 +541,16 @@ export default function AttendancePage() {
                                                             {
                                                                 ...s.td,
                                                                 fontWeight: 'var(--font-medium)',
-                                                                textAlign: lang === 'ar' ? 'right' : 'left',
+                                                                textAlign: 'start',
                                                             } as React.CSSProperties
                                                         }
                                                     >
                                                         {row.employee}
                                                     </td>
-                                                    <td
-                                                        style={{ ...s.td, textAlign: lang === 'ar' ? 'right' : 'left' }}
-                                                    >
-                                                        {row.date}
-                                                    </td>
-                                                    <td
-                                                        style={{ ...s.td, textAlign: lang === 'ar' ? 'right' : 'left' }}
-                                                    >
-                                                        {row.checkIn}
-                                                    </td>
-                                                    <td
-                                                        style={{ ...s.td, textAlign: lang === 'ar' ? 'right' : 'left' }}
-                                                    >
-                                                        {row.checkOut}
-                                                    </td>
-                                                    <td
-                                                        style={{ ...s.td, textAlign: lang === 'ar' ? 'right' : 'left' }}
-                                                    >
-                                                        {row.hours}
-                                                    </td>
+                                                    <td style={{ ...s.td, textAlign: 'start' }}>{row.date}</td>
+                                                    <td style={{ ...s.td, textAlign: 'start' }}>{row.checkIn}</td>
+                                                    <td style={{ ...s.td, textAlign: 'start' }}>{row.checkOut}</td>
+                                                    <td style={{ ...s.td, textAlign: 'start' }}>{row.hours}</td>
                                                     <td
                                                         style={
                                                             {
@@ -583,24 +559,20 @@ export default function AttendancePage() {
                                                                     row.overtime !== '0m' && row.overtime !== '-'
                                                                         ? 'var(--color-primary-600)'
                                                                         : 'var(--text-tertiary)',
-                                                                textAlign: lang === 'ar' ? 'right' : 'left',
+                                                                textAlign: 'start',
                                                             } as React.CSSProperties
                                                         }
                                                     >
                                                         {row.overtime}
                                                     </td>
-                                                    <td
-                                                        style={{ ...s.td, textAlign: lang === 'ar' ? 'right' : 'left' }}
-                                                    >
+                                                    <td style={{ ...s.td, textAlign: 'start' }}>
                                                         <span
                                                             style={{ ...s.badge, background: st.bg, color: st.color }}
                                                         >
                                                             {getTranslatedStatus(row.status)}
                                                         </span>
                                                     </td>
-                                                    <td
-                                                        style={{ ...s.td, textAlign: lang === 'ar' ? 'right' : 'left' }}
-                                                    >
+                                                    <td style={{ ...s.td, textAlign: 'start' }}>
                                                         <div style={s.actions}>
                                                             <button
                                                                 style={s.btnIcon}

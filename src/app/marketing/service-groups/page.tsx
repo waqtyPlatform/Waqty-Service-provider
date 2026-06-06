@@ -139,16 +139,16 @@ const s: Record<string, React.CSSProperties> = {
         cursor: 'pointer',
         color: 'var(--text-secondary)',
     },
-    serviceList: { padding: 'var(--space-4) var(--space-5)', display: 'flex', flexWrap: 'wrap', gap: 6 },
+    serviceList: { padding: 'var(--space-4) var(--space-5)', display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' },
     svcChip: {
-        padding: '4px 12px',
+        padding: 'var(--space-1) var(--space-3)',
         background: 'var(--bg-secondary)',
         borderRadius: 'var(--radius-full)',
         fontSize: 'var(--text-xs)',
         color: 'var(--text-secondary)',
     },
     // Modal styles
-    colorPicker: { display: 'flex', gap: 8, flexWrap: 'wrap' },
+    colorPicker: { display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' },
     colorDot: {
         width: 28,
         height: 28,
@@ -162,7 +162,7 @@ const s: Record<string, React.CSSProperties> = {
     searchBox: { position: 'relative', marginBottom: 'var(--space-3)' },
     searchIcon: {
         position: 'absolute',
-        left: 10,
+        insetInlineStart: 10,
         top: '50%',
         transform: 'translateY(-50%)',
         color: 'var(--text-tertiary)',
@@ -170,7 +170,7 @@ const s: Record<string, React.CSSProperties> = {
     serviceItem: {
         display: 'flex',
         alignItems: 'center',
-        padding: '8px 12px',
+        padding: 'var(--space-2) var(--space-3)',
         cursor: 'pointer',
         borderRadius: 'var(--radius-md)',
         fontSize: 'var(--text-sm)',
@@ -179,7 +179,7 @@ const s: Record<string, React.CSSProperties> = {
     toggleSwitch: {
         width: 36,
         height: 20,
-        borderRadius: 10,
+        borderRadius: 'var(--radius-md)',
         padding: 2,
         cursor: 'pointer',
         transition: 'background 0.2s',
@@ -333,15 +333,17 @@ export default function ServiceGroupsPage() {
 
             {/* Selected chips */}
             {formServices.length > 0 && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 'var(--space-3)' }}>
+                <div
+                    style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)', marginBottom: 'var(--space-3)' }}
+                >
                     {formServices.map(svc => (
                         <span
                             key={svc}
                             style={{
                                 display: 'inline-flex',
                                 alignItems: 'center',
-                                gap: 4,
-                                padding: '4px 10px',
+                                gap: 'var(--space-1)',
+                                padding: 'var(--space-1) var(--space-2)',
                                 background: formColor + '20',
                                 color: formColor,
                                 borderRadius: 'var(--radius-full)',
@@ -364,7 +366,7 @@ export default function ServiceGroupsPage() {
                     style={{
                         width: '100%',
                         height: 36,
-                        paddingLeft: 32,
+                        paddingInlineStart: 32,
                         border: '1px solid var(--border-color)',
                         borderRadius: 'var(--radius-lg)',
                         background: 'var(--bg-primary)',
@@ -398,14 +400,14 @@ export default function ServiceGroupsPage() {
                                 style={{
                                     width: 18,
                                     height: 18,
-                                    borderRadius: 4,
+                                    borderRadius: 'var(--radius-sm)',
                                     border: `1.5px solid ${isSelected ? formColor : 'var(--border-color)'}`,
                                     background: isSelected ? formColor : 'transparent',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     color: 'white',
-                                    marginRight: 'var(--space-3)',
+                                    marginInlineEnd: 'var(--space-3)',
                                     flexShrink: 0,
                                     transition: 'all 0.15s',
                                 }}

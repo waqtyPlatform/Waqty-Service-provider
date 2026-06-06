@@ -112,7 +112,7 @@ function CancelConfirmModal({
                         marginBottom: 'var(--space-3)',
                     }}
                 >
-                    <AlertTriangle size={20} color="#ef4444" />
+                    <AlertTriangle size={20} color="var(--color-error)" />
                     <h3 style={{ fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-lg)' }}>
                         {t('bk.cancelBookingNumTitle').replace('{id}', bookingId)}
                     </h3>
@@ -146,7 +146,7 @@ function CancelConfirmModal({
                             padding: 'var(--space-2) var(--space-4)',
                             border: 'none',
                             borderRadius: 'var(--radius-lg)',
-                            background: '#ef4444',
+                            background: 'var(--color-error)',
                             color: 'white',
                             cursor: 'pointer',
                             fontSize: 'var(--text-sm)',
@@ -256,11 +256,11 @@ export default function BookingListPage() {
                         <Search
                             size={16}
                             className={styles.searchIcon}
-                            style={{ left: lang === 'ar' ? 'auto' : 12, right: lang === 'ar' ? 12 : 'auto' }}
+                            style={{ insetInlineStart: 'var(--space-3)' }}
                         />
                         <input
                             className={styles.searchInput}
-                            style={{ paddingLeft: lang === 'ar' ? 12 : 36, paddingRight: lang === 'ar' ? 36 : 12 }}
+                            style={{ paddingInlineStart: 36, paddingInlineEnd: 'var(--space-3)' }}
                             placeholder={t('bk.searchPlaceholder')}
                             value={search}
                             onChange={e => setSearch(e.target.value)}
@@ -358,8 +358,8 @@ export default function BookingListPage() {
                                                             color: 'var(--color-primary-600)',
                                                             fontSize: 10,
                                                             fontWeight: 700,
-                                                            marginRight: 4,
-                                                            padding: '0 4px',
+                                                            marginInlineEnd: 'var(--space-1)',
+                                                            padding: '0 var(--space-1)',
                                                         }}
                                                     >
                                                         #{queueNumbers.get(visit.uuid)}
@@ -394,7 +394,7 @@ export default function BookingListPage() {
                                                                 style={{
                                                                     color: 'var(--text-tertiary)',
                                                                     fontSize: 'var(--text-xs)',
-                                                                    marginLeft: 4,
+                                                                    marginInlineStart: 'var(--space-1)',
                                                                 }}
                                                             >
                                                                 {hhmm(l.line.start_time)}

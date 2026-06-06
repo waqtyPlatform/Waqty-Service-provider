@@ -121,7 +121,7 @@ const s: Record<string, React.CSSProperties> = {
     searchBox: { position: 'relative', flex: 1, maxWidth: 320 },
     searchIcon: {
         position: 'absolute',
-        left: 12,
+        insetInlineStart: 12,
         top: '50%',
         transform: 'translateY(-50%)',
         color: 'var(--text-tertiary)',
@@ -129,7 +129,8 @@ const s: Record<string, React.CSSProperties> = {
     searchInput: {
         width: '100%',
         height: 40,
-        paddingLeft: 40,
+        paddingInlineStart: 40,
+        paddingInlineEnd: 'var(--space-4)',
         border: '1px solid var(--border-color)',
         borderRadius: 'var(--radius-lg)',
         background: 'var(--bg-primary)',
@@ -156,7 +157,7 @@ const s: Record<string, React.CSSProperties> = {
     },
     th: {
         padding: 'var(--space-3) var(--space-4)',
-        textAlign: 'left',
+        textAlign: 'start',
         fontSize: 'var(--text-xs)',
         fontWeight: 'var(--font-semibold)',
         color: 'var(--text-tertiary)',
@@ -172,7 +173,7 @@ const s: Record<string, React.CSSProperties> = {
     },
     badge: {
         display: 'inline-flex',
-        padding: '2px 8px',
+        padding: '2px var(--space-2)',
         borderRadius: 'var(--radius-full)',
         fontSize: 11,
         fontWeight: 'var(--font-semibold)',
@@ -180,7 +181,7 @@ const s: Record<string, React.CSSProperties> = {
 };
 
 export default function AuditLogPage() {
-    const { t, lang } = useTranslation();
+    const { t } = useTranslation();
     const [search, setSearch] = useState('');
 
     const {
@@ -217,20 +218,9 @@ export default function AuditLogPage() {
         <div style={s.page}>
             <div style={s.toolbar}>
                 <div style={s.searchBox as React.CSSProperties}>
-                    <Search
-                        size={16}
-                        style={{
-                            ...(s.searchIcon as React.CSSProperties),
-                            left: lang === 'ar' ? 'auto' : 12,
-                            right: lang === 'ar' ? 12 : 'auto',
-                        }}
-                    />
+                    <Search size={16} style={s.searchIcon as React.CSSProperties} />
                     <input
-                        style={{
-                            ...s.searchInput,
-                            paddingLeft: lang === 'ar' ? 16 : 40,
-                            paddingRight: lang === 'ar' ? 40 : 16,
-                        }}
+                        style={s.searchInput}
                         placeholder={t('settings.audit.search')}
                         value={search}
                         onChange={e => setSearch(e.target.value)}
@@ -255,7 +245,7 @@ export default function AuditLogPage() {
                                 key={h}
                                 style={{
                                     ...(s.th as React.CSSProperties),
-                                    textAlign: lang === 'ar' ? 'right' : 'left',
+                                    textAlign: 'start',
                                 }}
                             >
                                 {h}
@@ -266,17 +256,17 @@ export default function AuditLogPage() {
                 <tbody>
                     {filtered.map(log => (
                         <tr key={log.id}>
-                            <td style={{ ...s.td, textAlign: lang === 'ar' ? 'right' : 'left' }}>{log.time}</td>
+                            <td style={{ ...s.td, textAlign: 'start' }}>{log.time}</td>
                             <td
                                 style={{
                                     ...s.td,
                                     fontWeight: 'var(--font-medium)',
-                                    textAlign: lang === 'ar' ? 'right' : 'left',
+                                    textAlign: 'start',
                                 }}
                             >
                                 {log.user}
                             </td>
-                            <td style={{ ...s.td, textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                            <td style={{ ...s.td, textAlign: 'start' }}>
                                 <span style={{ ...s.badge, ...actionColors[log.action] }}>
                                     {getTranslatedAction(log.action)}
                                 </span>
@@ -285,7 +275,7 @@ export default function AuditLogPage() {
                                 style={{
                                     ...s.td,
                                     fontWeight: 'var(--font-medium)',
-                                    textAlign: lang === 'ar' ? 'right' : 'left',
+                                    textAlign: 'start',
                                 }}
                             >
                                 {log.entity}
@@ -294,7 +284,7 @@ export default function AuditLogPage() {
                                 style={{
                                     ...s.td,
                                     color: 'var(--text-secondary)',
-                                    textAlign: lang === 'ar' ? 'right' : 'left',
+                                    textAlign: 'start',
                                 }}
                             >
                                 {log.details}
@@ -304,7 +294,7 @@ export default function AuditLogPage() {
                                     ...s.td,
                                     fontFamily: 'monospace',
                                     fontSize: 'var(--text-xs)',
-                                    textAlign: lang === 'ar' ? 'right' : 'left',
+                                    textAlign: 'start',
                                     direction: 'ltr',
                                 }}
                             >

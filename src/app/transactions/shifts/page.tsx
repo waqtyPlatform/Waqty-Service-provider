@@ -1,5 +1,6 @@
 'use client';
 
+import { egpLabel } from '@/lib/money';
 import React from 'react';
 import Link from 'next/link';
 import { Clock } from 'lucide-react';
@@ -132,7 +133,7 @@ const s: Record<string, React.CSSProperties> = {
     },
     th: {
         padding: 'var(--space-3) var(--space-4)',
-        textAlign: 'left',
+        textAlign: 'start',
         fontSize: 'var(--text-xs)',
         fontWeight: 'var(--font-semibold)',
         color: 'var(--text-tertiary)',
@@ -148,7 +149,7 @@ const s: Record<string, React.CSSProperties> = {
     },
     badge: {
         display: 'inline-flex',
-        padding: '2px 8px',
+        padding: '2px var(--space-2)',
         borderRadius: 'var(--radius-full)',
         fontSize: 11,
         fontWeight: 'var(--font-semibold)',
@@ -207,13 +208,7 @@ export default function ShiftsPage() {
                                 'txn.shifts.thVariance',
                                 'txn.thStatus',
                             ].map(h => (
-                                <th
-                                    key={h}
-                                    style={{
-                                        ...(s.th as React.CSSProperties),
-                                        textAlign: lang === 'ar' ? 'right' : 'left',
-                                    }}
-                                >
+                                <th key={h} style={s.th as React.CSSProperties}>
                                     {t(h)}
                                 </th>
                             ))}
@@ -235,13 +230,13 @@ export default function ShiftsPage() {
                                     {row.closeTime}
                                 </td>
                                 <td style={s.td} dir="ltr">
-                                    {row.opening} EGP
+                                    {row.opening} {egpLabel()}
                                 </td>
                                 <td style={{ ...s.td, fontWeight: 'var(--font-semibold)' }} dir="ltr">
-                                    {row.expected.toLocaleString()} EGP
+                                    {row.expected.toLocaleString()} {egpLabel()}
                                 </td>
                                 <td style={{ ...s.td, fontWeight: 'var(--font-semibold)' }} dir="ltr">
-                                    {row.status === 'open' ? '-' : `${row.actual.toLocaleString()} EGP`}
+                                    {row.status === 'open' ? '-' : `${row.actual.toLocaleString()} ${egpLabel()}`}
                                 </td>
                                 <td
                                     style={{
@@ -256,7 +251,7 @@ export default function ShiftsPage() {
                                     }}
                                     dir="ltr"
                                 >
-                                    {row.status === 'open' ? '-' : `${row.variance} EGP`}
+                                    {row.status === 'open' ? '-' : `${row.variance} ${egpLabel()}`}
                                 </td>
                                 <td style={s.td}>
                                     <span

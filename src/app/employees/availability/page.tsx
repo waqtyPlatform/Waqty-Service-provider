@@ -81,7 +81,7 @@ const s: Record<string, React.CSSProperties> = {
         padding: 'var(--space-4)',
         display: 'flex',
         flexDirection: 'column' as const,
-        gap: 4,
+        gap: 'var(--space-1)',
     },
     kpiVal: { fontSize: 'var(--text-2xl)', fontWeight: 'var(--font-bold)', color: 'var(--text-primary)' },
     kpiLbl: { fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)' },
@@ -115,15 +115,15 @@ const s: Record<string, React.CSSProperties> = {
         color: 'var(--text-tertiary)',
         display: 'flex',
         alignItems: 'center',
-        gap: 4,
+        gap: 'var(--space-1)',
         marginTop: 2,
     },
     statusRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
     badge: {
         display: 'inline-flex',
         alignItems: 'center',
-        gap: 4,
-        padding: '4px 12px',
+        gap: 'var(--space-1)',
+        padding: 'var(--space-1) var(--space-3)',
         borderRadius: 999,
         fontSize: 'var(--text-xs)',
         fontWeight: 'var(--font-semibold)',
@@ -133,7 +133,7 @@ const s: Record<string, React.CSSProperties> = {
         color: 'var(--text-tertiary)',
         display: 'flex',
         alignItems: 'center',
-        gap: 4,
+        gap: 'var(--space-1)',
     },
 };
 
@@ -215,7 +215,7 @@ export default function AvailabilityPage() {
                     <p style={s.subtitle}>Real-time status for all employees across branches</p>
                 </div>
                 <Button variant="outline" onClick={() => setRefreshKey(k => k + 1)}>
-                    <RefreshCw size={14} style={{ marginInlineEnd: 6 }} /> Refresh
+                    <RefreshCw size={14} style={{ marginInlineEnd: 'var(--space-2)' }} /> Refresh
                 </Button>
             </div>
 
@@ -275,7 +275,7 @@ export default function AvailabilityPage() {
                         style={{
                             width: '100%',
                             paddingInlineStart: 32,
-                            paddingInlineEnd: 12,
+                            paddingInlineEnd: 'var(--space-3)',
                             height: 36,
                             border: '1px solid var(--border-color)',
                             borderRadius: 'var(--radius-md)',

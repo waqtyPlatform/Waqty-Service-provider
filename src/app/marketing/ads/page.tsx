@@ -118,7 +118,7 @@ const s: Record<string, React.CSSProperties> = {
     },
     th: {
         padding: 'var(--space-3) var(--space-4)',
-        textAlign: 'left',
+        textAlign: 'start',
         fontSize: 'var(--text-xs)',
         fontWeight: 'var(--font-semibold)',
         color: 'var(--text-tertiary)',
@@ -264,7 +264,9 @@ export default function AdsPage() {
                         {ads.map(a => (
                             <tr key={a.uuid}>
                                 <td style={s.td}>
-                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                                    <span
+                                        style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)' }}
+                                    >
                                         {a.type === 'banner' ? (
                                             <Megaphone size={14} />
                                         ) : a.type === 'featured' ? (
@@ -293,16 +295,16 @@ export default function AdsPage() {
                                         {statusLabel(a.status)}
                                     </Badge>
                                 </td>
-                                <td style={{ ...s.td, textAlign: 'right' }}>
-                                    <div style={{ display: 'inline-flex', gap: 4 }}>
+                                <td style={{ ...s.td, textAlign: 'end' }}>
+                                    <div style={{ display: 'inline-flex', gap: 'var(--space-1)' }}>
                                         {(a.status === 'active' || a.status === 'paused') && (
                                             <button
                                                 title={a.status === 'active' ? t('mktAds.pause') : t('mktAds.resume')}
                                                 onClick={() => toggleStatus(a.uuid)}
                                                 style={{
-                                                    padding: '4px 8px',
+                                                    padding: 'var(--space-1) var(--space-2)',
                                                     border: '1px solid var(--border-color)',
-                                                    borderRadius: 6,
+                                                    borderRadius: 'var(--radius-md)',
                                                     background: 'var(--bg-primary)',
                                                     color: 'var(--text-secondary)',
                                                     cursor: 'pointer',
@@ -318,9 +320,9 @@ export default function AdsPage() {
                                                 title={t('mktAds.cancel')}
                                                 onClick={() => cancelAd(a.uuid)}
                                                 style={{
-                                                    padding: '4px 8px',
+                                                    padding: 'var(--space-1) var(--space-2)',
                                                     border: '1px solid var(--border-color)',
-                                                    borderRadius: 6,
+                                                    borderRadius: 'var(--radius-md)',
                                                     background: 'var(--bg-primary)',
                                                     color: 'var(--color-error)',
                                                     cursor: 'pointer',

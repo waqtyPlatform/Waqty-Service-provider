@@ -136,7 +136,7 @@ const s: Record<string, React.CSSProperties> = {
     searchBox: { position: 'relative', flex: 1, maxWidth: 320 },
     searchIcon: {
         position: 'absolute',
-        left: 12,
+        insetInlineStart: 12,
         top: '50%',
         transform: 'translateY(-50%)',
         color: 'var(--text-tertiary)',
@@ -144,7 +144,7 @@ const s: Record<string, React.CSSProperties> = {
     searchInput: {
         width: '100%',
         height: 40,
-        paddingLeft: 40,
+        paddingInlineStart: 40,
         border: '1px solid var(--border-color)',
         borderRadius: 'var(--radius-lg)',
         background: 'var(--bg-primary)',
@@ -171,7 +171,7 @@ const s: Record<string, React.CSSProperties> = {
     },
     th: {
         padding: 'var(--space-3) var(--space-4)',
-        textAlign: 'left',
+        textAlign: 'start',
         fontSize: 'var(--text-xs)',
         fontWeight: 'var(--font-semibold)',
         color: 'var(--text-tertiary)',
@@ -187,13 +187,13 @@ const s: Record<string, React.CSSProperties> = {
     },
     code: {
         fontFamily: 'monospace',
-        padding: '4px 10px',
+        padding: 'var(--space-1) var(--space-2)',
         background: 'var(--bg-secondary)',
         borderRadius: 'var(--radius-md)',
         letterSpacing: '0.05em',
         display: 'inline-flex',
         alignItems: 'center',
-        gap: 6,
+        gap: 'var(--space-2)',
     },
     copyBtn: { cursor: 'pointer', color: 'var(--text-tertiary)' },
     progress: { height: 6, borderRadius: 3, background: 'var(--bg-tertiary)', width: 60 },
@@ -411,7 +411,7 @@ export default function PromoCodesPage() {
                                         {t(`mkt.lbl${c.status.charAt(0).toUpperCase() + c.status.slice(1)}`)}
                                     </Badge>
                                 </td>
-                                <td style={{ ...s.td, textAlign: 'right' }} onClick={e => e.stopPropagation()}>
+                                <td style={{ ...s.td, textAlign: 'end' }} onClick={e => e.stopPropagation()}>
                                     <DropdownMenu
                                         trigger={
                                             <button
@@ -613,7 +613,7 @@ export default function PromoCodesPage() {
                                     size={14}
                                     style={{
                                         position: 'absolute' as const,
-                                        left: 10,
+                                        insetInlineStart: 10,
                                         top: '50%',
                                         transform: 'translateY(-50%)',
                                         color: 'var(--text-tertiary)',
@@ -623,7 +623,7 @@ export default function PromoCodesPage() {
                                     style={{
                                         width: '100%',
                                         height: 36,
-                                        paddingLeft: 32,
+                                        paddingInlineStart: 32,
                                         border: '1px solid var(--border-color)',
                                         borderRadius: 'var(--radius-lg)',
                                         background: 'var(--bg-primary)',
@@ -690,7 +690,7 @@ export default function PromoCodesPage() {
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div style={{ textAlign: 'right' }}>
+                                            <div style={{ textAlign: 'end' }}>
                                                 <div
                                                     style={{
                                                         fontSize: 'var(--text-sm)',
