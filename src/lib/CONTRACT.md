@@ -1,6 +1,6 @@
 # Canonical contract — this dashboard is the anchor (PR-9)
 
-`src/lib/contract.ts` is the **anchor** for the Waqty/Hagzy ecosystem contract.
+`src/lib/contract.ts` is the **anchor** for the Waqty/Waqty ecosystem contract.
 Its TypeScript types are the agreed source of truth that the other three apps
 conform to. The booking model (`Visit` + `VisitLineItem`), payment models,
 unified `CanonicalSubscriptionPlan`, staff earnings (`EmployeeCommission`,

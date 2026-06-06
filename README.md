@@ -1,6 +1,6 @@
-# Hagzy — Service Provider Dashboard
+# Waqty — Service Provider Dashboard
 
-**Hagzy** is a bilingual (English / Arabic, full RTL) **business management dashboard** for service providers. It is the operator-facing console for clinics (doctors), hairstyling salons, and barber shops, covering bookings, customers, employees & payroll, transactions & finance, marketing, multi-branch settings, and analytics.
+**Waqty** is a bilingual (English / Arabic, full RTL) **business management dashboard** for service providers. It is the operator-facing console for clinics (doctors), hairstyling salons, and barber shops, covering bookings, customers, employees & payroll, transactions & finance, marketing, multi-branch settings, and analytics.
 
 The dashboard is a single Next.js 16 (App Router) application that talks to an external REST API. It runs on Vercel.
 
@@ -8,7 +8,7 @@ The dashboard is a single Next.js 16 (App Router) application that talks to an e
 
 ## Table of contents
 
-1. [What Hagzy does](#what-hagzy-does)
+1. [What Waqty does](#what-waqty-does)
 2. [Three dashboards in one](#three-dashboards-in-one)
 3. [Tech stack](#tech-stack)
 4. [Architecture](#architecture)
@@ -30,9 +30,9 @@ The dashboard is a single Next.js 16 (App Router) application that talks to an e
 
 ---
 
-## What Hagzy does
+## What Waqty does
 
-Hagzy gives a service business one console to run day-to-day operations:
+Waqty gives a service business one console to run day-to-day operations:
 
 - **Calendar & bookings** — appointment calendar, booking list, new booking form, room calendar, waitlist, print view, conflict detection.
 - **Customers (CRM)** — customer directory, groups (VIP / Regular / Corporate), reviews, statements, last-visit tracking.
@@ -53,9 +53,9 @@ The same codebase ships three distinct experiences driven by `user.businessType`
 
 | Business type | Token | Sample login | Sidebar / dashboard differences |
 |---|---|---|---|
-| **Doctor / Clinic** | `'clinic'` | `clinic@hagzy.com` | "Patients" instead of "Clients", "Appointments" instead of "Bookings", "Doctor / Specialist" service picker, **patient-intake form** (allergies, blood type, medications, chief complaint) on the New Booking page |
-| **Hairstyling Salon** | `'salon'` | `salon@hagzy.com` | "Stylists", "Services", standard booking form |
-| **Barber** | `'barber'` | `barber@hagzy.com` | "Barbers", "Appointments", standard booking form (no medical fields) |
+| **Doctor / Clinic** | `'clinic'` | `clinic@waqty.com` | "Patients" instead of "Clients", "Appointments" instead of "Bookings", "Doctor / Specialist" service picker, **patient-intake form** (allergies, blood type, medications, chief complaint) on the New Booking page |
+| **Hairstyling Salon** | `'salon'` | `salon@waqty.com` | "Stylists", "Services", standard booking form |
+| **Barber** | `'barber'` | `barber@waqty.com` | "Barbers", "Appointments", standard booking form (no medical fields) |
 
 The switch logic lives in three places:
 
@@ -119,7 +119,7 @@ The onboarding wizard ([`src/app/onboarding/page.tsx`](src/app/onboarding/page.t
 Notes:
 
 - **No local database** — the dashboard is purely a client of an external REST API.
-- **Middleware** ([`src/middleware.ts`](src/middleware.ts)) enforces only "are you logged in?" using a non-sensitive `hagzy_logged_in=true` cookie marker. **Role-based access** is enforced on the client by [`<RoleGuard>`](src/components/RoleGuard.tsx) and ultimately by the backend.
+- **Middleware** ([`src/middleware.ts`](src/middleware.ts)) enforces only "are you logged in?" using a non-sensitive `waqty_logged_in=true` cookie marker. **Role-based access** is enforced on the client by [`<RoleGuard>`](src/components/RoleGuard.tsx) and ultimately by the backend.
 - State is held in four React Contexts: `AuthContext`, `LanguageContext`, `ThemeContext`, `SettingsContext` (no Redux / Zustand).
 
 ---
@@ -251,11 +251,11 @@ The full routing & role gating list is in [`src/components/RoleGuard.tsx`](src/c
 
 ### Flows
 
-1. **Email / phone + password** — `authApi.login()` → JWT token + provider profile. Token is stored in `localStorage.hagzy_token`. A non-sensitive `hagzy_logged_in=true` cookie is set so the edge middleware can gate access without reading the token.
+1. **Email / phone + password** — `authApi.login()` → JWT token + provider profile. Token is stored in `localStorage.waqty_token`. A non-sensitive `waqty_logged_in=true` cookie is set so the edge middleware can gate access without reading the token.
 2. **OTP (mock today)** — `requestOTP()` simulates sending a code; `verifyOTP()` accepts the constant `MOCK_OTP_CODE = '123456'` and logs the demo user in. Marked with `// MOCK:` for hand-off.
 3. **Forgot / reset password** — `authApi.sendOtp()` → `authApi.verifyOtp()` → `authApi.resetPassword()`. These are **real API calls** today.
 4. **Invite registration** — open `/invite/[token]` to set up an invited staff account.
-5. **Employee portal** — separate login, separate token (`hagzy_employee_token`), separate layout, isolated from provider session.
+5. **Employee portal** — separate login, separate token (`waqty_employee_token`), separate layout, isolated from provider session.
 
 ### Roles
 
@@ -264,11 +264,11 @@ The full routing & role gating list is in [`src/components/RoleGuard.tsx`](src/c
 Demo users (work in development against the mock OTP path):
 
 ```
-clinic@hagzy.com    → admin    / clinic
-salon@hagzy.com     → admin    / salon
-barber@hagzy.com    → admin    / barber
-manager@hagzy.com   → manager  / salon
-staff@hagzy.com     → staff    / salon
+clinic@waqty.com    → admin    / clinic
+salon@waqty.com     → admin    / salon
+barber@waqty.com    → admin    / barber
+manager@waqty.com   → manager  / salon
+staff@waqty.com     → staff    / salon
 ```
 
 Any 6+ character password works against the mock login; the OTP code is `123456`.
@@ -283,7 +283,7 @@ Any 6+ character password works against the mock login; the OTP code is `123456`
   const { t, lang } = useTranslation();
   return <h1>{t('dashboard.title')}</h1>;
   ```
-- The `LanguageContext` toggles `<html lang>` and `<html dir>` automatically and persists the choice in `localStorage.hagzy_settings`.
+- The `LanguageContext` toggles `<html lang>` and `<html dir>` automatically and persists the choice in `localStorage.waqty_settings`.
 - **RTL** is fully supported — Arabic flips the entire layout via `dir="rtl"`.
 - To add a new key: drop a `'foo.bar': { en: '…', ar: '…' }` line, then call `t('foo.bar')`.
 
@@ -351,7 +351,7 @@ const { data, loading, error, refetch } = useApiQuery(
 
 ```bash
 git clone <repo>
-cd Hagzy
+cd Waqty
 npm install
 cp .env.local.example .env.local   # if present, else create per the next section
 npm run dev
@@ -370,7 +370,7 @@ Create a `.env.local` in the project root:
 NEXT_PUBLIC_API_BASE_URL=https://waqty.alemtayaz.shop/public
 
 # Optional — surfaced in the Help page contact card
-NEXT_PUBLIC_SUPPORT_EMAIL=support@hagzy.com
+NEXT_PUBLIC_SUPPORT_EMAIL=support@waqty.com
 NEXT_PUBLIC_SUPPORT_WHATSAPP_DISPLAY=+20 100 000 0000
 NEXT_PUBLIC_SUPPORT_WHATSAPP_DIGITS=201000000000
 ```
@@ -425,11 +425,11 @@ Default config in [`playwright.config.ts`](playwright.config.ts) targets `localh
 
 After significant changes, walk through each business type:
 
-1. **Doctor / Clinic** — `clinic@hagzy.com` → dashboard says Patients/Appointments → `/bookings/new` shows patient-intake fields → sidebar shows clinic labels.
-2. **Hairstyling Salon** — `salon@hagzy.com` → Stylists/Bookings, no medical fields.
-3. **Barber** — `barber@hagzy.com` → Barbers/Appointments, no medical fields.
+1. **Doctor / Clinic** — `clinic@waqty.com` → dashboard says Patients/Appointments → `/bookings/new` shows patient-intake fields → sidebar shows clinic labels.
+2. **Hairstyling Salon** — `salon@waqty.com` → Stylists/Bookings, no medical fields.
+3. **Barber** — `barber@waqty.com` → Barbers/Appointments, no medical fields.
 
-For all three: the Help page email & WhatsApp open clients; `/marketing/offers` Create modal adds a row to the list; logging in as `staff@hagzy.com` and visiting `/employees/payroll` redirects to `/?unauthorized=1`.
+For all three: the Help page email & WhatsApp open clients; `/marketing/offers` Create modal adds a row to the list; logging in as `staff@waqty.com` and visiting `/employees/payroll` redirects to `/?unauthorized=1`.
 
 ---
 
@@ -467,7 +467,7 @@ grep -rln -E "FALLBACK_|fallback[A-Z]|MOCK_" src/app | wc -l
 ## Security notes
 
 - **Auth tokens are kept in `localStorage`**. This is a deliberate trade-off for a SPA-style app talking to an external API — but it means **any XSS will leak tokens**. Defenses: strict CSP at the edge, never use `dangerouslySetInnerHTML` with untrusted input, sanitize markdown if/when it's added.
-- **Role-based access control is enforced on the client** by `<RoleGuard>` because the edge middleware can only see a non-sensitive `hagzy_logged_in` cookie. The guard returns `null` synchronously when the current user lacks the required role (no flash of restricted content) and uses `useEffect` to drive the `/?unauthorized=1` redirect. **The backend API must still enforce role checks server-side** — never trust the client. The previous approach of putting the role into a JS-readable cookie was forgeable and has been removed.
+- **Role-based access control is enforced on the client** by `<RoleGuard>` because the edge middleware can only see a non-sensitive `waqty_logged_in` cookie. The guard returns `null` synchronously when the current user lacks the required role (no flash of restricted content) and uses `useEffect` to drive the `/?unauthorized=1` redirect. **The backend API must still enforce role checks server-side** — never trust the client. The previous approach of putting the role into a JS-readable cookie was forgeable and has been removed.
 - **JSON.parse hardening**: every read from `localStorage` goes through [`safeJsonParse`](src/lib/storage.ts), so corrupt values can't crash hydration.
 - **Mock OTP**: the `123456` short-circuit in `verifyOTP` is dev-only convenience and must be removed once the backend OTP endpoint is wired.
 - **Future hardening**: migrate tokens to HttpOnly + Secure cookies set by the API; have the API set a signed role claim and have the middleware verify it server-side.
@@ -587,7 +587,7 @@ If a hook fails, fix the underlying issue and create a **new** commit (do not am
   - `<RoleGuard>` now blocks rendering of restricted page content synchronously — no flash of unauthorized UI before redirect.
   - Fixed two missing translation keys in the New Booking flow: `bookings.employee` (was `emp.role.employee`) and added `bookings.serviceProcedure`.
 - **Auth & security hardening**
-  - Removed the forgeable `hagzy_auth` JSON cookie; the edge middleware now only checks a non-sensitive `hagzy_logged_in` marker.
+  - Removed the forgeable `waqty_auth` JSON cookie; the edge middleware now only checks a non-sensitive `waqty_logged_in` marker.
   - Role-based route gating moved from middleware to client-side `<RoleGuard>` component.
   - All `localStorage` JSON reads now go through `safeJsonParse` / `safeLocalStorageGet` ([`src/lib/storage.ts`](src/lib/storage.ts)).
   - Mock OTP code extracted to a single `MOCK_OTP_CODE` constant with `// MOCK:` markers for the future swap-in.
@@ -606,4 +606,4 @@ If a hook fails, fix the underlying issue and create a **new** commit (do not am
 
 ---
 
-© Hagzy. Built on Next.js + Vercel.
+© Waqty. Built on Next.js + Vercel.

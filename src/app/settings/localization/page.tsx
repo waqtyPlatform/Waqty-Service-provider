@@ -74,11 +74,11 @@ export default function LocalizationSettingsPage() {
             if (settingsApi.updateLocalizationSettings) {
                 await settingsApi.updateLocalizationSettings(payload);
             }
-            localStorage.setItem('hagzy_localization', JSON.stringify(payload));
+            localStorage.setItem('waqty_localization', JSON.stringify(payload));
             addToast('success', t('settings.localization.saved'));
             refetch();
         } catch {
-            localStorage.setItem('hagzy_localization', JSON.stringify({ timezone, currency, dateFormat }));
+            localStorage.setItem('waqty_localization', JSON.stringify({ timezone, currency, dateFormat }));
             addToast('success', t('settings.localization.saved'));
         }
     };

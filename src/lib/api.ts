@@ -77,10 +77,10 @@ class ApiClient {
         // Each surface keeps its own token key (X11): the employee portal
         // authenticates separately from the provider app, so neither session can
         // clobber the other and no token-swap is needed. Resolve the key from the
-        // active route rather than swapping a shared `hagzy_token` in and out.
+        // active route rather than swapping a shared `waqty_token` in and out.
         const key = window.location.pathname.startsWith('/employee-portal')
-            ? 'hagzy_employee_token'
-            : 'hagzy_provider_token';
+            ? 'waqty_employee_token'
+            : 'waqty_provider_token';
         return localStorage.getItem(key);
     }
 
@@ -103,7 +103,7 @@ class ApiClient {
         const headers: Record<string, string> = {
             'Content-Type': 'application/json',
             Accept: 'application/json',
-            'Accept-Language': typeof window !== 'undefined' ? localStorage.getItem('hagzy_language') || 'en' : 'en',
+            'Accept-Language': typeof window !== 'undefined' ? localStorage.getItem('waqty_language') || 'en' : 'en',
             ...(options.headers as Record<string, string>),
         };
 
@@ -169,7 +169,7 @@ class ApiClient {
         const token = this.getToken();
         const headers: Record<string, string> = {
             Accept: 'application/json',
-            'Accept-Language': typeof window !== 'undefined' ? localStorage.getItem('hagzy_language') || 'en' : 'en',
+            'Accept-Language': typeof window !== 'undefined' ? localStorage.getItem('waqty_language') || 'en' : 'en',
         };
         if (token) headers['Authorization'] = `Bearer ${token}`;
 

@@ -1,4 +1,4 @@
-# Hagzy — Backend Dependencies (Mock Data Inventory)
+# Waqty — Backend Dependencies (Mock Data Inventory)
 
 This document lists every page that currently renders **mock / fallback data** in place of a real API call. It is the hand-off list for the backend team and a working checklist for swap-in once endpoints ship.
 

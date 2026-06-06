@@ -72,38 +72,38 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Mock Users for Demo
 export const MOCK_USERS: Record<string, User> = {
-    'clinic@hagzy.com': {
+    'clinic@waqty.com': {
         id: 'U1',
         name: 'Dr. Admin',
-        email: 'clinic@hagzy.com',
+        email: 'clinic@waqty.com',
         role: 'admin',
         businessType: 'clinic',
     },
-    'salon@hagzy.com': {
+    'salon@waqty.com': {
         id: 'U2',
         name: 'Salon Admin',
-        email: 'salon@hagzy.com',
+        email: 'salon@waqty.com',
         role: 'admin',
         businessType: 'salon',
     },
-    'barber@hagzy.com': {
+    'barber@waqty.com': {
         id: 'U3',
         name: 'Barber Admin',
-        email: 'barber@hagzy.com',
+        email: 'barber@waqty.com',
         role: 'admin',
         businessType: 'barber',
     },
-    'manager@hagzy.com': {
+    'manager@waqty.com': {
         id: 'U4',
         name: 'Shift Manager',
-        email: 'manager@hagzy.com',
+        email: 'manager@waqty.com',
         role: 'manager',
         businessType: 'salon',
     },
-    'staff@hagzy.com': {
+    'staff@waqty.com': {
         id: 'U5',
         name: 'Receptionist',
-        email: 'staff@hagzy.com',
+        email: 'staff@waqty.com',
         role: 'staff',
         businessType: 'salon',
     },
@@ -123,18 +123,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // AuthContext on the client. A client-set cookie would be forgeable.
     const setAuthCookie = (loggedIn: boolean) => {
         if (loggedIn) {
-            document.cookie = `hagzy_logged_in=true;path=/;max-age=${60 * 60 * 24 * 30};SameSite=Lax`;
+            document.cookie = `waqty_logged_in=true;path=/;max-age=${60 * 60 * 24 * 30};SameSite=Lax`;
         } else {
-            document.cookie = 'hagzy_logged_in=;path=/;max-age=0';
+            document.cookie = 'waqty_logged_in=;path=/;max-age=0';
             // Clear legacy cookie set by previous versions of this app.
-            document.cookie = 'hagzy_auth=;path=/;max-age=0';
+            document.cookie = 'waqty_auth=;path=/;max-age=0';
         }
     };
 
     useEffect(() => {
         // Hydrate from localStorage — use queueMicrotask to avoid synchronous setState in effect
-        const storedUser = localStorage.getItem('hagzy_user');
-        const storedToken = localStorage.getItem('hagzy_provider_token');
+        const storedUser = localStorage.getItem('waqty_user');
+        const storedToken = localStorage.getItem('waqty_provider_token');
         const parsed = safeJsonParse<User | null>(storedUser, null);
         if (parsed && storedToken) {
             queueMicrotask(() => {
@@ -144,8 +144,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             });
         } else {
             // Clear partial or corrupt state if token or user is missing/invalid
-            localStorage.removeItem('hagzy_user');
-            localStorage.removeItem('hagzy_provider_token');
+            localStorage.removeItem('waqty_user');
+            localStorage.removeItem('waqty_provider_token');
             setAuthCookie(false);
             queueMicrotask(() => setLoading(false));
         }
@@ -172,7 +172,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
             if (res.success && res.data) {
                 const { token, provider } = res.data;
-                localStorage.setItem('hagzy_provider_token', token);
+                localStorage.setItem('waqty_provider_token', token);
 
                 const loggedInUser: User = {
                     id: provider.uuid,
@@ -201,7 +201,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 }
 
                 setUser(loggedInUser);
-                localStorage.setItem('hagzy_user', JSON.stringify(loggedInUser));
+                localStorage.setItem('waqty_user', JSON.stringify(loggedInUser));
                 setAuthCookie(true);
                 router.push('/');
                 return { success: true, user: loggedInUser };
@@ -232,9 +232,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             return { success: false, error: 'Invalid verification code' };
         }
 
-        const mockUser = MOCK_USERS[identifier] || MOCK_USERS['clinic@hagzy.com'];
+        const mockUser = MOCK_USERS[identifier] || MOCK_USERS['clinic@waqty.com'];
         setUser(mockUser);
-        localStorage.setItem('hagzy_user', JSON.stringify(mockUser));
+        localStorage.setItem('waqty_user', JSON.stringify(mockUser));
         setAuthCookie(true);
         if (redirect) {
             router.push('/');
@@ -294,7 +294,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(prev => {
             if (!prev) return prev;
             const updated = { ...prev, ...data };
-            localStorage.setItem('hagzy_user', JSON.stringify(updated));
+            localStorage.setItem('waqty_user', JSON.stringify(updated));
             return updated;
         });
     };
@@ -305,9 +305,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } catch {
             // Ignore logout API errors — clear local state regardless
         }
-        localStorage.removeItem('hagzy_provider_token');
+        localStorage.removeItem('waqty_provider_token');
         setUser(null);
-        localStorage.removeItem('hagzy_user');
+        localStorage.removeItem('waqty_user');
         setAuthCookie(false);
         router.push('/login');
     };

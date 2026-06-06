@@ -226,7 +226,7 @@ export default function DashboardPage() {
 
     // Check if banner was previously dismissed
     useEffect(() => {
-        const dismissed = localStorage.getItem('hagzy_profile_banner_dismissed');
+        const dismissed = localStorage.getItem('waqty_profile_banner_dismissed');
         if (dismissed) {
             // Use startTransition to avoid synchronous setState in effect warning
             React.startTransition(() => setShowProfileBanner(false));
@@ -235,7 +235,7 @@ export default function DashboardPage() {
 
     const dismissProfileBanner = () => {
         setShowProfileBanner(false);
-        localStorage.setItem('hagzy_profile_banner_dismissed', 'true');
+        localStorage.setItem('waqty_profile_banner_dismissed', 'true');
     };
 
     const profileSetupItems = [

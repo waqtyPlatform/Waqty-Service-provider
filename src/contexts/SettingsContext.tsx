@@ -25,13 +25,13 @@ export interface SettingsState {
 
 // Default values
 const defaultSettings: SettingsState = {
-    businessName: 'Hagzy Beauty Salon',
-    legalName: 'Hagzy Beauty Services LLC',
+    businessName: 'Waqty Beauty Salon',
+    legalName: 'Waqty Beauty Services LLC',
     crNumber: 'CR-2024-12345',
     vatNumber: '300-456-789',
     address: '12 El-Nozha St, Heliopolis, Cairo, Egypt',
     phone: '+20 2 1234 5678',
-    email: 'info@hagzy.com',
+    email: 'info@waqty.com',
     language: 'en',
     allowOnlineBooking: true,
     allowWalkIn: true,
@@ -57,7 +57,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     // Load from localStorage on mount
     useEffect(() => {
         try {
-            const stored = localStorage.getItem('hagzy_settings');
+            const stored = localStorage.getItem('waqty_settings');
             if (stored) {
                 setSettings({ ...defaultSettings, ...JSON.parse(stored) });
             }
@@ -75,7 +75,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         setSettings(prev => {
             const updated = { ...prev, ...newSettings };
             try {
-                localStorage.setItem('hagzy_settings', JSON.stringify(updated));
+                localStorage.setItem('waqty_settings', JSON.stringify(updated));
             } catch (error) {
                 console.error('Failed to save settings', error);
             }
@@ -85,7 +85,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
 
     const resetSettings = () => {
         setSettings(defaultSettings);
-        localStorage.removeItem('hagzy_settings');
+        localStorage.removeItem('waqty_settings');
     };
 
     // Prevent hydration mismatch by rendering children only after load (optional,

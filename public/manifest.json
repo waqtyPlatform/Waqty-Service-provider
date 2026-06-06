@@ -1,6 +1,6 @@
 {
-    "name": "Hagzy — Service Provider Dashboard",
-    "short_name": "Hagzy",
+    "name": "Waqty — Service Provider Dashboard",
+    "short_name": "Waqty",
     "description": "All-in-one salon, spa & beauty management dashboard",
     "start_url": "/",
     "display": "standalone",

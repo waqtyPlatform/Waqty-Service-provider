@@ -16,7 +16,7 @@ export default function EmployeeDashboardPage() {
     const [checkingIn, setCheckingIn] = useState(false);
 
     const today = new Date().toISOString().split('T')[0];
-    const empUser = safeLocalStorageGet<{ name?: string; uuid?: string }>('hagzy_employee_user', {});
+    const empUser = safeLocalStorageGet<{ name?: string; uuid?: string }>('waqty_employee_user', {});
 
     useEffect(() => {
         (async () => {

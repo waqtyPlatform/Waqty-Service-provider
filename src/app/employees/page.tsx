@@ -71,7 +71,7 @@ const fallbackEmployees: EmpRow[] = [
         name: 'Sara Ahmed',
         role: 'Senior Stylist',
         phone: '+20 123 456 789',
-        email: 'sara.a@hagzy.com',
+        email: 'sara.a@waqty.com',
         branch: 'Downtown',
         status: 'available',
         bookingsToday: 7,
@@ -86,7 +86,7 @@ const fallbackEmployees: EmpRow[] = [
         name: 'Nora Ali',
         role: 'Skin Specialist',
         phone: '+20 111 222 333',
-        email: 'nora.a@hagzy.com',
+        email: 'nora.a@waqty.com',
         branch: 'Downtown',
         status: 'in-session',
         bookingsToday: 6,
@@ -101,7 +101,7 @@ const fallbackEmployees: EmpRow[] = [
         name: 'Layla Hassan',
         role: 'Senior Therapist',
         phone: '+20 100 200 300',
-        email: 'layla.h@hagzy.com',
+        email: 'layla.h@waqty.com',
         branch: 'Downtown',
         status: 'available',
         bookingsToday: 8,
@@ -116,7 +116,7 @@ const fallbackEmployees: EmpRow[] = [
         name: 'Reem Mohamed',
         role: 'Massage Therapist',
         phone: '+20 155 666 777',
-        email: 'reem.m@hagzy.com',
+        email: 'reem.m@waqty.com',
         branch: 'Downtown',
         status: 'break',
         bookingsToday: 5,
@@ -131,7 +131,7 @@ const fallbackEmployees: EmpRow[] = [
         name: 'Hana Youssef',
         role: 'Nail Technician',
         phone: '+20 199 888 999',
-        email: 'hana.y@hagzy.com',
+        email: 'hana.y@waqty.com',
         branch: 'Downtown',
         status: 'available',
         bookingsToday: 4,
@@ -146,7 +146,7 @@ const fallbackEmployees: EmpRow[] = [
         name: 'Dina Kamal',
         role: 'Junior Stylist',
         phone: '+20 144 555 666',
-        email: 'dina.k@hagzy.com',
+        email: 'dina.k@waqty.com',
         branch: 'Mall of Arabia',
         status: 'off',
         bookingsToday: 0,
@@ -229,7 +229,7 @@ function EmployeeForm({
             <Input
                 label={t('employees.emailOption')}
                 type="email"
-                placeholder="employee@hagzy.com"
+                placeholder="employee@waqty.com"
                 {...register('email')}
                 error={errors.email?.message}
             />

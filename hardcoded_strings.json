@@ -196,7 +196,7 @@
     "setSelectedSlip(emp)}>",
     "e.id === confirmPay)!;\r\n                const net = emp.baseSalary + emp.commission + emp.bonus - emp.deductions;\r\n                return (",
     "handlePay(confirmPay)}>",
-    "HAGZY",
+    "WAQTY",
     "e.id === pmEmpId)!;\r\n                const methods = paymentMethods[pmEmpId] || [];\r\n                return ("
   ],
   "src\\app\\employees\\positions\\page.tsx": [
@@ -243,8 +243,8 @@
   ],
   "src\\app\\login\\page.tsx": [
     "'verify'\r\n    const [step, setStep] = useState",
-    "('request');\r\n    const [identifier, setIdentifier] = useState('clinic@hagzy.com'); // Defaulting for ease of demo\r\n    const [otpMethod, setOtpMethod] = useState",
-    "Hagzy",
+    "('request');\r\n    const [identifier, setIdentifier] = useState('clinic@waqty.com'); // Defaulting for ease of demo\r\n    const [otpMethod, setOtpMethod] = useState",
+    "Waqty",
     "setIdentifier(e.target.value)}\r\n                                    autoFocus\r\n                                />"
   ],
   "src\\app\\marketing\\messages\\page.tsx": [
@@ -734,7 +734,7 @@
   ],
   "src\\components\\layout\\Sidebar.tsx": [
     "setMobileOpen(false)}\r\n                />\r\n            )}",
-    "Hagzy",
+    "Waqty",
     "setMobileOpen(false)}\r\n                        aria-label=\"Close menu\"\r\n                    >",
     "isActive(child.href));\r\n\r\n                            return ("
   ],

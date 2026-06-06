@@ -18,7 +18,7 @@ import { Input } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
 import Link from 'next/link';
 
-const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@hagzy.com';
+const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@waqty.com';
 const SUPPORT_WHATSAPP_DISPLAY = process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP_DISPLAY || '+20 100 000 0000';
 const SUPPORT_WHATSAPP_DIGITS =
     process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP_DIGITS || SUPPORT_WHATSAPP_DISPLAY.replace(/\D/g, '');
@@ -40,7 +40,7 @@ const faqCategories: FaqCategory[] = [
         icon: <BookOpen size={20} />,
         items: [
             {
-                question: 'How do I set up my business on Hagzy?',
+                question: 'How do I set up my business on Waqty?',
                 answer: 'Complete the 3-step onboarding process: create your account, enter your business details (name, type, location), and add the services you offer. You can always edit these later from Settings.',
             },
             {

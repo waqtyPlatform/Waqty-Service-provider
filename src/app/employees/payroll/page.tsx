@@ -2598,7 +2598,7 @@ export default function PayrollPage() {
                                                             color: 'var(--color-primary-600)',
                                                         }}
                                                     >
-                                                        HAGZY
+                                                        WAQTY
                                                     </div>
                                                     <div
                                                         style={{

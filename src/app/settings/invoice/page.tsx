@@ -69,13 +69,13 @@ const s: Record<string, React.CSSProperties> = {
 };
 
 const fallbackInvoice: InvoiceSettings = {
-    business_name: 'Hagzy Beauty Center',
+    business_name: 'Waqty Beauty Center',
     business_address: '15 Tahrir Street, Cairo',
     tax_number: '123-456-789',
     invoice_prefix: 'INV-',
     next_number: 2043,
     tax_rate: 14,
-    notes: 'Thank you for choosing Hagzy Beauty Center! We look forward to seeing you again.',
+    notes: 'Thank you for choosing Waqty Beauty Center! We look forward to seeing you again.',
     logo_url: null,
 };
 

@@ -8,6 +8,7 @@ import { useToast } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
 import { isEgyptianPhone } from '@/lib/validations';
 import styles from './login.module.css';
+import { Logo } from '@/components/Logo';
 
 export default function LoginPage() {
     const { login } = useAuth();
@@ -54,8 +55,7 @@ export default function LoginPage() {
             <div className={styles.container}>
                 <div className={styles.header}>
                     <div className={styles.logo}>
-                        <div className={styles.logoMark}></div>
-                        <span>Hagzy</span>
+                        <Logo height={32} />
                     </div>
                     <h1>{t('auth.welcomeBack')}</h1>
                     <p>{t('auth.enterCredentials')}</p>

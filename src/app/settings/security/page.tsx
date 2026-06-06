@@ -77,12 +77,12 @@ export default function SecuritySettingsPage() {
             if (settingsApi.updateSecuritySettings) {
                 await settingsApi.updateSecuritySettings(payload);
             }
-            localStorage.setItem('hagzy_security', JSON.stringify(payload));
+            localStorage.setItem('waqty_security', JSON.stringify(payload));
             addToast('success', t('settings.security.saved'));
             refetch();
         } catch {
             localStorage.setItem(
-                'hagzy_security',
+                'waqty_security',
                 JSON.stringify({ twoFactor, passwordChange, lockAttempts, sessionTimeout })
             );
             addToast('success', t('settings.security.saved'));

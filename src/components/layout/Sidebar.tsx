@@ -9,6 +9,7 @@ import { ChevronLeft, ChevronDown, X } from 'lucide-react';
 import styles from './Sidebar.module.css';
 import { useTranslation } from '@/hooks/useTranslation';
 import { buildNavigation, type NavGroup } from '@/lib/navigation';
+import { Logo } from '@/components/Logo';
 
 function SidebarInner() {
     const { collapsed, toggleSidebar, mobileOpen, setMobileOpen } = useSidebar();
@@ -151,8 +152,7 @@ function SidebarInner() {
                 <div className={styles.header}>
                     {!collapsed ? (
                         <Link href="/" className={styles.logo}>
-                            <div className={styles.logoIcon}>H</div>
-                            <span className={styles.logoText}>Hagzy</span>
+                            <Logo height={26} />
                         </Link>
                     ) : (
                         <button
@@ -160,7 +160,7 @@ function SidebarInner() {
                             onClick={toggleSidebar}
                             aria-label={t('nav.expandSidebar')}
                         >
-                            <div className={styles.logoIcon}>H</div>
+                            <div className={styles.logoIcon}>W</div>
                         </button>
                     )}
                     {!collapsed && (

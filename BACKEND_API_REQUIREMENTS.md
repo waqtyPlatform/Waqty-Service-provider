@@ -1,4 +1,4 @@
-# Hagzy Backend API Requirements
+# Waqty Backend API Requirements
 
 > **Updated:** April 11, 2026 — Generated from Dashboard Gap Remediation implementation
 > **From:** Frontend Team

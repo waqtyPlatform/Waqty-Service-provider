@@ -13,11 +13,11 @@ test.describe('Navigation Verification', () => {
             const mockUser = {
                 id: 'U2',
                 name: 'Salon Admin',
-                email: 'salon@hagzy.com',
+                email: 'salon@waqty.com',
                 role: 'admin',
                 businessType: 'salon'
             };
-            localStorage.setItem('hagzy_user', JSON.stringify(mockUser));
+            localStorage.setItem('waqty_user', JSON.stringify(mockUser));
         });
     });
 

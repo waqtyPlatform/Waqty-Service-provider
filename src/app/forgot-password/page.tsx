@@ -8,6 +8,7 @@ import { Mail, ArrowRight, ArrowLeft, ShieldCheck, Lock, Eye, EyeOff, RefreshCw,
 import { useToast } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
 import styles from '../login/login.module.css';
+import { Logo } from '@/components/Logo';
 
 export default function ForgotPasswordPage() {
     const { forgotPassword, verifyOtpCode, resetPassword } = useAuth();
@@ -158,8 +159,7 @@ export default function ForgotPasswordPage() {
             <div className={styles.container}>
                 <div className={styles.header}>
                     <div className={styles.logo}>
-                        <div className={styles.logoMark}></div>
-                        <span>Hagzy</span>
+                        <Logo height={32} />
                     </div>
                     <h1>{getTitle()}</h1>
                     <p>{getSubtitle()}</p>

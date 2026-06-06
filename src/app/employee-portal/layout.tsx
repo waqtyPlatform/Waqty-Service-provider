@@ -36,8 +36,8 @@ export default function EmployeePortalLayout({ children }: { children: React.Rea
             return;
         }
 
-        const token = localStorage.getItem('hagzy_employee_token');
-        const stored = localStorage.getItem('hagzy_employee_user');
+        const token = localStorage.getItem('waqty_employee_token');
+        const stored = localStorage.getItem('waqty_employee_user');
 
         if (!token) {
             router.push('/employee-portal/login');
@@ -64,12 +64,12 @@ export default function EmployeePortalLayout({ children }: { children: React.Rea
                         branch: res.data.branch?.name,
                     };
                     setEmployee(emp);
-                    localStorage.setItem('hagzy_employee_user', JSON.stringify(emp));
+                    localStorage.setItem('waqty_employee_user', JSON.stringify(emp));
                 }
             } catch {
                 // Token invalid — redirect to login
-                localStorage.removeItem('hagzy_employee_token');
-                localStorage.removeItem('hagzy_employee_user');
+                localStorage.removeItem('waqty_employee_token');
+                localStorage.removeItem('waqty_employee_user');
                 router.push('/employee-portal/login');
             } finally {
                 setLoading(false);
@@ -79,7 +79,7 @@ export default function EmployeePortalLayout({ children }: { children: React.Rea
 
     const handleLogout = async () => {
         try {
-            const token = localStorage.getItem('hagzy_employee_token');
+            const token = localStorage.getItem('waqty_employee_token');
             if (token) {
                 // API client uses the employee token on this route (X11) — no swap.
                 await employeeApi.logout();
@@ -87,8 +87,8 @@ export default function EmployeePortalLayout({ children }: { children: React.Rea
         } catch {
             // Ignore logout errors
         }
-        localStorage.removeItem('hagzy_employee_token');
-        localStorage.removeItem('hagzy_employee_user');
+        localStorage.removeItem('waqty_employee_token');
+        localStorage.removeItem('waqty_employee_user');
         router.push('/employee-portal/login');
     };
 

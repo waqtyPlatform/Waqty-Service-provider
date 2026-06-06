@@ -536,7 +536,7 @@ export default function IntegrationsPage() {
                                 {t('settings.integrations.webhookUrl')}
                             </label>
                             <Input
-                                defaultValue={`https://api.hagzy.com/webhooks/${selectedIntegration.name.toLowerCase().replace(/\s/g, '-')}`}
+                                defaultValue={`https://api.waqty.com/webhooks/${selectedIntegration.name.toLowerCase().replace(/\s/g, '-')}`}
                                 dir="ltr"
                             />
                         </div>

@@ -28,8 +28,8 @@ export default function SettingsPage() {
 
     // Load saved logo & banner
     useEffect(() => {
-        const savedLogo = localStorage.getItem('hagzy_logo');
-        const savedBanner = localStorage.getItem('hagzy_banner');
+        const savedLogo = localStorage.getItem('waqty_logo');
+        const savedBanner = localStorage.getItem('waqty_banner');
         if (savedLogo) setLogo(savedLogo);
         if (savedBanner) setBanner(savedBanner);
     }, []);
@@ -37,10 +37,10 @@ export default function SettingsPage() {
     const handleSave = () => {
         updateSettings(localSettings);
         // Also persist logo & banner
-        if (logo) localStorage.setItem('hagzy_logo', logo);
-        else localStorage.removeItem('hagzy_logo');
-        if (banner) localStorage.setItem('hagzy_banner', banner);
-        else localStorage.removeItem('hagzy_banner');
+        if (logo) localStorage.setItem('waqty_logo', logo);
+        else localStorage.removeItem('waqty_logo');
+        if (banner) localStorage.setItem('waqty_banner', banner);
+        else localStorage.removeItem('waqty_banner');
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);
     };

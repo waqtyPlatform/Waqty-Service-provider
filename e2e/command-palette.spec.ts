@@ -11,13 +11,13 @@ test.describe('Command Palette (Ctrl+K)', () => {
             const mockUser = {
                 id: 'U2',
                 name: 'Salon Admin',
-                email: 'salon@hagzy.com',
+                email: 'salon@waqty.com',
                 role: 'admin',
                 businessType: 'salon',
             };
-            localStorage.setItem('hagzy_user', JSON.stringify(mockUser));
-            localStorage.setItem('hagzy_token', 'mock-jwt-token');
-            document.cookie = 'hagzy_logged_in=true;path=/;max-age=86400';
+            localStorage.setItem('waqty_user', JSON.stringify(mockUser));
+            localStorage.setItem('waqty_token', 'mock-jwt-token');
+            document.cookie = 'waqty_logged_in=true;path=/;max-age=86400';
         });
         await page.goto(baseURL);
         await page.waitForTimeout(1000);

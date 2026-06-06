@@ -76,11 +76,11 @@ export default function InviteClaimPage() {
         const staffUser: User = {
             id: 'S001',
             name: fullName,
-            email: phone.includes('@') ? phone : `${fullName.replace(/\s/g, '').toLowerCase()}@hagzy.com`,
+            email: phone.includes('@') ? phone : `${fullName.replace(/\s/g, '').toLowerCase()}@waqty.com`,
             role: 'staff',
             businessType: 'clinic',
         };
-        localStorage.setItem('hagzy_user', JSON.stringify(staffUser));
+        localStorage.setItem('waqty_user', JSON.stringify(staffUser));
 
         addToast('success', t('invite.toastSetupComplete'));
         router.push('/');

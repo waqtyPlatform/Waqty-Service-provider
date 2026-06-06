@@ -8,10 +8,10 @@
   - generic [ref=e12]:
     - complementary [ref=e13]:
       - generic [ref=e14]:
-        - link "H Hagzy" [ref=e15] [cursor=pointer]:
+        - link "H Waqty" [ref=e15] [cursor=pointer]:
           - /url: /
           - generic [ref=e16]: H
-          - generic [ref=e17]: Hagzy
+          - generic [ref=e17]: Waqty
         - button "Toggle sidebar" [ref=e18] [cursor=pointer]:
           - img [ref=e19]
       - navigation [ref=e21]:

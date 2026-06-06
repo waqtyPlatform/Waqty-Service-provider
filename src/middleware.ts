@@ -16,10 +16,10 @@ function isPublicRoute(pathname: string): boolean {
 }
 
 function hasToken(request: NextRequest): boolean {
-    // The AuthContext sets `hagzy_logged_in=true` on login. This is a non-sensitive
+    // The AuthContext sets `waqty_logged_in=true` on login. This is a non-sensitive
     // marker used only to gate route access at the edge; the real Bearer token
     // lives in localStorage and is attached by the API client per-request.
-    const tokenMarker = request.cookies.get('hagzy_logged_in')?.value;
+    const tokenMarker = request.cookies.get('waqty_logged_in')?.value;
     return tokenMarker === 'true';
 }
 

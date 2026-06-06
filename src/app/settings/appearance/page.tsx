@@ -95,12 +95,12 @@ export default function AppearanceSettingsPage() {
                 await settingsApi.updateAppearanceSettings(payload);
             }
             // Always persist to localStorage as backup
-            localStorage.setItem('hagzy_appearance', JSON.stringify(payload));
+            localStorage.setItem('waqty_appearance', JSON.stringify(payload));
             addToast('success', t('settings.appearance.saved'));
             refetch();
         } catch {
             localStorage.setItem(
-                'hagzy_appearance',
+                'waqty_appearance',
                 JSON.stringify({ theme, brandColor, language, compactSidebar, showAnimations })
             );
             addToast('success', t('settings.appearance.saved'));

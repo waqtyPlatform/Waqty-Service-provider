@@ -37,7 +37,7 @@ git rev-list --left-right --count HEAD...origin/main   # 4   7
 | Real endpoints added | ~20 (dashboard, payments, clients, availability, revenue, …) | 0 net new business endpoints |
 | New pages | 6 real-API pages | settlement, ads |
 | Removed | entire mock marketing suite (8 pages) | nothing |
-| Auth token | single `hagzy_token` | namespaced `hagzy_provider_token` / `hagzy_employee_token` |
+| Auth token | single `waqty_token` | namespaced `waqty_provider_token` / `waqty_employee_token` |
 | Arabic i18n | +43 lines | **+1,499 lines** (full localization) |
 | Contract/Visit model | none | `waqty_contract.ts`, `contract.ts`, `money.ts`, `platform_finance.ts` |
 
@@ -91,12 +91,12 @@ Net effect on the wire is **identical**; the difference is purely where `/api` l
 ### 3.2 Auth token strategy
 
 ```
-git show origin/main:src/lib/api.ts | grep -n hagzy_token   # single 'hagzy_token'
-git show HEAD:src/lib/api.ts        | grep -n hagzy_         # path-based provider/employee keys
+git show origin/main:src/lib/api.ts | grep -n waqty_token   # single 'waqty_token'
+git show HEAD:src/lib/api.ts        | grep -n waqty_         # path-based provider/employee keys
 ```
 
-- **OLD:** one shared `hagzy_token` for the whole app.
-- **CURRENT:** picks `hagzy_employee_token` under `/employee-portal`, else `hagzy_provider_token` — so the provider dashboard and employee portal don't clobber each other's session. (Same change mirrored in `src/contexts/AuthContext.tsx`.)
+- **OLD:** one shared `waqty_token` for the whole app.
+- **CURRENT:** picks `waqty_employee_token` under `/employee-portal`, else `waqty_provider_token` — so the provider dashboard and employee portal don't clobber each other's session. (Same change mirrored in `src/contexts/AuthContext.tsx`.)
 
 ### 3.3 Real endpoints in OLD that CURRENT is **missing**
 
@@ -186,7 +186,7 @@ src/components/layout/Sidebar.tsx      src/components/layout/TopBar.tsx
 
 | Area | OLD | CURRENT |
 |---|---|---|
-| **Auth** | single `hagzy_token` | namespaced provider/employee tokens (no cross-surface clobber) |
+| **Auth** | single `waqty_token` | namespaced provider/employee tokens (no cross-surface clobber) |
 | **Booking model** | backend `Booking` used directly | canonical multi-service **`Visit`** model + `bookingToVisit()` adapter, `resolveServicePrice()` cascade |
 | **Money** | inline number handling | `src/lib/money.ts` (integer minor units, EGP formatting) |
 | **Platform finance** | — | `platform_finance.ts` (commission, fees, payouts) + `finance/settlement` page |
@@ -204,7 +204,7 @@ src/components/layout/Sidebar.tsx      src/components/layout/TopBar.tsx
 ## 6. Conflict-zone risk notes
 
 - **`src/lib/api.ts` (HIGH):** OLD did a +734/−455 real-API rewrite; CURRENT added contract adapters. A 3-way merge will conflict heavily. Treat OLD's version as the base for the API surface, then re-apply CURRENT's adapters (`bookingToVisit`, `resolveServicePrice`, namespaced `getToken`) and add back the `/provider/marketing/*` endpoints. Watch the `/api`-prefix convention.
-- **`src/contexts/AuthContext.tsx` (MED):** token-key rename `hagzy_token → hagzy_provider_token`. Keep CURRENT's namespaced version.
+- **`src/contexts/AuthContext.tsx` (MED):** token-key rename `waqty_token → waqty_provider_token`. Keep CURRENT's namespaced version.
 - **`src/i18n/translations.ts` (MED, mechanical):** keep CURRENT's +1,499-line version; cherry-pick OLD's +43 lines for any keys CURRENT lacks (new OLD pages will need keys anyway).
 - **`src/app/page.tsx`, `bookings/page.tsx`, `employees/page.tsx`, `settings/*` (MED):** both rewrote these. Decide per page whether to take OLD's real-API version or CURRENT's contract/i18n version, then re-apply the other's concerns.
 

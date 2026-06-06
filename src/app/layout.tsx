@@ -45,12 +45,12 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-    title: 'Hagzy — Service Provider Dashboard',
+    title: 'Waqty — Service Provider Dashboard',
     description: 'All-in-one salon, spa & beauty management dashboard',
     appleWebApp: {
         capable: true,
         statusBarStyle: 'default',
-        title: 'Hagzy',
+        title: 'Waqty',
     },
 };
 

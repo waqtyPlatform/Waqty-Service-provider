@@ -30,9 +30,9 @@ export default function EmployeeLoginPage() {
 
             if (res.success && res.data) {
                 const { token, employee } = res.data;
-                localStorage.setItem('hagzy_employee_token', token);
+                localStorage.setItem('waqty_employee_token', token);
                 localStorage.setItem(
-                    'hagzy_employee_user',
+                    'waqty_employee_user',
                     JSON.stringify({
                         uuid: employee.uuid,
                         name: employee.name,
@@ -98,7 +98,7 @@ export default function EmployeeLoginPage() {
                                 boxShadow: '0 4px 12px rgba(99,102,241,0.3)',
                             }}
                         />
-                        Hagzy
+                        Waqty
                     </div>
                     <h1
                         style={{

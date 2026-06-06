@@ -62,7 +62,7 @@ const defaultEmployee = {
     position: 'Senior Stylist',
     level: 'Senior',
     department: 'Hair Styling',
-    email: 'sarah.ahmed@hagzy.app',
+    email: 'sarah.ahmed@waqty.app',
     phone: '+20 100 123 4567',
     avatar: 'SA',
     status: 'active',
@@ -252,7 +252,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
         fname: 'Sarah',
         lname: 'Ahmed',
         phone: '+20 100 123 4567',
-        email: 'sarah.ahmed@hagzy.app',
+        email: 'sarah.ahmed@waqty.app',
         role: 'employee',
         jobTitle: 'Senior Stylist',
         branch: 'Downtown',
@@ -952,7 +952,7 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                         <Input
                             label={t('empProfile.lblEmail')}
                             type="email"
-                            placeholder="sarah.ahmed@hagzy.app"
+                            placeholder="sarah.ahmed@waqty.app"
                             value={editEmp.email}
                             onChange={e => setEditEmp({ ...editEmp, email: e.target.value })}
                         />

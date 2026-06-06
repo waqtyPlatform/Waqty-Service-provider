@@ -371,7 +371,7 @@ export default function OnboardingPage() {
 
         // Save onboarding data
         localStorage.setItem(
-            'hagzy_onboarding',
+            'waqty_onboarding',
             JSON.stringify({
                 businessName,
                 governorate,
@@ -427,7 +427,7 @@ export default function OnboardingPage() {
                 <div className={styles.header}>
                     <div className={styles.logo}>
                         <div className={styles.logoMark}></div>
-                        <span>Hagzy</span>
+                        <span>Waqty</span>
                     </div>
                     <h1>{stepTitles[step]}</h1>
                     <p>{stepDescriptions[step]}</p>

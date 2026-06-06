@@ -9,10 +9,10 @@ test.describe('Authentication Flows', () => {
         // Clear any existing auth state
         await page.goto(`${baseURL}/login`);
         await page.evaluate(() => {
-            localStorage.removeItem('hagzy_user');
-            localStorage.removeItem('hagzy_token');
-            document.cookie = 'hagzy_logged_in=;path=/;max-age=0';
-            document.cookie = 'hagzy_auth=;path=/;max-age=0';
+            localStorage.removeItem('waqty_user');
+            localStorage.removeItem('waqty_token');
+            document.cookie = 'waqty_logged_in=;path=/;max-age=0';
+            document.cookie = 'waqty_auth=;path=/;max-age=0';
         });
 
         await page.goto(baseURL);
@@ -52,14 +52,14 @@ test.describe('Authentication Flows', () => {
             const mockUser = {
                 id: 'U2',
                 name: 'Salon Admin',
-                email: 'salon@hagzy.com',
+                email: 'salon@waqty.com',
                 role: 'admin',
                 businessType: 'salon',
             };
-            localStorage.setItem('hagzy_user', JSON.stringify(mockUser));
-            localStorage.setItem('hagzy_token', 'mock-jwt-token');
-            document.cookie = 'hagzy_logged_in=true;path=/;max-age=86400';
-            document.cookie = `hagzy_auth=${JSON.stringify({ token: true, role: 'admin' })};path=/;max-age=86400`;
+            localStorage.setItem('waqty_user', JSON.stringify(mockUser));
+            localStorage.setItem('waqty_token', 'mock-jwt-token');
+            document.cookie = 'waqty_logged_in=true;path=/;max-age=86400';
+            document.cookie = `waqty_auth=${JSON.stringify({ token: true, role: 'admin' })};path=/;max-age=86400`;
         });
 
         await page.goto(baseURL);
@@ -74,13 +74,13 @@ test.describe('Authentication Flows', () => {
             const mockUser = {
                 id: 'U2',
                 name: 'Salon Admin',
-                email: 'salon@hagzy.com',
+                email: 'salon@waqty.com',
                 role: 'admin',
                 businessType: 'salon',
             };
-            localStorage.setItem('hagzy_user', JSON.stringify(mockUser));
-            localStorage.setItem('hagzy_token', 'mock-jwt-token');
-            document.cookie = 'hagzy_logged_in=true;path=/;max-age=86400';
+            localStorage.setItem('waqty_user', JSON.stringify(mockUser));
+            localStorage.setItem('waqty_token', 'mock-jwt-token');
+            document.cookie = 'waqty_logged_in=true;path=/;max-age=86400';
         });
 
         await page.goto(baseURL);

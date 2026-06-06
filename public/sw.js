@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 
-const CACHE_NAME = 'hagzy-v1';
+const CACHE_NAME = 'waqty-v1';
 const STATIC_ASSETS = [
     '/',
     '/manifest.json',

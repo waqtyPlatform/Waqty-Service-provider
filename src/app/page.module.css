@@ -8,7 +8,7 @@
    Entrance animation — replaces the previous framer-motion staggered reveal.
    Pure CSS keyframes ship 0 KB of JS and run on the compositor thread.
    ────────────────────────────────────────────────────────────────────────── */
-@keyframes hagzyFadeUp {
+@keyframes waqtyFadeUp {
     from {
         opacity: 0;
         transform: translateY(12px);
@@ -20,11 +20,11 @@
 }
 
 .fadeIn {
-    animation: hagzyFadeUp 320ms ease-out both;
+    animation: waqtyFadeUp 320ms ease-out both;
 }
 
 .fadeStaggerRow > * {
-    animation: hagzyFadeUp 320ms ease-out both;
+    animation: waqtyFadeUp 320ms ease-out both;
 }
 .fadeStaggerRow > *:nth-child(1) {
     animation-delay: 0ms;

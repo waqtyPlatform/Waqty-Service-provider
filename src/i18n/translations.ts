@@ -4018,8 +4018,8 @@ const translations: Translations = {
     'auth.errorVerify': { en: 'Verification failed', ar: 'فشل التحقق' },
     'auth.successLogin': { en: 'Authentication successful!', ar: 'نجحت المصادقة!' },
     'auth.demoTipRequest': {
-        en: 'For this demo, enter any email (e.g. clinic@hagzy.com) to simulate sending an OTP.',
-        ar: 'في هذا العرض، أدخل أي بريد إلكتروني (مثل clinic@hagzy.com) لمحاكاة إرسال الكود.',
+        en: 'For this demo, enter any email (e.g. clinic@waqty.com) to simulate sending an OTP.',
+        ar: 'في هذا العرض، أدخل أي بريد إلكتروني (مثل clinic@waqty.com) لمحاكاة إرسال الكود.',
     },
     'auth.demoTipVerify': { en: 'The mock Verification Code is', ar: 'كود التحقق التجريبي هو' },
     'auth.otpSentEmail': { en: 'Verification code sent via Email', ar: 'تم إرسال كود التحقق عبر البريد الإلكتروني' },
@@ -4401,7 +4401,7 @@ const translations: Translations = {
     // Help Center
     'help.title': { en: 'Help Center', ar: 'مركز المساعدة' },
     'help.subtitle': {
-        en: 'Find answers to common questions about using Hagzy',
+        en: 'Find answers to common questions about using Waqty',
         ar: 'ابحث عن إجابات للأسئلة الشائعة حول استخدام هجزي',
     },
     'help.search': { en: 'Search for help...', ar: 'ابحث عن مساعدة...' },
@@ -5086,7 +5086,7 @@ const translations: Translations = {
     'empProfile.setPinTitle': { en: 'Set Employee PIN', ar: 'تعيين رمز PIN للموظف' },
     'empProfile.setPinDesc1': { en: 'Set a 6-digit PIN for ', ar: 'عيّن رمز PIN مكوناً من 6 أرقام لـ ' },
     'empProfile.setPinDesc2': {
-        en: '. They can use this PIN to log into the Hagzy Employee App.',
+        en: '. They can use this PIN to log into the Waqty Employee App.',
         ar: '. يمكنهم استخدام هذا الرمز لتسجيل الدخول إلى تطبيق هجزي للموظفين.',
     },
     'empProfile.newPinLabel': { en: 'New PIN (6 digits)', ar: 'رمز PIN جديد (6 أرقام)' },
@@ -5095,7 +5095,7 @@ const translations: Translations = {
     'empProfile.toastPinReq': { en: 'PIN must be 6 digits', ar: 'يجب أن يكون رمز PIN مكوناً من 6 أرقام' },
     'empProfile.toastPinMismatch': { en: 'PINs do not match', ar: 'رمزا PIN غير متطابقين' },
     'empProfile.toastPinSet': {
-        en: 'PIN set — employee can now log into the Hagzy Employee App',
+        en: 'PIN set — employee can now log into the Waqty Employee App',
         ar: 'تم تعيين رمز PIN — يمكن للموظف الآن تسجيل الدخول إلى تطبيق هجزي للموظفين',
     },
 
@@ -5262,7 +5262,7 @@ const translations: Translations = {
     },
 
     // Invite claim page (invite.*)
-    'invite.brand': { en: 'Hagzy Invitation', ar: 'دعوة هجزي' },
+    'invite.brand': { en: 'Waqty Invitation', ar: 'دعوة هجزي' },
     'invite.acceptTitle': { en: 'Accept Invitation', ar: 'قبول الدعوة' },
     'invite.completeTitle': { en: 'Complete Profile', ar: 'إكمال الملف الشخصي' },
     'invite.acceptSubtitle': {
@@ -5326,7 +5326,7 @@ const translations: Translations = {
     'onboarding.termsModalTitle': { en: 'Terms & Conditions', ar: 'الشروط والأحكام' },
     'onboarding.terms1Title': { en: '1. Acceptance of Terms', ar: '1. قبول الشروط' },
     'onboarding.terms1Body': {
-        en: 'By creating an account on Hagzy, you agree to be bound by these Terms and Conditions. If you do not agree to these terms, please do not use the platform.',
+        en: 'By creating an account on Waqty, you agree to be bound by these Terms and Conditions. If you do not agree to these terms, please do not use the platform.',
         ar: 'بإنشائك حساباً على هجزي، فإنك توافق على الالتزام بهذه الشروط والأحكام. إذا كنت لا توافق على هذه الشروط، فالرجاء عدم استخدام المنصة.',
     },
     'onboarding.terms2Title': { en: '2. Account Registration', ar: '2. تسجيل الحساب' },
@@ -5356,7 +5356,7 @@ const translations: Translations = {
     },
     'onboarding.terms7Title': { en: '7. Limitation of Liability', ar: '7. حدود المسؤولية' },
     'onboarding.terms7Body': {
-        en: 'Hagzy shall not be liable for any indirect, incidental, or consequential damages arising from the use of the platform. Our total liability shall not exceed the subscription fees paid in the preceding 12 months.',
+        en: 'Waqty shall not be liable for any indirect, incidental, or consequential damages arising from the use of the platform. Our total liability shall not exceed the subscription fees paid in the preceding 12 months.',
         ar: 'لن تكون هجزي مسؤولة عن أي أضرار غير مباشرة أو عرضية أو تبعية تنشأ عن استخدام المنصة. لن تتجاوز مسؤوليتنا الإجمالية رسوم الاشتراك المدفوعة خلال الـ 12 شهراً السابقة.',
     },
     'onboarding.acceptContinue': { en: 'Accept & Continue', ar: 'قبول ومتابعة' },
@@ -5476,7 +5476,7 @@ const translations: Translations = {
         ar: 'يرجى اختيار خدمة واحدة على الأقل',
     },
     'onboarding.toastWelcome': {
-        en: 'Welcome to Hagzy! Your 14-day free trial has started.',
+        en: 'Welcome to Waqty! Your 14-day free trial has started.',
         ar: 'مرحباً بك في هجزي! بدأت تجربتك المجانية لمدة 14 يوماً.',
     },
 
