@@ -1,15 +1,13 @@
 /**
- * Provider dashboard — view of the CANONICAL ecosystem contract (X1).
+ * Provider dashboard — thin local layer over the app-owned domain model.
  *
- * The single source of truth lives at  <repo-root>/contract/waqty_contract.ts
- * and is synced VERBATIM into  ./waqty_contract.ts  (guarded by the contract
- * drift check — see scripts/check-contract.mjs and .github/workflows/contract.yml).
- * Do NOT edit ./waqty_contract.ts by hand: edit the root source, then re-sync
- * with `node ../contract/sync.mjs` and re-baseline (`npm run contract:check -- --write`).
+ * ./waqty_contract.ts is owned by this app (the shared ecosystem contract was
+ * retired on 2026-06-10; the real backend API is the future source of truth)
+ * and may be edited freely.
  *
- * This file is the dashboard's thin local layer over that canonical:
- *   - it re-exports the canonical entities / enums / helpers the dashboard uses;
- *   - it adds `Canonical*` aliases for the entities whose plain names collide
+ * This file:
+ *   - re-exports the domain entities / enums / helpers the dashboard uses;
+ *   - adds `Canonical*` aliases for the entities whose plain names collide
  *     with the dashboard's legacy local types (Service / Package / Customer / …),
  *     so existing imports of `@/lib/contract` keep working unchanged.
  */
