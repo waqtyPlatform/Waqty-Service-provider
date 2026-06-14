@@ -16,6 +16,8 @@ import {
 } from 'lucide-react';
 import { Input } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useApiQuery } from '@/hooks/useApiQuery';
+import { providerApi, extractStr, type ProviderFaq } from '@/lib/api';
 import Link from 'next/link';
 
 const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@waqty.com';
@@ -143,7 +145,31 @@ export default function HelpPage() {
     const [expandedCategory, setExpandedCategory] = useState<number | null>(0);
     const [expandedItem, setExpandedItem] = useState<string | null>(null);
 
-    const filteredCategories = faqCategories
+    // Live FAQs (GET /api/provider/faqs). Falls back to the static list offline.
+    const { data: apiFaqs } = useApiQuery<ProviderFaq[]>(() => providerApi.getFaqs(), [], {
+        fallbackData: faqCategories,
+    });
+
+    // Group the live FAQ records into the FaqCategory[] shape the accordion
+    // consumes (category title + items), reusing a default icon since the API
+    // carries no icon. Shape-based guard: only map when the API returned a real
+    // FAQ array (records with question/answer); otherwise keep the static list.
+    const liveCategories: FaqCategory[] =
+        Array.isArray(apiFaqs) && apiFaqs.length > 0 && 'question' in apiFaqs[0]
+            ? Object.values(
+                  apiFaqs.reduce<Record<string, FaqCategory>>((acc, faq) => {
+                      const title = extractStr(faq.category) || 'General';
+                      if (!acc[title]) acc[title] = { title, icon: <BookOpen size={20} />, items: [] };
+                      acc[title].items.push({
+                          question: extractStr(faq.question),
+                          answer: extractStr(faq.answer),
+                      });
+                      return acc;
+                  }, {})
+              )
+            : faqCategories;
+
+    const filteredCategories = liveCategories
         .map(cat => ({
             ...cat,
             items: cat.items.filter(item => {

@@ -158,50 +158,54 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
     const [employee, setEmployee] = useState(defaultEmployee);
     const [employeePhotoUrl, setEmployeePhotoUrl] = useState<string | null>(null);
 
-    // Fetch real employee data from API
-    useEffect(() => {
-        let cancelled = false;
-        (async () => {
-            try {
-                const res = await providerApi.getEmployee(id);
-                if (cancelled) return;
-                if (res.success && res.data) {
-                    const e = res.data;
-                    setEmployee({
-                        id: e.uuid,
-                        name: e.name,
-                        position: e.branch?.name || 'Staff',
-                        level: 'Staff',
-                        department: e.branch?.name || 'General',
-                        email: e.email || defaultEmployee.email,
-                        phone: e.phone || defaultEmployee.phone,
-                        avatar: e.name
-                            .split(' ')
-                            .map(w => w[0])
-                            .join('')
-                            .slice(0, 2)
-                            .toUpperCase(),
-                        status: e.active ? 'active' : 'inactive',
-                        joined: e.created_at
-                            ? new Date(e.created_at).toLocaleDateString('en-US', {
-                                  month: 'short',
-                                  day: 'numeric',
-                                  year: 'numeric',
-                              })
-                            : defaultEmployee.joined,
-                        performance: defaultEmployee.performance,
-                        stats: defaultEmployee.stats,
-                    });
-                    setEmployeePhotoUrl(getImageUrl('employees', e.uuid));
-                }
-            } catch {
-                // API unavailable — keep mock data
+    const [employeeBlocked, setEmployeeBlocked] = useState(false);
+
+    // Fetch real employee data from API. `cancelledRef` lets a manual refetch
+    // (e.g. after a suspend toggle) reuse the same mapping without stale-closure issues.
+    const fetchEmployee = React.useCallback(async () => {
+        try {
+            const res = await providerApi.getEmployee(id);
+            // Shape-guard: only adopt API data when the expected fields are present,
+            // otherwise keep the mock so first render can't crash on a mismatched shape.
+            const e = res?.data;
+            if (res?.success && e && typeof e.uuid === 'string' && typeof e.name === 'string') {
+                setEmployee({
+                    id: e.uuid,
+                    name: e.name,
+                    position: e.branch?.name || 'Staff',
+                    level: 'Staff',
+                    department: e.branch?.name || 'General',
+                    email: e.email || defaultEmployee.email,
+                    phone: e.phone || defaultEmployee.phone,
+                    avatar: e.name
+                        .split(' ')
+                        .map(w => w[0])
+                        .join('')
+                        .slice(0, 2)
+                        .toUpperCase(),
+                    status: e.active ? 'active' : 'inactive',
+                    joined: e.created_at
+                        ? new Date(e.created_at).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
+                          })
+                        : defaultEmployee.joined,
+                    performance: defaultEmployee.performance,
+                    stats: defaultEmployee.stats,
+                });
+                setEmployeeBlocked(Boolean(e.blocked));
+                setEmployeePhotoUrl(getImageUrl('employees', e.uuid));
             }
-        })();
-        return () => {
-            cancelled = true;
-        };
+        } catch {
+            // API unavailable — keep mock data
+        }
     }, [id]);
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- data-fetch effect: setState runs only after the async getEmployee() resolves (the rule's blessed "subscribe for updates" pattern), and falls back to the mock on failure.
+        void fetchEmployee();
+    }, [fetchEmployee]);
 
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isPermissionsOpen, setIsPermissionsOpen] = useState(false);
@@ -1233,8 +1237,14 @@ export default function EmployeeProfilePage({ params }: { params: Promise<{ id: 
                         </Button>
                         <Button
                             variant="destructive"
-                            onClick={() => {
+                            onClick={async () => {
                                 setIsSuspendOpen(false);
+                                try {
+                                    await providerApi.toggleEmployeeBlock(employee.id, !employeeBlocked);
+                                    await fetchEmployee();
+                                } catch {
+                                    // Best-effort — API unreachable; toast still confirms intent.
+                                }
                                 addToast('error', t('empProfile.toastSuspSec'));
                             }}
                         >
