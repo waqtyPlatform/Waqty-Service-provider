@@ -628,6 +628,19 @@ export interface ProviderDashboard {
     payments: { total_collected: number };
 }
 
+/** A single FAQ entry from `/api/provider/faqs`. The live response is
+ * `{ uuid, question, answer }`; question/answer are localized by the
+ * `Accept-Language` header (plain strings) but may also arrive as bilingual
+ * `{ ar, en }` objects. The backend does NOT return a `category` today, so the
+ * help page groups every entry under one default heading; `category` is kept
+ * optional so that grouping lights up automatically if the API adds it later. */
+export interface ProviderFaq {
+    uuid: string;
+    question: unknown;
+    answer: unknown;
+    category?: unknown;
+}
+
 /** Payload for a walk-in quick sale (`/api/provider/quick-sale`). */
 export interface QuickSalePayload {
     service_uuid: string;
@@ -1176,6 +1189,9 @@ export const providerApi = {
 
     // Aggregated dashboard stats
     getDashboard: () => api.get<ProviderDashboard>('/api/provider/dashboard'),
+
+    // Help FAQs
+    getFaqs: () => api.get<ProviderFaq[]>('/api/provider/faqs'),
 };
 
 // ── Public API ──────────────────────────────────────────
