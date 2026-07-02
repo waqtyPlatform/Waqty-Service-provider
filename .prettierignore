@@ -7,7 +7,6 @@ coverage
 package-lock.json
 pnpm-lock.yaml
 
-# Vendored canonical contract — VERBATIM copies of <repo-root>/contract/*.ts,
-# guarded by scripts/check-contract.mjs. Never reformat them (formatting drift fails CI).
+# App-owned domain model files — kept unformatted to avoid noisy diffs.
 src/lib/waqty_contract.ts
 src/lib/platform_finance.ts

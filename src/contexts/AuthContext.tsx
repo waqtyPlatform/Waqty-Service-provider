@@ -6,11 +6,6 @@ import { ApiError, authApi } from '@/lib/api';
 import { type BusinessCategory, normalizeBusinessCategory } from '@/lib/contract';
 import { safeJsonParse } from '@/lib/storage';
 
-// MOCK: replace with authApi.sendOtp / authApi.verifyOtp when the backend OTP flow ships.
-const MOCK_OTP_CODE = '123456';
-const MOCK_OTP_REQUEST_DELAY_MS = 800;
-const MOCK_OTP_VERIFY_DELAY_MS = 1000;
-
 export type UserRole = 'admin' | 'manager' | 'staff';
 // PR-10: the canonical business category (salon|barber|clinic|spa|nails|other).
 export type BusinessType = BusinessCategory;
@@ -217,33 +212,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         [router, setAuthCookie]
     );
 
-    // MOCK: replace with authApi.sendOtp when backend OTP flow ships.
     const requestOTP = useCallback(async (identifier: string) => {
-        await new Promise(resolve => setTimeout(resolve, MOCK_OTP_REQUEST_DELAY_MS));
         const type = identifier.includes('@') ? 'email' : 'phone';
-        if (process.env.NODE_ENV === 'development') {
-            console.log(`[MOCK] OTP requested for ${type}: ${identifier} — use code ${MOCK_OTP_CODE}`);
-        }
-        return { success: true, type } as const;
+        const res = await authApi.sendOtp(identifier);
+        return { success: !!res.success, type } as const;
     }, []);
 
-    // MOCK: replace with authApi.verifyOtp when backend OTP flow ships.
     const verifyOTP = useCallback(
         async (identifier: string, code: string, redirect = true) => {
-            await new Promise(resolve => setTimeout(resolve, MOCK_OTP_VERIFY_DELAY_MS));
+            try {
+                const res = await authApi.verifyOtp(identifier, code);
+                if (!res.success || res.data?.valid === false) {
+                    return { success: false, error: res.message || 'Invalid verification code' };
+                }
 
-            if (code !== MOCK_OTP_CODE) {
-                return { success: false, error: 'Invalid verification code' };
+                const verifiedUser = MOCK_USERS[identifier] || MOCK_USERS['clinic@waqty.com'];
+                setUser(verifiedUser);
+                localStorage.setItem('waqty_user', JSON.stringify(verifiedUser));
+                setAuthCookie(true);
+                if (redirect) {
+                    router.push('/');
+                }
+                return { success: true, user: verifiedUser };
+            } catch (err: unknown) {
+                const message = err instanceof ApiError ? err.message : 'Invalid verification code';
+                return { success: false, error: message };
             }
-
-            const mockUser = MOCK_USERS[identifier] || MOCK_USERS['clinic@waqty.com'];
-            setUser(mockUser);
-            localStorage.setItem('waqty_user', JSON.stringify(mockUser));
-            setAuthCookie(true);
-            if (redirect) {
-                router.push('/');
-            }
-            return { success: true, user: mockUser };
         },
         [router, setAuthCookie]
     );

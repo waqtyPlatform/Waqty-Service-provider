@@ -5,6 +5,7 @@ import { Users, Search, RefreshCw, CheckCircle, Clock, Building2 } from 'lucide-
 import { Select, Button } from '@/components/ui';
 import { DataGuard } from '@/components/DataGuard';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useApiQuery } from '@/hooks/useApiQuery';
 import { providerApi, extractStr, type EmployeeAvailabilityStatus, type Branch } from '@/lib/api';
 
 const mockAvailability: EmployeeAvailabilityStatus[] = [
@@ -147,11 +148,7 @@ export default function AvailabilityPage() {
     const { lang } = useTranslation();
     const dir = lang === 'ar' ? 'rtl' : 'ltr';
 
-    const [availability, setAvailability] = useState<EmployeeAvailabilityStatus[]>(mockAvailability);
     const [branches, setBranches] = useState<Branch[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [refreshKey, setRefreshKey] = useState(0);
 
     const [search, setSearch] = useState('');
     const [branchFilter, setBranchFilter] = useState('all');
@@ -166,28 +163,50 @@ export default function AvailabilityPage() {
             .catch(() => {});
     }, []);
 
-    useEffect(() => {
-        let cancelled = false;
-        setLoading(true);
-        setError(null);
-        (async () => {
-            try {
-                const res = await providerApi.getAvailability({
-                    branch_uuid: branchFilter !== 'all' ? branchFilter : undefined,
+    const {
+        data: liveAvailability,
+        loading,
+        error,
+        isFallback,
+        refetch,
+    } = useApiQuery<EmployeeAvailabilityStatus[]>(
+        () =>
+            providerApi.getAvailability({
+                branch_uuid: branchFilter !== 'all' ? branchFilter : undefined,
+            }),
+        [branchFilter],
+        { fallbackData: mockAvailability }
+    );
+
+    // The live API serializes availability as { uuid, name, availability_status,
+    // branch: { uuid, name } } — a different shape than the grid's EmployeeAvailabilityStatus.
+    // Map it onto the grid shape (data-only; no UI change). isFallback / empty / unknown
+    // shape all fall back to the mock so the grid always renders.
+    const availability: EmployeeAvailabilityStatus[] = (() => {
+        const raw = liveAvailability as unknown as Array<Record<string, unknown>> | null;
+        const first = raw?.[0];
+        if (raw && raw.length > 0 && first && !isFallback) {
+            // live API shape
+            if (typeof first.uuid === 'string' && 'availability_status' in first) {
+                return raw.map(r => {
+                    const branch = (r.branch ?? {}) as { uuid?: string; name?: string };
+                    return {
+                        employee_uuid: String(r.uuid ?? ''),
+                        employee_name: (r.name ?? '') as EmployeeAvailabilityStatus['employee_name'],
+                        branch_uuid: branch.uuid ?? '',
+                        branch_name: branch.name ?? '',
+                        is_available: r.availability_status === 'available',
+                        next_available_at: (r.availability_updated_at as string | null) ?? null,
+                    } satisfies EmployeeAvailabilityStatus;
                 });
-                if (!cancelled && res.success && res.data) {
-                    setAvailability(res.data.length > 0 ? res.data : mockAvailability);
-                }
-            } catch {
-                if (!cancelled) setAvailability(mockAvailability);
-            } finally {
-                if (!cancelled) setLoading(false);
             }
-        })();
-        return () => {
-            cancelled = true;
-        };
-    }, [branchFilter, refreshKey]);
+            // already the grid shape
+            if (typeof first.employee_uuid === 'string') {
+                return liveAvailability as EmployeeAvailabilityStatus[];
+            }
+        }
+        return mockAvailability;
+    })();
 
     const filtered = availability.filter(a => {
         if (statusFilter === 'available' && !a.is_available) return false;
@@ -214,7 +233,7 @@ export default function AvailabilityPage() {
                     <h1 style={s.title}>Employee Availability</h1>
                     <p style={s.subtitle}>Real-time status for all employees across branches</p>
                 </div>
-                <Button variant="outline" onClick={() => setRefreshKey(k => k + 1)}>
+                <Button variant="outline" onClick={() => refetch()}>
                     <RefreshCw size={14} style={{ marginInlineEnd: 'var(--space-2)' }} /> Refresh
                 </Button>
             </div>
